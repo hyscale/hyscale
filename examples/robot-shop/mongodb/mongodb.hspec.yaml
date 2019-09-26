@@ -1,0 +1,23 @@
+name: mongodb
+
+image:
+     registry: k8sdockerregistry.wavemakeronline.com
+     name: mongodb
+     tag: 1.0
+     buildSpec:
+       stackImage: mongo:3.6.1
+       artifacts:
+           - name: mongo_source
+             source: mongo_source.tar
+             destination: /tmp/
+       configCommands: |-
+            mkdir -p /tmp/mongo_source 
+            tar -xvf /tmp/mongo_source.tar -C /tmp/mongo_source
+            cp /tmp/mongo_source/*.js /docker-entrypoint-initdb.d/
+
+
+ports:
+   - port: 27017/tcp
+     healthCheck: {}
+
+memory: 512Mi

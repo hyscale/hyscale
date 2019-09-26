@@ -1,0 +1,23 @@
+name: user
+image:
+  name: user
+  registry: k8sdockerregistry.wavemakeronline.com
+  tag: 1.0
+  buildSpec: 
+    artifacts: 
+      - name: user_source
+        source: user_source.tar
+        destination: /tmp/
+    stackImage: "node:8"
+    configCommands: |-
+      mkdir -p /tmp/user_source
+      tar -xvf /tmp/user_source.tar -C /tmp/user_source
+      mkdir -p /opt/server
+      cd /opt/server
+      cp /tmp/user_source/package.json /opt/server/
+      npm install
+      cp /tmp/user_source/server.js /opt/server/
+ports: 
+  - port: 8080/tcp
+    healthCheck: {} 
+startCommand: "node,/opt/server/server.js"

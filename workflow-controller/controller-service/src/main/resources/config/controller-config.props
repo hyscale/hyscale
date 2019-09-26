@@ -1,0 +1,2 @@
+io.hyscale.ctl.default.registry.conf=.docker/config.json
+io.hyscale.ctl.default.kube.conf=.kube/config

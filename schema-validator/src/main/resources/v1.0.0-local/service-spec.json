@@ -1,0 +1,253 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "$id": "http://hyscale.io/v1.0.0/service-spec.json",
+  "type": "object",
+  "description": "Service Spec declares the image specification and the desired state of the service ",
+  "required": [
+    "name",
+    "image",
+    "ports"
+  ],
+  "properties": {
+    "name": {
+      "description": "name of service spec, also used as endpoint",
+      "type": "string",
+      "examples": [
+        "frontend"
+      ]
+    },
+    "image": {
+      "description": "image specification",
+      "$ref": "_definitions.json#/definitions/io.hyscale.api.image.Image"
+    },
+    "replicas": {
+      "type": "integer",
+      "description": "number of replicas of this service",
+      "default": 1,
+      "examples": [
+        2
+      ]
+    },
+    "volumes": {
+      "type": "array",
+      "description": "The Volumes array",
+      "items": {
+        "type": "object",
+        "description": "describes provision and attachment of volume",
+        "required": [
+          "name",
+          "path"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "name of the volume",
+            "examples": [
+              "logs"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "examples": [
+              "/usr/local/tomcat/logs"
+            ]
+          },
+          "size": {
+            "type": "string",
+            "description": "size of volume",
+            "default": "1g",
+            "examples": [
+              "1g"
+            ]
+          }
+        }
+      }
+    },
+    "secrets": {
+      "type": "array",
+      "description": "declares all secrets key names",
+      "items": {
+        "type": "string",
+        "description": "secret key",
+        "examples": [
+          "DB_PASSWORD"
+        ]
+      }
+    },
+    "props": {
+      "additionalProperties": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "description": "props is an unstructured key value map",
+      "type": "object"
+    },
+    "ports": {
+      "type": "array",
+      "description": "defines ports",
+      "items": {
+        "type": "object",
+        "description": "defines port along with healthcheck and lbmappings if any",
+        "required": [
+          "port"
+        ],
+        "properties": {
+          "port": {
+            "type": "string",
+            "description": "defines port number along with type. default type is tcp.",
+            "examples": [
+              "8080/tcp"
+            ]
+          },
+          "healthCheck": {
+            "type": "object",
+            "description": "The Healthcheck Schema",
+            "required": [
+              "httpPath"
+            ],
+            "properties": {
+              "httpPath": {
+                "type": "string",
+                "description": "describes httpPath of http healthcheck",
+                "examples": [
+                  "/hrms"
+                ]
+              }
+            }
+          },
+          "external": {
+            "type": "boolean",
+            "description": "defines external service",
+            "default": false,
+            "examples": [
+              true
+            ]
+          },
+          "lbMappings": {
+            "type": "array",
+            "description": "defines lb mappings",
+            "items": {
+              "type": "object",
+              "description": "",
+              "required": [
+                "path"
+              ],
+              "properties": {
+                "host": {
+                  "type": "string",
+                  "description": "defines the host",
+                  "examples": [
+                    "dev-hrms.com"
+                  ]
+                },
+                "tls": {
+                  "type": "boolean",
+                  "description": "defines ssl settings",
+                  "default": false,
+                  "examples": [
+                    true
+                  ]
+                },
+                "path": {
+                  "type": "string",
+                  "description": "The Path Schema",
+                  "examples": [
+                    "/login"
+                  ]
+                },
+                "httpHeaders": {
+                  "additionalProperties": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "description": "props is an unstructured key value map",
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "agents": {
+    "type": "array",
+    "description": "defines sidecars creation and attachment",
+    "items": {
+      "type": "object",
+      "required": [
+        "name",
+        "image",
+        "props",
+        "volumes"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "defines the name of sidecar",
+          "examples": [
+            "logging-agent"
+          ]
+        },
+        "image": {
+          "type": "string",
+          "description": "sidecar full image name",
+          "examples": [
+            "gcr.io/test/logstash:2.2"
+          ]
+        },
+        "props": {
+          "additionalProperties": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": "props is an unstructured key value map",
+          "type": "object"
+        },
+        "volumes": {
+          "type": "array",
+          "description": "defines volumes attachment for sidecar",
+          "items": {
+            "type": "object",
+            "description": "The Items Schema",
+            "required": [
+              "path",
+              "name"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "mount path inside sidecar",
+                "examples": [
+                  "/usr/local/tomcat/logs"
+                ]
+              },
+              "name": {
+                "type": "string",
+                "description": "volume name can be a shared volume if it matches any of main container volume",
+                "examples": [
+                  "logs"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "profiles": {
+    "type": "array",
+    "description": "list of profiles",
+    "items": {
+      "type": "object",
+      "description": "The Items Schema",
+      "properties": {}
+    }
+  }
+}

@@ -1,0 +1,165 @@
+{
+  "definitions": {
+    "io.hyscale.api.image.Dockerfile": {
+      "description": "Describes dockerfile settings to create container image.",
+      "properties": {
+        "path": {
+          "description": "defines buildcontext path",
+          "type": "string",
+          "default": "./",
+          "examples": [
+            "module1"
+          ]
+        },
+        "dockerfilePath": {
+          "description": "defines the path to dockerfile. Effective dockerfile is $path/$dockerfilePath",
+          "type": "string",
+          "default": "Dockerfile",
+          "examples": [
+            "Dockerfile.build"
+          ]
+        },
+        "target": {
+          "description": "defines the target to build, optional if not given final stage will be built.",
+          "type": "string",
+          "examples": [
+            "build"
+          ]
+        },
+        "args": {
+          "description": "args is the list of build arguments to be passed during container image build. should be given in this format <key>=<value> ",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "io.hyscale.api.image.buildSpec.Artifact": {
+      "description": "Describes artifact source and destination inside container.",
+      "properties": {
+        "name": {
+          "description": "defines the name of the artifacti. should be unique",
+          "type": "string",
+          "examples": [
+            "login_war"
+          ]
+        },
+        "provider": {
+          "description": "defines provider any of local, http, ssh",
+          "type": "string",
+          "enum": [
+            "local",
+            "ssh",
+            "http"
+          ],
+          "default": "local"
+        },
+        "source": {
+          "description": "defines the source path of the artifact. should be relative path if provider is local. full remote url if http is given, file path to the artifact in the remote ssh",
+          "type": "string",
+          "examples": [
+            "./target/login.war"
+          ]
+        },
+        "destination": {
+          "description": "defines the destination path inside container.",
+          "type": "string",
+          "examples": [
+            "/usr/local/tomcat/webapps/login.war"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "source",
+        "destination"
+      ],
+      "type": "object"
+    },
+    "io.hyscale.api.image.BuildSpec": {
+      "description": "Describes buildSpec settings to create container image.",
+      "properties": {
+        "stackImage": {
+          "description": "defines stackImage full name",
+          "type": "string",
+          "examples": [
+            "docker.io/library/tomcat:8.5"
+          ]
+        },
+        "artifacts": {
+          "description": "defines the artifact list",
+          "items": {
+            "$ref": "#/definitions/io.hyscale.api.image.buildSpec.Artifact"
+          },
+          "type": "array"
+        },
+        "configScript": {
+          "description": "defines a script containing configuration commands. script execution happens at the time of image build",
+          "type": "string",
+          "examples": [
+            "./scripts/configuration.sh"
+          ]
+        },
+        "configCommands": {
+          "description": "defines configuration commands. execution happens at the time of image build",
+          "type": "string"
+        },
+        "runScript": {
+          "description": "defines a script containing run commands. Gets executed at the time of container start",
+          "type": "string",
+          "examples": [
+            "./scripts/entrypoint.sh"
+          ]
+        },
+        "runCommands": {
+          "description": "defines run commands. Gets executed at the time of container start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "stackImage",
+        "artifacts"
+      ],
+      "type": "object"
+    },
+    "io.hyscale.api.image.Image": {
+      "description": "Describes container Image could be from dockerfile or buildSpec",
+      "properties": {
+        "name": {
+          "description": "Name of final Image",
+          "type": "string"
+        },
+        "tag": {
+          "description": "tag defines the final image tag",
+          "type": "string",
+          "examples": [
+            "latest"
+          ]
+        },
+        "registry": {
+          "description": "docker registry url along with namespace",
+          "type": "string",
+          "default": "docker.io/library",
+          "examples": [
+            "gcr.io/test-hyscale"
+          ]
+        },
+        "dockerfile": {
+          "$ref": "#/definitions/io.hyscale.api.image.Dockerfile",
+          "description": "dockerfile describes how to build container image using dockerfile."
+        },
+        "buildSpec": {
+          "$ref": "#/definitions/io.hyscale.api.image.BuildSpec",
+          "description": "buildSpec describes what the image should contain like stack, artifact and configuration. It is considered as an alternative to dockerfile spec"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    }
+  }
+}

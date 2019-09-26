@@ -1,0 +1,15 @@
+name: web
+image:
+   registry: k8sdockerregistry.wavemakeronline.com 
+   name: web
+   tag: 1.0
+   dockerfile:
+      args: 
+         VERSION: 1.0.GA
+
+external: true
+ports:
+  - port: 8080/tcp
+    healthCheck:
+      httpPath: /SampleApp/version
+

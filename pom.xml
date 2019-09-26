@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>io.hyscale.ctl</groupId>
+	<artifactId>hyscale-ctl</artifactId>
+	<packaging>pom</packaging>
+	<version>0.1</version>
+
+	<modules>
+                <module>schema-validator</module>
+		<module>image-builder</module>
+		<module>manifest-generator</module>
+		<module>deployer</module>
+		<module>workflow-controller</module>
+		<module>commons</module>
+		<module>dockerfile-generator</module>
+		<module>service-spec</module>
+                
+	</modules>
+
+	<name>hyscale-ctl</name>
+	<url>https://www.hyscale.io/</url>
+
+	<properties>
+		<jdk.version>11</jdk.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<kubernetes.client.version>4.0.0</kubernetes.client.version>
+		<slfj.log.version>1.7.26</slfj.log.version>
+		<commons-io.version>2.6</commons-io.version>
+		<commons-cli.version>1.4</commons-cli.version>
+		<commons-codec.version>1.12</commons-codec.version>
+		<jackson.databind.version>2.9.9</jackson.databind.version>
+		<jackson.dataformat.yaml.version>2.9.9</jackson.dataformat.yaml.version>
+		<javax.validation-api.version>2.0.1.Final</javax.validation-api.version>
+		<javax.annotation-api.version>1.3.2</javax.annotation-api.version>
+		<google.gson.version>2.6.2</google.gson.version>
+		<flipkart.zjsonpatch.version>0.4.5</flipkart.zjsonpatch.version>
+		<picocli.spring-boot.version>4.0.1</picocli.spring-boot.version>
+		<spullara.mustache.compiler.version>0.9.6</spullara.mustache.compiler.version>
+		<spring-boot.version>2.1.6.RELEASE</spring-boot.version>
+		<spring-boot-maven-plugin.version>2.1.6.RELEASE</spring-boot-maven-plugin.version>
+		<ocpsoft.prettytime.version>4.0.2.Final</ocpsoft.prettytime.version>
+		<json-path-version>2.4.0</json-path-version>
+		<junit.version>4.11</junit.version>
+		<spring.core.version>5.1.9.RELEASE</spring.core.version>
+		<json.schema.validator.version>2.2.11</json.schema.validator.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+			<version>${javax.annotation-api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jackson.databind.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-yaml</artifactId>
+			<version>${jackson.dataformat.yaml.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slfj.log.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.kubernetes</groupId>
+			<artifactId>client-java</artifactId>
+			<version>${kubernetes.client.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot</artifactId>
+			<version>${spring-boot.version}</version>
+		</dependency>
+	</dependencies>
+
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<version>2.1.8.RELEASE</version>
+					<executions>
+						<execution>
+							<goals>
+								<goal>build-info</goal>
+							</goals>
+							<configuration>
+								<additionalProperties>
+									<encoding.source>UTF-8</encoding.source>
+									<encoding.reporting>UTF-8</encoding.reporting>
+								</additionalProperties>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.8.0</version>
+					<configuration>
+						<source>${jdk.version}</source>
+						<target>${jdk.version}</target>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+</project>
