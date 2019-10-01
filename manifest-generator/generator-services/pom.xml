@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<groupId>io.hyscale.ctl</groupId>
+		<artifactId>manifest-generator</artifactId>
+		<version>0.1</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>generator-services</artifactId>
+	<packaging>jar</packaging>
+
+	<dependencies>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<!--<version>${commons-io.version}</version> -->
+		</dependency>
+		<dependency>
+			<groupId>io.hyscale.ctl</groupId>
+			<artifactId>generator-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.hyscale.ctl</groupId>
+			<artifactId>commons</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.hyscale.ctl</groupId>
+			<artifactId>plugin-framework</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.hyscale.ctl</groupId>
+			<artifactId>service-spec-commons</artifactId>
+		</dependency>
+	</dependencies>
+</project>

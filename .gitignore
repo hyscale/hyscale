@@ -1,0 +1,19 @@
+#Build specific
+target/
+_dist/
+
+#IDE specific
+*.iml
+*.ipr
+*.iws
+*.log
+*.project
+*.classpath
+.settings/
+.idea/*
+.metadata/
+
+
+#general files
+*.swp
+*.class

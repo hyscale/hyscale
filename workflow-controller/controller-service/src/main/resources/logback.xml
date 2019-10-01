@@ -1,0 +1,24 @@
+<configuration scan="true">
+
+	<appender name="RollingFile"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${HYSCALECTL_LOGS_DIR}/logfile.%d{yyyy-MM-dd}.log
+			</fileNamePattern>
+			<maxHistory>30</maxHistory>
+			<totalSizeCap>1MB</totalSizeCap>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="com.jayway.jsonpath" level="ERROR" />
+	<logger name="org.springframework.boot.autoconfigure.logging">
+		<level value="ERROR" />
+	</logger>
+	<root level="debug">
+		<appender-ref ref="RollingFile" />
+	</root>
+</configuration>
