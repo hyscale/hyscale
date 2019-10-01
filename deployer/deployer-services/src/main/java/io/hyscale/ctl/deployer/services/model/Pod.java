@@ -9,11 +9,20 @@ public class Pod {
 	private String status;
 
 	private List<Container> containers;
+	private List<Volume> volumes;
 
 	private boolean ready;
 
 	public boolean isReady() {
 		return ready;
+	}
+
+	public List<Volume> getVolumes() {
+		return volumes;
+	}
+
+	public void setVolumes(List<Volume> volumes) {
+		this.volumes = volumes;
 	}
 
 	public void setReady(boolean ready) {
@@ -43,5 +52,6 @@ public class Pod {
 	public void setStatus(String status) {
 		this.status = status;
 	}
+
 
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import io.hyscale.ctl.commons.exception.HyscaleException;
 import io.hyscale.ctl.commons.models.AuthConfig;
 import io.hyscale.ctl.commons.models.DeploymentContext;
+import io.hyscale.ctl.commons.models.K8sAuthorisation;
 import io.hyscale.ctl.commons.models.Manifest;
 import io.hyscale.ctl.deployer.core.model.DeploymentStatus;
 import io.hyscale.ctl.deployer.services.model.Pod;
@@ -102,5 +103,5 @@ public interface Deployer {
 		return ResourceStatus.STABLE;
 	}
 
-	List<Pod> getPods(String appName, String serviceName);
+	List<Pod> getPods(String namespace, String appName, String serviceName, K8sAuthorisation k8sAuthorisation) throws Exception;
 }

@@ -3,6 +3,7 @@ package io.hyscale.ctl.deployer.services.handler.impl;
 import java.util.List;
 
 import io.hyscale.ctl.deployer.services.model.DeployerActivity;
+import io.hyscale.ctl.deployer.services.model.ResourceStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -243,4 +244,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         return ResourceKind.CONFIG_MAP.getWeight();
     }
 
+	public ResourceStatus status(V1ConfigMap v1ConfigMap){
+		return ResourceStatus.STABLE;
+	}
 }

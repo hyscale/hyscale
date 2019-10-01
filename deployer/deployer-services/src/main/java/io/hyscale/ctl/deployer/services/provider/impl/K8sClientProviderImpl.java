@@ -6,6 +6,9 @@ import java.io.IOException;
 
 import io.hyscale.ctl.commons.config.SetupConfig;
 import io.hyscale.ctl.commons.constants.ToolConstants;
+import io.hyscale.ctl.commons.models.*;
+import io.hyscale.ctl.deployer.service.model.K8sKubeConfigAuth;
+import io.kubernetes.client.util.KubeConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -79,21 +82,34 @@ public class K8sClientProviderImpl implements K8sClientProvider {
         }
     }
 
-    @Override
-    public ApiClient get(K8sAuthorisation authConfig) throws HyscaleException {
-        ApiClient apiClient = null;
-        switch (authConfig.getK8sAuthType()) {
-            case KUBE_CONFIG_FILE:
-                apiClient = from((K8sConfigFileAuth) authConfig);
-                break;
-            case KUBE_CONFIG_READER:
-                apiClient = from((K8sConfigReaderAuth) authConfig);
-                break;
-            case BASIC_AUTH:
-                apiClient = from((K8sBasicAuth) authConfig);
-                break;
-        }
-        return apiClient;
-    }
+	private ApiClient from(K8sKubeConfigAuth authConfig) throws HyscaleException{
+		try{
+			return Config.fromConfig(authConfig.getKubeConfig());
+		}catch (IOException e){
+			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.UNABLE_TO_READ_KUBE_CONFIG);
+			logger.error("Failed to initialize k8s client ", ex);
+			throw ex;
+		}
+	}
+
+	@Override
+	public ApiClient get(K8sAuthorisation authConfig) throws HyscaleException {
+		ApiClient apiClient = null;
+		switch (authConfig.getK8sAuthType()) {
+		case KUBE_CONFIG_FILE:
+			apiClient = from((K8sConfigFileAuth) authConfig);
+			break;
+		case KUBE_CONFIG_READER:
+			apiClient = from((K8sConfigReaderAuth) authConfig);
+			break;
+		case BASIC_AUTH:
+			apiClient = from((K8sBasicAuth) authConfig);
+			break;
+		case KUBE_CONFIG_OBJECT:
+			apiClient = from((K8sKubeConfigAuth) authConfig);
+			break;
+		}
+		return apiClient;
+	}
 
 }

@@ -98,7 +98,7 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
 		V1beta2Deployment v1beta2Deployment = null;
 		try {
-			v1beta2Deployment = appsV1beta2Api.readNamespacedDeployment(name, namespace, TRUE, true, true);
+			v1beta2Deployment = appsV1beta2Api.readNamespacedDeployment(name, namespace, TRUE, false, false);
 		} catch (ApiException e) {
 			HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET);
 			LOGGER.error("Error while fetching Deployment {} in namespace {}, error {} ", name, namespace,
@@ -247,26 +247,11 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 		if (deploymentStatus == null) {
 			return ResourceStatus.FAILED;
 		}
-		// deploymentStatus.getConditions().stream().filter(condition->
-		// condition.getReason().equalsIgnoreCase("deploymentpaused")).findAny()
-		V1beta2DeploymentCondition paused = deploymentStatus.getConditions().stream()
-				.filter(condition -> condition.getReason().equalsIgnoreCase("deploymentpaused")).findAny().orElse(null);
-
-		V1beta2DeploymentCondition available = deploymentStatus.getConditions().stream()
-				.filter(condition -> condition.getType().equalsIgnoreCase("available")).findAny().orElse(null);
-		if (paused != null) {
-			return ResourceStatus.PAUSED;
-		}
-		if (available != null && available.getStatus().equalsIgnoreCase("false")) {
-			return ResourceStatus.FAILED;
-		}
-		// from
 		Integer desiredReplicas = deployment.getSpec().getReplicas();
 		Integer statusReplicas = deploymentStatus.getReplicas();
 		Integer updatedReplicas = deploymentStatus.getUpdatedReplicas();
 		Integer availableReplicas = deploymentStatus.getAvailableReplicas();
 		Integer readyReplicas = deploymentStatus.getReadyReplicas();
-
 		if ((desiredReplicas == null || desiredReplicas == 0) && (statusReplicas == null || statusReplicas == 0)) {
 			return ResourceStatus.STABLE;
 
