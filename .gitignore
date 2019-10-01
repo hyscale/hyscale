@@ -1,5 +1,6 @@
 #Build specific
 target/
+_dist/
 
 #IDE specific
 *.iml

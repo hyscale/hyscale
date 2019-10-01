@@ -90,7 +90,7 @@
 	</dependencyManagement>
 
 	<build>
-		<finalName>hyscalectl</finalName>
+		<finalName>hyscale-ctl</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

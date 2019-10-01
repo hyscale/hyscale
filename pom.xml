@@ -19,7 +19,8 @@
 		<module>commons</module>
 		<module>dockerfile-generator</module>
 		<module>service-spec</module>
-                
+		<module>packaging</module>
+
 	</modules>
 
 	<name>hyscale-ctl</name>
@@ -48,6 +49,8 @@
 		<junit.version>4.11</junit.version>
 		<spring.core.version>5.1.9.RELEASE</spring.core.version>
 		<json.schema.validator.version>2.2.11</json.schema.validator.version>
+		<main.basedir>.</main.basedir>
+		<main.dist.dir>${main.basedir}/_dist</main.dist.dir>
 	</properties>
 
 	<dependencies>
@@ -93,6 +96,18 @@
 	<build>
 		<pluginManagement>
 			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-clean-plugin</artifactId>
+					<version>2.4.1</version>
+					<configuration>
+						<filesets>
+							<fileset>
+								<directory>${main.dist.dir}</directory>
+							</fileset>
+						</filesets>
+					</configuration>
+				</plugin>
 				<plugin>
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-maven-plugin</artifactId>
