@@ -1,0 +1,10 @@
+io.hyscale.ctl.deployer.services.handler.impl.V1ConfigMapHandler
+io.hyscale.ctl.deployer.services.handler.impl.V1SecretHandler
+io.hyscale.ctl.deployer.services.handler.impl.V1StatefulSetHandler
+io.hyscale.ctl.deployer.services.handler.impl.V1DeploymentHandler
+io.hyscale.ctl.deployer.services.handler.impl.V1ServiceHandler
+io.hyscale.ctl.deployer.services.handler.impl.NamespaceHandler
+io.hyscale.ctl.deployer.services.handler.impl.V1PodHandler
+io.hyscale.ctl.deployer.services.handler.impl.V1PersistentVolumeClaimHandler
+io.hyscale.ctl.deployer.services.handler.impl.V1ReplicaSetHandler
+io.hyscale.ctl.deployer.services.handler.impl.V1StorageClassHandler

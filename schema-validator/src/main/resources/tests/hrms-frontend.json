@@ -1,0 +1,69 @@
+{
+  "namde": "hrmsfrontend",
+  "image": {
+    "name": "gcr.io/hyscale-hrms/hrms-frontend:1.0",
+    "dockerfile": {
+      "path": "./"
+    }
+  },
+  "replicas": 1,
+  "voludmes": [
+    {
+      "name": "logs",
+      "path": "/usr/local/tomcat/logs",
+      "size": "1g"
+    },
+    {
+      "name": "data",
+      "path": "/data",
+      "size": "2g"
+    }
+  ],
+  "secrets": [
+    "keystore_password"
+  ],
+  "props": {
+    "max_conn": "file(./config/config.xml)",
+    "country": "india",
+    "region": "hyderabad",
+    "mysql_ost": "endpoint(mysqldb)",
+    "max_threads": "15",
+    "Server_xml": "file(./config/tomcat/server.xml)"
+  },
+  "ports": [
+    {
+      "name": "tomcat-port",
+      "port": "8080/tcp",
+      "healthCheck": {
+        "httpPath": "/hrms"
+      },
+      "external": true,
+      "lbMappings": [
+        {
+          "host": "dev-hrms.com",
+          "tls": true,
+          "path": "/hrms",
+          "httpHeaders": {
+            "header1": "value1",
+            "header2": "value2"
+          }
+        }
+      ]
+    }
+  ],
+  "agents": [
+    {
+      "name": "logging-agent",
+      "image": "gcr.io/test/logstash:2.2",
+      "props": {
+        "FLUEND_CONF": "file(./config/log/fluentd.conf)"
+      },
+      "volumes": [
+        {
+          "path": "/usr/local/tomcat/logs",
+          "name": "logs"
+        }
+      ]
+    }
+  ]
+}

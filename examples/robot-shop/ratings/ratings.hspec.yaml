@@ -1,0 +1,30 @@
+name: ratings
+
+image:
+    registry: k8sdockerregistry.wavemakeronline.com
+    name: ratings
+    tag: 1.0
+    buildSpec: 
+      stackImage: php:7.2-apache
+      artifacts:
+        - name: ratings_source
+          source: ratings_source.tar
+          destination: /tmp/
+
+      configCommands: |- 
+        mkdir -p /tmp/ratings_source 
+        mkdir -p /tmp/composer_info
+        tar -xvf /tmp/ratings_source.tar -C /tmp/ratings_source
+        tar -xvf /tmp/ratings_source/composer_info.tar -C /tmp/composer_info
+        docker-php-ext-install pdo_mysql
+        mkdir -p /etc/apache2/mods-available/
+        cp -r /tmp/ratings_source/status.conf /etc/apache2/mods-available/status.conf
+        a2enmod rewrite && a2enmod status
+
+ports:
+  - port: 80/tcp
+    healthCheck: {}
+
+props:
+  AUTOWRAPT_BOOTSTRAP: flask
+

@@ -1,0 +1,2 @@
+hyscale.ctl.k8s.resource.update.policy=PATCH
+hyscale.ctl.k8s.pod.log.tail.lines=100

@@ -1,0 +1,38 @@
+name: web
+
+image:
+   registry: k8sdockerregistry.wavemakeronline.com
+   name: web
+   tag: 1.0
+   buildSpec:
+     stackImage: nginx:1.13.8
+     artifacts:
+      - name: web_source
+        source: web_source.tar
+        destination: /tmp/
+   
+     configCommands: |-
+       mkdir -p /tmp/web_source 
+       tar -xvf /tmp/web_source.tar -C /tmp/web_source
+       cp -r /tmp/web_source/entrypoint.sh /root/
+       cp -r /tmp/web_source/default.conf.template /etc/nginx/conf.d/default.conf.template
+       cp -r /tmp/web_source/static/* /usr/share/nginx/html
+
+startCommand: "bash,/root/entrypoint.sh"
+
+props:
+  CATALOGUE_HOST: catalogue
+  SHIPPING_HOST: shipping
+  RATINGS_HOST: ratings
+  PAYMENT_HOST: payments
+  USER_HOST: user
+  CART_HOST: cart
+
+external: true
+
+ports:
+  - port: 8080/tcp
+    healthCheck: 
+       httpPath: /
+ 
+   

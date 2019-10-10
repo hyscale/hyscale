@@ -1,0 +1,330 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "description": "Service Spec declares the image specification and the desired state of the service ",
+  "definitions": {
+    "io.hyscale.api.image.Dockerfile": {
+      "description": "Describes dockerfile settings to create container image.",
+      "properties": {
+        "path": {
+          "description": "defines buildcontext path",
+          "type": "string",
+          "default": "./"
+        },
+        "dockerfilePath": {
+          "description": "defines the path to dockerfile. Effective dockerfile is $path/$dockerfilePath",
+          "type": "string",
+          "default": "Dockerfile"
+        },
+        "target": {
+          "description": "defines the target to build, optional if not given final stage will be built.",
+          "type": "string"
+        },
+        "args": {
+          "description": "args is the list of build arguments to be passed during container image build. should be given in this format <key>=<value> ",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "io.hyscale.api.image.buildSpec.Artifact": {
+      "description": "Describes artifact source and destination inside container.",
+      "properties": {
+        "name": {
+          "description": "defines the name of the artifacti. should be unique",
+          "type": "string"
+        },
+        "provider": {
+          "description": "defines provider any of local, http, ssh",
+          "type": "string",
+          "enum": [
+            "local",
+            "ssh",
+            "http"
+          ],
+          "default": "local"
+        },
+        "source": {
+          "description": "defines the source path of the artifact. should be relative path if provider is local. full remote url if http is given, file path to the artifact in the remote ssh",
+          "type": "string"
+        },
+        "destination": {
+          "description": "defines the destination path inside container.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "source",
+        "destination"
+      ],
+      "type": "object"
+    },
+    "io.hyscale.api.image.BuildSpec": {
+      "description": "Describes buildSpec settings to create container image.",
+      "properties": {
+        "stackImage": {
+          "description": "defines stackImage full name",
+          "type": "string"
+        },
+        "artifacts": {
+          "description": "defines the artifact list",
+          "items": {
+            "$ref": "#/definitions/io.hyscale.api.image.buildSpec.Artifact"
+          },
+          "type": "array"
+        },
+        "configScript": {
+          "description": "defines a script containing configuration commands. script execution happens at the time of image build",
+          "type": "string"
+        },
+        "configCommands": {
+          "description": "defines configuration commands. execution happens at the time of image build",
+          "type": "string"
+        },
+        "runScript": {
+          "description": "defines a script containing run commands. Gets executed at the time of container start",
+          "type": "string"
+        },
+        "runCommands": {
+          "description": "defines run commands. Gets executed at the time of container start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "stackImage",
+        "artifacts"
+      ],
+      "type": "object"
+    },
+    "io.hyscale.api.image.Image": {
+      "description": "Describes container Image could be from dockerfile or buildSpec",
+      "properties": {
+        "name": {
+          "description": "Name of final Image",
+          "type": "string"
+        },
+        "tag": {
+          "description": "tag defines the final image tag",
+          "type": "string"
+        },
+        "registry": {
+          "description": "docker registry url along with namespace",
+          "type": "string",
+          "default": "docker.io/library"
+        },
+        "dockerfile": {
+          "$ref": "#/definitions/io.hyscale.api.image.Dockerfile",
+          "description": "dockerfile describes how to build container image using dockerfile."
+        },
+        "buildSpec": {
+          "$ref": "#/definitions/io.hyscale.api.image.BuildSpec",
+          "description": "buildSpec describes what the image should contain like stack, artifact and configuration. It is considered as an alternative to dockerfile spec"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "name",
+    "image",
+    "ports"
+  ],
+  "properties": {
+    "name": {
+      "description": "name of service spec, also used as endpoint",
+      "type": "string"
+    },
+    "image": {
+      "description": "image specification",
+      "$ref": "#/definitions/io.hyscale.api.image.Image"
+    },
+    "replicas": {
+      "type": "integer",
+      "description": "number of replicas of this service",
+      "default": 1
+    },
+    "volumes": {
+      "type": "array",
+      "description": "The Volumes array",
+      "items": {
+        "type": "object",
+        "description": "describes provision and attachment of volume",
+        "required": [
+          "name",
+          "path"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "name of the volume"
+          },
+          "path": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string",
+            "description": "size of volume",
+            "default": "1g"
+          }
+        }
+      }
+    },
+    "secrets": {
+      "type": "array",
+      "description": "declares all secrets key names",
+      "items": {
+        "type": "string",
+        "description": "secret key"
+      }
+    },
+    "props": {
+      "additionalProperties": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "description": "props is an unstructured key value map",
+      "type": "object"
+    },
+    "ports": {
+      "type": "array",
+      "description": "defines ports",
+      "items": {
+        "type": "object",
+        "description": "defines port along with healthcheck and lbmappings if any",
+        "required": [
+          "port"
+        ],
+        "properties": {
+          "port": {
+            "type": "string",
+            "description": "defines port number along with type. default type is tcp."
+          },
+          "healthCheck": {
+            "type": "object",
+            "description": "The Healthcheck Schema",
+            "properties": {
+              "httpPath": {
+                "type": "string",
+                "description": "describes httpPath of http healthcheck"
+              }
+            }
+          },
+          "external": {
+            "type": "boolean",
+            "description": "defines external service",
+            "default": false
+          },
+          "lbMappings": {
+            "type": "array",
+            "description": "defines lb mappings",
+            "items": {
+              "type": "object",
+              "description": "",
+              "required": [
+                "path"
+              ],
+              "properties": {
+                "host": {
+                  "type": "string",
+                  "description": "defines the host"
+                },
+                "tls": {
+                  "type": "boolean",
+                  "description": "defines ssl settings",
+                  "default": false
+                },
+                "path": {
+                  "type": "string",
+                  "description": "The Path Schema"
+                },
+                "httpHeaders": {
+                  "additionalProperties": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "description": "props is an unstructured key value map",
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "agents": {
+      "type": "array",
+      "description": "defines sidecars creation and attachment",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "image",
+          "props",
+          "volumes"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "defines the name of sidecar"
+          },
+          "image": {
+            "type": "string",
+            "description": "sidecar full image name"
+          },
+          "props": {
+            "additionalProperties": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "description": "props is an unstructured key value map",
+            "type": "object"
+          },
+          "volumes": {
+            "type": "array",
+            "description": "defines volumes attachment for sidecar",
+            "items": {
+              "type": "object",
+              "description": "The Items Schema",
+              "required": [
+                "path",
+                "name"
+              ],
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "mount path inside sidecar"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "volume name can be a shared volume if it matches any of main container volume"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "profiles": {
+      "type": "array",
+      "description": "list of profiles",
+      "items": {
+        "type": "object",
+        "description": "The Items Schema",
+        "properties": {}
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+name: hrdatabase
+
+image:
+     registry: k8sdockerregistry.wavemakeronline.com
+     name: hyscalectl/hrdatabase
+     tag: 4.0.1
+     buildSpec:
+       stackImage: mysql:5.6
+       artifacts:
+           - name: database-dump
+             source: db/hrdb_dump.sql
+             destination: /docker-entrypoint-initdb.d/hrdb_dump.sql
+volumes:
+   - name: mysql-data-dir
+     path: /var/lib/mysql
+     size: 1Gi
+     storageClass: standard
+
+secrets:
+   MYSQL_ROOT_PASSWORD: pramati
+
+ports:
+   - port: 3306/tcp
+     healthCheck: {}
+
+memory: 512Mi
