@@ -23,7 +23,7 @@ public class SetupConfig {
     private static final String generatedFilesDir = "generated-files";
     private static final String logDir = "logs";
     private static final String appsDirectory = "apps";
-    private static final String hyscalectl = "hyscale-ctl";
+    private static final String hyscalectl = "hyscale";
 
     private static final ThreadLocal<String> absolutePathTL = new ThreadLocal<String>();
 
@@ -44,6 +44,12 @@ public class SetupConfig {
             return absolutePathTL.get() + FILE_SEPARATOR;
         }
         return absolutePathTL.get();
+    }
+
+    public static void clearAbsolutePath(){
+        if(absolutePathTL!=null){
+            absolutePathTL.remove();
+        }
     }
 
     /*
