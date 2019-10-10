@@ -18,55 +18,62 @@ import io.hyscale.ctl.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.ctl.servicespec.commons.model.service.ServiceSpec;
 import picocli.CommandLine;
 
-@CommandLine.Command(name = "manifests", aliases = { "manifest" },
-		description = { "Generates manifests from the given service specs" })
+import javax.annotation.PreDestroy;
+
+@CommandLine.Command(name = "manifests", aliases = {"manifest"},
+        description = {"Generates manifests from the given service specs"})
 @Component
 public class HyscaleGenerateServiceManifestsCommand implements Runnable {
 
-	@CommandLine.Option(names = { "-h", "--help" }, usageHelp = true, description = "Display help message about the specified command")
-	private boolean helpRequested = false;
+    @CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "Display help message about the specified command")
+    private boolean helpRequested = false;
 
-	@CommandLine.Option(names = { "-a", "--app" }, required = true, description = "Application name")
-	private String appName;
+    @CommandLine.Option(names = {"-a", "--app"}, required = true, description = "Application name")
+    private String appName;
 
-	@CommandLine.Option(names = { "-f", "--files" }, required = true, description = "Service specs files.", split = ",")
-	private String[] serviceSpecs;
+    @CommandLine.Option(names = {"-f", "--files"}, required = true, description = "Service specs files.", split = ",")
+    private String[] serviceSpecs;
 
-	@Autowired
-	private ManifestGeneratorComponentInvoker manifestGeneratorComponentInvoker;
+    @Autowired
+    private ManifestGeneratorComponentInvoker manifestGeneratorComponentInvoker;
 
-	@Override
-	public void run() {
+    @Override
+    public void run() {
 
-		for (int i = 0; i < serviceSpecs.length; i++) {
+        for (int i = 0; i < serviceSpecs.length; i++) {
 
-			WorkflowContext workflowContext = new WorkflowContext();
-			String serviceName = null;
-			try {
-				File serviceSpecFile = new File(serviceSpecs[i]);
-				ServiceSpec serviceSpec = ServiceSpecMapper.from(serviceSpecFile);
-				serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
-				workflowContext.setServiceSpec(serviceSpec);
-				workflowContext.setServiceName(serviceName);
+            WorkflowContext workflowContext = new WorkflowContext();
+            String serviceName = null;
+            try {
+                File serviceSpecFile = new File(serviceSpecs[i]);
+                ServiceSpec serviceSpec = ServiceSpecMapper.from(serviceSpecFile);
+                serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
+                workflowContext.setServiceSpec(serviceSpec);
+                workflowContext.setServiceName(serviceName);
 
-				SetupConfig.setAbsolutePath(serviceSpecFile.getAbsoluteFile().getParent());
+                SetupConfig.clearAbsolutePath();
+                SetupConfig.setAbsolutePath(serviceSpecFile.getAbsoluteFile().getParent());
 
-			} catch (HyscaleException e) {
-				WorkflowLogger.error(ControllerActivity.CANNOT_PROCESS_SERVICE_SPEC, e.getMessage());
-				return;
-			}
+            } catch (HyscaleException e) {
+                WorkflowLogger.error(ControllerActivity.CANNOT_PROCESS_SERVICE_SPEC, e.getMessage());
+                return;
+            }
 
-			workflowContext.setAppName(appName.trim());
-			workflowContext.setEnvName(CommandUtil.getEnvName(null, appName.trim()));
+            workflowContext.setAppName(appName.trim());
+            workflowContext.setEnvName(CommandUtil.getEnvName(null, appName.trim()));
 
-			if (!workflowContext.isFailed()) {
-				manifestGeneratorComponentInvoker.execute(workflowContext);
-			}
-			WorkflowLogger.footer();
-			CommandUtil.logMetaInfo(SetupConfig.getMountPathOf((String) workflowContext.getAttribute(WorkflowConstants.MANIFESTS_PATH)),
-					ControllerActivity.MANIFESTS_GENERATION_PATH);
-		}
+            if (!workflowContext.isFailed()) {
+                manifestGeneratorComponentInvoker.execute(workflowContext);
+            }
+            WorkflowLogger.footer();
+            CommandUtil.logMetaInfo(SetupConfig.getMountPathOf((String) workflowContext.getAttribute(WorkflowConstants.MANIFESTS_PATH)),
+                    ControllerActivity.MANIFESTS_GENERATION_PATH);
+        }
 
-	}
+    }
 
+    @PreDestroy
+    public void clear() {
+        SetupConfig.clearAbsolutePath();
+    }
 }

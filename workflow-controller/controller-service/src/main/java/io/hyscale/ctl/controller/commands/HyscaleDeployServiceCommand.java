@@ -25,6 +25,8 @@ import io.hyscale.ctl.controller.invoker.ManifestGeneratorComponentInvoker;
 import io.hyscale.ctl.controller.util.CommandUtil;
 import picocli.CommandLine;
 
+import javax.annotation.PreDestroy;
+
 @CommandLine.Command(name = "service", aliases = {"services"},
         description = "Deploys the service to kubernetes cluster")
 @Component
@@ -62,6 +64,7 @@ public class HyscaleDeployServiceCommand implements Runnable {
     @Override
     public void run() {
         for (int i = 0; i < serviceSpecs.length; i++) {
+
             WorkflowContext workflowContext = new WorkflowContext();
             workflowContext.addAttribute(WorkflowConstants.DEPLOY_START_TIME, System.currentTimeMillis());
             String serviceName = null;
@@ -71,6 +74,7 @@ public class HyscaleDeployServiceCommand implements Runnable {
                 workflowContext.setServiceSpec(serviceSpec);
                 serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
                 workflowContext.setServiceName(serviceName);
+                SetupConfig.clearAbsolutePath();
                 SetupConfig.setAbsolutePath(serviceSpecFile.getAbsoluteFile().getParent());
             } catch (HyscaleException e) {
                 WorkflowLogger.error(ControllerActivity.CANNOT_PROCESS_SERVICE_SPEC, e.getMessage());
@@ -103,7 +107,6 @@ public class HyscaleDeployServiceCommand implements Runnable {
                 deployComponentInvoker.execute(workflowContext);
             }
 
-
             logWorkflowInfo(workflowContext);
 
         }
@@ -128,4 +131,9 @@ public class HyscaleDeployServiceCommand implements Runnable {
                 ControllerActivity.SERVICE_URL);
     }
 
+
+    @PreDestroy
+    public void clear() {
+        SetupConfig.clearAbsolutePath();
+    }
 }
