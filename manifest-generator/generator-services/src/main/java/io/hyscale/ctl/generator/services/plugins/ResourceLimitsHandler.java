@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 @Component
@@ -33,10 +34,13 @@ import java.util.regex.Pattern;
 public class ResourceLimitsHandler implements ManifestHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceLimitsHandler.class);
-    private static final String RANGE_REGEX = "(\\d+)-(\\d+)";
+    private static final String RANGE_REGEX = "(\\d+.*(Ki|Mi|Gi|Ti|Pi|Ei|[numkMGTPE]|))-(\\d+.*((Ki|Mi|Gi|Ti|Pi|Ei|[numkMGTPE]|)))";
+    private static final String CPU_REGEX = "(\\d+.*(([.][\\d])[m]|))-(\\d+.*(([.][\\d])[m]|))";
+    private static final Pattern cpuRangePattern = Pattern.compile(CPU_REGEX);
     private static final Pattern rangePattern = Pattern.compile(RANGE_REGEX);
 
     private static final String DEFAULT_MIN_MEMORY = "4Mi";
+    private static final String DEFAULT_MIN_CPU = "1m";
 
 
     private QuantityFormatter formatter;
@@ -54,11 +58,11 @@ public class ResourceLimitsHandler implements ManifestHandler {
         ValueRange cpuRange = null;
         if (StringUtils.isNotBlank(memory)) {
             logger.debug("Preparing memory limits.");
-            memoryRange = getRange(memory);
+            memoryRange = getRange(memory, rangePattern);
         }
         if (StringUtils.isNotBlank(cpu)) {
             logger.debug("Preparing cpu limits.");
-            cpuRange = getRange(cpu);
+            cpuRange = getRange(cpu, cpuRangePattern);
         }
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ?
                 ManifestResource.STATEFUL_SET.getKind() : ManifestResource.DEPLOYMENT.getKind();
@@ -71,28 +75,25 @@ public class ResourceLimitsHandler implements ManifestHandler {
         return manifestSnippetList;
     }
 
-    private boolean validateMinMemory(ValueRange memoryRange) {
-        boolean valid = true;
-        if (memoryRange != null && memoryRange.getMax() != null) {
-            valid = memoryRange.getMax().getNumber().compareTo(Quantity.fromString(DEFAULT_MIN_MEMORY).getNumber()) > 0 ? true : false;
-            if (!valid) {
-                WorkflowLogger.persist(ManifestGeneratorActivity.INSUFFICIENT_MEMORY, memoryRange.getMax().toSuffixedString());
+    public static Predicate<ValueRange> getRangePredicate() {
+        return valueRange -> {
+            if (valueRange.getMin() != null) {
+                int validRange = valueRange.getMin().getNumber().compareTo(valueRange.getMax().getNumber());
+                if (validRange == 1) {
+                    String range = valueRange.getMin().toSuffixedString() + "-" + valueRange.getMax().toSuffixedString();
+                    WorkflowLogger.warn(ManifestGeneratorActivity.INVALID_RANGE, range);
+                    return false;
+                }
             }
-        }
-        return valid;
+            return true;
+        };
     }
 
     private ManifestSnippet getResourceRequirements(ValueRange memoryRange, ValueRange cpuRange, String podSpecOwner) throws JsonProcessingException {
         V1ResourceRequirements resourceRequirements = new V1ResourceRequirements();
-        if (cpuRange != null) {
-            insertResourceElement(resourceRequirements, "cpu", cpuRange.getMin(), false);
-            insertResourceElement(resourceRequirements, "cpu", cpuRange.getMax(), true);
-        }
 
-        if (memoryRange != null && validateMinMemory(memoryRange)) {
-            insertResourceElement(resourceRequirements, "memory", memoryRange.getMin(), false);
-            insertResourceElement(resourceRequirements, "memory", memoryRange.getMax(), true);
-        }
+        validateAndInsert(cpuRange, resourceRequirements, ResourceRequirementType.CPU);
+        validateAndInsert(memoryRange, resourceRequirements, ResourceRequirementType.MEMORY);
 
         ManifestSnippet manifestSnippet = new ManifestSnippet();
         manifestSnippet.setPath("spec.template.spec.containers[0].resources");
@@ -101,10 +102,10 @@ public class ResourceLimitsHandler implements ManifestHandler {
         return manifestSnippet;
     }
 
-    private ValueRange getRange(String value) throws HyscaleException {
+    private ValueRange getRange(String value, Pattern pattern) throws HyscaleException {
         ValueRange range = new ValueRange();
         try {
-            if (rangePattern.matcher(value).matches()) {
+            if (pattern.matcher(value).matches()) {
                 int separatorIndex = value.indexOf("-");
                 range.setMin(Quantity.fromString(value.substring(0, separatorIndex)));
                 range.setMax(Quantity.fromString(value.substring(separatorIndex + 1)));
@@ -118,16 +119,6 @@ public class ResourceLimitsHandler implements ManifestHandler {
         return range;
     }
 
-    private void insertResourceElement(V1ResourceRequirements resourceRequirements, String key, Quantity value, boolean limits) {
-        if (value == null) {
-            return;
-        }
-        if (limits) {
-            resourceRequirements.putLimitsItem(key, value);
-        } else {
-            resourceRequirements.putRequestsItem(key, value);
-        }
-    }
 
     public static class ValueRange {
 
@@ -148,6 +139,81 @@ public class ResourceLimitsHandler implements ManifestHandler {
 
         public void setMax(Quantity max) {
             this.max = max;
+        }
+    }
+
+    private enum ResourceRequirementType {
+        MEMORY("memory") {
+            @Override
+            public Predicate<ValueRange> getValidationPredicate() {
+                return valueRange -> {
+                    boolean valid = true;
+                    if (valueRange != null && valueRange.getMax() != null) {
+                        valid = valueRange.getMax().getNumber().compareTo(Quantity.fromString(DEFAULT_MIN_MEMORY).getNumber()) > 0 ? true : false;
+                    }
+                    return valid;
+                };
+            }
+
+            @Override
+            public ManifestGeneratorActivity getActivityMessageForValidation() {
+                return ManifestGeneratorActivity.INSUFFICIENT_MEMORY;
+            }
+
+        },
+        CPU("cpu") {
+            @Override
+            public Predicate<ValueRange> getValidationPredicate() {
+                return valueRange -> {
+                    boolean valid = true;
+                    if (valueRange != null && valueRange.getMax() != null) {
+                        valid = valueRange.getMax().getNumber().compareTo(Quantity.fromString(DEFAULT_MIN_CPU).getNumber()) > 0 ? true : false;
+                    }
+                    return valid;
+                };
+            }
+
+            @Override
+            public ManifestGeneratorActivity getActivityMessageForValidation() {
+                return ManifestGeneratorActivity.INSUFFICIENT_CPU;
+            }
+
+        };
+
+        private String key;
+
+        ResourceRequirementType(String str) {
+            this.key = str;
+        }
+
+        public abstract Predicate<ValueRange> getValidationPredicate();
+
+        public abstract ManifestGeneratorActivity getActivityMessageForValidation();
+
+        public String getKey() {
+            return key;
+        }
+    }
+
+    public void validateAndInsert(ValueRange valueRange, V1ResourceRequirements resourceRequirements, ResourceRequirementType requirementType) {
+        if (valueRange != null && getRangePredicate().test(valueRange)) {
+            if (requirementType.getValidationPredicate().test(valueRange)) {
+                addResourceAttribute(resourceRequirements, requirementType.getKey(), valueRange.getMin(), false);
+                addResourceAttribute(resourceRequirements, requirementType.getKey(), valueRange.getMax(), true);
+            } else {
+                WorkflowLogger.warn(requirementType.getActivityMessageForValidation(), valueRange.getMax().toSuffixedString());
+            }
+        }
+    }
+
+    private void addResourceAttribute(V1ResourceRequirements resourceRequirements, String key, Quantity value, boolean limits) {
+        if (value == null) {
+            return;
+        }
+        if (limits) {
+            resourceRequirements.putLimitsItem(key, value);
+        } else {
+            resourceRequirements.putRequestsItem(key, value);
         }
     }
 }
