@@ -22,6 +22,8 @@ public class ToolConstants {
 
     public static final String HYSCALE_BUILD_TIME = "hyscale.build.time";
 
+    public static final String HYSCALE_PREVIEW = "Preview";
+
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
 }
