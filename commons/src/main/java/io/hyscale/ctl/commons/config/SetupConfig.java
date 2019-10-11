@@ -115,11 +115,11 @@ public class SetupConfig {
     }
 
     public static String getMountPathOfKubeConf(String dir) {
-        return getMountPathOf(dir, KUBECONF_PATH_DIR);
+        return StringUtils.isNotBlank(KUBECONF_PATH_DIR) ? KUBECONF_PATH_DIR : dir;
     }
 
     public static String getMountOfDockerConf(String dir) {
-        return getMountPathOf(dir, DOCKERCONF_PATH_DIR);
+        return StringUtils.isNotBlank(DOCKERCONF_PATH_DIR) ? DOCKERCONF_PATH_DIR : dir;
     }
 
     private static String getMountPathOf(String dir, String source) {
