@@ -63,16 +63,16 @@ public class DockerfileContentGenImpl implements DockerfileContentGenerator {
 		dockerfileContext.put(DockerfileGenConstants.SCRIPT_DIR_FIELD, dockerfileGenConfig.getScriptDestinationDir());
 
 		boolean configScriptAvailable = dockerScriptHelper.scriptAvailable(buildSpec.getConfigCommands(),
-				buildSpec.getConfigScript());
+				buildSpec.getConfigCommandsScript());
 		if (configScriptAvailable) {
-			String configScript = dockerScriptHelper.getScriptFile(buildSpec.getConfigScript(), CommandType.CONFIGURE);
+			String configScript = dockerScriptHelper.getScriptFile(buildSpec.getConfigCommandsScript(), CommandType.CONFIGURE);
 			dockerfileContext.put(DockerfileGenConstants.CONFIGURE_SCRIPT_FILE_FIELD, configScript);
 
 		}
 		boolean runScriptAvailable = dockerScriptHelper.scriptAvailable(buildSpec.getRunCommands(),
-				buildSpec.getRunScript());
+				buildSpec.getRunCommandsScript());
 		if (runScriptAvailable) {
-			String runScript = dockerScriptHelper.getScriptFile(buildSpec.getRunScript(), CommandType.RUN);
+			String runScript = dockerScriptHelper.getScriptFile(buildSpec.getRunCommandsScript(), CommandType.RUN);
 			dockerfileContext.put(DockerfileGenConstants.RUN_SCRIPT_FILE_FIELD, runScript);
 			dockerfileContext.put(DockerfileGenConstants.SHELL_START_FIELD, dockerfileGenConfig.getShellStartScript());
 		}

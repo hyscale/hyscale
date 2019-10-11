@@ -109,7 +109,7 @@ public class DockerfileGenPredicates {
 			if (buildSpec == null) {
 				return false;
 			}
-			return !StringUtils.isBlank(buildSpec.getConfigScript());
+			return !StringUtils.isBlank(buildSpec.getConfigCommandsScript());
 		};
 	}
 
@@ -118,7 +118,7 @@ public class DockerfileGenPredicates {
 			if (buildSpec == null) {
 				return false;
 			}
-			return !StringUtils.isBlank(buildSpec.getRunScript());
+			return !StringUtils.isBlank(buildSpec.getRunCommandsScript());
 		};
 	}
 }

@@ -22,10 +22,10 @@ public class HyscaleSpecFields {
 	public static final String provider = "provider";
 	public static final String source = "source";
 	public static final String destination = "destination";
-	public static final String configScript = "configScript";
 	public static final String configCommands = "configCommands";
-	public static final String runScript = "runScript";
+	public static final String configCommandsScript = "configCommandsScript";
 	public static final String runCommands = "runCommands";
+	public static final String runCommandsScript = "runCommandsScript";
 	public static final String startCommand = "startCommand";
 	public static final String replicas = "replicas";
 	public static final String memory = "memory";
@@ -48,8 +48,6 @@ public class HyscaleSpecFields {
 	public static final String tagPolicy = "tagPolicy";
 	public static final String context = "context";
 	public static final String stack = "stack";
-	public static final String configCommandsScript = "configCommandsScript";
-	public static final String runCommandsScript = "runCommandsScript";
 	public static final String custom = "custom";
 	public static final String jfrog = "jfrog";
 	public static final String jenkins = "jenkins";

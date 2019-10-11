@@ -6,9 +6,9 @@ public class BuildSpec {
 
 	private String stackImage;
 	private List<Artifact> artifacts;
-	private String configScript;
+	private String configCommandsScript;
 	private String configCommands;
-	private String runScript;
+	private String runCommandsScript;
 	private String runCommands;
 
 	public String getStackImage() {
@@ -27,14 +27,6 @@ public class BuildSpec {
 		this.artifacts = artifacts;
 	}
 
-	public String getConfigScript() {
-		return configScript;
-	}
-
-	public void setConfigScript(String configScript) {
-		this.configScript = configScript;
-	}
-
 	public String getConfigCommands() {
 		return configCommands;
 	}
@@ -43,20 +35,28 @@ public class BuildSpec {
 		this.configCommands = configCommands;
 	}
 
-	public String getRunScript() {
-		return runScript;
-	}
-
-	public void setRunScript(String runScript) {
-		this.runScript = runScript;
-	}
-
 	public String getRunCommands() {
 		return runCommands;
 	}
 
 	public void setRunCommands(String runCommands) {
 		this.runCommands = runCommands;
+	}
+
+	public String getConfigCommandsScript() {
+		return configCommandsScript;
+	}
+
+	public void setConfigCommandsScript(String configCommandsScript) {
+		this.configCommandsScript = configCommandsScript;
+	}
+
+	public String getRunCommandsScript() {
+		return runCommandsScript;
+	}
+
+	public void setRunCommandsScript(String runCommandsScript) {
+		this.runCommandsScript = runCommandsScript;
 	}
 
 }
