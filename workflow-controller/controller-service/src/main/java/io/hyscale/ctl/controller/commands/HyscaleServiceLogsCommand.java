@@ -1,5 +1,8 @@
 package io.hyscale.ctl.controller.commands;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +12,7 @@ import io.hyscale.ctl.commons.logger.WorkflowLogger;
 import io.hyscale.ctl.controller.activity.ControllerActivity;
 import io.hyscale.ctl.controller.constants.WorkflowConstants;
 import io.hyscale.ctl.controller.model.WorkflowContext;
+import io.hyscale.ctl.controller.util.CommandUtil;
 import io.hyscale.ctl.controller.util.LoggerUtility;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -34,6 +38,8 @@ public class HyscaleServiceLogsCommand implements Runnable {
 	@Option(names = { "-t", "--tail" }, required = false, description = "Tail output of the service logs")
 	private boolean tail = false;
 
+	@Min(value = 1, message = "Logs Lines must not be less than 1")
+	@Max(value = 500, message = "Logs Lines must not be more than 500")
 	@Option(names = { "-l", "--line" }, required = false, description = "Number of lines of logs")
 	private Integer line = 100;
 
@@ -42,7 +48,10 @@ public class HyscaleServiceLogsCommand implements Runnable {
 
 	@Override
 	public void run() {
-
+		if (!CommandUtil.isInputValid(this)) {
+			System.exit(1);
+		}
+		
 		WorkflowContext workflowContext = new WorkflowContext();
 		WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
 		workflowContext.setAppName(appName.trim());
@@ -54,4 +63,5 @@ public class HyscaleServiceLogsCommand implements Runnable {
 		loggerUtility.getLogs(workflowContext);
 
 	}
+
 }
