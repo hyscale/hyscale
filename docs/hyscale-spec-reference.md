@@ -79,7 +79,7 @@ image:
 startCommand: <start-command with args>          # command+args in k8s yaml, overrides ENTRYPOINT+CMD
 replicas: <replica-count>                        # default is 1
 memory: [<min-memory>-]<max-memory>              # Supported units are
-	 					 # 1. Ki|Mi|Gi|Ti|Pi|Ei as power of two equivalents
+                                                 # 1. Ki|Mi|Gi|Ti|Pi|Ei as power of two equivalents
                                                  # 2. n|u|m|k|M|G|T|P|E as plain integers
 cpu: [<min-cpu>-]<max-cpu>			 # Supported units are `m` or `none`
 
@@ -94,9 +94,9 @@ ports:
 volumes:                        
     - name: <volume-name1>
       path: <volume-mount-path>
-     [size: <size>]             		 # default size is 1Gi 
-     						 # Supported units are
-	 					 # 1. Ki|Mi|Gi|Ti|Pi|Ei as power of two equivalents
+     [size: <size>]             		 # default size is 1G
+                                                 # Supported units are 
+                                                 # 1. Ki|Mi|Gi|Ti|Pi|Ei as power of two equivalents
                                                  # 2. n|u|m|k|M|G|T|P|E as plain integers
      storageClass: <storageClass>
 
@@ -110,7 +110,7 @@ props:
 secrets:		 	# Secrets accept both list of keys & key value pairs 
     - <secret1>			# Incase of list, secret should be created prior as <appname>-<servicename>
     - <secret2>			# - <key1> : <value1>
-    .   			# - <key2> : <value2>
+                                # - <key2> : <value2>
    - <secretN>			# - <keyN> : <valueN>
 
 secretsVolumePath: <volume-path-of-secrets>
