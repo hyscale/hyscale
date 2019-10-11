@@ -101,7 +101,6 @@ Generate kubernetes manifests for the specified services.
 
 Options:
   -f, --file string          service spec file `<serviceName>.hspec`. Can be repeated for multiple service specifications.
-  -n --namespace string       name of namespace `<nameSpace>`
   -a --application string     name of application `<applicationName>`
 ```
 #### Description
