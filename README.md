@@ -1,7 +1,7 @@
 # HyScale
 ### The k8s Deployment Tool 
 
-HyScale is an app deployment tool for deploying apps to Kubernetes quickly without having to learn k8s concepts or write & maintain k8s manifests. It provides a convenient CLI for deploying, viewing status, logs and undeploying. It includes a declarative service spec parser for k8s abstraction and the automatic generation of k8s manifests & docker files.
+HyScale is an app deployment tool for deploying apps to Kubernetes quickly without having to deal with the complexities of k8s or write & maintain k8s manifests. It provides a convenient CLI for deploying, viewing status, logs and undeploying. It includes a declarative service spec parser for k8s abstraction and the automatic generation of k8s manifests & docker files.
 
 See documentation [here](docs/developer-guide.md).
 
@@ -17,10 +17,13 @@ In order to deploy your service to k8s, you must have the following configuratio
 2. kube config file with the cluster token placed at $HOME/.kube/config
 3. Image registry credentials at $HOME/.docker/config.json (make sure `config.json` has the latest auth creds by logging into the image registry using `docker login` prior to deployment)
 
+If you do not have access to a kubernetes cluster and wish to deploy to your local machine, you could try setting up [minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) or [kind](https://github.com/kubernetes-sigs/kind).
+
+
 ## Deploying to k8s
 ### Preparing your first service spec
 
-Here is a small service spec that works for a basic java app. For all possible options, see the [spec reference](docs/hyscale-spec-reference.md).
+Here is a basic service spec for deploying tomcat (without any application). For all possible options, see the [spec reference](docs/hyscale-spec-reference.md).
 
 ```yaml
 name: myservice
@@ -46,14 +49,14 @@ ports:
 ### Deploy the service
 
 To deploy, invoke the hyscale deploy command:
-hyscale deploy service -f `<my-service.hspec.yaml>` -n `<my-namespace>` -a `<my-app-name>`
+$ hyscale deploy service -f `<myservice.hspec.yaml>` -n `<my-namespace>` -a `<my-app-name>`
 
 To view the status of your deployment:
-hyscale get service status -s `<my-service>` -n `<my-namespace>` -a `<my-app-name>`
+$ hyscale get service status -s `<myservice>` -n `<my-namespace>` -a `<my-app-name>`
 
 To view logs:
-hyscale get service logs -s `<my-service>` -n `<my-namespace>` -a `<my-app-name>`
+$ hyscale get service logs -s `<myservice>` -n `<my-namespace>` -a `<my-app-name>`
 
 For all possible commands, see the [command reference](docs/hyscale-commands-reference.md).
 
-These commands have been tested on CentOS, Ubuntu and Debian Linux
+These commands have been verified on CentOS, Ubuntu and Debian Linux
