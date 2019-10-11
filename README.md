@@ -49,13 +49,16 @@ ports:
 ### Deploy the service
 
 To deploy, invoke the hyscale deploy command:
-$ hyscale deploy service -f `<myservice.hspec.yaml>` -n `<my-namespace>` -a `<my-app-name>`
+    
+    $ hyscale deploy service -f `<myservice.hspec.yaml>` -n `<my-namespace>` -a `<my-app-name>`
 
 To view the status of your deployment:
-$ hyscale get service status -s `<myservice>` -n `<my-namespace>` -a `<my-app-name>`
+
+    $ hyscale get service status -s `<myservice>` -n `<my-namespace>` -a `<my-app-name>`
 
 To view logs:
-$ hyscale get service logs -s `<myservice>` -n `<my-namespace>` -a `<my-app-name>`
+
+    $ hyscale get service logs -s `<myservice>` -n `<my-namespace>` -a `<my-app-name>`
 
 For all possible commands, see the [command reference](docs/hyscale-commands-reference.md).
 
