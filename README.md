@@ -5,20 +5,20 @@ HyScale is an app deployment tool for deploying apps to Kubernetes quickly witho
 
 See documentation [here](docs/developer-guide.md).
 
-## Installation
-
-Open your terminal and enter the following:
-
-    $  curl -sSL http://get.hyscale.io | bash
-
 ## Prerequisites
 In order to deploy your service to k8s, you must have the following configurations and installations in place on your machine from which you wish to deploy your application.
 1. Docker 18.09.x or above
 2. kube config file with the cluster token placed at $HOME/.kube/config
 3. Image registry credentials at $HOME/.docker/config.json (make sure `config.json` has the latest auth creds by logging into the image registry using `docker login` prior to deployment)
+4. `docker.sock` to be present at /var/run/docker.sock (Default location)
 
 If you do not have access to a kubernetes cluster and wish to deploy to your local machine, you could try setting up [minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) or [kind](https://github.com/kubernetes-sigs/kind).
 
+## Installation
+
+Open your terminal and enter the following:
+
+    $  curl -sSL http://get.hyscale.io | bash
 
 ## Deploying to k8s
 ### Preparing your first service spec
