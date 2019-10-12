@@ -10,7 +10,7 @@ In order to deploy your service to k8s, you must have the following configuratio
 1. Docker 18.09.x or above
 2. kube config file with the cluster token placed at $HOME/.kube/config
 3. Image registry credentials at $HOME/.docker/config.json (make sure `config.json` has the latest auth creds by logging into the image registry using `docker login` prior to deployment)
-4. `docker.sock` to be present at /var/run/docker.sock (Default location)
+4. Your Linux user should be part of the docker group and `docker.sock` to be present at /var/run/docker.sock (Default location) 
 
 If you do not have access to a kubernetes cluster and wish to deploy to your local machine, you could try setting up [minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) or [kind](https://github.com/kubernetes-sigs/kind).
 
