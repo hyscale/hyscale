@@ -117,7 +117,7 @@ secretsVolumePath: <volume-path-of-secrets>
 
 ```
 
-Here is the [Service Spec Schema](../json-schemas/README.md)
+Here is the [Service Spec Schema](../schema/service-spec.json)
 
 ## Example
 
