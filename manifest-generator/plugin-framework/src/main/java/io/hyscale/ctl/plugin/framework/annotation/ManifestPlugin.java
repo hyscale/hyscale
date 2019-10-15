@@ -1,4 +1,4 @@
-package io.hyscale.ctl.annotation;
+package io.hyscale.ctl.plugin.framework.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

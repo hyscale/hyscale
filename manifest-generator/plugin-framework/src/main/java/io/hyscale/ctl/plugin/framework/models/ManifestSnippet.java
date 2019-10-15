@@ -1,4 +1,4 @@
-package io.hyscale.ctl.plugin;
+package io.hyscale.ctl.plugin.framework.models;
 
 import javax.validation.constraints.NotNull;
 

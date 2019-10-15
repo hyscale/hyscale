@@ -3,8 +3,8 @@ package io.hyscale.ctl.generator.services.generator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.hyscale.ctl.generator.services.model.ManifestResource;
 import io.hyscale.ctl.generator.services.model.MetaDataContext;
-import io.hyscale.ctl.plugin.ManifestSnippet;
-import io.hyscale.ctl.util.JsonSnippetConvertor;
+import io.hyscale.ctl.plugin.framework.models.ManifestSnippet;
+import io.hyscale.ctl.plugin.framework.util.JsonSnippetConvertor;
 import io.kubernetes.client.models.V1ObjectMeta;
 
 public class MetadatManifestSnippetGenerator {

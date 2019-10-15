@@ -1,3 +1,5 @@
+import io.hyscale.ctl.plugin.framework.handler.ManifestHandler;
+
 module manifestGenerator {
 	exports io.hyscale.ctl.generator.services.config;
 	exports io.hyscale.ctl.generator.services.constants;
@@ -12,7 +14,7 @@ module manifestGenerator {
 	exports io.hyscale.ctl.generator.services.provider;
 	exports io.hyscale.ctl.generator.services.utils;
 
-	uses io.hyscale.ctl.plugin.ManifestHandler;
+	uses ManifestHandler;
 
 	requires slf4j.api;
 	requires com.github.mustachejava;

@@ -7,7 +7,7 @@ import io.hyscale.ctl.commons.utils.NormalizationUtil;
 import io.hyscale.ctl.generator.services.config.ManifestConfig;
 import io.hyscale.ctl.generator.services.constants.ManifestGenConstants;
 import io.hyscale.ctl.generator.services.exception.ManifestErrorCodes;
-import io.hyscale.ctl.models.ManifestMeta;
+import io.hyscale.ctl.plugin.framework.models.ManifestMeta;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

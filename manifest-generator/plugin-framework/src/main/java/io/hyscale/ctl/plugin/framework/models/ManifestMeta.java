@@ -1,6 +1,5 @@
-package io.hyscale.ctl.models;
+package io.hyscale.ctl.plugin.framework.models;
 
-import io.hyscale.ctl.commons.models.ConfigProps;
 import org.apache.commons.lang3.StringUtils;
 
 public class ManifestMeta {

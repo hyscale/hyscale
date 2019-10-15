@@ -1,19 +1,19 @@
 package io.hyscale.ctl.generator.services.plugins;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.hyscale.ctl.annotation.ManifestPlugin;
+import io.hyscale.ctl.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.ctl.commons.exception.HyscaleException;
 import io.hyscale.ctl.commons.models.ManifestContext;
 import io.hyscale.ctl.commons.utils.HyscaleFilesUtil;
 import io.hyscale.ctl.generator.services.model.ManifestResource;
 import io.hyscale.ctl.generator.services.model.MetaDataContext;
 import io.hyscale.ctl.generator.services.provider.SecretsProvider;
-import io.hyscale.ctl.plugin.ManifestHandler;
-import io.hyscale.ctl.plugin.ManifestSnippet;
+import io.hyscale.ctl.plugin.framework.handler.ManifestHandler;
+import io.hyscale.ctl.plugin.framework.models.ManifestSnippet;
 import io.hyscale.ctl.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.ctl.servicespec.commons.model.service.Secrets;
 import io.hyscale.ctl.servicespec.commons.model.service.ServiceSpec;
-import io.hyscale.ctl.util.JsonSnippetConvertor;
+import io.hyscale.ctl.plugin.framework.util.JsonSnippetConvertor;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

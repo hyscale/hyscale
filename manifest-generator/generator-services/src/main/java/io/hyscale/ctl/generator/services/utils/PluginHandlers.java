@@ -2,7 +2,7 @@ package io.hyscale.ctl.generator.services.utils;
 
 import io.hyscale.ctl.commons.exception.HyscaleException;
 import io.hyscale.ctl.generator.services.exception.ManifestErrorCodes;
-import io.hyscale.ctl.plugin.ManifestHandler;
+import io.hyscale.ctl.plugin.framework.handler.ManifestHandler;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

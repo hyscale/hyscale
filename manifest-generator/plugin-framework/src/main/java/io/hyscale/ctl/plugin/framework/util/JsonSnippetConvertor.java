@@ -1,4 +1,4 @@
-package io.hyscale.ctl.util;
+package io.hyscale.ctl.plugin.framework.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
