@@ -74,7 +74,7 @@ public class ConfigMapDataHandler implements ManifestHandler {
         StringBuilder sb = new StringBuilder();
         props.getProps().entrySet().stream().forEach(each -> {
             String value = each.getValue();
-            if (PropType.FILE.getPatterMatcher().matcher(value).matches()) {
+            if (PropType.FILE.getPatternMatcher().matcher(value).matches()) {
                 String fileContent = null;
                 try (InputStream is = new FileInputStream(SetupConfig.getAbsolutePath(PropType.FILE.extractPropValue(value)))) {
                     fileContent = IOUtils.toString(is, ToolConstants.CHARACTER_ENCODING);
@@ -83,7 +83,7 @@ public class ConfigMapDataHandler implements ManifestHandler {
                 } catch (IOException e) {
                     logger.error("Error while reading file content of config prop {}", each.getKey(), e);
                 }
-            } else if (PropType.ENDPOINT.getPatterMatcher().matcher(value).matches()) {
+            } else if (PropType.ENDPOINT.getPatternMatcher().matcher(value).matches()) {
                 String propValue = PropType.ENDPOINT.extractPropValue(each.getValue());
                 configProps.put(each.getKey(), propValue);
                 logger.debug(" Adding endpoint {} to config props." , value);

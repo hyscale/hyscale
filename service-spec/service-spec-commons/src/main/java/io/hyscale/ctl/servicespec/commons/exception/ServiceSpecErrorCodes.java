@@ -2,6 +2,10 @@ package io.hyscale.ctl.servicespec.commons.exception;
 
 import io.hyscale.ctl.commons.exception.HyscaleErrorCode;
 
+/**
+ * Error codes for Service Spec related operations
+ *
+ */
 public enum ServiceSpecErrorCodes implements HyscaleErrorCode {
 
     SERVICE_SPEC_PARSE_ERROR("Failed to parse service spec"),

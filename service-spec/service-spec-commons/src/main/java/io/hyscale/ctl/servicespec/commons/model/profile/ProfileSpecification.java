@@ -3,6 +3,10 @@ package io.hyscale.ctl.servicespec.commons.model.profile;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Service profile model
+ *
+ */
 public class ProfileSpecification {
 
 	private String environment;

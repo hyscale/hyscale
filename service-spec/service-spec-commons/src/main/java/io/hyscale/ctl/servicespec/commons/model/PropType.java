@@ -2,17 +2,20 @@ package io.hyscale.ctl.servicespec.commons.model;
 
 import java.util.regex.Pattern;
 
+/**
+ * Handle different prop types based on pattern
+ */
 public enum PropType {
 
 	FILE("file") {
 		@Override
-		public Pattern getPatterMatcher() {
+		public Pattern getPatternMatcher() {
 			return Pattern.compile("((file)\\(.*\\))");
 		}
 
 		@Override
 		public String extractPropValue(String value) {
-			if (getPatterMatcher().matcher(value).matches()) {
+			if (getPatternMatcher().matcher(value).matches()) {
 				return value.substring(value.indexOf("(") + 1, value.length() - 1);
 			}
 			return value;
@@ -20,13 +23,13 @@ public enum PropType {
 	},
 	ENDPOINT("endpoint") {
 		@Override
-		public Pattern getPatterMatcher() {
+		public Pattern getPatternMatcher() {
 			return Pattern.compile("((endpoint)\\(.*\\))");
 		}
 
 		@Override
 		public String extractPropValue(String value) {
-			if (getPatterMatcher().matcher(value).matches()) {
+			if (getPatternMatcher().matcher(value).matches()) {
 				return value.substring(value.indexOf("(") + 1, value.length() - 1);
 			}
 			return value;
@@ -34,7 +37,7 @@ public enum PropType {
 	},
 	STRING("string") {
 		@Override
-		public Pattern getPatterMatcher() {
+		public Pattern getPatternMatcher() {
 			return Pattern.compile("^(?!((file|endpoint)\\(.*\\))).*");
 		}
 
@@ -58,7 +61,7 @@ public enum PropType {
 		return propType;
 	}
 
-	public abstract Pattern getPatterMatcher();
+	public abstract Pattern getPatternMatcher();
 
 	public abstract String extractPropValue(String value);
 }

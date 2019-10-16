@@ -15,6 +15,11 @@ import io.hyscale.ctl.servicespec.model.Type;
 import io.hyscale.ctl.servicespec.util.ServiceSpecBuilderUtil;
 import io.hyscale.ctl.servicespec.util.StrategicPatch;
 
+/**
+ * Builder to create effective service spec by merging service spec and service profile
+ * @author tushart
+ *
+ */
 public class EffectiveServiceSpecBuilder {
 
 	private Type type = Type.YAML;

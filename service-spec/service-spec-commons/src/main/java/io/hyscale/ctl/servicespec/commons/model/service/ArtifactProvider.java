@@ -2,6 +2,10 @@ package io.hyscale.ctl.servicespec.commons.model.service;
 
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * Defines artifact source
+ *
+ */
 public enum ArtifactProvider {
 
 	HTTP("http"), SSH("ssh"), LOCAL("local");

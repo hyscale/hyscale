@@ -11,6 +11,10 @@ import io.hyscale.ctl.servicespec.json.parser.JsonTreeParser;
 
 import java.io.IOException;
 
+/**
+ * Defines {@link ServiceSpec} as tree of JsonNode
+ *
+ */
 public final class ServiceSpec {
 
     private JsonNode root;
@@ -29,31 +33,34 @@ public final class ServiceSpec {
     }
 
     /**
+     * Get JsonNode for field defined by path from the root
      * @param path
-     * @return
+     * @return JsonNode of field at path
      */
     public JsonNode get(String path) {
         return JsonTreeParser.get(root, path);
     }
 
     /**
+     * Get Object for field defined by path from the root
+     * @param <T> class object to be returned
      * @param path
      * @param klass
-     * @param <T>
-     * @return
+     * @return object of class T
+     * @throws HyscaleException
      */
-
     public <T> T get(String path, Class<T> klass) throws HyscaleException {
         return JsonTreeParser.get(root, path, klass);
     }
 
     /**
-     * @param path
-     * @param typeReference
+     * Get Object for field defined by path from the root
      * @param <T>
-     * @return
+     * @param path
+     * @param typeReference - defines class object (T) to be returned
+     * @return object of class T
+     * @throws HyscaleException
      */
-
     public <T> T get(String path, TypeReference typeReference) throws HyscaleException {
         return JsonTreeParser.get(root, path, typeReference);
     }

@@ -1,7 +1,7 @@
 package io.hyscale.ctl.servicespec.commons.fields;
 
 /**
- * Defines fields for hyscale spec
+ * Defines fields for hyscale service spec
  */
 public class HyscaleSpecFields {
 
@@ -90,7 +90,8 @@ public class HyscaleSpecFields {
 	public static String getArrayAllValues() {
 		return arrayLeftBrace + WILDCARD + arrayRightBrace;
 	}
-
+	
+	
 	public static String getPath(String... fields) {
 		if (fields == null) {
 			return null;

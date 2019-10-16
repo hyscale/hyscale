@@ -1,5 +1,12 @@
 package io.hyscale.ctl.servicespec.model;
 
+/**
+ * Defines metadata for a field
+ * like key used to distinguish objects
+ * 
+ * @author tushart
+ *
+ */
 public class FieldMetaData {
 
 	// replace/ merge strategy can be added

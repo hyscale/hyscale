@@ -4,6 +4,11 @@ import java.lang.reflect.Field;
 
 import io.hyscale.ctl.servicespec.annotations.StrategicMergePatch;
 
+/**
+ * Get field metadata details based on annotation
+ * @author tushart
+ *
+ */
 public class AnnotationFieldDataProvider implements FieldMetaDataProvider {
 
 	private Class klazz;
