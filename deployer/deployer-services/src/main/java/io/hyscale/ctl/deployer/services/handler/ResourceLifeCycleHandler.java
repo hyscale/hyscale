@@ -32,14 +32,14 @@ public interface ResourceLifeCycleHandler<T> {
     public T get(ApiClient apiClient, String name, String namespace) throws HyscaleException;
 
     public List<T> getBySelector(ApiClient apiClient, String selector, boolean label, String namespace)
-	    throws HyscaleException;
+            throws HyscaleException;
 
     public boolean patch(ApiClient apiClient, String name, String namespace, T body) throws HyscaleException;
 
     public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException;
 
     public boolean deleteBySelector(ApiClient apiClient, String selector, boolean label, String namespace, boolean wait)
-	    throws HyscaleException;
+            throws HyscaleException;
 
     public String getKind();
 
@@ -48,47 +48,47 @@ public interface ResourceLifeCycleHandler<T> {
     public boolean cleanUp();
 
     default V1DeleteOptions getDeleteOptions() {
-	V1DeleteOptions deleteOptions = new V1DeleteOptions();
-	deleteOptions.setKind("DeleteOptions");
-	deleteOptions.setApiVersion("v1");
-	deleteOptions.setPropagationPolicy("Foreground");
-	return deleteOptions;
+        V1DeleteOptions deleteOptions = new V1DeleteOptions();
+        deleteOptions.setKind("DeleteOptions");
+        deleteOptions.setApiVersion("v1");
+        deleteOptions.setPropagationPolicy("Foreground");
+        return deleteOptions;
     }
 
     // TODO add events for every resource
     // TODO Changes to support name, field and label selectors
     default void waitForResourceDeletion(ApiClient apiClient, List<String> pendingResources, String namespace,
-	    ActivityContext activityContext) throws HyscaleException {
-	if (pendingResources == null) {
-	    return;
-	}
-	long startTime = System.currentTimeMillis();
-	while (!pendingResources.isEmpty()
-		&& (System.currentTimeMillis() - startTime < MAX_WAIT_TIME_IN_MILLISECONDS)) {
-	    Iterator<String> deletePendingResourceIterator = pendingResources.iterator();
-	    WorkflowLogger.continueActivity(activityContext);
-	    while (deletePendingResourceIterator.hasNext()) {
-		String pendingResource = deletePendingResourceIterator.next();
-		try {
-		    get(apiClient, pendingResource, namespace);
-		} catch (HyscaleException e) {
-		    if (e.getHyscaleErrorCode().getErrorMessage() == DeployerErrorCodes.RESOURCE_NOT_FOUND
-			    .getErrorMessage()) {
-			deletePendingResourceIterator.remove();
-		    }
-		}
-	    }
-	    ThreadPoolUtil.sleepSilently(DELETE_SLEEP_INTERVAL_IN_MILLIS);
-	}
-	// Fail case
-	if (!pendingResources.isEmpty()) {
-	    throw new HyscaleException(DeployerErrorCodes.FAILED_TO_DELETE_RESOURCE, pendingResources.toString());
-	}
+                                         ActivityContext activityContext) throws HyscaleException {
+        if (pendingResources == null) {
+            return;
+        }
+        long startTime = System.currentTimeMillis();
+        while (!pendingResources.isEmpty()
+                && (System.currentTimeMillis() - startTime < MAX_WAIT_TIME_IN_MILLISECONDS)) {
+            Iterator<String> deletePendingResourceIterator = pendingResources.iterator();
+            WorkflowLogger.continueActivity(activityContext);
+            while (deletePendingResourceIterator.hasNext()) {
+                String pendingResource = deletePendingResourceIterator.next();
+                try {
+                    get(apiClient, pendingResource, namespace);
+                } catch (HyscaleException e) {
+                    if (e.getHyscaleErrorCode().getErrorMessage() == DeployerErrorCodes.RESOURCE_NOT_FOUND
+                            .getErrorMessage()) {
+                        deletePendingResourceIterator.remove();
+                    }
+                }
+            }
+            ThreadPoolUtil.sleepSilently(DELETE_SLEEP_INTERVAL_IN_MILLIS);
+        }
+        // Fail case
+        if (!pendingResources.isEmpty()) {
+            throw new HyscaleException(DeployerErrorCodes.FAILED_TO_DELETE_RESOURCE, pendingResources.toString());
+        }
 
     }
 
     default ResourceStatus status(T liveObject) {
-	return ResourceStatus.STABLE;
+        return ResourceStatus.STABLE;
     }
 
 }

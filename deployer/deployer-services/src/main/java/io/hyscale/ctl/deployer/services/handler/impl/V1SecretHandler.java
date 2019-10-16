@@ -37,6 +37,10 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 
 	@Override
 	public V1Secret create(ApiClient apiClient, V1Secret resource, String namespace) throws HyscaleException {
+		if (resource == null) {
+			LOGGER.debug("Cannot create null secret");
+			return resource;
+		}
 		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_SECRETS);
 		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
 		String name = resource.getMetadata().getName();
@@ -58,6 +62,10 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 
 	@Override
 	public boolean update(ApiClient apiClient, V1Secret resource, String namespace) throws HyscaleException {
+		if (resource == null) {
+			LOGGER.debug("Cannot update null secret");
+			return false;
+		}
 		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
 		String name = resource.getMetadata().getName();
 		V1Secret existingSecret = null;
@@ -121,6 +129,10 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 
 	@Override
 	public boolean patch(ApiClient apiClient, String name, String namespace, V1Secret target) throws HyscaleException {
+		if (target == null) {
+			LOGGER.debug("Cannot patch null Secret");
+			return false;
+		}
 		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
 		target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
 				gson.toJson(target));

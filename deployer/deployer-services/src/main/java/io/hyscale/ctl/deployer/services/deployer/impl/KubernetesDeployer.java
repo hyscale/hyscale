@@ -46,9 +46,7 @@ import io.hyscale.ctl.deployer.services.util.DeploymentStatusUtil;
 import io.hyscale.ctl.deployer.services.util.K8sResourceDispatcher;
 import io.hyscale.ctl.deployer.services.util.KubernetesResourceUtil;
 import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1Pod;
-import io.kubernetes.client.util.Yaml;
 
 @Component
 public class KubernetesDeployer implements Deployer {

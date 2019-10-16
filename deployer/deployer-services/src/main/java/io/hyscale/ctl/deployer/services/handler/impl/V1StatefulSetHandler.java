@@ -50,6 +50,10 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 	@Override
 	public V1beta2StatefulSet create(ApiClient apiClient, V1beta2StatefulSet resource, String namespace)
 			throws HyscaleException {
+		if (resource == null) {
+			LOGGER.debug("Cannot create null statefulset");
+			return resource;
+		}
 		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_STATEFULSET);
 		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
 		String name = resource.getMetadata().getName();
@@ -72,6 +76,10 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 
 	@Override
 	public boolean update(ApiClient apiClient, V1beta2StatefulSet resource, String namespace) throws HyscaleException {
+		if (resource == null) {
+			LOGGER.debug("Cannot update null statefulset");
+			return false;
+		}
 		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
 		String name = resource.getMetadata().getName();
 		V1beta2StatefulSet existingStatefulSet = null;
@@ -139,6 +147,10 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 	@Override
 	public boolean patch(ApiClient apiClient, String name, String namespace, V1beta2StatefulSet target)
 			throws HyscaleException {
+		if (target == null) {
+			LOGGER.debug("Cannot patch null StatefulSet");
+			return false;
+		}
 		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
 		target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
 				gson.toJson(target));

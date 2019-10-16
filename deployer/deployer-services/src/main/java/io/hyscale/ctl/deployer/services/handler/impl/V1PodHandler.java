@@ -33,6 +33,7 @@ import io.kubernetes.client.models.V1ContainerStatus;
 import io.kubernetes.client.models.V1DeleteOptions;
 import io.kubernetes.client.models.V1Pod;
 import io.kubernetes.client.models.V1PodList;
+import org.springframework.lang.NonNull;
 
 public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 
@@ -42,6 +43,10 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 
 	@Override
 	public V1Pod create(ApiClient apiClient, V1Pod resource, String namespace) throws HyscaleException {
+		if (resource == null) {
+			LOGGER.debug("Cannot create null pod");
+			return resource;
+		}
 		CoreV1Api coreV1Api = new CoreV1Api();
 		String name = resource.getMetadata().getName();
 		V1Pod v1Pod = null;
@@ -61,6 +66,10 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 
 	@Override
 	public boolean update(ApiClient apiClient, V1Pod resource, String namespace) throws HyscaleException {
+		if(resource==null){
+			LOGGER.debug("Cannot update null pod");
+			return false;
+		}
 		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
 		String name = resource.getMetadata().getName();
 		V1Pod existingPod = null;
@@ -122,6 +131,10 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 
 	@Override
 	public boolean patch(ApiClient apiClient, String name, String namespace, V1Pod target) throws HyscaleException {
+		if (target == null) {
+			LOGGER.debug("Cannot patch null Pod");
+			return false;
+		}
 		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
 		target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
 				gson.toJson(target));

@@ -37,6 +37,10 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 	@Override
 	public V1beta2Deployment create(ApiClient apiClient, V1beta2Deployment resource, String namespace)
 			throws HyscaleException {
+		if (resource == null) {
+			LOGGER.debug("Cannot create null deployment");
+			return resource;
+		}
 		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_DEPLOYMENT);
 		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
 		V1beta2Deployment v1beta2Deployment = null;
@@ -58,6 +62,10 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 
 	@Override
 	public boolean update(ApiClient apiClient, V1beta2Deployment resource, String namespace) throws HyscaleException {
+		if(resource==null){
+			LOGGER.debug("Cannot update null deployment");
+			return false;
+		}
 		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
 		String name = resource.getMetadata().getName();
 		V1beta2Deployment existingDeployment = null;
@@ -125,6 +133,10 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 	@Override
 	public boolean patch(ApiClient apiClient, String name, String namespace, V1beta2Deployment target)
 			throws HyscaleException {
+		if (target == null) {
+			LOGGER.debug("Cannot patch null deployment");
+			return false;
+		}
 		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
 		target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
 				gson.toJson(target));

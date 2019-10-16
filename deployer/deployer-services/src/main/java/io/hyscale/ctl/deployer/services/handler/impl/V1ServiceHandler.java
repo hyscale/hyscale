@@ -38,53 +38,61 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
     private static final long MAX_LB_WAIT_TIME = 2000;
 
     @Override
-    public V1Service create(ApiClient apiClient, V1Service resource, String namespace) throws HyscaleException {
-	WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_SERVICE);
-	CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-	String name = resource.getMetadata().getName();
-	V1Service v1Service = null;
-	try {
-	    resource.getMetadata().putAnnotationsItem(
-		    AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
-	    v1Service = coreV1Api.createNamespacedService(namespace, resource, null, TRUE, null);
-	} catch (ApiException e) {
-	    HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
-		    ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.CREATE));
-	    LOGGER.error("Error while creating service {} in namespace {}, error {}", name, namespace, ex.toString());
-	    WorkflowLogger.endActivity(Status.FAILED);
-	    throw ex;
+	public V1Service create(ApiClient apiClient, V1Service resource, String namespace) throws HyscaleException {
+		if (resource == null) {
+			LOGGER.debug("Cannot create null service");
+			return resource;
+		}
+		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_SERVICE);
+		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+		String name = resource.getMetadata().getName();
+		V1Service v1Service = null;
+		try {
+			resource.getMetadata().putAnnotationsItem(
+					AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
+			v1Service = coreV1Api.createNamespacedService(namespace, resource, null, TRUE, null);
+		} catch (ApiException e) {
+			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
+					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.CREATE));
+			LOGGER.error("Error while creating service {} in namespace {}, error {}", name, namespace, ex.toString());
+			WorkflowLogger.endActivity(Status.FAILED);
+			throw ex;
+		}
+		WorkflowLogger.endActivity(Status.DONE);
+		return v1Service;
 	}
-	WorkflowLogger.endActivity(Status.DONE);
-	return v1Service;
-    }
 
-    @Override
-    public boolean update(ApiClient apiClient, V1Service resource, String namespace) throws HyscaleException {
-	CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-	String name = resource.getMetadata().getName();
-	V1Service existingService = null;
-	try {
-	    existingService = get(apiClient, name, namespace);
-	} catch (HyscaleException ex) {
-	    LOGGER.debug("Error while getting Service {} in namespace {} for Update, creating new", name, namespace);
-	    V1Service service = create(apiClient, resource, namespace);
-	    return service != null ? true : false;
-	}
-	WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_SERVICE);
-	try {
+	@Override
+	public boolean update(ApiClient apiClient, V1Service resource, String namespace) throws HyscaleException {
+		if (resource == null) {
+			LOGGER.debug("Cannot update null service");
+			return false;
+		}
+		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+		String name = resource.getMetadata().getName();
+		V1Service existingService = null;
+		try {
+			existingService = get(apiClient, name, namespace);
+		} catch (HyscaleException ex) {
+			LOGGER.debug("Error while getting Service {} in namespace {} for Update, creating new", name, namespace);
+			V1Service service = create(apiClient, resource, namespace);
+			return service != null ? true : false;
+		}
+		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_SERVICE);
+		try {
 
-	    String resourceVersion = existingService.getMetadata().getResourceVersion();
-	    String clusterIP = existingService.getSpec().getClusterIP();
-	    resource.getMetadata().setResourceVersion(resourceVersion);
-	    resource.getSpec().setClusterIP(clusterIP);
-	    coreV1Api.replaceNamespacedService(name, namespace, resource, TRUE, null);
-	} catch (ApiException e) {
-	    HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
-		    ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.UPDATE));
-	    LOGGER.error("Error while updating Service {} in namespace {}, error {}", name, namespace, ex.toString());
-	    WorkflowLogger.endActivity(Status.FAILED);
-	    throw ex;
-	}
+			String resourceVersion = existingService.getMetadata().getResourceVersion();
+			String clusterIP = existingService.getSpec().getClusterIP();
+			resource.getMetadata().setResourceVersion(resourceVersion);
+			resource.getSpec().setClusterIP(clusterIP);
+			coreV1Api.replaceNamespacedService(name, namespace, resource, TRUE, null);
+		} catch (ApiException e) {
+			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
+					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.UPDATE));
+			LOGGER.error("Error while updating Service {} in namespace {}, error {}", name, namespace, ex.toString());
+			WorkflowLogger.endActivity(Status.FAILED);
+			throw ex;
+		}
 
 	WorkflowLogger.endActivity(Status.DONE);
 	return true;
@@ -124,42 +132,46 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 	return v1Services;
     }
 
-    @Override
-    public boolean patch(ApiClient apiClient, String name, String namespace, V1Service target) throws HyscaleException {
-	CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-	target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
-		gson.toJson(target));
-	V1Service sourceService = null;
-	try {
-	    sourceService = get(apiClient, name, namespace);
-	} catch (HyscaleException e) {
-	    LOGGER.debug("Error while getting Service {} in namespace {} for Patch, creating new", name, namespace);
-	    V1Service service = create(apiClient, target, namespace);
-	    return service != null ? true : false;
+	@Override
+	public boolean patch(ApiClient apiClient, String name, String namespace, V1Service target) throws HyscaleException {
+		if (target == null) {
+			LOGGER.debug("Cannot patch null Service");
+			return false;
+		}
+		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+		target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
+				gson.toJson(target));
+		V1Service sourceService = null;
+		try {
+			sourceService = get(apiClient, name, namespace);
+		} catch (HyscaleException e) {
+			LOGGER.debug("Error while getting Service {} in namespace {} for Patch, creating new", name, namespace);
+			V1Service service = create(apiClient, target, namespace);
+			return service != null ? true : false;
+		}
+		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_SERVICE);
+		Object patchObject = null;
+		String lastAppliedConfig = sourceService.getMetadata().getAnnotations()
+				.get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
+		try {
+			patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1Service.class), target,
+					V1Service.class);
+			coreV1Api.patchNamespacedService(name, namespace, patchObject, TRUE, null);
+		} catch (HyscaleException ex) {
+			LOGGER.error("Error while creating patch for service {}, source {}, target {}, error", name, sourceService,
+					target, ex.toString());
+			WorkflowLogger.endActivity(Status.FAILED);
+			throw ex;
+		} catch (ApiException e) {
+			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_PATCH_RESOURCE,
+					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.PATCH));
+			LOGGER.error("Error while patching service {} in namespace {} , error {}", name, namespace, ex.toString());
+			WorkflowLogger.endActivity(Status.FAILED);
+			throw ex;
+		}
+		WorkflowLogger.endActivity(Status.DONE);
+		return true;
 	}
-	WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_SERVICE);
-	Object patchObject = null;
-	String lastAppliedConfig = sourceService.getMetadata().getAnnotations()
-		.get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
-	try {
-	    patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1Service.class), target,
-		    V1Service.class);
-	    coreV1Api.patchNamespacedService(name, namespace, patchObject, TRUE, null);
-	} catch (HyscaleException ex) {
-	    LOGGER.error("Error while creating patch for service {}, source {}, target {}, error", name, sourceService,
-		    target, ex.toString());
-	    WorkflowLogger.endActivity(Status.FAILED);
-	    throw ex;
-	} catch (ApiException e) {
-	    HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_PATCH_RESOURCE,
-		    ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.PATCH));
-	    LOGGER.error("Error while patching service {} in namespace {} , error {}", name, namespace, ex.toString());
-	    WorkflowLogger.endActivity(Status.FAILED);
-	    throw ex;
-	}
-	WorkflowLogger.endActivity(Status.DONE);
-	return true;
-    }
 
     @Override
     public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
