@@ -17,7 +17,9 @@ public enum ResourceKind {
 
 	private String kind;
 
-	// Deletion and creation order
+	/**
+	 *  Deletion and creation order
+	 */
 	private int weight = 0;
 
 	ResourceKind(String kind) {

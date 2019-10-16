@@ -6,6 +6,10 @@ import io.hyscale.ctl.servicespec.commons.model.service.ServiceSpec;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Context information for workflow controller
+ *
+ */
 public class WorkflowContext extends ComponentInvokerContext {
 
     private ServiceSpec serviceSpec;

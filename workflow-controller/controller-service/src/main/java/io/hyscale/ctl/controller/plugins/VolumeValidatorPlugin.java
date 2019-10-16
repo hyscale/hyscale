@@ -43,7 +43,7 @@ import io.kubernetes.client.models.V1ResourceRequirements;
 import io.kubernetes.client.models.V1StorageClass;
 
 /**
- * Validates Volume:
+ * Plugin to Validate Volumes:
  * Storage Class should be valid - Exception if invalid
  * Size and Storage class modification - Warn if changed
  * @author tushart

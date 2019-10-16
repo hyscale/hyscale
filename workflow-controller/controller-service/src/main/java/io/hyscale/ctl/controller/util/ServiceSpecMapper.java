@@ -13,6 +13,10 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * Get {@link ServiceSpec} from input which could be a file or filepath
+ *
+ */
 public class ServiceSpecMapper {
 
     private static final Logger logger = LoggerFactory.getLogger(ServiceSpecMapper.class);

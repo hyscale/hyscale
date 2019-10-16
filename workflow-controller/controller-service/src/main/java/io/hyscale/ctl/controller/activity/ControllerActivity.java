@@ -2,6 +2,10 @@ package io.hyscale.ctl.controller.activity;
 
 import io.hyscale.ctl.commons.models.Activity;
 
+/**
+ * Activities list for Workflow controller
+ *
+ */
 public enum ControllerActivity implements Activity {
     DOCKERFILE_GENERATION("Dockerfile Generation"),
     DOCKERFILE_GENERATION_FAILED(" Dockerfile generation failed :: {}"),

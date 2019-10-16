@@ -144,6 +144,9 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 		return statefulSets;
 	}
 
+	/**
+	 * Also deletes previous pods if they are in error state
+	 */
 	@Override
 	public boolean patch(ApiClient apiClient, String name, String namespace, V1beta2StatefulSet target)
 			throws HyscaleException {
@@ -196,6 +199,14 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 		return true;
 	}
 
+	/**
+	 * 
+	 * @param apiClient
+	 * @param name
+	 * @param namespace
+	 * @return true if pods needs to be deleted
+	 * @throws HyscaleException
+	 */
 	private boolean isDeletePodRequired(ApiClient apiClient, String name, String namespace) throws HyscaleException {
 		V1PodHandler podHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
 		List<V1Pod> v1PodList = podHandler.getBySelector(apiClient, getPodSelector(name), true, namespace);
@@ -247,10 +258,6 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 		return true;
 	}
 
-	/**
-	 * Using getBy selector and deleting individual sts Reason: Cascade doesn't work
-	 * in delete by selector
-	 */
 	@Override
 	public boolean deleteBySelector(ApiClient apiClient, String selector, boolean label, String namespace, boolean wait)
 			throws HyscaleException {

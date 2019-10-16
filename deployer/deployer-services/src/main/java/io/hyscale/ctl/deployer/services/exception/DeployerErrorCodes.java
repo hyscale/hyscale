@@ -1,7 +1,10 @@
 package io.hyscale.ctl.deployer.services.exception;
 
 import io.hyscale.ctl.commons.exception.HyscaleErrorCode;
-
+/**
+ * Error Codes for Deployer Service
+ *
+ */
 public enum DeployerErrorCodes implements HyscaleErrorCode {
     ERROR_WHILE_CREATING_PATCH("Error while creating patch "),
     KUBE_CONFIG_NOT_FOUND("Cannot find kubeconfig at {}"),

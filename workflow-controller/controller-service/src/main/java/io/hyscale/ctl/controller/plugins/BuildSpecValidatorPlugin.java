@@ -16,6 +16,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * 	Plugin to validate {@link BuildSpec} before docker file generation
+ *
+ */
 @Component
 public class BuildSpecValidatorPlugin implements ComponentInvokerPlugin<WorkflowContext> {
 

@@ -2,6 +2,10 @@ package io.hyscale.ctl.deployer.services.model;
 
 import io.hyscale.ctl.commons.models.Activity;
 
+/**
+ * Activities list for Deployer Service
+ *
+ */
 public enum DeployerActivity implements Activity {
 	DEPLOYING_CONFIGMAP("Applying ConfigMap "),
 	DEPLOYING_STATEFULSET("Applying StatefulSet "),

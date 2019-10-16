@@ -10,6 +10,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+/**
+ * Plugin to clean up old manifests
+ *
+ */
 @Component
 public class ManifestCleanUpPlugin implements ComponentInvokerPlugin<WorkflowContext> {
 

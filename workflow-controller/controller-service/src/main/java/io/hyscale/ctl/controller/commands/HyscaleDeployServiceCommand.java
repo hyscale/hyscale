@@ -27,6 +27,10 @@ import picocli.CommandLine;
 
 import javax.annotation.PreDestroy;
 
+/**
+ * Command to deploy service specs to cluster
+ *
+ */
 @CommandLine.Command(name = "service", aliases = {"services"},
         description = "Deploys the service to kubernetes cluster")
 @Component

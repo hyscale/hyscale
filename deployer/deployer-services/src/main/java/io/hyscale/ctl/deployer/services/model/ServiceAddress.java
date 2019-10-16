@@ -7,6 +7,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import io.hyscale.ctl.commons.constants.ToolConstants;
 
+/**
+ * Cluster Service address
+ *
+ */
 public class ServiceAddress {
 
     private String serviceIP;
@@ -28,6 +32,12 @@ public class ServiceAddress {
 	this.ports = ports;
     }
 
+    /**
+     * returns 
+     * null if serviceIP is null or empty
+     * else String representing
+     * serviceIP:port1, serviceIP:port2
+     */
     @Override
     public String toString() {
 	if (StringUtils.isBlank(serviceIP)) {

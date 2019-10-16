@@ -1,5 +1,10 @@
 package io.hyscale.ctl.deployer.services.progress;
 
+/**
+ * Progress Handler for cluster resources
+ * Updates progress based on resource status
+ *
+ */
 public interface ProgressHandler {
 
 	void onPodLaunch(String podName);

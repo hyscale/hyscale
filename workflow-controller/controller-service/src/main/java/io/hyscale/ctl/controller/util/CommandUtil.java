@@ -14,8 +14,18 @@ import io.hyscale.ctl.commons.logger.WorkflowLogger;
 import io.hyscale.ctl.controller.activity.ControllerActivity;
 import io.hyscale.ctl.controller.constants.WorkflowConstants;
 
+/**
+ * Utility for commands
+ *
+ */
 public class CommandUtil {
 
+	/**
+	 * gets environment name for labels in resources
+	 * @param profile
+	 * @param appName
+	 * @return environment name
+	 */
 	public static String getEnvName(String profile, String appName) {
 		if (StringUtils.isNotBlank(profile)) {
 			return FilenameUtils.getBaseName(profile);
@@ -31,6 +41,11 @@ public class CommandUtil {
 		}
 	}
 	
+	/**
+	 * Checks if input is valid based on BeanValidation
+	 * @param object
+	 * @return true if input valid else false
+	 */
 	public static boolean isInputValid(Object object) {
 		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();

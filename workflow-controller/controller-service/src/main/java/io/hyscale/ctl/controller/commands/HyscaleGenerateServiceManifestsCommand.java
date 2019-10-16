@@ -20,6 +20,10 @@ import picocli.CommandLine;
 
 import javax.annotation.PreDestroy;
 
+/**
+ * Command to generate Manifest from service specs
+ *
+ */
 @CommandLine.Command(name = "manifests", aliases = {"manifest"},
         description = {"Generates manifests from the given service specs"})
 @Component

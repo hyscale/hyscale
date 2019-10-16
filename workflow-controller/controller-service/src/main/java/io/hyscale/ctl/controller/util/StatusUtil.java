@@ -5,6 +5,10 @@ import org.ocpsoft.prettytime.PrettyTime;
 
 import io.hyscale.ctl.deployer.core.model.DeploymentStatus;
 
+/**
+ * Utility for deployment status commands
+ *
+ */
 public class StatusUtil {
 	
 	public static String[] getRowData(DeploymentStatus deploymentStatus) {
@@ -15,6 +19,12 @@ public class StatusUtil {
         return rowData;
     }
 	
+	/**
+	 * 
+	 * @param dateTime
+	 * @return time in social-networking style timestamps
+	 * @see PrettyTime
+	 */
 	private static String getAge(DateTime dateTime) {
         if (dateTime == null) {
             return null;

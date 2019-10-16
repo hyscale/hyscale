@@ -4,8 +4,11 @@ import org.springframework.stereotype.Component;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.HelpCommand;
 
+/**
+ * Parent command for generate operation
+ *
+ */
 @Command(name = "generate", subcommands = { HyscaleGenerateServiceCommand.class }, description = { "Generates the specified resource" })
 @Component
 public class HyscaleGenerateCommand implements Runnable {

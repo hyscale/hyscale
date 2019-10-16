@@ -4,6 +4,10 @@ import io.hyscale.ctl.deployer.core.model.ResourceKind;
 import io.kubernetes.client.models.V1Namespace;
 import io.kubernetes.client.models.V1ObjectMeta;
 
+/**
+ * Create V1Namespace from name
+ *
+ */
 public class NamespaceBuilder {
 
 	public static V1Namespace build(String namespace) {

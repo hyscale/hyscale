@@ -15,11 +15,10 @@ import io.hyscale.ctl.controller.util.StatusUtil;
 import io.hyscale.ctl.deployer.services.deployer.Deployer;
 import io.hyscale.ctl.deployer.core.model.DeploymentStatus;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.HelpCommand;
 import picocli.CommandLine.Option;
 
 /**
- * Deployment status for app
+ * Command to get Deployment status for an application
  *
  * @author tushart
  */

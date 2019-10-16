@@ -12,6 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+/**
+ * Plugin to validate image details in service spec
+ *
+ */
 @Component
 public class ImageValidatorPlugin implements ComponentInvokerPlugin<WorkflowContext> {
 

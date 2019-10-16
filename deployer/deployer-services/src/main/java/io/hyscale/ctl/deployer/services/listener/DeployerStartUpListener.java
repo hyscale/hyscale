@@ -9,6 +9,10 @@ import io.hyscale.ctl.deployer.services.handler.ResourceHandlers;
 @Component
 public class DeployerStartUpListener {
 
+	/**
+	 * Registers Cluster resource handlers
+	 * @param event
+	 */
 	@EventListener
 	public void onApplicationEvent(Object event) {
 		if (event instanceof ContextRefreshedEvent) {

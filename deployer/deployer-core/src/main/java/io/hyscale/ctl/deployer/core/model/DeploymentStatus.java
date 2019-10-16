@@ -2,6 +2,10 @@ package io.hyscale.ctl.deployer.core.model;
 
 import org.joda.time.DateTime;
 
+/**
+ * Service information on cluster including
+ * name, status {@link Status}, message(if any), service Address(If external)
+ */
 public class DeploymentStatus {
 
 	public enum Status {

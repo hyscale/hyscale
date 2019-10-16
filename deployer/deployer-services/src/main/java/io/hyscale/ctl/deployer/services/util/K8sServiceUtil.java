@@ -8,6 +8,10 @@ import io.kubernetes.client.models.V1LoadBalancerIngress;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1ServicePort;
 
+/**
+ * Utility to process information from {@link V1Service}
+ *
+ */
 public class K8sServiceUtil {
 
 	public static ServiceAddress getServiceAddress(V1Service service) {

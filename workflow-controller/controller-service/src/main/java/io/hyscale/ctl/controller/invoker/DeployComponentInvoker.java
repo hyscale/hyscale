@@ -36,6 +36,11 @@ import io.hyscale.ctl.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.ctl.servicespec.commons.model.service.Port;
 import io.hyscale.ctl.servicespec.commons.model.service.ServiceSpec;
 
+/**
+ *	Deployer component
+ *	acts as a bridge between workflow controller and deployer for deploy operation
+ *	provides link between {@link WorkflowContext} and {@link DeploymentContext}
+ */
 @Component
 public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
 
@@ -72,6 +77,12 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
 		super.addPlugin(volumeCleanUpPlugin);
     }
 
+    /**
+     * Operations performed
+     * 1. deploy service
+     * 2. wait for deployment completion
+     * 3. get service address if service is external
+     */
     @Override
     protected void doExecute(WorkflowContext context) throws HyscaleException {
         if (context == null || context.isFailed()) {
@@ -147,6 +158,11 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
         }
     }
 
+    /**
+     * write deployment logs to file for later access
+     * @param context
+     * @param deploymentContext
+     */
     private void writeDeployLogs(WorkflowContext context, DeploymentContext deploymentContext) {
         try (InputStream is = deployer.logs(deploymentContext)) {
             String deploylogFile = deployerConfig.getDeployLogDir(deploymentContext.getAppName(),

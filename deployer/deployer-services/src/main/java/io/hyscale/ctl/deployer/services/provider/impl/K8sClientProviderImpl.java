@@ -24,7 +24,10 @@ import io.kubernetes.client.util.Config;
 public class K8sClientProviderImpl implements K8sClientProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(K8sClientProviderImpl.class);
-
+    
+    /*
+     * Get client from K8s config file
+     */
     private ApiClient from(K8sConfigFileAuth authConfig) throws HyscaleException {
         String mountedKubeConfigName = authConfig.getK8sConfigFile() != null ? SetupConfig.getMountPathOfKubeConf(authConfig.getK8sConfigFile().getName()) : ToolConstants.EMPTY_STRING;
         try (FileInputStream fis = new FileInputStream(authConfig.getK8sConfigFile())) {
@@ -45,6 +48,9 @@ public class K8sClientProviderImpl implements K8sClientProvider {
         }
     }
 
+    /*
+     * Get client from K8s config reader
+     */
     private ApiClient from(K8sConfigReaderAuth authConfig) throws HyscaleException {
         try {
             return Config.fromConfig(authConfig.getK8sConfigReader());
@@ -60,6 +66,9 @@ public class K8sClientProviderImpl implements K8sClientProvider {
         }
     }
 
+    /*
+     * Get client from K8s {@link K8sBasicAuth} object
+     */
     private ApiClient from(K8sBasicAuth authConfig) throws HyscaleException {
         if (authConfig.getToken() == null) {
             return Config.fromUserPassword(authConfig.getMasterURL(), authConfig.getUserName(),

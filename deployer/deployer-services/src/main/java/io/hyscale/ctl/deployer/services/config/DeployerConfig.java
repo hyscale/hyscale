@@ -10,6 +10,10 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
+/**
+ * Deployment related config properties
+ *
+ */
 @Component
 @PropertySource("classpath:config/deployer-config.props")
 public class DeployerConfig {
@@ -42,12 +46,23 @@ public class DeployerConfig {
 		return defaultTailLines;
 	}
 
+	/**
+	 * @param appName
+	 * @param serviceName
+	 * @return deploy logs directory
+	 */
 	public String getDeployLogDir(String appName, String serviceName) {
 		StringBuilder sb = new StringBuilder(setupConfig.getLogsDir(appName, serviceName));
 		sb.append(DEPLOY_LOG);
 		return sb.toString();
 	}
 
+	/**
+	 * 
+	 * @param appName
+	 * @param serviceName
+	 * @return service logs directory
+	 */
 	public String getServiceLogDir(String appName, String serviceName) {
 		StringBuilder sb = new StringBuilder(setupConfig.getLogsDir(appName, serviceName));
 		sb.append(SERVICE_LOG);

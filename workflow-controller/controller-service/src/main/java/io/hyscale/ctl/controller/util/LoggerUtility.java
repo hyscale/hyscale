@@ -17,6 +17,11 @@ import io.hyscale.ctl.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.ctl.deployer.services.util.DeployerLogUtil;
 import io.hyscale.ctl.builder.services.util.ImageLogUtil;
 
+/**
+ * Utility to get logs
+ * build and push logs
+ * deployment logs
+ */
 @Component
 public class LoggerUtility {
 
@@ -33,10 +38,14 @@ public class LoggerUtility {
 
 	public void getLogs(WorkflowContext workflowContext) {
 	    // Ignore image logs as they can be viewed at the directory
-//		imageBuilderLogs(workflowContext);
+		// imageBuilderLogs(workflowContext);
 		deploymentLogs(workflowContext);
 	}
 
+	/**
+	 * deployment logs 
+	 * @param context
+	 */
 	public void deploymentLogs(WorkflowContext context) {
 
 		String serviceName = context.getServiceName();
@@ -69,6 +78,10 @@ public class LoggerUtility {
 		return;
 	}
 
+	/**
+	 * Image build and push logs
+	 * @param context
+	 */
 	public void imageBuilderLogs(WorkflowContext context) {
 		BuildContext buildContext = new BuildContext();
 		buildContext.setAppName(context.getAppName());

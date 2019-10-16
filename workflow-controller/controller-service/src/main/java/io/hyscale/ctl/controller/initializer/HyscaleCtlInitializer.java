@@ -20,7 +20,10 @@ import picocli.CommandLine;
 import picocli.CommandLine.IFactory;
 import picocli.CommandLine.ParameterException;
 
-
+/**
+ * Entry point for executing commands
+ *
+ */
 @SpringBootApplication
 @ComponentScan("io.hyscale.ctl")
 public class HyscaleCtlInitializer implements CommandLineRunner {

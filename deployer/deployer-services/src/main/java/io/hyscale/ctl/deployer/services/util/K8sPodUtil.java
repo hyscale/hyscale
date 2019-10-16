@@ -14,9 +14,18 @@ import io.kubernetes.client.models.V1PodCondition;
 
 /**
  * Created by sameerag on 12/9/18.
+ * Utility for K8s pod level information
+ * 
  */
 public class K8sPodUtil {
 
+	/**
+	 * Gets aggregate status from Init containers - empty if init containers are ready
+	 * If init container status not found gets aggregated status from containers
+	 * If containers status not found get pod level status
+	 * @param v1Pod
+	 * @return Status from containers in pod 
+	 */
 	public static String getAggregatedStatusOfContainersForPod(V1Pod v1Pod) {
 		if (v1Pod == null) {
 			return null;
@@ -79,6 +88,11 @@ public class K8sPodUtil {
 		return null;
 	}
 
+	/**
+	 * 
+	 * @param containerStatuses
+	 * @return status of container not in running state
+	 */
 	private static String validateAndGetContainerStatuses(List<V1ContainerStatus> containerStatuses) {
 		if (containerStatuses == null || containerStatuses.isEmpty()) {
 			return null;
@@ -121,6 +135,11 @@ public class K8sPodUtil {
 		return null;
 	}
 
+	/**
+	 * 
+	 * @param initContainerStatuses
+	 * @return status of init container in waiting state, else null
+	 */
 	private static String validateAndGetInitContainerStatuses(List<V1ContainerStatus> initContainerStatuses) {
 		if (initContainerStatuses == null || initContainerStatuses.isEmpty()) {
 			return null;
@@ -166,6 +185,12 @@ public class K8sPodUtil {
 		return false;
 	}
 
+	/**
+	 * Checks if provided pod condition status is true in the pod
+	 * @param pod
+	 * @param podCondition
+	 * @return true is condition is set in Pod, else false
+	 */
 	public static boolean checkForPodCondition(V1Pod pod, PodCondition podCondition) {
 		List<V1PodCondition> conditions = pod.getStatus().getConditions();
 		if (conditions == null || conditions.isEmpty() || podCondition == null) {

@@ -14,6 +14,10 @@ import io.kubernetes.client.models.V1Pod;
 import io.kubernetes.client.models.V1PodSpec;
 import io.kubernetes.client.models.V1Volume;
 
+/**
+ * Utility to get volume related information from resource
+ *
+ */
 public class KubernetesVolumeUtil {
 
 	public static Set<String> getPodVolumes(ApiClient apiClient, String selector, String namespace)

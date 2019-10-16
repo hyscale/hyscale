@@ -11,6 +11,10 @@ import io.hyscale.ctl.controller.invoker.UndeployComponentInvoker;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+/**
+ * Command to undeploy an application
+ *
+ */
 @Command(name = "app", description = "Undeploys app from the kubernetes cluster")
 @Component
 public class HyscaleUndeployAppCommand implements Runnable {

@@ -1,7 +1,6 @@
 package io.hyscale.ctl.deployer.services.deployer.impl;
 
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +47,9 @@ import io.hyscale.ctl.deployer.services.util.KubernetesResourceUtil;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.models.V1Pod;
 
+/**
+ * {@link Deployer} implementation for K8s Cluster
+ */
 @Component
 public class KubernetesDeployer implements Deployer {
 
@@ -78,8 +80,8 @@ public class KubernetesDeployer implements Deployer {
         }
     }
 
-    /*
-     * Wait for Pod scheduled, creation and Readiness
+    /**
+     * Wait for Pod scheduled, creation and Readiness state
      */
     @Override
     public void waitForDeployment(DeploymentContext context) throws HyscaleException {
@@ -146,6 +148,7 @@ public class KubernetesDeployer implements Deployer {
 
     @Override
     public boolean authenticate(AuthConfig authConfig) {
+    	// TODO
         return false;
     }
 

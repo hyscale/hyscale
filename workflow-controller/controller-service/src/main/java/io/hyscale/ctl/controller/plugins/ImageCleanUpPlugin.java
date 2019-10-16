@@ -15,6 +15,10 @@ import io.hyscale.ctl.controller.model.WorkflowContext;
 import io.hyscale.ctl.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.ctl.servicespec.commons.model.service.ServiceSpec;
 
+/**
+ * Plugin to clean up local images which are no longer in use
+ *
+ */
 @Component
 public class ImageCleanUpPlugin implements ComponentInvokerPlugin<WorkflowContext> {
 

@@ -23,9 +23,7 @@ import io.hyscale.ctl.deployer.core.model.ResourceKind;
 import io.hyscale.ctl.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.ctl.deployer.services.handler.ResourceHandlers;
 import io.hyscale.ctl.deployer.services.handler.ResourceLifeCycleHandler;
-import io.hyscale.ctl.deployer.services.handler.impl.V1DeploymentHandler;
 import io.hyscale.ctl.deployer.services.handler.impl.V1PersistentVolumeClaimHandler;
-import io.hyscale.ctl.deployer.services.handler.impl.V1StatefulSetHandler;
 import io.hyscale.ctl.deployer.services.provider.K8sClientProvider;
 import io.hyscale.ctl.deployer.services.util.KubernetesResourceUtil;
 import io.hyscale.ctl.deployer.services.util.KubernetesVolumeUtil;
@@ -33,7 +31,7 @@ import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.models.V1PersistentVolumeClaim;
 
 /**
- * Cleans up K8s PVC
+ * Plugin to clean up stale volumes on the cluster
  * @author tushart
  *
  */

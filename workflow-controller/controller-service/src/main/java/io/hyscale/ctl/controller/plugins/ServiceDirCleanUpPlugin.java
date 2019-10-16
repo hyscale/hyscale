@@ -11,6 +11,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+/**
+ * Plugin to clean service directory to remove files no longer required
+ *
+ */
 @Component
 public class ServiceDirCleanUpPlugin implements ComponentInvokerPlugin<WorkflowContext> {
 

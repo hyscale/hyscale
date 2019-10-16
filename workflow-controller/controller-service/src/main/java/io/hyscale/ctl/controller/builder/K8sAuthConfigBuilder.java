@@ -13,6 +13,10 @@ public class K8sAuthConfigBuilder {
     @Autowired
     private ControllerConfig controllerConfig;
 
+    /**
+     * gets {@link K8sConfigFileAuth} from {@link ControllerConfig} default config
+     * @return {@link K8sConfigFileAuth}
+     */
     public AuthConfig getAuthConfig() {
         K8sConfigFileAuth k8sAuth = new K8sConfigFileAuth();
         k8sAuth.setK8sConfigFile(new File(controllerConfig.getDefaultKubeConf()));

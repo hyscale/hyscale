@@ -5,6 +5,10 @@ import io.hyscale.ctl.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.ctl.deployer.core.model.ResourceOperation;
 import io.kubernetes.client.ApiException;
 
+/**
+ * Helper class for {@link HyscaleException}
+ *
+ */
 public class ExceptionHelper {
 
     private static final String FAILED_WITH_MESSAGE = "failed with status: ";
@@ -15,7 +19,7 @@ public class ExceptionHelper {
      * @param resourceKind
      * @param ApiException
      * @param operation
-     * @return Array of String - resource, operation, code, response
+     * @return Array of String - resource kind, fail message, ApiException code, cause message
      */
     public static String[] getExceptionArgs(String resourceKind, ApiException ex, ResourceOperation operation) {
         String[] args = new String[]{resourceKind, FAILED_WITH_MESSAGE, getCode(ex),
@@ -29,6 +33,13 @@ public class ExceptionHelper {
         return args;
     }
 
+    /**
+     * Get operation exception could be if the resource is not found or some other exception
+     * @param resourceKind
+     * @param e - K8s cluster exception
+     * @param operation {@link ResourceOperation}
+     * @return HyscaleException
+     */
     public static HyscaleException buildGetException(String resourceKind, ApiException e, ResourceOperation operation) {
         HyscaleException ex = null;
         if (e.getCode() != 404) {

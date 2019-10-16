@@ -24,6 +24,10 @@ import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.models.V1DeleteOptions;
 import io.kubernetes.client.models.V1Namespace;
 
+/**
+ * V1Namespace resource operations
+ *
+ */
 public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NamespaceHandler.class);

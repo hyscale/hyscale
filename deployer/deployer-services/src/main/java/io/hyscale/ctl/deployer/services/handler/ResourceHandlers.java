@@ -17,10 +17,19 @@ public final class ResourceHandlers {
 		}
 	}
 
+	/**
+	 * 
+	 * @param kind
+	 * @return ResourceLifeCycleHandler for the kind, null if not found
+	 */
 	public static ResourceLifeCycleHandler getHandlerOf(String kind) {
 		return kindVsHandler.get(kind);
 	}
 	
+	/**
+	 * 
+	 * @return Unmodifiable list of all available ResourceLifeCycleHandler
+	 */
 	public static List<ResourceLifeCycleHandler> getHandlersList(){
 	    if (kindVsHandler == null) {
 		return null;

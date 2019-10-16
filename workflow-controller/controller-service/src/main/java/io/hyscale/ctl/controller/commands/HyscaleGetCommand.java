@@ -5,6 +5,10 @@ import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
+/**
+ * Parent command for get operation
+ *
+ */
 @Command(name = "get", subcommands = { HyscaleGetServiceCommand.class, HyscaleGetAppCommand.class },
 		description = "Gets the specified resource.")
 @Component

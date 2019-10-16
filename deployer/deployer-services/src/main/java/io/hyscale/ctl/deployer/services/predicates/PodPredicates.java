@@ -6,6 +6,10 @@ import io.kubernetes.client.models.V1Pod;
 
 import java.util.function.Predicate;
 
+/**
+ * Defines predicated for pod conditions
+ *
+ */
 public class PodPredicates {
 
 	public static Predicate<V1Pod> isPodschedulingCondition() {

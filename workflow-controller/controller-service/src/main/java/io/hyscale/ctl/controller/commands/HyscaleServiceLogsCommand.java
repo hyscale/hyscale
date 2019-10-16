@@ -17,6 +17,11 @@ import io.hyscale.ctl.controller.util.LoggerUtility;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+/**
+ * Command to get service logs
+ * one could get specific number of lines of logs or could tail them
+ *
+ */
 @Command(name = "logs", aliases = { "log" }, description = "Displays the service logs")
 @Component
 public class HyscaleServiceLogsCommand implements Runnable {

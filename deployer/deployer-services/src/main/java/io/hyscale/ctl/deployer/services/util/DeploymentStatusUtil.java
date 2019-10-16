@@ -11,8 +11,17 @@ import io.hyscale.ctl.deployer.core.model.DeploymentStatus;
 import io.hyscale.ctl.deployer.services.model.PodCondition;
 import io.kubernetes.client.models.V1Pod;
 
+/**
+ * 
+ *	Utility for Service Deployment status
+ */
 public class DeploymentStatusUtil {
 
+	/**
+	 * Status for service not deployed on cluster
+	 * @param serviceName
+	 * @return DeploymentStatus
+	 */
     public static DeploymentStatus getNotDeployedStatus(String serviceName) {
         DeploymentStatus status = new DeploymentStatus();
         status.setServiceName(serviceName);
@@ -21,6 +30,11 @@ public class DeploymentStatusUtil {
         return status;
     }
 
+    /**
+     * Message from pods not in ready state
+     * @param v1PodList
+     * @return null if pods are in ready condition, else pods message
+     */
     public static String getMessage(List<V1Pod> v1PodList) {
 	if (v1PodList == null || v1PodList.isEmpty()) {
 	    return null;
@@ -64,6 +78,12 @@ public class DeploymentStatusUtil {
         }
     }
 
+    /**
+     * DateTime from 1st pod
+     * Give estimation of how long ago current status was updated
+     * @param v1PodList
+     * @return Datetime
+     */
     public static DateTime getAge(List<V1Pod> v1PodList) {
         if (v1PodList == null || v1PodList.isEmpty()) {
             return null;

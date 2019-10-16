@@ -5,6 +5,12 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * Create Formatted table for display
+ * Use {@link Builder} to create TableFormatter with fields
+ * Allows row addition
+ * Print Table
+ */
 //TODO Table Field Constraint
 public class TableFormatter {
 
@@ -26,6 +32,7 @@ public class TableFormatter {
 		this.fields = fields;
 		StringBuilder formatBuilder = new StringBuilder();
 
+		// Create table format
 		for (int i = 0; i < fields.size(); i++) {
 			formatBuilder.append(PERCENTAGE).append(Integer.toString(i + 1))
 					.append(getformatPadString(fields.get(i).getLength()));
@@ -56,6 +63,7 @@ public class TableFormatter {
 		return "$-" + padding + "s";
 	}
 	
+	
 	@Override
 	public String toString() {
 		StringBuilder table = new StringBuilder();
@@ -68,6 +76,13 @@ public class TableFormatter {
 		return table.toString();
 	}
 	
+	/**
+	 * 
+	 * @return Formatted fields as String in format
+	 * {field1 field2
+	 * 	 ---	---}
+	 * 
+	 */
 	public String getFormattedFields() {
 		String[] fieldArray = fields.stream().map(each -> each.getName()).toArray(String[]::new);
 		String[] fieldDemarcater = fields.stream().map(each -> DASH).toArray(String[]::new);
@@ -82,8 +97,13 @@ public class TableFormatter {
 		return String.format(formatter, toFormat);
 	}
 
-	/*
-	 * Format row to match field length, Replace null with empty string
+	/**
+	 * Format row data for number of fields
+	 * Replace null with empty string
+	 * Ignore rows which doesnot have fields
+	 * 
+	 * @param originalRow - String array
+	 * @return formatted row as String
 	 */
 	public String getFormattedRow(String[] originalRow) {
 		int length = fields.size();
@@ -100,6 +120,10 @@ public class TableFormatter {
 		return getFormattedString(updatedRow);
 	}
 
+	/**
+	 * Builder class to create TableFormatter Instance
+	 *
+	 */
 	public static class Builder {
 
 		private List<TableField> fields;

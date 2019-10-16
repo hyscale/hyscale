@@ -2,6 +2,10 @@ package io.hyscale.ctl.controller.core.exception;
 
 import io.hyscale.ctl.commons.exception.HyscaleErrorCode;
 
+/**
+ * Error Codes for Workflow Controller
+ *
+ */
 public enum ControllerErrorCodes implements HyscaleErrorCode {
     INVALID_COMMAND("Invalid command {}"),
     CANNOT_FIND_SERVICE_SPEC("Cannot find service spec {} "),

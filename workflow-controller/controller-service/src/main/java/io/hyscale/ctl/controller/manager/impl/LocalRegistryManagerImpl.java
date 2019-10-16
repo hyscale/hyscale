@@ -28,6 +28,9 @@ import io.hyscale.ctl.controller.config.ControllerConfig;
 import io.hyscale.ctl.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.ctl.controller.manager.RegistryManager;
 
+/**
+ * Reads local docker registry config
+ */
 @Component
 public class LocalRegistryManagerImpl implements RegistryManager {
 
@@ -57,6 +60,9 @@ public class LocalRegistryManagerImpl implements RegistryManager {
         }
     }
 
+    /**
+     * gives image registry details based on registry name
+     */
     @Override
     public ImageRegistry getImageRegistry(String registry) throws HyscaleException {
         if (StringUtils.isBlank(registry)) {

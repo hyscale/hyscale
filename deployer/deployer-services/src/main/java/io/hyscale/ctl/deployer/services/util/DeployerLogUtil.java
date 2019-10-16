@@ -17,6 +17,10 @@ import io.hyscale.ctl.deployer.services.deployer.Deployer;
 import io.hyscale.ctl.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.ctl.deployer.services.config.DeployerConfig;
 
+/**
+ * Utility to handle deployment related logs
+ *	
+ */
 @Component
 public class DeployerLogUtil {
 
@@ -41,6 +45,13 @@ public class DeployerLogUtil {
 
 	}
 
+	/**
+	 * Gets logs from cluster and write them to log file
+	 * Reads log file from directory to System out
+	 * Ensures latest logs are present in the directory
+	 * @param context
+	 * @throws HyscaleException
+	 */
 	private void readLogs(DeploymentContext context) throws HyscaleException {
 		String appName = context.getAppName();
 		String serviceName = context.getServiceName();
@@ -58,6 +69,11 @@ public class DeployerLogUtil {
 		}
 	}
 
+	/**
+	 * Channels cluster logs to System out
+	 * @param context
+	 * @throws HyscaleException
+	 */
 	private void tailLogs(DeploymentContext context) throws HyscaleException {
 		try (InputStream is = deployer.logs(context)) {
 			IOUtils.copy(is, System.out);

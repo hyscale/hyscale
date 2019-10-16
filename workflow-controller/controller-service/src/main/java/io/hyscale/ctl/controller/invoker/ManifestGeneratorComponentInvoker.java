@@ -27,6 +27,11 @@ import io.hyscale.ctl.controller.model.WorkflowContext;
 import javax.annotation.PostConstruct;
 import java.util.List;
 
+/**
+ *	Manifest generator component
+ *	acts as a bridge between workflow controller and manifest generator to generate K8s manifests
+ *	provides link between {@link WorkflowContext} and {@link ManifestContext}
+ */
 @Component
 public class ManifestGeneratorComponentInvoker extends ComponentInvoker<WorkflowContext> {
 

@@ -1,8 +1,7 @@
 package io.hyscale.ctl.controller.invoker;
 
-import io.hyscale.ctl.controller.core.exception.ControllerErrorCodes;
-import io.hyscale.ctl.controller.plugins.AppDirCleanUpPlugin;
-import io.hyscale.ctl.controller.plugins.ServiceDirCleanUpPlugin;
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +13,17 @@ import io.hyscale.ctl.commons.logger.WorkflowLogger;
 import io.hyscale.ctl.commons.models.DeploymentContext;
 import io.hyscale.ctl.controller.activity.ControllerActivity;
 import io.hyscale.ctl.controller.builder.K8sAuthConfigBuilder;
+import io.hyscale.ctl.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.ctl.controller.model.WorkflowContext;
+import io.hyscale.ctl.controller.plugins.AppDirCleanUpPlugin;
+import io.hyscale.ctl.controller.plugins.ServiceDirCleanUpPlugin;
 import io.hyscale.ctl.deployer.services.deployer.Deployer;
 
-import javax.annotation.PostConstruct;
-
+/**
+ *	Undeploy component
+ *	acts as a bridge between workflow controller and deployer for undeploy operation
+ *	provides link between {@link WorkflowContext} and {@link DeploymentContext}
+ */
 @Component
 public class UndeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
 
@@ -41,7 +46,8 @@ public class UndeployComponentInvoker extends ComponentInvoker<WorkflowContext> 
         addPlugin(serviceDirCleanUpPlugin);
         addPlugin(appDirCleanUpPlugin);
     }
-
+    
+    
     @Override
     protected void doExecute(WorkflowContext context) throws HyscaleException {
         if (context == null) {

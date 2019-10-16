@@ -33,6 +33,10 @@ import io.hyscale.ctl.deployer.services.util.KubernetesResourceUtil;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.models.V1ObjectMeta;
 
+/**
+ * Plugin to remove stale resources from K8s cluster
+ *
+ */
 @Component
 public class K8sResourcesCleanUpPlugin implements ComponentInvokerPlugin<WorkflowContext> {
 

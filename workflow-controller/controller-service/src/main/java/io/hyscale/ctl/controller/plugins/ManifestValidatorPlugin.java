@@ -16,6 +16,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * Plugin to validate service spec before manifest generation
+ *
+ */
 @Component
 public class ManifestValidatorPlugin implements ComponentInvokerPlugin<WorkflowContext> {
 

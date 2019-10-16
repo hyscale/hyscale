@@ -4,8 +4,11 @@ import org.springframework.stereotype.Component;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.HelpCommand;
 
+/**
+ * Parent command for deploy operation
+ *
+ */
 @Command(name = "deploy", subcommands = { HyscaleDeployServiceCommand.class}, description = "Deploys the specified resource")
 @Component
 public class HyscaleDeployCommand implements Runnable {

@@ -10,6 +10,10 @@ import io.hyscale.ctl.commons.models.YAMLManifest;
 import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.util.Yaml;
 
+/**
+ * Utility for generic kubernetes resource
+ *
+ */
 public class KubernetesResourceUtil {
 
     private static final String GET_KIND = "getKind";

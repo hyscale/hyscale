@@ -2,7 +2,6 @@ package io.hyscale.ctl.deployer.services.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -14,8 +13,6 @@ import io.hyscale.ctl.commons.exception.HyscaleException;
 import io.hyscale.ctl.commons.logger.WorkflowLogger;
 import io.hyscale.ctl.commons.models.KubernetesResource;
 import io.hyscale.ctl.commons.models.Manifest;
-import io.hyscale.ctl.commons.models.ResourceLabelKey;
-import io.hyscale.ctl.commons.utils.ResourceLabelBuilder;
 import io.hyscale.ctl.commons.utils.ResourceSelectorUtil;
 import io.hyscale.ctl.deployer.core.model.ResourceKind;
 import io.hyscale.ctl.deployer.services.builder.NamespaceBuilder;
@@ -29,6 +26,10 @@ import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.models.V1Namespace;
 import io.kubernetes.client.models.V1ObjectMeta;
 
+/**
+ * Handles generic resource level operation such as apply, undeploy among others
+ *
+ */
 public class K8sResourceDispatcher {
 
 	private static final Logger logger = LoggerFactory.getLogger(K8sResourceDispatcher.class);
@@ -71,7 +72,12 @@ public class K8sResourceDispatcher {
 		this.waitForReadiness = waitForReadiness;
 	}
 
-	// TODO lifecycle of namespace handling
+	/**
+	 * Applies manifest to cluster
+	 * Use update policy if resource found on cluster otherwise create
+	 * @param manifests
+	 * @throws HyscaleException
+	 */
 	public void apply(List<Manifest> manifests) throws HyscaleException {
 		if (manifests == null || manifests.isEmpty()) {
 			logger.error("Found empty manifests to deploy ");
@@ -106,6 +112,10 @@ public class K8sResourceDispatcher {
 		}
 	}
 	
+	/**
+	 * Creates namespace if it doesnot exist on the cluster
+	 * @throws HyscaleException
+	 */
 	private void createNamespaceIfNotExists() throws HyscaleException {
 		ResourceLifeCycleHandler resourceHandler = ResourceHandlers.getHandlerOf(ResourceKind.NAMESPACE.getKind());
 		if (resourceHandler == null) {
@@ -124,6 +134,9 @@ public class K8sResourceDispatcher {
 		}
 	}
 
+	/**
+	 * Handle resource update based on update policy
+	 */
 	private void handleResourceUpdate(ResourceLifeCycleHandler lifeCycleHandler, V1ObjectMeta objectMeta, Object obj)
 			throws NoSuchMethodException, HyscaleException {
 		String namespace = objectMeta.getNamespace();
@@ -161,6 +174,13 @@ public class K8sResourceDispatcher {
 		undeploy(appName, serviceName);
 	}
 
+	/**
+	 * Undeploy resources from cluster
+	 * deletes all resources for which clean up is enabled based on appName and serviceName
+	 * @param appName
+	 * @param serviceName
+	 * @throws HyscaleException if failed to delete any resource
+	 */
 	public void undeploy(String appName, String serviceName) throws HyscaleException {
 		if (StringUtils.isBlank(appName)) {
 			logger.error("No applicaton found for undeployment");

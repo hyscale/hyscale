@@ -1,9 +1,9 @@
 package io.hyscale.ctl.controller.commands;
 
 import org.springframework.stereotype.Component;
+
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.HelpCommand;
 
 /**
  * Aggregator parent command

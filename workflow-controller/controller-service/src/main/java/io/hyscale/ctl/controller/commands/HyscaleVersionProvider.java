@@ -1,14 +1,16 @@
 package io.hyscale.ctl.controller.commands;
 
-import io.hyscale.ctl.commons.constants.ToolConstants;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Component;
+
+import io.hyscale.ctl.commons.constants.ToolConstants;
 import picocli.CommandLine;
 
-import java.text.SimpleDateFormat;
-
+/**
+ * Provides hyscale version for version command
+ */
 @Component
 public class HyscaleVersionProvider implements CommandLine.IVersionProvider {
 

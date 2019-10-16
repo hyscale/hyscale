@@ -12,8 +12,21 @@ import io.hyscale.ctl.commons.exception.HyscaleException;
 import io.hyscale.ctl.commons.utils.ObjectMapperFactory;
 import io.hyscale.ctl.deployer.services.exception.DeployerErrorCodes;
 
+/**
+ * Utility for resource path operations
+ *
+ */
 public class K8sResourcePatchUtil {
 
+	/**
+	 * Creates Json diff for patch based on source and target
+	 * @param <T> 
+	 * @param source
+	 * @param target
+	 * @param klass
+	 * @return patched object, null if source and target are not instances of same class
+	 * @throws HyscaleException
+	 */
 	public static <T> Object getJsonPatch(T source, T target, Class<T> klass) throws HyscaleException {
 		if ((klass.isInstance(source) && klass.isInstance(target))) {
 			String patchString = getzJsonPatch(source, target);

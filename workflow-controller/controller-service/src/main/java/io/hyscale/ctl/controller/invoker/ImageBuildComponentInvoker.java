@@ -12,6 +12,7 @@ import io.hyscale.ctl.builder.core.models.BuildContext;
 import io.hyscale.ctl.commons.component.ComponentInvoker;
 import io.hyscale.ctl.commons.exception.HyscaleException;
 import io.hyscale.ctl.commons.logger.WorkflowLogger;
+import io.hyscale.ctl.commons.models.DeploymentContext;
 import io.hyscale.ctl.commons.models.DockerfileEntity;
 import io.hyscale.ctl.controller.activity.ControllerActivity;
 import io.hyscale.ctl.controller.constants.WorkflowConstants;
@@ -23,6 +24,11 @@ import io.hyscale.ctl.builder.services.service.ImageBuildPushService;
 import io.hyscale.ctl.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.ctl.servicespec.commons.model.service.ServiceSpec;
 
+/**
+ *	Image builder component
+ *	acts as a bridge between workflow controller and image-builder for image build and push operation
+ *	provides link between {@link WorkflowContext} and {@link BuildContext}
+ */
 @Component
 public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext> {
 

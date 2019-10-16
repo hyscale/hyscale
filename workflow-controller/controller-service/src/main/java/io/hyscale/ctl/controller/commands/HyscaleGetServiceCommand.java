@@ -3,6 +3,10 @@ package io.hyscale.ctl.controller.commands;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 
+/**
+ * Parent command for get service operation
+ *
+ */
 @CommandLine.Command(name = "service", subcommands = { HyscaleServiceLogsCommand.class,
 		HyscaleServiceStatusCommand.class }, description = "Performs action on the service")
 @Component

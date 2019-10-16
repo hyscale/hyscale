@@ -1,5 +1,9 @@
 package io.hyscale.ctl.deployer.services.model;
 
+/**
+ * K8s Pod conditions
+ *
+ */
 public enum PodCondition {
 
 	READY("Ready"), POD_SCHEDULED("PodScheduled"), INITIALIZED("Initialized"), CONTAINERS_READY("ContainersReady");

@@ -18,14 +18,13 @@ import io.hyscale.ctl.commons.models.DeploymentContext;
 import io.hyscale.ctl.controller.activity.ControllerActivity;
 import io.hyscale.ctl.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.ctl.controller.util.StatusUtil;
-import io.hyscale.ctl.deployer.services.deployer.Deployer;
 import io.hyscale.ctl.deployer.core.model.DeploymentStatus;
+import io.hyscale.ctl.deployer.services.deployer.Deployer;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.HelpCommand;
 import picocli.CommandLine.Option;
 
 /**
- * Deployment status for services
+ * Command to get Deployment Status for Services
  *
  * @author tushart
  */

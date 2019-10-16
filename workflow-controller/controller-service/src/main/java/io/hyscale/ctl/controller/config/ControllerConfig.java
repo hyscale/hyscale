@@ -1,10 +1,9 @@
 package io.hyscale.ctl.controller.config;
 
-import io.hyscale.ctl.commons.exception.HyscaleErrorCode;
-import io.hyscale.ctl.commons.exception.HyscaleException;
-import io.hyscale.ctl.commons.logger.WorkflowLogger;
-import io.hyscale.ctl.controller.activity.ControllerActivity;
-import io.hyscale.ctl.controller.core.exception.ControllerErrorCodes;
+import java.io.File;
+
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,18 +12,21 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.ctl.commons.config.SetupConfig;
-import org.springframework.stereotype.Controller;
+import io.hyscale.ctl.commons.exception.HyscaleErrorCode;
+import io.hyscale.ctl.commons.exception.HyscaleException;
+import io.hyscale.ctl.commons.logger.WorkflowLogger;
+import io.hyscale.ctl.controller.activity.ControllerActivity;
+import io.hyscale.ctl.controller.core.exception.ControllerErrorCodes;
 
-import javax.annotation.PostConstruct;
-import java.io.File;
-import java.io.IOException;
-
+/**
+ * Controller level config details such as docker registry config, kube config
+ *
+ */
 @PropertySource("classpath:config/controller-config.props")
 @Component
 public class ControllerConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(ControllerConfig.class);
-    private static final String configDir = "config";
 
     @Value(("${io.hyscale.ctl.default.registry.conf}"))
     private String defaultRegistryConfAsString;

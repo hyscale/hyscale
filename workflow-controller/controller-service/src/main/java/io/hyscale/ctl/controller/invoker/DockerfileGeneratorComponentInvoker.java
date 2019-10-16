@@ -24,6 +24,11 @@ import io.hyscale.ctl.servicespec.commons.model.service.ServiceSpec;
 
 import javax.annotation.PostConstruct;
 
+/**
+ *	Docker file generator component
+ *	acts as a bridge between workflow controller and docker file generator
+ *	provides link between {@link WorkflowContext} and {@link DockerfileGenContext}
+ */
 @Component
 public class DockerfileGeneratorComponentInvoker extends ComponentInvoker<WorkflowContext> {
 
@@ -48,10 +53,6 @@ public class DockerfileGeneratorComponentInvoker extends ComponentInvoker<Workfl
         super.addPlugin(serviceDirCleanUpPlugin);
     }
 
-    /**
-     * Read Service spec from Context Create DockerFileGen Context and call Docker
-     * File Generator
-     */
     @Override
     protected void doExecute(WorkflowContext context) throws HyscaleException {
         ServiceSpec serviceSpec = context.getServiceSpec();
