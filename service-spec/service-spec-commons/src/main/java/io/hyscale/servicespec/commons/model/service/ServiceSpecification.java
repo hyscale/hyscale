@@ -1,11 +1,14 @@
 package io.hyscale.servicespec.commons.model.service;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
 import io.hyscale.servicespec.annotations.StrategicMergePatch;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-public class ServiceSpecification {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class ServiceSpecification implements Serializable {
 	private String name;
 	private List<String> depends;
 	private List<Port> ports;

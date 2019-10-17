@@ -7,6 +7,7 @@ module service_spec_commons {
 	requires com.fasterxml.jackson.core;
 	requires json.path;
 	requires org.apache.commons.lang3;
+	requires jackson.annotations;
 
 	exports io.hyscale.servicespec.commons.model;
 	exports io.hyscale.servicespec.commons.exception;

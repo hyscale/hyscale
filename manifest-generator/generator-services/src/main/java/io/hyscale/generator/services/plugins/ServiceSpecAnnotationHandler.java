@@ -42,7 +42,7 @@ public class ServiceSpecAnnotationHandler implements ManifestHandler {
         ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
         try {
             Map<String, String> annotations = new HashMap<>();
-            annotations.put(AnnotationKey.HYSCALE_SERVICE_SPEC.getAnnotation(),mapper.writeValueAsString(serviceSpec.toString()));
+            annotations.put(AnnotationKey.HYSCALE_SERVICE_SPEC.getAnnotation(), serviceSpec.toString());
             manifestSnippet.setSnippet(JsonSnippetConvertor.serialize(annotations));
             manifestSnippetList.add(manifestSnippet);
             return manifestSnippetList;

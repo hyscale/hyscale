@@ -1,5 +1,11 @@
 package io.hyscale.servicespec.commons.model.service;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonDeserialize(using = JsonDeserializer.None.class)
 public class BuildSpecImage extends Image {
 
 	private String name;

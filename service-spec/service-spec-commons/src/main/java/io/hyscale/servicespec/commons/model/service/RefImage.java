@@ -1,11 +1,14 @@
 package io.hyscale.servicespec.commons.model.service;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RefImage extends Image {
 
 	private String name;
 	private String registry;
 	private String tag;
-
+	
 	public String getName() {
 		return name;
 	}

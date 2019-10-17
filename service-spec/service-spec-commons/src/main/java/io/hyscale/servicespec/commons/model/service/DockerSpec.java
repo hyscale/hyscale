@@ -1,5 +1,8 @@
 package io.hyscale.servicespec.commons.model.service;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DockerSpec {
 
 	private String path;
