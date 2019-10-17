@@ -1,0 +1,23 @@
+{
+  "food": {
+    "fruits": [
+      {
+        "name": "Apple",
+        "color": "red"
+      },
+      {
+        "name": "Banana",
+        "color": "yellow"
+      },
+      {
+        "name": "orange",
+        "color": "orange"
+      }
+    ],
+    "vegetables": [
+      "Brinjal",
+      "Tomato",
+      "Onion"
+    ]
+  }
+}

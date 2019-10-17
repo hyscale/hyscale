@@ -1,0 +1,30 @@
+{
+  "apiVersion": "v1",
+  "kind": "Pod",
+  "metadata": {
+    "name": "nginx",
+    "labels": {
+      "role": "myrole"
+    }
+  },
+  "spec": {
+    "containers": [
+      {
+        "name": "web",
+        "image": "nginx",
+        "ports": [
+          {
+            "name": "web",
+            "containerPort": 80,
+            "protocol": "TCP"
+          },
+          {
+            "name": "secure",
+            "containerPort": 443,
+            "protocol": "TCP"
+          }
+        ]
+      }
+    ]
+  }
+}

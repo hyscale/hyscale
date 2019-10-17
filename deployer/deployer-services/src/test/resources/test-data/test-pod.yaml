@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    name: nginx
+  name: nginx
+  namespace: test
+spec:
+  containers:
+    - image: nginx
+      imagePullPolicy: Always
+      name: nginx
+      ports: [{containerPort: 80, protocol: TCP}]
+      resources: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+status:
+  conditions:
+    - lastProbeTime: null
+      status: 'True'
+      type: Initialized
+    - lastProbeTime: null
+      status: 'True'
+      type: Ready
+    - lastProbeTime: null
+      status: 'True'
+      type: ContainersReady
+    - lastProbeTime: null
+      status: 'True'
+      type: PodScheduled
+  containerStatuses:
+    - containerID: 'docker://600b084da2395384078bc02050c4fdb2d981e88351406e2818f7af703fb49ae7'
+      image: 'nginx:latest'
+      imageID: 'docker-pullable://nginx@sha256:1b75cccb59e95f892790ed7fe0626196d4382155c906eb27bd7ecf595ad67ada'
+      name: nginx
+      ready: true
+      restartCount: 0
+      state: {running: null}
+  phase: Running

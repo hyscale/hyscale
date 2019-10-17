@@ -1,0 +1,11 @@
+name: test1
+image:
+  registry: x.y.z
+  name: myServiceImage
+
+ports:
+  - port: 8080/tcp
+    healthCheck:
+      httpPath: /sample
+  - port : 8081
+

@@ -1,0 +1,10 @@
+name: test2
+image:
+  name: myServiceImage
+
+ports:
+  - port: 8080/tcp
+    healthCheck:
+      httpPath: /sample
+  - port : 8081
+
