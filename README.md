@@ -1,4 +1,7 @@
+![HyScale](https://www.hyscale.io/wp-content/uploads/2019/01/hyscale-logo.png)
+
 # HyScale
+
 ### The k8s Deployment Tool 
 
 HyScale is an app deployment tool for deploying apps to Kubernetes quickly without having to deal with the complexities of k8s or write & maintain k8s manifests. It provides a convenient CLI for deploying, viewing status, logs and undeploying. It includes a declarative service spec parser for k8s abstraction and the automatic generation of k8s manifests & docker files.
@@ -18,9 +21,12 @@ If you do not have access to a kubernetes cluster and wish to deploy to your loc
 
 Open your terminal and enter the following:
 
-    $  curl -sSL http://get.hyscale.io | bash
+```sh
+curl -sSL http://get.hyscale.io | bash
+```
 
 ## Deploying to k8s
+
 ### Preparing your first service spec
 
 Here is a basic service spec for deploying tomcat (without any application). For all possible options, see the [spec reference](docs/hyscale-spec-reference.md).
@@ -48,17 +54,22 @@ ports:
 
 ### Deploy the service
 
-To deploy, invoke the hyscale deploy command:
+**To deploy, invoke the hyscale deploy command:**
     
-    $ hyscale deploy service -f `<myservice.hspec.yaml>` -n `<my-namespace>` -a `<my-app-name>`
+```sh
+hyscale deploy service -f `<myservice.hspec.yaml>` -n `<my-namespace>` -a `<my-app-name>`
+```
 
-To view the status of your deployment:
+**To view the status of your deployment:**
 
-    $ hyscale get service status -s `<myservice>` -n `<my-namespace>` -a `<my-app-name>`
+```sh
+hyscale get service status -s `<myservice>` -n `<my-namespace>` -a `<my-app-name>`
+```
 
-To view logs:
-
-    $ hyscale get service logs -s `<myservice>` -n `<my-namespace>` -a `<my-app-name>`
+**To view logs:**
+```sh
+hyscale get service logs -s `<myservice>` -n `<my-namespace>` -a `<my-app-name>`
+```
 
 For all possible commands, see the [command reference](docs/hyscale-commands-reference.md).
 
