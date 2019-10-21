@@ -374,6 +374,11 @@ List of ports to be declared along healthcheck and ingressrules if any.
 <secretKeyName>
 <p>
 List of secret key Names
+	
+_Note:	The secret should be pre-created by the k8s-admin in your namespace as appName-serviceName.
+The appName & serviceName should be normalized to lowercase & replace dot(.) as hyphen(-) ,space( ) as hyphen(-). 
+Eg: appName=Sample, namespace=Sample dev results in secret of sample-sample-dev._
+	
 <p>
 <strong>Eg:</strong>
 <pre><code>
