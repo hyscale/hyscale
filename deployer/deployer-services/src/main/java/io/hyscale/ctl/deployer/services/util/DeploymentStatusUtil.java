@@ -26,7 +26,7 @@ public class DeploymentStatusUtil {
         DeploymentStatus status = new DeploymentStatus();
         status.setServiceName(serviceName);
         status.setStatus(DeploymentStatus.Status.NOT_DEPLOYED);
-        status.setDateTime(null);
+        status.setAge(null);
         return status;
     }
 

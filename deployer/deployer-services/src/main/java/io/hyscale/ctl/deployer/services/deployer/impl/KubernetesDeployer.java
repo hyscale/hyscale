@@ -259,7 +259,7 @@ public class KubernetesDeployer implements Deployer {
 			return DeploymentStatusUtil.getNotDeployedStatus(context.getServiceName());
 		}
 		DeploymentStatus deploymentStatus = new DeploymentStatus();
-		deploymentStatus.setDateTime(DeploymentStatusUtil.getAge(v1PodList));
+		deploymentStatus.setAge(DeploymentStatusUtil.getAge(v1PodList));
 		deploymentStatus.setMessage(DeploymentStatusUtil.getMessage(v1PodList));
 		deploymentStatus.setStatus(DeploymentStatusUtil.getStatus(v1PodList));
 		deploymentStatus.setServiceName(context.getServiceName());

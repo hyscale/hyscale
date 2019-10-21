@@ -52,9 +52,6 @@ public class DockerfileGeneratorImpl implements DockerfileGenerator {
     @Autowired
     private DockerfilePersistenceService dockerfilePersistenceService;
 
-    @Autowired
-    private DockerfileGenPredicates dockerfileGenPredicates;
-
     /**
      * Generate dockerfileContent, Copy supporting files and Persist dockerfile
      */
@@ -148,10 +145,10 @@ public class DockerfileGeneratorImpl implements DockerfileGenerator {
             throw new HyscaleException(DockerfileErrorCodes.DOCKERFILE_OR_BUILDSPEC_REQUIRED);
         }
 
-        if (dockerfileGenPredicates.skipDockerfileGen().test(serviceSpec)) {
+        if (DockerfileGenPredicates.skipDockerfileGen().test(serviceSpec)) {
             WorkflowLogger.startActivity(DockerfileActivity.DOCKERFILE_GENERATION);
             WorkflowLogger.endActivity(Status.SKIPPING);
-            if (dockerfileGenPredicates.stackAsServiceImage().test(buildSpec)) {
+            if (DockerfileGenPredicates.stackAsServiceImage().test(buildSpec)) {
                 context.setStackAsServiceImage(true);
             }
             return false;

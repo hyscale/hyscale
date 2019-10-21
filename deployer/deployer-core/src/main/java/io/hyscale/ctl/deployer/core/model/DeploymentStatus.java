@@ -29,7 +29,7 @@ public class DeploymentStatus {
 	private String message;
 	private String serviceAddress;
 
-	private DateTime dateTime;
+	private DateTime age;
 
 	public String getServiceName() {
 		return serviceName;
@@ -55,12 +55,12 @@ public class DeploymentStatus {
 		this.status = status;
 	}
 
-	public DateTime getDateTime() {
-		return dateTime;
+	public DateTime getAge() {
+		return age;
 	}
 
-	public void setDateTime(DateTime dateTime) {
-		this.dateTime = dateTime;
+	public void setAge(DateTime age) {
+		this.age = age;
 	}
 
 	public String getServiceAddress() {

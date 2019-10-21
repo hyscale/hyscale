@@ -12,7 +12,7 @@ import io.hyscale.ctl.deployer.core.model.DeploymentStatus;
 public class StatusUtil {
 	
 	public static String[] getRowData(DeploymentStatus deploymentStatus) {
-        String age = getAge(deploymentStatus.getDateTime());
+        String age = getAge(deploymentStatus.getAge());
         String statusMsg = deploymentStatus.getStatus() != null ? deploymentStatus.getStatus().getMessage() : null;
         String[] rowData = new String[]{deploymentStatus.getServiceName(), statusMsg, age, deploymentStatus.getServiceAddress(),
                 deploymentStatus.getMessage()};
