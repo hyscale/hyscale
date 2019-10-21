@@ -1,12 +1,20 @@
 ![HyScale](https://www.hyscale.io/wp-content/uploads/2019/01/hyscale-logo.png)
 
-# HyScale
+### The k8s App Deployment Tool 
 
-### The k8s Deployment Tool 
+Kubernetes (k8s) has emerged as the defacto container orchestration platform offering excellent abstraction over infrastructure. But service deployments and delivery mechanisms to k8s are still way too complex. Delivery tools should simplify things for a developer so that developers can focus on writing interesting stuff & building value. This is best achieved if all the complexity of deployment completely disappears!
 
-HyScale is an app deployment tool for deploying apps to Kubernetes quickly without having to deal with the complexities of k8s or write & maintain k8s manifests. It provides a convenient CLI for deploying, viewing status, logs and undeploying. It includes a declarative service spec parser for k8s abstraction and the automatic generation of k8s manifests & docker files.
+HyScale is a starting point for how a simplified service spec can allow developers to easily deploy their apps to k8s without having to wade through k8s complexities and also without having to write or maintain hundreds of lines of yaml.
 
-See documentation [here](docs/developer-guide.md).
+It offers a declarative service spec parser for k8s abstraction and the automatic generation of k8s manifests & docker files.
+
+Here is what you need to do:
+
+![User-Workflow](docs/images/user-workflow.png)
+
+To get started, install hyscale as per the below instructions & follow the tutorial to deploy your first app.
+
+See full documentation [here](docs/developer-guide.md).
 
 ## Prerequisites
 In order to deploy your service to k8s, you must have the following configurations and installations in place on your machine from which you wish to deploy your application.
