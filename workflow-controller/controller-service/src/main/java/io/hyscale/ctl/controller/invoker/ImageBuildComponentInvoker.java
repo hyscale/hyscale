@@ -25,9 +25,9 @@ import io.hyscale.ctl.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.ctl.servicespec.commons.model.service.ServiceSpec;
 
 /**
- *	Image builder component
- *	acts as a bridge between workflow controller and image-builder for image build and push operation
- *	provides link between {@link WorkflowContext} and {@link BuildContext}
+ *	Image builder component acts as a bridge between workflow controller and image-builder
+ *	for image build and push operation provides link between
+ *	{@link WorkflowContext} and {@link BuildContext}
  */
 @Component
 public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext> {

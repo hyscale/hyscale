@@ -21,8 +21,13 @@ import picocli.CommandLine.IFactory;
 import picocli.CommandLine.ParameterException;
 
 /**
- * Entry point for executing commands
+ * Starting point for the hyscale tool
+ * <p>
+ * This class is responsible for initializing the spring application context
+ * and execute the given commands. It works on top of picoli
+ * {@See <a href="https://picocli.info/">https://picocli.info/</a>}
  *
+ * </p>
  */
 @SpringBootApplication
 @ComponentScan("io.hyscale.ctl")
@@ -51,8 +56,6 @@ public class HyscaleCtlInitializer implements CommandLineRunner {
             commandLine.execute(args);
         } catch (ParameterException e) {
             LOGGER.error("Error while processing command, error {}", ControllerErrorCodes.INVALID_COMMAND.getErrorMessage(), e);
-        } finally {
-            ThreadPoolUtil.getInstance().shutdown();
         }
     }
 

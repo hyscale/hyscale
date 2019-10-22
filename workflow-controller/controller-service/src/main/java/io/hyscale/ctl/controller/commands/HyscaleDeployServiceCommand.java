@@ -28,7 +28,25 @@ import picocli.CommandLine;
 import javax.annotation.PreDestroy;
 
 /**
- * Command to deploy service specs to cluster
+ *  This class executes 'hyscale deploy service' command
+ *  It is a sub-command of the 'hyscale deploy' command
+ *  @see HyscaleDeployCommand
+ *  Every command/sub-command has to implement the Runnable so that
+ *  whenever the command is executed the {@link #run()}
+ *  method will be invoked
+ *
+ * @option namespace  name of the namespace in which the service to be deployed
+ * @option appName   name of the app to logically group your service
+ * @option serviceSpecs   list of service specs that are to be deployed
+ * @option verbose  prints the verbose output of the deployment
+ *
+ *  Eg: hyscale deploy service -f s1.hspec.yaml -f s2.hspec.yaml -n dev -a sample
+ *
+ *
+ *  Reponsible for deploying a service with the given 'hspec' to
+ *  the configured kubernetes cluster ,starting from image building to manifest generation
+ *  to deployment. Creates a WorkflowContext to communicate across
+ *  all deployment stages.
  *
  */
 @CommandLine.Command(name = "service", aliases = {"services"},

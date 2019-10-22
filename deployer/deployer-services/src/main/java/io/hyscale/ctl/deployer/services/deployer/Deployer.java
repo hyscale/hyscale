@@ -13,7 +13,11 @@ import io.hyscale.ctl.deployer.services.model.ResourceStatus;
 import io.hyscale.ctl.deployer.services.model.ServiceAddress;
 import io.hyscale.ctl.deployer.services.progress.ProgressHandler;
 /**
- * Defines Deployer functionalities
+ * Interface to service deployments.
+ * This class takes the responsibility of handling any deployment operation related to the service.
+ *
+ * <p>Implementation Notes</p>
+ * Should be able to do service deployments from the supplied manifest to the cluster.
  *
  */
 public interface Deployer {

@@ -9,7 +9,8 @@ import io.hyscale.ctl.commons.constants.ToolConstants;
 import picocli.CommandLine;
 
 /**
- * Provides hyscale version for version command
+ * Provides version when 'hyscale version' command
+ * is executed
  */
 @Component
 public class HyscaleVersionProvider implements CommandLine.IVersionProvider {

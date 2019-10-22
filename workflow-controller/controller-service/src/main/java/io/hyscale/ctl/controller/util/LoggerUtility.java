@@ -18,9 +18,7 @@ import io.hyscale.ctl.deployer.services.util.DeployerLogUtil;
 import io.hyscale.ctl.builder.services.util.ImageLogUtil;
 
 /**
- * Utility to get logs
- * build and push logs
- * deployment logs
+ * Utility to fetch deployment logs of the service specified.
  */
 @Component
 public class LoggerUtility {

@@ -2,10 +2,6 @@ package io.hyscale.ctl.commons.utils;
 
 public class ServiceUtil {
 
-	public static void main(String args[]) {
-		String string = getRandomKey("component");
-	}
-
 	public static String getRandomKey(String prefix) {
 		String id = IDGenerator.generate(8);
 		return prefix + "-" + id;

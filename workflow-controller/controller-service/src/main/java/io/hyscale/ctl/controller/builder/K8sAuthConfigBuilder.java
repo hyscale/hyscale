@@ -7,6 +7,13 @@ import io.hyscale.ctl.commons.models.AuthConfig;
 import io.hyscale.ctl.commons.models.K8sConfigFileAuth;
 import io.hyscale.ctl.controller.config.ControllerConfig;
 
+/**
+ *
+ *  Prepares the authorisation config @see {@link AuthConfig }
+ *  for kubernetes cluster.
+ *
+ */
+
 @Component
 public class K8sAuthConfigBuilder {
 

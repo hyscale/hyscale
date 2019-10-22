@@ -12,7 +12,24 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 /**
- * Command to undeploy an application
+ *  This class executes 'hyscale undeploy app' command
+ *  It is a sub-command of the 'hyscale undeploy' command
+ *  @see HyscaleUndeployCommand
+ *  Every command/sub-command has to implement the Runnable so that
+ *  whenever the command is executed the {@link #run()}
+ *  method will be invoked
+ *
+ * @option namespace  name of the namespace from which the
+ * 					  app has to be undeployed
+ * @option appName    name of the app to be undeployed
+ *
+ * Eg: hyscale undeploy app -a sample -n dev
+ *
+ * Undeploys the app from the given namespace in the
+ * configured kubernetes cluster.
+ * Undeploys all the resources from the cluster related to the
+ * app from the namespace.
+ * @Note Note: Undeploy does not clear the namespace
  *
  */
 @Command(name = "app", description = "Undeploys app from the kubernetes cluster")

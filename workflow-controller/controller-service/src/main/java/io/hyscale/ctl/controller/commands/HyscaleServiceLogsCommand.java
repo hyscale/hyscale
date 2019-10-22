@@ -18,10 +18,25 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 /**
- * Command to get service logs
- * one could get specific number of lines of logs or could tail them
+ *  This class executes the 'hyscale get service logs' command
+ *  It is a sub-command of the 'hyscale get service' command
+ *  @see HyscaleGetServiceCommand .
+ *  Every command/sub-command has to implement the Runnable so tha
+ *  whenever the command is executed the {@link #run()}
+ *  method will be invoked
+ *
+ * @option serviceName name of the service
+ * @option namespace  namespace in which the app is deployed
+ * @option appName   name of the app
+ * @option tail  enable this option to tail the logs
+ * @option line  last 'n' number of lines are retrieved from the service
+ *
+ * Eg: hyscale get service logs -s s1 -n dev -a sample
+ *
+ * Fetches the pod logs from the given cluster
  *
  */
+
 @Command(name = "logs", aliases = { "log" }, description = "Displays the service logs")
 @Component
 public class HyscaleServiceLogsCommand implements Runnable {

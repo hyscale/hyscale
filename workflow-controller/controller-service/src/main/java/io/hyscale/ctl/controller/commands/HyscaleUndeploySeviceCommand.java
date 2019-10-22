@@ -12,7 +12,23 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 /**
- * Command to deploy specified services in an app
+ *  This class executes 'hyscale undeploy service' command
+ *  It is a sub-command of the 'hyscale undeploy' command
+ *  @see HyscaleUndeployCommand
+ *  Every command/sub-command has to implement the Runnable so that
+ *  whenever the command is executed the {@link #run()}
+ *  method will be invoked
+ *
+ * @option namespace  name of the namespace from which the
+ * 					  service has to be undeployed
+ * @option appName    name of the app in which the service is present
+ * @option serviceList  list of service names to be undeployed
+ *
+ * Eg: hyscale undeploy service -s s1 -s s2 -a sample -n dev
+ *
+ * Undeploys the service from the namespace in the cluster
+ * Removes all the resources from the cluster related to the
+ * given service from the namespace.
  *
  */
 @Command(name = "service", description = "Undeploy service from the configured kubernetes cluster")

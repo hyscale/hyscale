@@ -20,8 +20,7 @@ import io.hyscale.ctl.controller.plugins.ServiceDirCleanUpPlugin;
 import io.hyscale.ctl.deployer.services.deployer.Deployer;
 
 /**
- *	Undeploy component
- *	acts as a bridge between workflow controller and deployer for undeploy operation
+ *	Undeploy component acts as a bridge between workflow controller and deployer for undeploy operation
  *	provides link between {@link WorkflowContext} and {@link DeploymentContext}
  */
 @Component

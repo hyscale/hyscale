@@ -56,7 +56,7 @@ public class JsonTreeUtil {
     }
 
     public static int getArrayIndex(String field) {
-        if (StringUtils.isNotBlank(field)) {
+        if (StringUtils.isBlank(field)) {
             return -1;
         }
         String[] paths = field.split("\\.");

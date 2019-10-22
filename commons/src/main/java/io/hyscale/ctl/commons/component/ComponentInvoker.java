@@ -7,6 +7,18 @@ import io.hyscale.ctl.commons.exception.HyscaleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Any class can extend this class to process.
+ * Plugins can be registered @see {@link #addPlugin(ComponentInvokerPlugin)}
+ *
+ * @param <C> <p> Implementation Notes </p>
+ * @see #doExecute(ComponentInvokerContext) to execute any process . This method
+ * will be invoked after all @see {@link ComponentInvokerPlugin#doBefore(Object)}
+ * After successful execution all @see {@link ComponentInvokerPlugin#doAfter(Object)}
+ * are executed. In case of error the execution is terminated and the
+ * @see {@link #onError(ComponentInvokerContext, HyscaleException)} is invoked.
+ */
+
 public abstract class ComponentInvoker<C extends ComponentInvokerContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(ComponentInvoker.class);

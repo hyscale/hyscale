@@ -40,12 +40,4 @@ public class ServiceSpecValidator {
         return schema.validate(inputServiceSchema);
     }
 
-    public static void main(final String... args)
-            throws IOException, ProcessingException {
-        ServiceSpecValidator serviceSpecValidator = new ServiceSpecValidator();
-        ProcessingReport validationReport = serviceSpecValidator.validate(JsonLoader.fromResource("/tests/hrms-frontend.json"));
-        System.out.println(validationReport);
-    }
-
-
 }

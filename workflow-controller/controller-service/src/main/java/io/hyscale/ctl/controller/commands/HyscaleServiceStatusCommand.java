@@ -24,9 +24,24 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 /**
- * Command to get Deployment Status for Services
+ *  This class executes 'hyscale get service status' command.
+ *  It is a sub-command of the 'hyscale get service' command
+ *  @see HyscaleGetServiceCommand .
+ *  Every command/sub-command has to implement the Runnable so that
+ *  whenever the command is executed the {@link #run()}
+ *  method will be invoked
  *
- * @author tushart
+ * @option serviceList list of service names
+ * @option namespace  namespace in which the app is deployed
+ * @option appName   name of the app
+ *
+ * Eg: hyscale get service status -s s1 -n dev -a sample
+ *
+ * Fetches the service status from the given cluster.
+ * The service status has been abstracted over the pod status,see {@link DeploymentStatus},
+ * gives the information about service and the failure message when it is in
+ * NotRunning status.
+ *
  */
 @Command(name = "status", description = "Get the status of the deployment")
 public class HyscaleServiceStatusCommand implements Runnable {

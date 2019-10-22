@@ -18,9 +18,18 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 /**
- * Command to get Deployment status for an application
+ *  This class executes the 'hyscale get app status' command
+ *  It is a sub-command of the 'hyscale get app' command
+ *  @see HyscaleGetAppCommand
+ *  Every command/sub-command has to implement the Runnable so that
+ *  whenever the command is executed the {@link #run()}
+ *  method will be invoked
  *
- * @author tushart
+ * @option namespace  namespace in which the app is deployed
+ * @option appName   name of the app
+ *
+ * Fetches the deployment status {@link DeploymentStatus} of each service in the app and displays
+ * in a table format to the user.
  */
 @Command(name = "status", description = "Get App Deployment status")
 public class HyscaleAppStatusCommand implements Runnable {

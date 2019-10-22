@@ -25,9 +25,11 @@ import io.hyscale.ctl.servicespec.commons.model.service.ServiceSpec;
 import javax.annotation.PostConstruct;
 
 /**
- *	Docker file generator component
- *	acts as a bridge between workflow controller and docker file generator
- *	provides link between {@link WorkflowContext} and {@link DockerfileGenContext}
+ * This class invokes the @see {@link DockerfileGenerator} to generate the Dockerfile
+ * It acts as a bridge between workflow controller and docker file generator
+ * provides link between {@link WorkflowContext} and {@link DockerfileGenContext}
+ * <p>
+ * The registered plugins are executed as a part of component invocation
  */
 @Component
 public class DockerfileGeneratorComponentInvoker extends ComponentInvoker<WorkflowContext> {

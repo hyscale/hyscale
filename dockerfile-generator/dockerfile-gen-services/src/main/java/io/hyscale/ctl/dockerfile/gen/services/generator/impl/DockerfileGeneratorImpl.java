@@ -32,6 +32,19 @@ import io.hyscale.ctl.dockerfile.gen.services.manager.impl.DockerScriptManagerIm
 import io.hyscale.ctl.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.ctl.servicespec.commons.model.service.ServiceSpec;
 
+/**
+ * Implementation to @see {@link DockerfileGenerator}
+ * <p>
+ * Responsible for
+ * <ol>
+ * <li>Copying supporting files to the path relative to dockerfile </li>
+ * <li>Handles the configuration commands & runCommands to dockerfile</li>
+ * <li> Generates Dockerfile content</li>
+ * <li> Persists the dockerfile at
+ * USER.HOME/hyscale/apps/[appName]/[serviceName/generated-files/dockerfiles</li>
+ * </ol>
+ */
+
 @Component
 public class DockerfileGeneratorImpl implements DockerfileGenerator {
 
@@ -53,7 +66,11 @@ public class DockerfileGeneratorImpl implements DockerfileGenerator {
     private DockerfilePersistenceService dockerfilePersistenceService;
 
     /**
-     * Generate dockerfileContent, Copy supporting files and Persist dockerfile
+     * validates service spec if dockerfile generation has to be skipped
+     * Copies the artifacts to relative path of dockerfile
+     * Copies the scripts to relative path of dockerfile
+     * Generates the dockerfile content
+     * Writes  dockerfile to a file
      */
     @Override
     public DockerfileEntity generateDockerfile(ServiceSpec serviceSpec, DockerfileGenContext context)
@@ -63,6 +80,7 @@ public class DockerfileGeneratorImpl implements DockerfileGenerator {
             validate(serviceSpec, context);
             String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
             context.setServiceName(serviceName.trim());
+            //validates service spec if dockerfile generation has to be skipped
             if (!skipDockerfileGen(serviceSpec, context)) {
                 return null;
             }

@@ -37,9 +37,8 @@ import io.hyscale.ctl.servicespec.commons.model.service.Port;
 import io.hyscale.ctl.servicespec.commons.model.service.ServiceSpec;
 
 /**
- *	Deployer component
- *	acts as a bridge between workflow controller and deployer for deploy operation
- *	provides link between {@link WorkflowContext} and {@link DeploymentContext}
+ * Deployer component acts as a bridge between workflow controller and deployer for deploy operation
+ * provides link between {@link WorkflowContext} and {@link DeploymentContext}
  */
 @Component
 public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
@@ -62,26 +61,27 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
     private LogProcessor logProcessor;
 
     @Autowired
-	private K8sResourcesCleanUpPlugin k8sResourcesCleanUpPlugin;
-	
-	@Autowired
-	private VolumeCleanUpPlugin volumeCleanUpPlugin;
-	
-	@Autowired
-	private VolumeValidatorPlugin volumeValidatorPlugin;
+    private K8sResourcesCleanUpPlugin k8sResourcesCleanUpPlugin;
+
+    @Autowired
+    private VolumeCleanUpPlugin volumeCleanUpPlugin;
+
+    @Autowired
+    private VolumeValidatorPlugin volumeValidatorPlugin;
 
     @PostConstruct
     public void init() {
-    	super.addPlugin(volumeValidatorPlugin);
-    	super.addPlugin(k8sResourcesCleanUpPlugin);
-		super.addPlugin(volumeCleanUpPlugin);
+        super.addPlugin(volumeValidatorPlugin);
+        super.addPlugin(k8sResourcesCleanUpPlugin);
+        super.addPlugin(volumeCleanUpPlugin);
     }
 
     /**
-     * Operations performed
-     * 1. deploy service
-     * 2. wait for deployment completion
-     * 3. get service address if service is external
+     * Deploys the service to the kubernetes cluster
+     * <p>
+     * 1. Deploying the service to the cluster
+     * 2. Wait for deployment completion
+     * 3. Get service address from the cluster if externalized
      */
     @Override
     protected void doExecute(WorkflowContext context) throws HyscaleException {
@@ -123,6 +123,10 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
         deploymentContext.setServiceName(serviceName);
         context.setServiceName(serviceName);
         WorkflowLogger.header(ControllerActivity.STARTING_DEPLOYMENT);
+        /*
+            Deploys and waits for the deployment completion
+         */
+
         try {
             deployer.deploy(deploymentContext);
             deployer.waitForDeployment(deploymentContext);
@@ -144,7 +148,7 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
 
         Boolean external = serviceSpec.get(HyscaleSpecFields.external, Boolean.class);
         external = external == null ? false : external;
-        logger.debug("Checking whether service {} is external {}", serviceName ,external);
+        logger.debug("Checking whether service {} is external {}", serviceName, external);
         if (external) {
             TypeReference<List<Port>> typeReference = new TypeReference<List<Port>>() {
             };
@@ -152,7 +156,7 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
             if (servicePorts != null) {
                 ServiceAddress serviceAddress = deployer.getServiceAddress(deploymentContext);
                 if (serviceAddress != null) {
-                	context.addAttribute(WorkflowConstants.SERVICE_IP, serviceAddress.toString());
+                    context.addAttribute(WorkflowConstants.SERVICE_IP, serviceAddress.toString());
                 }
             }
         }
@@ -160,6 +164,7 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
 
     /**
      * write deployment logs to file for later access
+     *
      * @param context
      * @param deploymentContext
      */

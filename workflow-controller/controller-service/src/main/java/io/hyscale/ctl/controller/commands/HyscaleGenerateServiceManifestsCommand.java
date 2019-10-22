@@ -21,7 +21,22 @@ import picocli.CommandLine;
 import javax.annotation.PreDestroy;
 
 /**
- * Command to generate Manifest from service specs
+ * This class executes 'hyscale generate service manifests' command
+ * It is a sub-command of the 'hyscale generate service' command
+ * @see HyscaleGenerateServiceCommand
+ * Every command/sub-command has to implement the Runnable so that
+ * whenever the command is executed the {@link #run()}
+ * method will be invoked
+ *
+ * @option appName  name of the app
+ * @option serviceSpecs  list of service specs
+ *
+ * Eg: hyscale generate service manifests -f s1.hspec.yaml -f s2.hspec.yaml -a sample
+ *      -n dev
+ *
+ * Generates the manifests from the given hspec and writes the manifests
+ * to <USER.HOME/hyscale/apps/[<appName]/[serviceName]/generated-files/manifests/
+ *
  *
  */
 @CommandLine.Command(name = "manifests", aliases = {"manifest"},

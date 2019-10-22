@@ -124,7 +124,7 @@ public class PluginProcessor {
         manifestSnippetList.stream().filter(each -> {
             return each != null && StringUtils.isNotBlank(each.getSnippet());
         }).forEach(each -> {
-            logger.debug("Processing Snippet Kind{} :: Path{} ", each.getKind(), each.getPath());
+            logger.debug("Processing Snippet Kind{} :: Path at {} ", each.getKind(), each.getPath());
             ManifestMeta manifestMeta = new ManifestMeta(each.getKind());
             if (each.getName() != null) {
                 manifestMeta.setIdentifier(each.getName());
@@ -134,7 +134,6 @@ public class PluginProcessor {
             if (manifestNode == null || manifestNode.getObjectNode() == null) {
                 rootNode = JsonNodeFactory.instance.objectNode();
                 manifestNode = new ManifestNode(rootNode);
-
             } else {
                 rootNode = manifestNode.getObjectNode();
             }
