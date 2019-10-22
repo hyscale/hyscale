@@ -26,7 +26,7 @@
 
 ![dockerfile-generator](images/dockerfile-generator.jpg)
 
-Generates dockerfile from the given servicespec . The dockerfile generation is an optional component if you have a ready-made dockerfile. In this case dockerfile generation is skipped. BuildSpec from servicespec is the input to create dockerfile, you can supply the artifacts ( packaged code like binaries, jar, war, scripts etc ), configuration commands if there is any requirement to customize on top of the stack image. These configuration commands are baked & run inside the image. Run commands can also be supplied incase if you want to override the docker cmd. All these configuration under buildSpec is inside a docker image.
+Generates dockerfile from the given servicespec . If you have a ready-made dockerfile, dockerfile generation will be skipped. BuildSpec from servicespec is the input to create dockerfile, you can supply the artifacts ( packaged code like binaries, jar, war, scripts etc ), configuration commands if there is any requirement to customize on top of the stack image. These configuration commands are baked & run inside the image. Run commands can also be supplied incase if you want to override the docker cmd. All these configuration under buildSpec is inside a docker image.
 
 #### Key points:
 
