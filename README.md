@@ -2,7 +2,7 @@
 
 ### The k8s App Deployment Tool 
 
-Kubernetes (k8s) has emerged as the defacto container orchestration platform offering excellent abstraction over infrastructure. But service deployments and delivery mechanisms to k8s are still way too complex. Delivery tools should simplify things for a developer so that developers can focus on writing interesting stuff & building value. This is best achieved if all the complexity of deployment completely disappears!
+Kubernetes (k8s) has emerged as the de facto container orchestration platform offering excellent abstraction over infrastructure. But service deployments and delivery mechanisms to k8s are still way too complex. Delivery tools should simplify things for a developer so that developers can focus on writing interesting stuff & building value. This is best achieved if all the complexity of deployment completely disappears!
 
 HyScale is a starting point for how a simplified service spec can allow developers to easily deploy their apps to k8s without having to wade through k8s complexities and also without having to write or maintain hundreds of lines of yaml.
 
