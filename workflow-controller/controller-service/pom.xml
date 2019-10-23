@@ -3,7 +3,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>io.hyscale.ctl</groupId>
+		<groupId>io.hyscale</groupId>
 		<artifactId>workflow-controller</artifactId>
 		<version>0.1</version>
 	</parent>
@@ -22,7 +22,7 @@
 			<version>5.1.7.RELEASE</version>
 		</dependency>
 		<dependency>
-			<groupId>io.hyscale.ctl</groupId>
+			<groupId>io.hyscale</groupId>
 			<artifactId>controller-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
@@ -57,32 +57,32 @@
 			<version>${picocli.spring-boot.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.hyscale.ctl</groupId>
+			<groupId>io.hyscale</groupId>
 			<artifactId>commons</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.hyscale.ctl</groupId>
+			<groupId>io.hyscale</groupId>
 			<artifactId>service-spec-commons</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.hyscale.ctl</groupId>
+			<groupId>io.hyscale</groupId>
 			<artifactId>deployer-services</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.hyscale.ctl</groupId>
+			<groupId>io.hyscale</groupId>
 			<artifactId>generator-services</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.hyscale.ctl</groupId>
+			<groupId>io.hyscale</groupId>
 			<artifactId>dockerfile-gen-services</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.hyscale.ctl</groupId>
+			<groupId>io.hyscale</groupId>
 			<artifactId>builder-services</artifactId>
 			<version>${project.version}</version>
 		</dependency>

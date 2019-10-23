@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
-		<groupId>io.hyscale.ctl</groupId>
+		<groupId>io.hyscale</groupId>
 		<artifactId>manifest-generator</artifactId>
 		<version>0.1</version>
 	</parent>
@@ -19,20 +19,20 @@
 			<!--<version>${commons-io.version}</version> -->
 		</dependency>
 		<dependency>
-			<groupId>io.hyscale.ctl</groupId>
+			<groupId>io.hyscale</groupId>
 			<artifactId>generator-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>io.hyscale.ctl</groupId>
+			<groupId>io.hyscale</groupId>
 			<artifactId>commons</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.hyscale.ctl</groupId>
+			<groupId>io.hyscale</groupId>
 			<artifactId>plugin-framework</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.hyscale.ctl</groupId>
+			<groupId>io.hyscale</groupId>
 			<artifactId>service-spec-commons</artifactId>
 		</dependency>
 	</dependencies>

@@ -28,10 +28,10 @@ public class ControllerConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(ControllerConfig.class);
 
-    @Value(("${io.hyscale.ctl.default.registry.conf}"))
+    @Value(("${io.hyscale.default.registry.conf}"))
     private String defaultRegistryConfAsString;
 
-    @Value(("${io.hyscale.ctl.default.kube.conf}"))
+    @Value(("${io.hyscale.default.kube.conf}"))
     private String defaultKubeConfAsString;
 
     private String defaultRegistryConf;
