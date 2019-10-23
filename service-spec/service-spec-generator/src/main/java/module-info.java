@@ -9,6 +9,6 @@ module service_spec_generator {
 	requires com.fasterxml.jackson.core;
 	requires org.apache.commons.lang3;
 
-	exports io.hyscale.ctl.servicespec.generator;
-	exports io.hyscale.ctl.servicespec.model;
+	exports io.hyscale.servicespec.generator;
+	exports io.hyscale.servicespec.model;
 }

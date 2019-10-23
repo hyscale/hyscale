@@ -1,13 +1,13 @@
 module dockerfilegenservices {
-	exports io.hyscale.ctl.dockerfile.gen.services.generator;
-	exports io.hyscale.ctl.dockerfile.gen.services.util;
-	exports io.hyscale.ctl.dockerfile.gen.services.model;
-	exports io.hyscale.ctl.dockerfile.gen.services.constants;
-	exports io.hyscale.ctl.dockerfile.gen.services.persist;
-	exports io.hyscale.ctl.dockerfile.gen.services.templates;
-	exports io.hyscale.ctl.dockerfile.gen.services.predicates;
-	exports io.hyscale.ctl.dockerfile.gen.services.exception;
-	exports io.hyscale.ctl.dockerfile.gen.services.config;
+	exports io.hyscale.dockerfile.gen.services.generator;
+	exports io.hyscale.dockerfile.gen.services.util;
+	exports io.hyscale.dockerfile.gen.services.model;
+	exports io.hyscale.dockerfile.gen.services.constants;
+	exports io.hyscale.dockerfile.gen.services.persist;
+	exports io.hyscale.dockerfile.gen.services.templates;
+	exports io.hyscale.dockerfile.gen.services.predicates;
+	exports io.hyscale.dockerfile.gen.services.exception;
+	exports io.hyscale.dockerfile.gen.services.config;
 
 	requires service_spec_commons;
 	requires dockerfilegencore;

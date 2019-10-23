@@ -1,18 +1,18 @@
-import io.hyscale.ctl.plugin.framework.handler.ManifestHandler;
+import io.hyscale.plugin.framework.handler.ManifestHandler;
 
 module manifestGenerator {
-	exports io.hyscale.ctl.generator.services.config;
-	exports io.hyscale.ctl.generator.services.constants;
-	exports io.hyscale.ctl.generator.services.exception;
-	exports io.hyscale.ctl.generator.services.generator;
-	exports io.hyscale.ctl.generator.services.json;
-	exports io.hyscale.ctl.generator.services.listener;
-	exports io.hyscale.ctl.generator.services.model;
-	exports io.hyscale.ctl.generator.services.predicates;
-	exports io.hyscale.ctl.generator.services.plugins;
-	exports io.hyscale.ctl.generator.services.processor;
-	exports io.hyscale.ctl.generator.services.provider;
-	exports io.hyscale.ctl.generator.services.utils;
+	exports io.hyscale.generator.services.config;
+	exports io.hyscale.generator.services.constants;
+	exports io.hyscale.generator.services.exception;
+	exports io.hyscale.generator.services.generator;
+	exports io.hyscale.generator.services.json;
+	exports io.hyscale.generator.services.listener;
+	exports io.hyscale.generator.services.model;
+	exports io.hyscale.generator.services.predicates;
+	exports io.hyscale.generator.services.plugins;
+	exports io.hyscale.generator.services.processor;
+	exports io.hyscale.generator.services.provider;
+	exports io.hyscale.generator.services.utils;
 
 	uses ManifestHandler;
 

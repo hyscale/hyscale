@@ -1,8 +1,8 @@
 module pluginframework {
-	exports io.hyscale.ctl.plugin.framework.models;
-	exports io.hyscale.ctl.plugin.framework.util;
-	exports io.hyscale.ctl.plugin.framework.annotation;
-	exports io.hyscale.ctl.plugin.framework.handler;
+	exports io.hyscale.plugin.framework.models;
+	exports io.hyscale.plugin.framework.util;
+	exports io.hyscale.plugin.framework.annotation;
+	exports io.hyscale.plugin.framework.handler;
 
 	requires service_spec_commons;
 	requires commons;

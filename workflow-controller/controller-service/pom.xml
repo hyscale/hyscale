@@ -113,7 +113,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${spring-boot-maven-plugin.version}</version>
 				<configuration>
-					<mainClass>io.hyscale.ctl.controller.initializer.HyscaleCtlInitializer</mainClass>
+					<mainClass>io.hyscale.controller.initializer.HyscaleCtlInitializer</mainClass>
 					<requiresUnpack>
 						<dependency>
 							<groupId>io.kubernetes</groupId>

@@ -1,12 +1,12 @@
 module commons {
-	exports io.hyscale.ctl.commons.constants;
-	exports io.hyscale.ctl.commons.models;
-	exports io.hyscale.ctl.commons.utils;
-	exports io.hyscale.ctl.commons.logger;
-	exports io.hyscale.ctl.commons.commands;
-	exports io.hyscale.ctl.commons.config;
-	exports io.hyscale.ctl.commons.component;
-	exports io.hyscale.ctl.commons.exception;
+	exports io.hyscale.commons.constants;
+	exports io.hyscale.commons.models;
+	exports io.hyscale.commons.utils;
+	exports io.hyscale.commons.logger;
+	exports io.hyscale.commons.commands;
+	exports io.hyscale.commons.config;
+	exports io.hyscale.commons.component;
+	exports io.hyscale.commons.exception;
 
 	requires client.java.proto;
 	requires jackson.annotations;

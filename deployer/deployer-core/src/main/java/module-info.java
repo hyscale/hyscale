@@ -1,5 +1,5 @@
 module deployerModel {
-	exports io.hyscale.ctl.deployer.core.model;
+	exports io.hyscale.deployer.core.model;
 
 	requires jackson.annotations;
 	requires client.java.api;

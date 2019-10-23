@@ -1,5 +1,5 @@
 module dockerfilegencore {
-	exports io.hyscale.ctl.dockerfile.gen.core.models;
+	exports io.hyscale.dockerfile.gen.core.models;
 
 	requires commons;
 }

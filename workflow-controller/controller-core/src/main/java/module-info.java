@@ -1,5 +1,5 @@
 module controllerCore {
-	exports io.hyscale.ctl.controller.core.exception;
+	exports io.hyscale.controller.core.exception;
 
 	requires commons;
 }

@@ -1,5 +1,5 @@
 module builderCore {
-	exports io.hyscale.ctl.builder.core.models;
+	exports io.hyscale.builder.core.models;
 
 	requires commons;
 }

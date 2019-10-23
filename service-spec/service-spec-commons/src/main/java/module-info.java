@@ -8,15 +8,15 @@ module service_spec_commons {
 	requires json.path;
 	requires org.apache.commons.lang3;
 
-	exports io.hyscale.ctl.servicespec.commons.model;
-	exports io.hyscale.ctl.servicespec.commons.exception;
-	exports io.hyscale.ctl.servicespec.commons.fields;
-	exports io.hyscale.ctl.servicespec.commons.model.profile;
-	exports io.hyscale.ctl.servicespec.commons.model.service;
-	exports io.hyscale.ctl.servicespec.json.parser;
-	exports io.hyscale.ctl.servicespec.json.parser.constants;
-	exports io.hyscale.ctl.servicespec.json.config;
-	exports io.hyscale.ctl.servicespec.annotations;
-	exports io.hyscale.ctl.servicespec.commons.util;
+	exports io.hyscale.servicespec.commons.model;
+	exports io.hyscale.servicespec.commons.exception;
+	exports io.hyscale.servicespec.commons.fields;
+	exports io.hyscale.servicespec.commons.model.profile;
+	exports io.hyscale.servicespec.commons.model.service;
+	exports io.hyscale.servicespec.json.parser;
+	exports io.hyscale.servicespec.json.parser.constants;
+	exports io.hyscale.servicespec.json.config;
+	exports io.hyscale.servicespec.annotations;
+	exports io.hyscale.servicespec.commons.util;
 
 }
