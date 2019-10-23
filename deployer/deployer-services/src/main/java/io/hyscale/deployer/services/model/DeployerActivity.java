@@ -27,7 +27,7 @@ public enum DeployerActivity implements Activity {
     NO_RESOURCES_TO_UNDEPLOY("No resources to undeploy "),
     STALE_VOLUME_DELETION("Volume {} seems to have been removed in your hspec. This previously deployed volume has been retained in your namespace {} for review and manual deletion"),
     IGNORING_VOLUME_MODIFICATION(
-            "Detected change in {} but volume reprovisioning has been ignored as volume has been provisioned already.To update volumes undeploy and redeploy the service, which would result into loss of data");
+            "Detected change in {} but volume reprovisioning has been ignored as volume has been provisioned already.To update volumes undeploy and deploy the service, which would result into loss of data");
 
 
     private String message;
