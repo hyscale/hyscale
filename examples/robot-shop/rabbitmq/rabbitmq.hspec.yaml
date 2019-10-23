@@ -1,8 +1,8 @@
 name: rabbitmq
 
 image:
-     registry: k8sdockerregistry.wavemakeronline.com
-     name: rabbitmq
+     registry: {{dockerRegistryUrl}} # registry url like registry.hub.docker.com/userName
+     name: {{imageName}} # replace with your required image name
      tag: 1.0
      buildSpec:
        stackImage: rabbitmq:3.7

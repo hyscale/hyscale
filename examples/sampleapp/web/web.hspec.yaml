@@ -1,7 +1,7 @@
 name: web
 image:
-   registry: k8sdockerregistry.wavemakeronline.com 
-   name: web
+   registry: {{dockerRegistryUrl}} # registry url like registry.hub.docker.com/userName
+   name: {{imageName}} # replace with your required image name
    tag: 1.0
    dockerfile:
       args: 

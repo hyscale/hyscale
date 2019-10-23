@@ -1,8 +1,8 @@
 name: mongodb
 
 image:
-     registry: k8sdockerregistry.wavemakeronline.com
-     name: mongodb
+     registry: {{dockerRegistryUrl}} # registry url like registry.hub.docker.com/userName
+     name: {{imageName}} # replace with your required image name
      tag: 1.0
      buildSpec:
        stackImage: mongo:3.6.1
