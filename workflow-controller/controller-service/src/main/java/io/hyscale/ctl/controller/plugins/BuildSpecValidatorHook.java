@@ -1,6 +1,6 @@
 package io.hyscale.ctl.controller.plugins;
 
-import io.hyscale.ctl.commons.component.ComponentInvokerPlugin;
+import io.hyscale.ctl.commons.component.InvokerHook;
 import io.hyscale.ctl.commons.exception.HyscaleException;
 import io.hyscale.ctl.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.ctl.controller.model.WorkflowContext;
@@ -17,17 +17,17 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * 	Plugin to validate {@link BuildSpec} before docker file generation
+ * 	Hook to validate {@link BuildSpec} before docker file generation
  *
  */
 @Component
-public class BuildSpecValidatorPlugin implements ComponentInvokerPlugin<WorkflowContext> {
+public class BuildSpecValidatorHook implements InvokerHook<WorkflowContext> {
 
-    private static final Logger logger = LoggerFactory.getLogger(BuildSpecValidatorPlugin.class);
+    private static final Logger logger = LoggerFactory.getLogger(BuildSpecValidatorHook.class);
 
     @Override
-    public void doBefore(WorkflowContext context) throws HyscaleException {
-        logger.debug("Executing BuildSpecValidatorPlugin");
+    public void preHook(WorkflowContext context) throws HyscaleException {
+        logger.debug("Executing BuildSpecValidatorHook");
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
             logger.debug("Cannot service spec at BuildSpec validator plugin ");
@@ -60,7 +60,7 @@ public class BuildSpecValidatorPlugin implements ComponentInvokerPlugin<Workflow
     }
 
     @Override
-    public void doAfter(WorkflowContext context) throws HyscaleException {
+    public void postHook(WorkflowContext context) throws HyscaleException {
 
     }
 

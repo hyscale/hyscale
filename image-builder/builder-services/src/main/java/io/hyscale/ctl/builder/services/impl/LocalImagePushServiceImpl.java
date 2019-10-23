@@ -110,9 +110,9 @@ public class LocalImagePushServiceImpl implements ImagePushService {
         if (verbose) {
             imageLogUtil.readPushLogs(appName, serviceName);
         }
-        
+
         if (!status) {
-        	throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_PUSH_IMAGE);
+            throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_PUSH_IMAGE);
         }
 
     }
@@ -149,6 +149,11 @@ public class LocalImagePushServiceImpl implements ImagePushService {
             String[] missingFieldsArr = new String[missingFields.size()];
             missingFieldsArr = missingFields.toArray(missingFieldsArr);
             throw new HyscaleException(ImageBuilderErrorCodes.FIELDS_MISSING, missingFieldsArr);
+        }
+
+        String registryUrl = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.registry), String.class);
+        if (buildContext.getImageRegistry() == null && registryUrl != null) {
+            throw new HyscaleException(ImageBuilderErrorCodes.MISSING_DOCKER_REGISTRY_CREDENTIALS, registryUrl, registryUrl);
         }
     }
 

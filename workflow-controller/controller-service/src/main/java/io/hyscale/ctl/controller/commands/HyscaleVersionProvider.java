@@ -22,7 +22,6 @@ public class HyscaleVersionProvider implements CommandLine.IVersionProvider {
     public String[] getVersion() throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append(ToolConstants.VERSION_KEY).append(buildProperties.getVersion());
-        sb.append(" ").append(ToolConstants.HYSCALE_PREVIEW);
         sb.append(ToolConstants.LINE_SEPARATOR);
         String buildDate = buildProperties.get(ToolConstants.HYSCALE_BUILD_TIME);
         sb.append(ToolConstants.BUILDDATE_KEY);

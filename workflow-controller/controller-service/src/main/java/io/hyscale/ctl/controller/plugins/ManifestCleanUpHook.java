@@ -1,6 +1,6 @@
 package io.hyscale.ctl.controller.plugins;
 
-import io.hyscale.ctl.commons.component.ComponentInvokerPlugin;
+import io.hyscale.ctl.commons.component.InvokerHook;
 import io.hyscale.ctl.commons.exception.HyscaleException;
 import io.hyscale.ctl.commons.utils.HyscaleFilesUtil;
 import io.hyscale.ctl.controller.model.WorkflowContext;
@@ -11,13 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * Plugin to clean up old manifests
+ * Hook to clean up old manifests
  *
  */
 @Component
-public class ManifestCleanUpPlugin implements ComponentInvokerPlugin<WorkflowContext> {
+public class ManifestCleanUpHook implements InvokerHook<WorkflowContext> {
 
-	private static final Logger logger = LoggerFactory.getLogger(ManifestCleanUpPlugin.class);
+	private static final Logger logger = LoggerFactory.getLogger(ManifestCleanUpHook.class);
 
 	@Autowired
 	private HyscaleFilesUtil filesUtil;
@@ -26,14 +26,14 @@ public class ManifestCleanUpPlugin implements ComponentInvokerPlugin<WorkflowCon
 	private ManifestConfig manifestConfig;
 
 	@Override
-	public void doBefore(WorkflowContext context) throws HyscaleException {
+	public void preHook(WorkflowContext context) throws HyscaleException {
 		String manifestDir = manifestConfig.getManifestDir(context.getAppName(), context.getServiceName());
 		logger.debug("Cleaning up manifests directory {}", manifestDir);
 		filesUtil.clearDirectory(manifestDir);
 	}
 
 	@Override
-	public void doAfter(WorkflowContext context) throws HyscaleException {
+	public void postHook(WorkflowContext context) throws HyscaleException {
 
 	}
 

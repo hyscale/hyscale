@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.ctl.builder.services.command.ImageCommandGenerator;
-import io.hyscale.ctl.commons.component.ComponentInvokerPlugin;
+import io.hyscale.ctl.commons.component.InvokerHook;
 import io.hyscale.ctl.commons.commands.CommandExecutor;
 import io.hyscale.ctl.commons.exception.HyscaleException;
 import io.hyscale.ctl.commons.models.Status;
@@ -16,13 +16,13 @@ import io.hyscale.ctl.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.ctl.servicespec.commons.model.service.ServiceSpec;
 
 /**
- * Plugin to clean up local images which are no longer in use
+ * Hook to clean up local images which are no longer in use
  *
  */
 @Component
-public class ImageCleanUpPlugin implements ComponentInvokerPlugin<WorkflowContext> {
+public class ImageCleanUpHook implements InvokerHook<WorkflowContext> {
 
-	private static final Logger logger = LoggerFactory.getLogger(ImageCleanUpPlugin.class);
+	private static final Logger logger = LoggerFactory.getLogger(ImageCleanUpHook.class);
 
 	@Autowired
 	private CommandExecutor commandExecutor;
@@ -31,12 +31,12 @@ public class ImageCleanUpPlugin implements ComponentInvokerPlugin<WorkflowContex
 	private ImageCommandGenerator imageCommandGenerator;
 
 	@Override
-	public void doBefore(WorkflowContext context) {
+	public void preHook(WorkflowContext context) {
 
 	}
 
 	@Override
-	public void doAfter(WorkflowContext context) throws HyscaleException {
+	public void postHook(WorkflowContext context) throws HyscaleException {
 		ServiceSpec serviceSpec = context.getServiceSpec();
 		if (serviceSpec == null) {
 			logger.error(" Cannot clean up image without service specs ");

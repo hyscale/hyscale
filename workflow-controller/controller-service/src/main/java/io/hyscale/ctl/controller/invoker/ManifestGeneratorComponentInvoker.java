@@ -7,8 +7,8 @@ import io.hyscale.ctl.controller.activity.ControllerActivity;
 import io.hyscale.ctl.controller.constants.WorkflowConstants;
 import io.hyscale.ctl.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.ctl.controller.manager.RegistryManager;
-import io.hyscale.ctl.controller.plugins.ManifestCleanUpPlugin;
-import io.hyscale.ctl.controller.plugins.ManifestValidatorPlugin;
+import io.hyscale.ctl.controller.plugins.ManifestCleanUpHook;
+import io.hyscale.ctl.controller.plugins.ManifestValidatorHook;
 import io.hyscale.ctl.generator.services.config.ManifestConfig;
 import io.hyscale.ctl.generator.services.constants.ManifestGenConstants;
 import io.hyscale.ctl.generator.services.exception.ManifestErrorCodes;
@@ -46,15 +46,15 @@ public class ManifestGeneratorComponentInvoker extends ComponentInvoker<Workflow
     private ManifestConfig manifestConfig;
 
     @Autowired
-    private ManifestCleanUpPlugin cleanUpPlugin;
+    private ManifestCleanUpHook cleanUpPlugin;
 
     @Autowired
-    private ManifestValidatorPlugin manifestValidatorPlugin;
+    private ManifestValidatorHook manifestValidatorPlugin;
 
     @PostConstruct
     public void init() {
-        super.addPlugin(manifestValidatorPlugin);
-        super.addPlugin(cleanUpPlugin);
+        super.addHook(manifestValidatorPlugin);
+        super.addHook(cleanUpPlugin);
     }
 
     protected void doExecute(WorkflowContext context) throws HyscaleException {

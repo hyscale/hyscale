@@ -12,14 +12,13 @@ import io.hyscale.ctl.builder.core.models.BuildContext;
 import io.hyscale.ctl.commons.component.ComponentInvoker;
 import io.hyscale.ctl.commons.exception.HyscaleException;
 import io.hyscale.ctl.commons.logger.WorkflowLogger;
-import io.hyscale.ctl.commons.models.DeploymentContext;
 import io.hyscale.ctl.commons.models.DockerfileEntity;
 import io.hyscale.ctl.controller.activity.ControllerActivity;
 import io.hyscale.ctl.controller.constants.WorkflowConstants;
 import io.hyscale.ctl.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.ctl.controller.manager.RegistryManager;
 import io.hyscale.ctl.controller.model.WorkflowContext;
-import io.hyscale.ctl.controller.plugins.ImageCleanUpPlugin;
+import io.hyscale.ctl.controller.plugins.ImageCleanUpHook;
 import io.hyscale.ctl.builder.services.service.ImageBuildPushService;
 import io.hyscale.ctl.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.ctl.servicespec.commons.model.service.ServiceSpec;
@@ -39,11 +38,11 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
     private RegistryManager registryManager;
 
     @Autowired
-    private ImageCleanUpPlugin imageCleanUpPlugin;
+    private ImageCleanUpHook imageCleanUpPlugin;
 
     @PostConstruct
     public void init() {
-        super.addPlugin(imageCleanUpPlugin);
+        super.addHook(imageCleanUpPlugin);
     }
 
     private static final Logger logger = LoggerFactory.getLogger(ImageBuildComponentInvoker.class);

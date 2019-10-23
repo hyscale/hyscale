@@ -1,6 +1,6 @@
 package io.hyscale.ctl.controller.plugins;
 
-import io.hyscale.ctl.commons.component.ComponentInvokerPlugin;
+import io.hyscale.ctl.commons.component.InvokerHook;
 import io.hyscale.ctl.commons.config.SetupConfig;
 import io.hyscale.ctl.commons.exception.HyscaleException;
 import io.hyscale.ctl.commons.utils.HyscaleFilesUtil;
@@ -12,13 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * Plugin to clean service directory to remove files no longer required
+ * Hook to clean service directory to remove files no longer required
  *
  */
 @Component
-public class ServiceDirCleanUpPlugin implements ComponentInvokerPlugin<WorkflowContext> {
+public class ServiceDirCleanUpHook implements InvokerHook<WorkflowContext> {
 
-	private static final Logger logger = LoggerFactory.getLogger(ServiceDirCleanUpPlugin.class);
+	private static final Logger logger = LoggerFactory.getLogger(ServiceDirCleanUpHook.class);
 
 	@Autowired
 	private SetupConfig setupConfig;
@@ -27,7 +27,7 @@ public class ServiceDirCleanUpPlugin implements ComponentInvokerPlugin<WorkflowC
 	private HyscaleFilesUtil filesUtil;
 
 	@Override
-	public void doBefore(WorkflowContext context) throws HyscaleException {
+	public void preHook(WorkflowContext context) throws HyscaleException {
 		if (context.getServiceName() != null && context.getAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR) != null
 				&& context.getAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR).equals(true)) {
 			String serviceDir = setupConfig.getServiceDir(context.getAppName(), context.getServiceName());
@@ -37,7 +37,7 @@ public class ServiceDirCleanUpPlugin implements ComponentInvokerPlugin<WorkflowC
 	}
 
 	@Override
-	public void doAfter(WorkflowContext context) throws HyscaleException {
+	public void postHook(WorkflowContext context) throws HyscaleException {
 
 	}
 

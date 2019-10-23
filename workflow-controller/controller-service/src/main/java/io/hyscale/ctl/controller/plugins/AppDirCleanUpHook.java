@@ -1,6 +1,6 @@
 package io.hyscale.ctl.controller.plugins;
 
-import io.hyscale.ctl.commons.component.ComponentInvokerPlugin;
+import io.hyscale.ctl.commons.component.InvokerHook;
 import io.hyscale.ctl.commons.config.SetupConfig;
 import io.hyscale.ctl.commons.exception.HyscaleException;
 import io.hyscale.ctl.commons.utils.HyscaleFilesUtil;
@@ -16,8 +16,8 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-public class AppDirCleanUpPlugin implements ComponentInvokerPlugin<WorkflowContext> {
-	private static final Logger logger = LoggerFactory.getLogger(ServiceDirCleanUpPlugin.class);
+public class AppDirCleanUpHook implements InvokerHook<WorkflowContext> {
+	private static final Logger logger = LoggerFactory.getLogger(ServiceDirCleanUpHook.class);
 
 	@Autowired
 	private SetupConfig setupConfig;
@@ -26,7 +26,7 @@ public class AppDirCleanUpPlugin implements ComponentInvokerPlugin<WorkflowConte
 	private HyscaleFilesUtil filesUtil;
 
 	@Override
-	public void doBefore(WorkflowContext context) throws HyscaleException {
+	public void preHook(WorkflowContext context) throws HyscaleException {
 		if (context.getAppName() != null && context.getAttribute(WorkflowConstants.CLEAN_UP_APP_DIR) != null
 				&& context.getAttribute(WorkflowConstants.CLEAN_UP_APP_DIR).equals(true)) {
 			String appDir = setupConfig.getAppsDir() + context.getAppName();
@@ -36,7 +36,7 @@ public class AppDirCleanUpPlugin implements ComponentInvokerPlugin<WorkflowConte
 	}
 
 	@Override
-	public void doAfter(WorkflowContext context) throws HyscaleException {
+	public void postHook(WorkflowContext context) throws HyscaleException {
 
 	}
 

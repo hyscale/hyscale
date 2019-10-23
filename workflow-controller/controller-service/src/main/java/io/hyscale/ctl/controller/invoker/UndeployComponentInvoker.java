@@ -2,6 +2,7 @@ package io.hyscale.ctl.controller.invoker;
 
 import javax.annotation.PostConstruct;
 
+import io.hyscale.ctl.controller.plugins.ServiceDirCleanUpHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +16,7 @@ import io.hyscale.ctl.controller.activity.ControllerActivity;
 import io.hyscale.ctl.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.ctl.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.ctl.controller.model.WorkflowContext;
-import io.hyscale.ctl.controller.plugins.AppDirCleanUpPlugin;
-import io.hyscale.ctl.controller.plugins.ServiceDirCleanUpPlugin;
+import io.hyscale.ctl.controller.plugins.AppDirCleanUpHook;
 import io.hyscale.ctl.deployer.services.deployer.Deployer;
 
 /**
@@ -35,15 +35,15 @@ public class UndeployComponentInvoker extends ComponentInvoker<WorkflowContext> 
     private K8sAuthConfigBuilder authConfigBuilder;
 
     @Autowired
-    private ServiceDirCleanUpPlugin serviceDirCleanUpPlugin;
+    private ServiceDirCleanUpHook serviceDirCleanUpPlugin;
 
     @Autowired
-    private AppDirCleanUpPlugin appDirCleanUpPlugin;
+    private AppDirCleanUpHook appDirCleanUpPlugin;
 
     @PostConstruct
     public void init() {
-        addPlugin(serviceDirCleanUpPlugin);
-        addPlugin(appDirCleanUpPlugin);
+        addHook(serviceDirCleanUpPlugin);
+        addHook(appDirCleanUpPlugin);
     }
     
     

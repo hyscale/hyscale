@@ -1,7 +1,7 @@
 package io.hyscale.ctl.controller.plugins;
 
 import io.hyscale.ctl.builder.services.exception.ImageBuilderErrorCodes;
-import io.hyscale.ctl.commons.component.ComponentInvokerPlugin;
+import io.hyscale.ctl.commons.component.InvokerHook;
 import io.hyscale.ctl.commons.exception.HyscaleException;
 import io.hyscale.ctl.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.ctl.controller.model.WorkflowContext;
@@ -13,16 +13,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * Plugin to validate image details in service spec
+ * Hook to validate image details in service spec
  *
  */
 @Component
-public class ImageValidatorPlugin implements ComponentInvokerPlugin<WorkflowContext> {
+public class ImageValidatorHook implements InvokerHook<WorkflowContext> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ImageValidatorPlugin.class);
+    private static final Logger logger = LoggerFactory.getLogger(ImageValidatorHook.class);
 
     @Override
-    public void doBefore(WorkflowContext context) throws HyscaleException {
+    public void preHook(WorkflowContext context) throws HyscaleException {
         logger.debug("Executing {}", getClass());
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
@@ -35,7 +35,7 @@ public class ImageValidatorPlugin implements ComponentInvokerPlugin<WorkflowCont
     }
 
     @Override
-    public void doAfter(WorkflowContext context) throws HyscaleException {
+    public void postHook(WorkflowContext context) throws HyscaleException {
 
     }
 

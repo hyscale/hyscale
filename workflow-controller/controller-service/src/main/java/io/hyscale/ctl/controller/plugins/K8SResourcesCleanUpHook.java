@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.hyscale.ctl.commons.component.InvokerHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.ctl.commons.component.ComponentInvokerPlugin;
 import io.hyscale.ctl.commons.exception.HyscaleException;
 import io.hyscale.ctl.commons.logger.WorkflowLogger;
 import io.hyscale.ctl.commons.models.K8sAuthorisation;
@@ -34,13 +34,13 @@ import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.models.V1ObjectMeta;
 
 /**
- * Plugin to remove stale resources from K8s cluster
+ * Hook to remove stale resources from K8s cluster
  *
  */
 @Component
-public class K8sResourcesCleanUpPlugin implements ComponentInvokerPlugin<WorkflowContext> {
+public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 
-	private static final Logger logger = LoggerFactory.getLogger(K8sResourcesCleanUpPlugin.class);
+	private static final Logger logger = LoggerFactory.getLogger(K8SResourcesCleanUpHook.class);
 
 	@Autowired
 	private K8sClientProvider clientProvider;
@@ -56,7 +56,7 @@ public class K8sResourcesCleanUpPlugin implements ComponentInvokerPlugin<Workflo
 	 * 		2. if doesnot exist in map delete
 	 */
 	@Override
-	public void doBefore(WorkflowContext context) throws HyscaleException {
+	public void preHook(WorkflowContext context) throws HyscaleException {
 		logger.debug("Starting stale kubernetes resource cleanup");
 		ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfigBuilder.getAuthConfig());
 		String serviceName = context.getServiceName();
@@ -131,7 +131,7 @@ public class K8sResourcesCleanUpPlugin implements ComponentInvokerPlugin<Workflo
 	}
 
 	@Override
-	public void doAfter(WorkflowContext context) throws HyscaleException {
+	public void postHook(WorkflowContext context) throws HyscaleException {
 
 	}
 

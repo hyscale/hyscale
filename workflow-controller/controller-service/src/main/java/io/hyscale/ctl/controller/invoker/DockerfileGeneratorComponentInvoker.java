@@ -1,8 +1,8 @@
 package io.hyscale.ctl.controller.invoker;
 
-import io.hyscale.ctl.controller.plugins.BuildSpecValidatorPlugin;
-import io.hyscale.ctl.controller.plugins.ImageValidatorPlugin;
-import io.hyscale.ctl.controller.plugins.ServiceDirCleanUpPlugin;
+import io.hyscale.ctl.controller.plugins.BuildSpecValidatorHook;
+import io.hyscale.ctl.controller.plugins.ImageValidatorHook;
+import io.hyscale.ctl.controller.plugins.ServiceDirCleanUpHook;
 import io.hyscale.ctl.dockerfile.gen.services.exception.DockerfileErrorCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,19 +40,19 @@ public class DockerfileGeneratorComponentInvoker extends ComponentInvoker<Workfl
     private DockerfileGenerator dockerfileGenerator;
 
     @Autowired
-    private ServiceDirCleanUpPlugin serviceDirCleanUpPlugin;
+    private ServiceDirCleanUpHook serviceDirCleanUpPlugin;
 
     @Autowired
-    private BuildSpecValidatorPlugin buildSpecValidatorPlugin;
+    private BuildSpecValidatorHook buildSpecValidatorPlugin;
 
     @Autowired
-    private ImageValidatorPlugin imageValidatorPlugin;
+    private ImageValidatorHook imageValidatorPlugin;
 
     @PostConstruct
     public void init() {
-        super.addPlugin(imageValidatorPlugin);
-        super.addPlugin(buildSpecValidatorPlugin);
-        super.addPlugin(serviceDirCleanUpPlugin);
+        super.addHook(imageValidatorPlugin);
+        super.addHook(buildSpecValidatorPlugin);
+        super.addHook(serviceDirCleanUpPlugin);
     }
 
     @Override

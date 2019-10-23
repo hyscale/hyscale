@@ -1,4 +1,4 @@
-package io.hyscale.ctl.controller.commands;
+    package io.hyscale.ctl.controller.commands;
 
 import java.io.File;
 import java.util.List;
@@ -136,6 +136,9 @@ public class HyscaleDeployServiceCommand implements Runnable {
 
     private void logWorkflowInfo(WorkflowContext workflowContext) {
         WorkflowLogger.header(ControllerActivity.INFORMATION);
+
+        WorkflowLogger.logPersistedActivities();
+
         long startTime = (long) workflowContext.getAttribute(WorkflowConstants.DEPLOY_START_TIME);
         CommandUtil.logMetaInfo(String.valueOf((System.currentTimeMillis() - startTime) / 1000) + "s", ControllerActivity.TOTAL_TIME);
         CommandUtil.logMetaInfo(SetupConfig.getMountPathOf((String) workflowContext.getAttribute(WorkflowConstants.DOCKERFILE_INPUT)),

@@ -6,6 +6,8 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import io.hyscale.ctl.controller.plugins.K8SResourcesCleanUpHook;
+import io.hyscale.ctl.controller.plugins.VolumeCleanUpHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +26,7 @@ import io.hyscale.ctl.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.ctl.controller.constants.WorkflowConstants;
 import io.hyscale.ctl.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.ctl.controller.model.WorkflowContext;
-import io.hyscale.ctl.controller.plugins.K8sResourcesCleanUpPlugin;
-import io.hyscale.ctl.controller.plugins.VolumeCleanUpPlugin;
-import io.hyscale.ctl.controller.plugins.VolumeValidatorPlugin;
+import io.hyscale.ctl.controller.plugins.VolumeValidatorHook;
 import io.hyscale.ctl.controller.util.LoggerUtility;
 import io.hyscale.ctl.deployer.services.config.DeployerConfig;
 import io.hyscale.ctl.deployer.services.deployer.Deployer;
@@ -61,19 +61,19 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
     private LogProcessor logProcessor;
 
     @Autowired
-    private K8sResourcesCleanUpPlugin k8sResourcesCleanUpPlugin;
+    private K8SResourcesCleanUpHook k8sResourcesCleanUpPlugin;
 
     @Autowired
-    private VolumeCleanUpPlugin volumeCleanUpPlugin;
+    private VolumeCleanUpHook volumeCleanUpPlugin;
 
     @Autowired
-    private VolumeValidatorPlugin volumeValidatorPlugin;
+    private VolumeValidatorHook volumeValidatorPlugin;
 
     @PostConstruct
     public void init() {
-        super.addPlugin(volumeValidatorPlugin);
-        super.addPlugin(k8sResourcesCleanUpPlugin);
-        super.addPlugin(volumeCleanUpPlugin);
+        super.addHook(volumeValidatorPlugin);
+        super.addHook(k8sResourcesCleanUpPlugin);
+        super.addHook(volumeCleanUpPlugin);
     }
 
     /**
@@ -138,7 +138,6 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
             throw e;
         } finally {
             writeDeployLogs(context, deploymentContext);
-            WorkflowLogger.logPersistedActivities();
         }
         context.addAttribute(WorkflowConstants.OUTPUT, true);
 

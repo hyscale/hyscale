@@ -194,6 +194,7 @@ public class WorkflowLogger {
             }).forEach(each -> {
                 System.out.println(each);
             });
+            System.out.println();
         }
     }
 }

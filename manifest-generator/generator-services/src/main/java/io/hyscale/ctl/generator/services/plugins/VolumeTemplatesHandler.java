@@ -106,7 +106,9 @@ public class VolumeTemplatesHandler implements ManifestHandler {
 
             V1PersistentVolumeClaimSpec claimSpec = new V1PersistentVolumeClaimSpec();
             claimSpec.setAccessModes(Arrays.asList(VolumeAccessMode.READ_WRITE_ONCE.getAccessMode()));
-            claimSpec.setStorageClassName(volume.getStorageClass());
+            if(volume.getStorageClass()!=null) {
+                claimSpec.setStorageClassName(volume.getStorageClass());
+            }
             Map<String, Quantity> requests = new HashMap<>();
             requests.put("storage", Quantity.fromString(size));
 
@@ -139,14 +141,14 @@ public class VolumeTemplatesHandler implements ManifestHandler {
             return false;
         }
 
-        for (Volume volume : volumes) {
+        /*for (Volume volume : volumes) {
             if (StringUtils.isBlank(volume.getStorageClass())) {
                 logger.debug("Storage class for volume {} found to be empty.",volume);
                 WorkflowLogger.persist(ManifestGeneratorActivity.MISSING_FIELD, HyscaleSpecFields.storageClass);
                 HyscaleException he = new HyscaleException(ManifestErrorCodes.MISSING_STORAGE_CLASS_FOR_VOLUMES, volume.getName());
                 throw he;
             }
-        }
+        }*/
         return true;
     }
 }

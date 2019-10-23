@@ -1,7 +1,7 @@
 package io.hyscale.ctl.controller.plugins;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import io.hyscale.ctl.commons.component.ComponentInvokerPlugin;
+import io.hyscale.ctl.commons.component.InvokerHook;
 import io.hyscale.ctl.commons.exception.HyscaleException;
 import io.hyscale.ctl.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.ctl.controller.model.WorkflowContext;
@@ -17,17 +17,17 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * Plugin to validate service spec before manifest generation
+ * Hook to validate service spec before manifest generation
  *
  */
 @Component
-public class ManifestValidatorPlugin implements ComponentInvokerPlugin<WorkflowContext> {
+public class ManifestValidatorHook implements InvokerHook<WorkflowContext> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ManifestValidatorPlugin.class);
+    private static final Logger logger = LoggerFactory.getLogger(ManifestValidatorHook.class);
 
     @Override
-    public void doBefore(WorkflowContext context) throws HyscaleException {
-        logger.debug("Executing ManifestValidatorPlugin");
+    public void preHook(WorkflowContext context) throws HyscaleException {
+        logger.debug("Executing ManifestValidatorHook");
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
             logger.debug("Cannot service spec at manifest plugin ");
@@ -55,8 +55,7 @@ public class ManifestValidatorPlugin implements ComponentInvokerPlugin<WorkflowC
         if (volumeList != null && !volumeList.isEmpty()) {
             for (Volume volume : volumeList) {
                 validate = validate && volume != null && StringUtils.isNotBlank(volume.getName())
-                        && StringUtils.isNotBlank(volume.getPath()) &&
-                        StringUtils.isNotBlank(volume.getStorageClass());
+                        && StringUtils.isNotBlank(volume.getPath());
                 if (!validate) {
                     logger.debug("Error validating volumes of service spec");
                     throw new HyscaleException(ControllerErrorCodes.INVALID_VOLUMES_FOUND);
@@ -66,7 +65,7 @@ public class ManifestValidatorPlugin implements ComponentInvokerPlugin<WorkflowC
     }
 
     @Override
-    public void doAfter(WorkflowContext context) throws HyscaleException {
+    public void postHook(WorkflowContext context) throws HyscaleException {
 
     }
 

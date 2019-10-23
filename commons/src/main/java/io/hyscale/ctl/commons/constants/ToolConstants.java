@@ -16,6 +16,8 @@ public class ToolConstants {
 
     public static final String EMPTY_STRING = "";
 
+    public static final String SPACE = " ";
+
     public static final String VERSION_KEY = "Version : ";
 
     public static final String BUILDDATE_KEY = "BuildDate : ";
