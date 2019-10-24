@@ -54,6 +54,8 @@
 		<main.basedir>.</main.basedir>
 		<main.dist.dir>${main.basedir}/_dist</main.dist.dir>
 		<maven.build.timestamp.format>EEE d MMM yyyy HH:mm:ss</maven.build.timestamp.format>
+		<copyright.year>2019</copyright.year>
+		<copyright.company>Pramati Prism, Inc.</copyright.company>
 	</properties>
 
 	<dependencies>
@@ -150,6 +152,38 @@
 						<target>${jdk.version}</target>
 					</configuration>
 				</plugin>
+        			<plugin>
+                			<groupId>com.mycila.maven-license-plugin</groupId>
+			                <artifactId>maven-license-plugin</artifactId>
+			                <version>1.9.0</version>
+			                <configuration>
+                    				<header>${main.basedir}/copyright.txt</header>
+				                <strictCheck>true</strictCheck>
+			                        <includes>
+			                        <include>**/*.java</include>
+				                </includes>
+			                    <properties>
+                        			<year>${copyright.year}</year>
+			                        <company>${copyright.company}</company>
+                    			    </properties>
+			                </configuration>
+			                <executions>
+			                    <execution>
+                        			<id>format-license</id>
+			                        <phase>process-sources</phase>
+                        			<goals>
+			                            <goal>format</goal>
+                        			</goals>
+			                    </execution>
+			                    <execution>
+                       				<id>check-license</id>
+			                        <phase>process-sources</phase>
+                        			<goals>
+			                            <goal>check</goal>
+                        			</goals>
+			                    </execution>
+                			</executions>
+            	        	   </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
 					<version>3.0.0-M3</version>
