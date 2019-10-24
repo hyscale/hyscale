@@ -39,6 +39,7 @@ public enum ControllerActivity implements Activity {
     INFORMATION(" Deployment info "),
     ERROR("ERROR"),
     CAUSE("REASON :: {}"),
+    UNEXPECTED_ERROR("Unexpected error occurred. For details refer to log file at {}"),
     INVALID_INPUT("Invalid input:: {}"),
     TOTAL_TIME("Total time : {}"),
     FAILED_TO_FETCH_DEPLOY_LOGS("Failed to fetch deploy logs {}");
