@@ -19,6 +19,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.K8sAuthorisation;
+import io.hyscale.commons.models.StorageClassAnnotation;
 import io.hyscale.commons.utils.HyscaleStringUtil;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
@@ -269,7 +270,7 @@ public class VolumeValidatorHook implements InvokerHook<WorkflowContext> {
         sb.append(field).append(ToolConstants.SPACE);
         sb.append("has been changed").append(ToolConstants.SPACE);
         sb.append(from).append(existingObj).append(ToolConstants.SPACE);
-        sb.append(to).append(newObj);
+        sb.append(to).append(newObj).append(ToolConstants.SPACE);
         return sb.toString();
     }
 
@@ -277,11 +278,9 @@ public class VolumeValidatorHook implements InvokerHook<WorkflowContext> {
     private Predicate<V1StorageClass> isDefaultStorageClass() {
         return v1StorageClass -> {
             Map<String, String> annotations = v1StorageClass.getMetadata().getAnnotations();
-            if (annotations != null) {
-                String annotationValue = annotations.get(AnnotationKey.DEFAULT_STORAGE_CLASS.getAnnotation());
-                if (StringUtils.isNotBlank(annotationValue)) {
-                    return Boolean.valueOf(annotationValue);
-                }
+            String annotationValue = StorageClassAnnotation.getDefaultAnnotaionValue(annotations);
+            if (StringUtils.isNotBlank(annotationValue)) {
+            	return Boolean.valueOf(annotationValue);
             }
             return false;
         };
@@ -289,19 +288,16 @@ public class VolumeValidatorHook implements InvokerHook<WorkflowContext> {
 
     private String getDefaultStorageClass() {
         if (storageClassList != null && !storageClassList.isEmpty()) {
-            for (V1StorageClass each : storageClassList) {
-                Map<String, String> annotations = each.getMetadata().getAnnotations();
-                if (annotations != null) {
-                    String annotationValue = annotations.get(AnnotationKey.DEFAULT_STORAGE_CLASS.getAnnotation());
-                    if (StringUtils.isNotBlank(annotationValue) && Boolean.valueOf(annotationValue)) {
-                        return each.getMetadata().getName();
-                    }
-                }
-            }
+        	V1StorageClass defaultStorageClass = storageClassList.stream()
+        			.filter(isDefaultStorageClass()).findFirst().orElse(null);
+        	
+        	if (defaultStorageClass != null) {
+        		return defaultStorageClass.getMetadata().getName();
+        	}
         }
         return null;
     }
-
+    
     private void initStorageClass(ApiClient apiClient) throws HyscaleException {
         ResourceLifeCycleHandler resourceHandler = ResourceHandlers.getHandlerOf(ResourceKind.STORAGE_CLASS.getKind());
         if (resourceHandler == null) {
