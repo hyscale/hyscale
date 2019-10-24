@@ -1,7 +1,7 @@
 name: user
 image:
-  name: user
-  registry: k8sdockerregistry.wavemakeronline.com
+  registry: {{dockerRegistryUrl}} # registry url like registry.hub.docker.com/userName
+  name: {{imageName}} # replace with your required image name
   tag: 1.0
   buildSpec: 
     artifacts: 

@@ -1,8 +1,8 @@
 name: payments
 
 image:
-   registry: k8sdockerregistry.wavemakeronline.com
-   name: payments
+   registry: {{dockerRegistryUrl}} # registry url like registry.hub.docker.com/userName
+   name: {{imageName}} # replace with your required image name
    tag: 1.0
    buildSpec:
      stackImage: python:3.6
