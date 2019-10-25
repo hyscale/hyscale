@@ -37,6 +37,7 @@ public enum ControllerActivity implements Activity {
     NO_SERVICE_DEPLOYED("No Service Deployed"),
     CANNOT_FIND_FILE("Cannot find file {}"),
     INFORMATION(" Deployment info "),
+    UNDEPLOYMENT_INFO(" Undeployment info"),
     ERROR("ERROR"),
     CAUSE("REASON :: {}"),
     INVALID_INPUT("Invalid input:: {}"),

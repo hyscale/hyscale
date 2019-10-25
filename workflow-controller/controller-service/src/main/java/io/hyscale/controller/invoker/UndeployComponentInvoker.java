@@ -2,11 +2,6 @@ package io.hyscale.controller.invoker;
 
 import javax.annotation.PostConstruct;
 
-import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.builder.K8sAuthConfigBuilder;
-import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.plugins.AppDirCleanUpHook;
-import io.hyscale.controller.plugins.ServiceDirCleanUpHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +11,13 @@ import io.hyscale.commons.component.ComponentInvoker;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DeploymentContext;
+import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.core.exception.ControllerErrorCodes;
+import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.controller.plugins.AppDirCleanUpHook;
+import io.hyscale.controller.plugins.ServiceDirCleanUpHook;
+import io.hyscale.controller.plugins.StaleVolumeDetailsHook;
 import io.hyscale.deployer.services.deployer.Deployer;
 
 /**
@@ -35,17 +36,20 @@ public class UndeployComponentInvoker extends ComponentInvoker<WorkflowContext> 
     private K8sAuthConfigBuilder authConfigBuilder;
 
     @Autowired
-    private ServiceDirCleanUpHook serviceDirCleanUpPlugin;
+    private ServiceDirCleanUpHook serviceDirCleanUpHook;
 
     @Autowired
-    private AppDirCleanUpHook appDirCleanUpPlugin;
+    private AppDirCleanUpHook appDirCleanUpHook;
+    
+    @Autowired
+    private StaleVolumeDetailsHook staleVolumeDetailsHook;
 
     @PostConstruct
     public void init() {
-        addHook(serviceDirCleanUpPlugin);
-        addHook(appDirCleanUpPlugin);
+        addHook(serviceDirCleanUpHook);
+        addHook(appDirCleanUpHook);
+        addHook(staleVolumeDetailsHook);
     }
-    
     
     @Override
     protected void doExecute(WorkflowContext context) throws HyscaleException {
