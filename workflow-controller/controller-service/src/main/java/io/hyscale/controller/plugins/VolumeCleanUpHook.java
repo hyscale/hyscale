@@ -133,7 +133,8 @@ public class VolumeCleanUpHook implements InvokerHook<WorkflowContext> {
                         msgPrinted = true;
                     }
 
-                    WorkflowLogger.persist(DeployerActivity.STALE_VOLUME_DELETION, pvcName,namespace);
+                    WorkflowLogger.persist(DeployerActivity.STALE_VOLUME_DELETION, 
+                    		KubernetesVolumeUtil.getVolumeNameFromPVC(pvc), namespace, pvcName);
 /*
 					try {
 						logger.debug("Deleting PVC: {} in namespace: {}", pvcName, namespace);
@@ -155,8 +156,8 @@ public class VolumeCleanUpHook implements InvokerHook<WorkflowContext> {
     private void deleteAllPVC(V1PersistentVolumeClaimHandler pvcHandler, ApiClient apiClient, String namespace,
                               List<V1PersistentVolumeClaim> pvcItemsList) {
         pvcItemsList.stream().forEach(pvc -> {
-            String name = pvc.getMetadata().getName();
-            WorkflowLogger.persist(DeployerActivity.STALE_VOLUME_DELETION, name, namespace);
+            WorkflowLogger.persist(DeployerActivity.STALE_VOLUME_DELETION, 
+            		KubernetesVolumeUtil.getVolumeNameFromPVC(pvc), namespace);
 			/*try {
 				pvcHandler.delete(apiClient, name, namespace, false);
 			} catch (HyscaleException e) {

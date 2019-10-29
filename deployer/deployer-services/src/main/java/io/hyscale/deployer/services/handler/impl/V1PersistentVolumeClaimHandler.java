@@ -160,7 +160,7 @@ public class V1PersistentVolumeClaimHandler implements ResourceLifeCycleHandler<
 
 	@Override
 	public boolean cleanUp() {
-		return true;
+		return false;
 	}
 
 	@Override

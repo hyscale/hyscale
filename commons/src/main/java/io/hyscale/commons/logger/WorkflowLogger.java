@@ -196,5 +196,6 @@ public class WorkflowLogger {
             });
             System.out.println();
         }
+        persistedActivities.clear();
     }
 }

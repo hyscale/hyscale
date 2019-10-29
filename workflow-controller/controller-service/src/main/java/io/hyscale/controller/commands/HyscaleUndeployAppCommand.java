@@ -2,6 +2,8 @@ package io.hyscale.controller.commands;
 
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.controller.util.UndeployCommandUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -57,7 +59,8 @@ public class HyscaleUndeployAppCommand implements Runnable {
 		workflowContext.addAttribute(WorkflowConstants.CLEAN_UP_APP_DIR, true);
 		WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
 		undeployComponentInvoker.execute(workflowContext);
-		WorkflowLogger.info(ControllerActivity.UNDEPLOYMENT_DONE);
+		
+		UndeployCommandUtil.logWorkflowInfo();
 	}
 
 }
