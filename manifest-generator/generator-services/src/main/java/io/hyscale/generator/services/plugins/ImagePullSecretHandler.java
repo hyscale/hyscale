@@ -80,10 +80,10 @@ public class ImagePullSecretHandler implements ManifestHandler {
             manifestSnippetList.add(MetadatManifestSnippetGenerator.getKind(ManifestResource.SECRET));
             // Get the labels of secret as image pull secret also have the same set of labels
             manifestSnippetList.add(getMetaDataSnippet(metaDataContext, name));
-            logger.debug("Added labels of secret as image pull secret also have the same set of labels.");
+            logger.debug("Added labels to image pull secret manifest snippet.");
             // Get the data of image pull secret
             manifestSnippetList.add(getDataSnippet(imageRegistry));
-            logger.debug("Added the data of image pull secret.");
+            logger.debug("Added the data to image pull secret manifest snippet.");
             // Get the secret type snippet as kubernetes.io/dockerconfigjson
             manifestSnippetList.add(getSecretTypeSnippet());
             //Add Name to each snippet execpt podSpec ImagePullSecretName
@@ -91,7 +91,7 @@ public class ImagePullSecretHandler implements ManifestHandler {
                 each.setName(name);
             });
             // Adding the secret to pod
-            logger.debug("Prepared image pull secret for registry.");
+            logger.debug("Prepared image pull secret manifest for registry.");
             String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ? ManifestResource.STATEFUL_SET.getKind() : ManifestResource.DEPLOYMENT.getKind();
             manifestSnippetList.add(getImagePullSecretName(name, podSpecOwner));
 

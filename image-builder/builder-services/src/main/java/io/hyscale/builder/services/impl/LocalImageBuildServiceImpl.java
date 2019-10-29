@@ -129,8 +129,8 @@ public class LocalImageBuildServiceImpl implements ImageBuildService {
 
     /**
      * Get docker file path either:
-     * user docker file based on dockerfile spec
-     * tool generated docker file
+     * User docker file based on dockerfile spec or
+     * Tool generated docker file
      *
      * @param userDockerfile
      * @param context

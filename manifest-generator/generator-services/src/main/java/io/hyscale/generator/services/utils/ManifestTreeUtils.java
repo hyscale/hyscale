@@ -125,7 +125,7 @@ public class ManifestTreeUtils {
 
 	/*
 	 * Prepares the leaf node to inject the snippet Checks if the leaf node to be
-	 * inserted is an array, => if yes inserts arraynode => else inserts objectnode
+	 * inserted in an array, => if yes inserts arraynode => else inserts objectnode
 	 */
 	private JsonNode createLeafNodeIfNotExists(JsonNode root, JsonNode leafNode, String path) throws IOException {
 		if (jsonTreeOperations.read(root, path) == null) {

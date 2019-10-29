@@ -45,7 +45,7 @@ public enum DeployerErrorCodes implements HyscaleErrorCode {
     FAILED_TO_CREATE_POD("Failed to create pod"),
     OPERATION_NOT_SUPPORTED("Operation {} not supported for resource {}"),
     INVALID_STORAGE_CLASS_FOR_VOLUME("Storage class {} in your hspec is found to be invalid , allowed values from your cluster are {}"),
-	NO_STORAGE_CLASS_IN_K8S("No storage class defined in your kubernetes cluster. Please contact your cluster adminstrator"),
+	NO_STORAGE_CLASS_IN_K8S("No storage class defined in your kubernetes cluster. Please contact your cluster administrator"),
     MISSING_DEFAULT_STORAGE_CLASS("Missing default storage class from the cluster so kindly define storage class in your hspec volumes [{}] , allowed values are : {} ");
 
     private String message;

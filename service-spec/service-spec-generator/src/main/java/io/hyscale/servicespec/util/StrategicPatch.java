@@ -35,8 +35,8 @@ import io.hyscale.servicespec.model.FieldMetaDataProvider;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Strategic Merge In case of list patch item having same annotations Items
- * extra in patch list are added to the source list
+ * Strategic Merge In case of list patch item having same annotations.
+ * Items extra in patch list are added to the source list
  * 
  * @author tushart
  *

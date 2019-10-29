@@ -191,7 +191,7 @@ public class K8sResourceDispatcher {
 
 	/**
 	 * Undeploy resources from cluster
-	 * deletes all resources for which clean up is enabled based on appName and serviceName
+	 * Deletes all resources for which clean up is enabled based on appName and serviceName
 	 * @param appName
 	 * @param serviceName
 	 * @throws HyscaleException if failed to delete any resource

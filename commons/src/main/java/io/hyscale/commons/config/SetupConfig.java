@@ -69,10 +69,10 @@ public class SetupConfig {
 
     /*
      * 1. When the path is absolute return the absolute path itself 2. When the path
-     * is not absolute and you servicespec absolute path , the source path ix
-     * expected to be relative to the servicespec 3. When the path is not absolute
-     * and no service spec absolute does not exist, the source path is expected to
-     * relative the current workind directory
+     * is not absolute and use service spec absolute path , the source path is
+     * expected to be relative to the service spec 3. When the path is not absolute
+     * and service spec absolute path does not exist, the source path is expected to
+     * be relative to the current working directory
      */
 
     public static String getAbsolutePath(String source) {

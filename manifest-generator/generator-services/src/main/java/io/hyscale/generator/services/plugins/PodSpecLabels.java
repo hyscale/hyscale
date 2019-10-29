@@ -58,7 +58,7 @@ public class PodSpecLabels implements ManifestHandler {
             snippetList.add(metaDataSnippet);
 
         } catch (JsonProcessingException e) {
-            logger.error("Error while serializing pod spec labels snippet ", e);
+            logger.error("Error while serializing Pod spec labels snippet ", e);
         }
         return snippetList;
     }

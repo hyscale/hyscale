@@ -47,7 +47,7 @@ public class ImageHandler implements ManifestHandler {
             throws HyscaleException {
         String image = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.name), String.class);
         if (StringUtils.isBlank(image)) {
-            logger.debug("Found empty image in the service spec , cannot process imagehandler ");
+            logger.debug("Found empty image in the service spec, cannot process ImageHandler");
             return null;
         }
         List<ManifestSnippet> snippetList = new ArrayList<>();
@@ -72,7 +72,7 @@ public class ImageHandler implements ManifestHandler {
         String imageShaId = (String) manifestContext.getGenerationAttribute(ManifestGenConstants.IMAGE_SHA_SUM);
         String image = null;
         if (StringUtils.isNotBlank(imageShaId)) {
-            logger.debug("Image built from platform ,preparing image with its digest.");
+            logger.debug("Image built from platform, preparing image with its digest.");
             image = imageShaId;
         } else {
             image = ImageUtil.getImage(serviceSpec);

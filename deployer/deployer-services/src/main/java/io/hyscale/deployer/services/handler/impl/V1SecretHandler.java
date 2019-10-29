@@ -53,7 +53,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 	@Override
 	public V1Secret create(ApiClient apiClient, V1Secret resource, String namespace) throws HyscaleException {
 		if (resource == null) {
-			LOGGER.debug("Cannot create null secret");
+			LOGGER.debug("Cannot create null Secret");
 			return resource;
 		}
 		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_SECRETS);
@@ -67,7 +67,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
 					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.CREATE));
-			LOGGER.error("Error while creating secret {} in namespace {}, error {}", name, namespace, ex.toString());
+			LOGGER.error("Error while creating Secret {} in namespace {}, error {}", name, namespace, ex.toString());
 			WorkflowLogger.endActivity(Status.FAILED);
 			throw ex;
 		}
@@ -78,7 +78,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 	@Override
 	public boolean update(ApiClient apiClient, V1Secret resource, String namespace) throws HyscaleException {
 		if (resource == null) {
-			LOGGER.debug("Cannot update null secret");
+			LOGGER.debug("Cannot update null Secret");
 			return false;
 		}
 		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
@@ -116,7 +116,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 			v1Secret = apiInstance.readNamespacedSecret(name, namespace, TRUE, null, null);
 		} catch (ApiException e) {
 			HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET);
-			LOGGER.error("Error while fetching secret {} in namespace {}, error {}", name, namespace, ex.toString());
+			LOGGER.error("Error while fetching Secret {} in namespace {}, error {}", name, namespace, ex.toString());
 			throw ex;
 		}
 		return v1Secret;
@@ -135,7 +135,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 			v1Secrets = v1SecretList != null ? v1SecretList.getItems() : null;
 		} catch (ApiException e) {
 			HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_BY_SELECTOR);
-			LOGGER.error("Error while listing secrets in namespace {}, with selectors {}, error {} ", namespace,
+			LOGGER.error("Error while listing Secrets in namespace {}, with selectors {}, error {} ", namespace,
 					selector, ex.toString());
 			throw ex;
 		}
@@ -207,7 +207,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 			}
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_DELETE_RESOURCE,
 					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.DELETE));
-			LOGGER.error("Error while deleting secret {} in namespace {}, error {}", name, namespace, ex.toString());
+			LOGGER.error("Error while deleting Secret {} in namespace {}, error {}", name, namespace, ex.toString());
 			WorkflowLogger.endActivity(activityContext, Status.FAILED);
 			throw ex;
 		}
@@ -228,7 +228,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 			}
 		} catch (HyscaleException e) {
 			if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleErrorCode())) {
-				LOGGER.error("Error while deleting secrets for selector {} in namespace {}, error {}", selector,
+				LOGGER.error("Error while deleting Secrets for selector {} in namespace {}, error {}", selector,
 						namespace, e.toString());
 				return false;
 			}

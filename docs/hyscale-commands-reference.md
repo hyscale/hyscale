@@ -57,7 +57,7 @@ Options:
 
 #### Description
 
-To get the stdout logs of the deployed service , use the "get service logs" command as below. The command requires servicename, Kubernetes namespace and the application name as inputs. The command can tail the logs with the specified number of lines using -t and -l options to the command.
+To get the stdout logs of the deployed service , use the "get service logs" command as below. The command requires service name, Kubernetes namespace and the application name as inputs. The command can tail the logs with the specified number of lines using -t and -l options to the command.
 
 ## undeploy service
 
@@ -79,7 +79,7 @@ To undeploy a particular application service which was deployed by HyScale, use 
 ## undeploy app
 
 ```markdown
-Usage: hyscalectl undeploy app [OPTIONS]
+Usage: hyscale undeploy app [OPTIONS]
 
 Undeploy an existing deployed application.
 
@@ -95,7 +95,7 @@ HyScale deletes all the services of an application using the "undeploy app" comm
 ## generate
 
 ```markdown
-Usage: hyscalectl generate service manifests [OPTIONS]
+Usage: hyscale generate service manifests [OPTIONS]
 
 Generate kubernetes manifests for the specified services.
 
@@ -111,7 +111,7 @@ HyScale abstracts the generation of Kubernetes manifests for deployments, howeve
 ## app status
 
 ```markdown
-Usage: hyscalectl get app status [OPTIONS]
+Usage: hyscale get app status [OPTIONS]
 
 Status of Deployed Application.
 

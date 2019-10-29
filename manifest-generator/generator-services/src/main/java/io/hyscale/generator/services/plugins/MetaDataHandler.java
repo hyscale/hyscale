@@ -51,7 +51,7 @@ public class MetaDataHandler implements ManifestHandler {
             for (ManifestResource manifestResource : ManifestResource.values()) {
 
                 if (manifestResource.getPredicate().test(serviceSpec)) {
-                    logger.debug("Creating metadata for resource {} ",manifestResource.getKind());
+                    logger.debug("Creating metadata for resource {}.",manifestResource.getKind());
                     /* Snippet for kind for each manifest */
                     snippetList.add(MetadatManifestSnippetGenerator.getKind(manifestResource));
 
@@ -64,7 +64,7 @@ public class MetaDataHandler implements ManifestHandler {
 
             }
         } catch (JsonProcessingException e) {
-            logger.error("Error while serializing metadata snippet ", e);
+            logger.error("Error while serializing metadata snippet.", e);
         }
         return snippetList;
     }

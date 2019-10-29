@@ -60,7 +60,7 @@ public class HealthChecksHandler implements ManifestHandler {
         List<Port> portsList = serviceSpec.get(HyscaleSpecFields.ports, listTypeReference);
 
         if (portsList == null || portsList.isEmpty()) {
-            logger.debug("Cannot handle healthchecks as ports are empty.");
+            logger.debug("Cannot handle HealthChecks as ports are empty.");
             return null;
         }
         // TODO supporiting single healthcheck
@@ -77,7 +77,7 @@ public class HealthChecksHandler implements ManifestHandler {
             String[] portAndProtocol = port.getPort().split("/");
             String path = port.getHealthCheck().getHttpPath();
             if (StringUtils.isNotBlank(path)) {
-                logger.debug("Adding HTTP healthcheck for port {} .", port);
+                logger.debug("Adding HTTP HealthCheck for port {} .", port);
                 V1HTTPGetAction v1HTTPGetAction = new V1HTTPGetAction();
                 v1HTTPGetAction.setPort(new IntOrString(Integer.valueOf(portAndProtocol[0])));
                 v1HTTPGetAction.setPath(path);
@@ -88,9 +88,9 @@ public class HealthChecksHandler implements ManifestHandler {
             for (Port port : portsList) {
                 String[] portAndProtocol = port.getPort().split("/");
                 int portValue = Integer.valueOf(portAndProtocol[0]);
-                logger.debug("Port {}, healthCheck {}", port.getPort(), port.getHealthCheck());
+                logger.debug("Port {}, HealthCheck {}", port.getPort(), port.getHealthCheck());
                 if (port.getHealthCheck() != null) {
-                    logger.debug("Adding TCP healthcheck for port {} .", port);
+                    logger.debug("Adding TCP HealthCheck for port {} .", port);
                     V1TCPSocketAction v1TCPSocketAction = new V1TCPSocketAction();
                     v1TCPSocketAction.setPort(new IntOrString(portValue));
                     v1Probe.setTcpSocket(v1TCPSocketAction);
@@ -112,7 +112,7 @@ public class HealthChecksHandler implements ManifestHandler {
                         : ManifestResource.DEPLOYMENT.getKind();
                 manifestSnippetList.add(buildReadinessProbe(v1Probe, podSpecOwner));
                 manifestSnippetList.add(buildLiveinessProbe(v1Probe, podSpecOwner));
-                logger.debug("Processing healthchecks done.");
+                logger.debug("Processing HealthChecks done.");
             } catch (JsonProcessingException e) {
                 logger.error("Error while serializing health checks ", e);
             }

@@ -51,14 +51,14 @@ import javax.annotation.PreDestroy;
  *  method will be invoked
  *
  * @option namespace  name of the namespace in which the service to be deployed
- * @option appName   name of the app to logically group your service
+ * @option appName   name of the app to logically group your services
  * @option serviceSpecs   list of service specs that are to be deployed
  * @option verbose  prints the verbose output of the deployment
  *
  *  Eg: hyscale deploy service -f s1.hspec.yaml -f s2.hspec.yaml -n dev -a sample
  *
  *
- *  Reponsible for deploying a service with the given 'hspec' to
+ *  Responsible for deploying a service with the given 'hspec' to
  *  the configured kubernetes cluster ,starting from image building to manifest generation
  *  to deployment. Creates a WorkflowContext to communicate across
  *  all deployment stages.

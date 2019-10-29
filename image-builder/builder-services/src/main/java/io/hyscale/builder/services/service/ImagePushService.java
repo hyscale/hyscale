@@ -22,7 +22,7 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 public interface ImagePushService {
 
 	/**
-	 * Check docker exists, Login, tag, push if required
+	 * Check docker exists, pull(if required), tag, push(if required)
 	 * 
 	 * @param serviceSpec
 	 * @param buildContext

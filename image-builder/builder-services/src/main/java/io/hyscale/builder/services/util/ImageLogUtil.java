@@ -40,7 +40,6 @@ public class ImageLogUtil {
 
 	private static final Logger logger = LoggerFactory.getLogger(ImageLogUtil.class);
 
-
 	@Autowired
 	private ImageBuilderConfig imageBuilderConfig;
 
@@ -57,7 +56,6 @@ public class ImageLogUtil {
 		String serviceName = context.getServiceName();
 
 		long startTime = System.currentTimeMillis();
-
 
 		// build logs
 		TailLogFile tailBuildLogs = tailBuildLogs(appName, serviceName);
@@ -86,7 +84,6 @@ public class ImageLogUtil {
 	public void readLogs(BuildContext context) {
 		String appName = context.getAppName();
 		String serviceName = context.getServiceName();
-
 		// build logs
 		readBuildLogs(appName, serviceName);
 		// push logs

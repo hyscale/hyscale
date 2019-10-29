@@ -36,7 +36,7 @@ import io.hyscale.controller.constants.WorkflowConstants;
 public class CommandUtil {
 
 	/**
-	 * gets environment name for labels in resources
+	 * Get environment name for labels in resources
 	 * @param profile
 	 * @param appName
 	 * @return environment name
@@ -57,7 +57,7 @@ public class CommandUtil {
 	}
 	
 	/**
-	 * Checks if input is valid based on BeanValidation
+	 * Checks if input is valid based on Bean Validation
 	 * @param object
 	 * @return true if input valid else false
 	 */

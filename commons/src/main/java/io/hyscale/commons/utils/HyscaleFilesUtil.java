@@ -32,6 +32,8 @@ import org.springframework.stereotype.Component;
 public class HyscaleFilesUtil {
 
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
+    
+    private static final String NULL_STRING = "null";
 
     /**
      * Create file in required directory
@@ -88,7 +90,7 @@ public class HyscaleFilesUtil {
      */
     public void copyFileToDir(File sourceFile, File dest) throws HyscaleException {
         if (sourceFile == null || !sourceFile.exists()) {
-            String[] args = new String[]{sourceFile != null ? sourceFile.getName() : "null"};
+            String[] args = new String[]{sourceFile != null ? sourceFile.getName() : NULL_STRING};
             throw new HyscaleException(CommonErrorCode.FILE_NOT_FOUND, args);
         }
         if (dest == null) {
@@ -109,7 +111,7 @@ public class HyscaleFilesUtil {
      */
     public void copyFile(File sourceFile, File destFile) throws HyscaleException {
         if (sourceFile == null || !sourceFile.exists()) {
-            String[] args = new String[]{sourceFile != null ? sourceFile.getName() : "null"};
+            String[] args = new String[]{sourceFile != null ? sourceFile.getName() : NULL_STRING};
             throw new HyscaleException(CommonErrorCode.FILE_NOT_FOUND, args);
         }
         if (destFile == null) {

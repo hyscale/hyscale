@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  *
  * @param <C> <p> Implementation Notes </p>
  * @see #doExecute(ComponentInvokerContext) to execute any process . This method
- * will be invoked after all @see {@link InvokerHook#preHook(Object)}
+ * will be invoked after all @see {@link InvokerHook#preHook(Object)}.
  * After successful execution all @see {@link InvokerHook#postHook(Object)}
  * are executed. In case of error the execution is terminated and the
  * @see {@link #onError(ComponentInvokerContext, HyscaleException)} is invoked.

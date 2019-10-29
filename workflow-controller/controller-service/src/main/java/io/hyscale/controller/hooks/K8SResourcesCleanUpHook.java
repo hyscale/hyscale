@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.plugins;
+package io.hyscale.controller.hooks;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -81,7 +81,7 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 		List<Manifest> manifestList = (List<Manifest>) context.getAttribute(WorkflowConstants.GENERATED_MANIFESTS);
 
 		if (manifestList == null || manifestList.isEmpty()) {
-			logger.debug("No resource to cleanup");
+			logger.debug("No resources to cleanup");
 			return;
 		}
 		String selector = ResourceSelectorUtil.getSelector(appName, envName, serviceName);
@@ -132,7 +132,7 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 						}
 					} catch (Exception e) {
 						// Ignore error and continue
-						logger.error("Error while cleaning up resource: {}, error: {}", resourceKind.getKind(),
+						logger.error("Error while cleaning up stale resource: {}, error: {}", resourceKind.getKind(),
 								e.getMessage());
 					}
 				}

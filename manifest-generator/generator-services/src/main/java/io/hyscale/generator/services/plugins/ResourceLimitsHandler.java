@@ -15,34 +15,34 @@
  */
 package io.hyscale.generator.services.plugins;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import io.hyscale.plugin.framework.annotation.ManifestPlugin;
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.ManifestContext;
-import io.hyscale.generator.services.model.ManifestGeneratorActivity;
-import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.exception.ManifestErrorCodes;
-import io.hyscale.generator.services.predicates.ManifestPredicates;
-import io.hyscale.plugin.framework.handler.ManifestHandler;
-import io.hyscale.plugin.framework.models.ManifestSnippet;
-import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
-import io.hyscale.servicespec.commons.model.service.ServiceSpec;
-import io.hyscale.plugin.framework.util.GsonSnippetConvertor;
-import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.custom.QuantityFormatException;
-import io.kubernetes.client.custom.QuantityFormatter;
-import io.kubernetes.client.models.V1ResourceRequirements;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.generator.services.exception.ManifestErrorCodes;
+import io.hyscale.generator.services.model.ManifestGeneratorActivity;
+import io.hyscale.generator.services.model.ManifestResource;
+import io.hyscale.generator.services.predicates.ManifestPredicates;
+import io.hyscale.plugin.framework.annotation.ManifestPlugin;
+import io.hyscale.plugin.framework.handler.ManifestHandler;
+import io.hyscale.plugin.framework.models.ManifestSnippet;
+import io.hyscale.plugin.framework.util.GsonSnippetConvertor;
+import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+import io.kubernetes.client.custom.Quantity;
+import io.kubernetes.client.custom.QuantityFormatException;
+import io.kubernetes.client.models.V1ResourceRequirements;
 
 @Component
 @ManifestPlugin(name = "ResourceLimitsHandler")
@@ -56,14 +56,6 @@ public class ResourceLimitsHandler implements ManifestHandler {
 
     private static final String DEFAULT_MIN_MEMORY = "4Mi";
     private static final String DEFAULT_MIN_CPU = "1m";
-
-
-    private QuantityFormatter formatter;
-
-    @PostConstruct
-    public void init() {
-        this.formatter = new QuantityFormatter();
-    }
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {

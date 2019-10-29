@@ -52,7 +52,7 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 	public V1beta2Deployment create(ApiClient apiClient, V1beta2Deployment resource, String namespace)
 			throws HyscaleException {
 		if (resource == null) {
-			LOGGER.debug("Cannot create null deployment");
+			LOGGER.debug("Cannot create null Deployment");
 			return resource;
 		}
 		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_DEPLOYMENT);
@@ -77,7 +77,7 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 	@Override
 	public boolean update(ApiClient apiClient, V1beta2Deployment resource, String namespace) throws HyscaleException {
 		if(resource==null){
-			LOGGER.debug("Cannot update null deployment");
+			LOGGER.debug("Cannot update null Deployment");
 			return false;
 		}
 		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
@@ -148,7 +148,7 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 	public boolean patch(ApiClient apiClient, String name, String namespace, V1beta2Deployment target)
 			throws HyscaleException {
 		if (target == null) {
-			LOGGER.debug("Cannot patch null deployment");
+			LOGGER.debug("Cannot patch null Deployment");
 			return false;
 		}
 		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);

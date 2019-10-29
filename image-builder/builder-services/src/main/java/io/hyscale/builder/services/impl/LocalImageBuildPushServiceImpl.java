@@ -56,8 +56,8 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
     }
 
     /**
-     * Not required if dockerSpec and dockerfile not available In case its just a
-     * stack image, need to push only
+     * Not required if dockerSpec and dockerfile are not available.
+     * In case its just a stack image, need to push only
      *
      * @param serviceSpec
      * @param context

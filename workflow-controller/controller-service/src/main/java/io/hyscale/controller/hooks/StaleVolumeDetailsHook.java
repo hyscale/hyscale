@@ -1,4 +1,4 @@
-package io.hyscale.controller.plugins;
+package io.hyscale.controller.hooks;
 
 import java.util.List;
 import java.util.Map;

@@ -30,7 +30,7 @@ import io.hyscale.deployer.services.model.ServiceAddress;
 import io.hyscale.deployer.services.progress.ProgressHandler;
 
 /**
- * Interface to service deployments.
+ * Interface for service deployments.
  * This class takes the responsibility of handling any deployment operation related to the service.
  *
  * <p>Implementation Notes</p>

@@ -61,7 +61,7 @@ public class PortsHandler implements ManifestHandler {
                 ? ManifestResource.STATEFUL_SET.getKind()
                 : ManifestResource.DEPLOYMENT.getKind();
         if (portList != null && !portList.isEmpty()) {
-            logger.debug("processing container and service ports");
+            logger.debug("Processing container and service ports");
             manifestSnippetList = Lists.newArrayList();
             Set<V1ContainerPort> v1ContainerPorts = Sets.newHashSet();
             Set<V1ServicePort> v1ServicePorts = Sets.newHashSet();
@@ -85,14 +85,14 @@ public class PortsHandler implements ManifestHandler {
                 int portValue = Integer.valueOf(portAndProtocol[0]);
                 v1ContainerPort.setContainerPort(portValue);
                 v1ContainerPort.setName(portName);
-                logger.debug("Processsing container ports {}.",v1ContainerPort.getName());
+                logger.debug("Processing container ports {}.",v1ContainerPort.getName());
                 v1ContainerPorts.add(v1ContainerPort);
 
                 /**
                  * Building Service ports
                  */
                 v1ServicePort.setName(portName);
-                logger.debug("Processsing service ports {}.",v1ServicePort.getName());
+                logger.debug("Processing service ports {}.",v1ServicePort.getName());
                 v1ServicePort.setPort(portValue);
                 v1ServicePort.setTargetPort(new IntOrString(portValue));
                 v1ServicePorts.add(v1ServicePort);

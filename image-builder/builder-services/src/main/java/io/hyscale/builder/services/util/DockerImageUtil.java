@@ -39,8 +39,8 @@ public class DockerImageUtil {
     @Autowired
     private ImageCommandGenerator commandGenerator;
 
-    /*
-     * To test if docker is installed and docker daemon is running
+    /**
+     * Test if docker is installed and docker daemon is running
      */
     public void isDockerRunning() throws HyscaleException {
         String command = commandGenerator.getDockerInstalledCommand();

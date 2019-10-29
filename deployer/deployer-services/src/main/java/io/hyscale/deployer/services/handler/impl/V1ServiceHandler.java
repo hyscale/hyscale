@@ -55,7 +55,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
     @Override
 	public V1Service create(ApiClient apiClient, V1Service resource, String namespace) throws HyscaleException {
 		if (resource == null) {
-			LOGGER.debug("Cannot create null service");
+			LOGGER.debug("Cannot create null Service");
 			return resource;
 		}
 		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_SERVICE);
@@ -69,7 +69,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
 					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.CREATE));
-			LOGGER.error("Error while creating service {} in namespace {}, error {}", name, namespace, ex.toString());
+			LOGGER.error("Error while creating Service {} in namespace {}, error {}", name, namespace, ex.toString());
 			WorkflowLogger.endActivity(Status.FAILED);
 			throw ex;
 		}
@@ -80,7 +80,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 	@Override
 	public boolean update(ApiClient apiClient, V1Service resource, String namespace) throws HyscaleException {
 		if (resource == null) {
-			LOGGER.debug("Cannot update null service");
+			LOGGER.debug("Cannot update null Service");
 			return false;
 		}
 		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
@@ -121,7 +121,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 	    v1Service = coreV1Api.readNamespacedService(name, namespace, TRUE, null, null);
 	} catch (ApiException e) {
 	    HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET);
-	    LOGGER.error("Error while fetching service {} in namespace {}, error {} ", name, namespace, ex.toString());
+	    LOGGER.error("Error while fetching Service {} in namespace {}, error {} ", name, namespace, ex.toString());
 	    throw ex;
 	}
 	return v1Service;
@@ -140,7 +140,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 	    v1Services = v1ServiceList != null ? v1ServiceList.getItems() : null;
 	} catch (ApiException e) {
 	    HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_BY_SELECTOR);
-	    LOGGER.error("Error while listing services in namespace {}, with selectors {}, error {} ", namespace,
+	    LOGGER.error("Error while listing Services in namespace {}, with selectors {}, error {} ", namespace,
 		    selector, ex.toString());
 	    throw ex;
 	}
@@ -173,14 +173,14 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 					V1Service.class);
 			coreV1Api.patchNamespacedService(name, namespace, patchObject, TRUE, null);
 		} catch (HyscaleException ex) {
-			LOGGER.error("Error while creating patch for service {}, source {}, target {}, error", name, sourceService,
+			LOGGER.error("Error while creating patch for Service {}, source {}, target {}, error", name, sourceService,
 					target, ex.toString());
 			WorkflowLogger.endActivity(Status.FAILED);
 			throw ex;
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_PATCH_RESOURCE,
 					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.PATCH));
-			LOGGER.error("Error while patching service {} in namespace {} , error {}", name, namespace, ex.toString());
+			LOGGER.error("Error while patching Service {} in namespace {} , error {}", name, namespace, ex.toString());
 			WorkflowLogger.endActivity(Status.FAILED);
 			throw ex;
 		}
@@ -213,7 +213,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 	    }
 	    HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_DELETE_RESOURCE,
 		    ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.DELETE));
-	    LOGGER.error("Error while deleting service {} in namespace {} error {}", name, namespace, ex.toString());
+	    LOGGER.error("Error while deleting Service {} in namespace {} error {}", name, namespace, ex.toString());
 	    WorkflowLogger.endActivity(activityContext, Status.FAILED);
 	    throw ex;
 	}
@@ -273,7 +273,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 				Thread.sleep(MAX_LB_WAIT_TIME);
 			}
 		} catch (InterruptedException e) {
-			LOGGER.debug("Error while lb ready state condition");
+			LOGGER.debug("Error while loadbalancer ready state condition");
 		}
 		if (loadBalancerIngress == null) {
 			WorkflowLogger.endActivity(serviceIPContext, Status.FAILED);

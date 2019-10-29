@@ -86,7 +86,7 @@ public class VolumesHandler implements ManifestHandler {
             v1ConfigMapVolumeSource.setName(configMapName);
             v1Volume.setConfigMap(v1ConfigMapVolumeSource);
             volumes.add(v1Volume);
-            logger.debug("preparing  volumes for props.");
+            logger.debug("Preparing  volumes for props.");
         }
 
         if (ManifestPredicates.haveSecretsVolume().test(serviceSpec)

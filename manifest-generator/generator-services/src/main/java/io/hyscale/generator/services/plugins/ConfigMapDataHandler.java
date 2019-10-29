@@ -62,7 +62,7 @@ public class ConfigMapDataHandler implements ManifestHandler {
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         Props props = PropsProvider.getProps(serviceSpec);
         if (!ManifestPredicates.getPropsPredicate().test(serviceSpec)) {
-            logger.debug("Props found to be empty while processing configmap data.");
+            logger.debug("Props found to be empty while processing ConfigMap data.");
             return null;
         }
         MetaDataContext metaDataContext = new MetaDataContext();
@@ -76,7 +76,7 @@ public class ConfigMapDataHandler implements ManifestHandler {
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         try {
             manifestSnippetList.add(getConfigMapData(props, propsVolumePath, metaDataContext));
-            logger.debug("Added config map data to the manifest snippet list");
+            logger.debug("Added ConfigMap map data to the manifest snippet list");
         } catch (JsonProcessingException e) {
             logger.error("Error while generating manifest for props of service {}", metaDataContext.getServiceName(), e);
         }
@@ -121,7 +121,7 @@ public class ConfigMapDataHandler implements ManifestHandler {
         configMapDataSnippet.setKind(ManifestResource.CONFIG_MAP.getKind());
         configMapDataSnippet.setPath("data");
         configMapDataSnippet.setSnippet(JsonSnippetConvertor.serialize(configProps));
-        logger.debug("Generated Config map snippet.");
+        logger.debug("Generated ConfigMap snippet.");
         return configMapDataSnippet;
     }
 

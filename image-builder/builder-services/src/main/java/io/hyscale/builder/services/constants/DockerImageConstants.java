@@ -21,7 +21,7 @@ public class DockerImageConstants {
 
 	public static final String file_separator = System.getProperty("file.separator");
 
-	public static final String BASE_DIR = "/tmp/hyscale-ctl/";
+	public static final String BASE_DIR = "/tmp/hyscale/";
 
 	public static final String DOCKERFILE_DIR = "dockerfiles";
 

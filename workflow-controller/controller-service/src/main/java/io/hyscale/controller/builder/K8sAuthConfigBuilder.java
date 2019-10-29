@@ -36,7 +36,7 @@ public class K8sAuthConfigBuilder {
     private ControllerConfig controllerConfig;
 
     /**
-     * gets {@link K8sConfigFileAuth} from {@link ControllerConfig} default config
+     * Gets {@link K8sConfigFileAuth} from {@link ControllerConfig} default config
      * @return {@link K8sConfigFileAuth}
      */
     public AuthConfig getAuthConfig() {

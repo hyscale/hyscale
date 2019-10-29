@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.plugins;
+package io.hyscale.controller.hooks;
 
 import io.hyscale.commons.component.InvokerHook;
 import io.hyscale.commons.exception.HyscaleException;
@@ -42,10 +42,10 @@ public class BuildSpecValidatorHook implements InvokerHook<WorkflowContext> {
 
     @Override
     public void preHook(WorkflowContext context) throws HyscaleException {
-        logger.debug("Executing BuildSpecValidatorHook");
+        logger.debug("Executing Build Spec Validator Hook");
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
-            logger.debug("Cannot service spec at BuildSpec validator plugin ");
+            logger.debug("Empty service spec found at BuildSpec validator hook ");
             throw new HyscaleException(ControllerErrorCodes.SERVICE_SPEC_REQUIRED);
         }
 

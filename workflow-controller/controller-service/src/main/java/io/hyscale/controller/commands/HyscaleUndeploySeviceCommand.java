@@ -44,8 +44,8 @@ import picocli.CommandLine.Option;
  * Eg: hyscale undeploy service -s s1 -s s2 -a sample -n dev
  *
  * Undeploys the service from the namespace in the cluster
- * Removes all the resources from the cluster related to the
- * given service from the namespace.
+ * Removes all the resources, except the pvcs from the cluster related 
+ * to the given service from the namespace.
  *
  */
 @Command(name = "service", description = "Undeploy service from the configured kubernetes cluster")

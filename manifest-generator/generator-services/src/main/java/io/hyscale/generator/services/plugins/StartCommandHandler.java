@@ -84,10 +84,10 @@ public class StartCommandHandler implements ManifestHandler {
             argsSnippet.setKind(podSpecOwner);
             argsSnippet.setSnippet(JsonSnippetConvertor.serialize(args));
             snippetList.add(argsSnippet);
-            logger.debug("Prepared args snippet {}.",argsSnippet.getSnippet());
+            logger.debug("Prepared command args snippet {}.",argsSnippet.getSnippet());
 
         } catch (JsonProcessingException e) {
-            logger.error("Error while processing command and args snippet ", e);
+            logger.error("Error while creating command and args snippet ", e);
             return null;
         }
         return snippetList;

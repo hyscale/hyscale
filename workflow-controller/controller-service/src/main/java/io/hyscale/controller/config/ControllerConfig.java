@@ -21,7 +21,6 @@ import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -52,9 +51,6 @@ public class ControllerConfig {
     private String defaultRegistryConf;
     private String defaultKubeConf;
 
-    @Autowired
-    private SetupConfig setupConfig;
-
     @PostConstruct
     public void init() throws HyscaleException {
         this.defaultKubeConf = SetupConfig.USER_HOME_DIR + SetupConfig.FILE_SEPARATOR + defaultKubeConfAsString;
@@ -74,7 +70,7 @@ public class ControllerConfig {
     }
 
     public String getDefaultRegistryConf() {
-        logger.debug("Using default Regsitry Config {}", defaultRegistryConf);
+        logger.debug("Using default Registry Config {}", defaultRegistryConf);
         return defaultRegistryConf;
     }
 

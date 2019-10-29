@@ -15,39 +15,40 @@
  */
 package io.hyscale.generator.services.processor;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.Manifest;
-import io.hyscale.commons.models.ManifestContext;
-import io.hyscale.commons.models.Status;
-import io.hyscale.commons.models.YAMLManifest;
-import io.hyscale.commons.utils.HyscaleFilesUtil;
-import io.hyscale.generator.services.config.ManifestConfig;
-import io.hyscale.generator.services.model.ManifestGeneratorActivity;
-import io.hyscale.generator.services.model.ManifestNode;
-import io.hyscale.generator.services.utils.ManifestTreeUtils;
-import io.hyscale.generator.services.utils.PluginHandlers;
-import io.hyscale.generator.services.generator.ManifestFileGenerator;
-import io.hyscale.plugin.framework.models.ManifestMeta;
-import io.hyscale.plugin.framework.handler.ManifestHandler;
-import io.hyscale.plugin.framework.models.ManifestSnippet;
-import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
-import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.Manifest;
+import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.commons.models.Status;
+import io.hyscale.commons.models.YAMLManifest;
+import io.hyscale.generator.services.config.ManifestConfig;
+import io.hyscale.generator.services.generator.ManifestFileGenerator;
+import io.hyscale.generator.services.model.ManifestGeneratorActivity;
+import io.hyscale.generator.services.model.ManifestNode;
+import io.hyscale.generator.services.utils.ManifestTreeUtils;
+import io.hyscale.generator.services.utils.PluginHandlers;
+import io.hyscale.plugin.framework.handler.ManifestHandler;
+import io.hyscale.plugin.framework.models.ManifestMeta;
+import io.hyscale.plugin.framework.models.ManifestSnippet;
+import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @Component
 public class PluginProcessor {
@@ -65,9 +66,6 @@ public class PluginProcessor {
 
     @Autowired
     private ManifestConfig manifestConfig;
-
-    @Autowired
-    private HyscaleFilesUtil filesUtil;
 
     public List<Manifest> getManifests(ServiceSpec serviceSpec, ManifestContext manifestContext)
             throws HyscaleException {

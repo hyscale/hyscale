@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.plugins;
+package io.hyscale.controller.hooks;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.component.InvokerHook;
@@ -42,10 +42,10 @@ public class ManifestValidatorHook implements InvokerHook<WorkflowContext> {
 
     @Override
     public void preHook(WorkflowContext context) throws HyscaleException {
-        logger.debug("Executing ManifestValidatorHook");
+        logger.debug("Executing Manifest Validator Hook");
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
-            logger.debug("Cannot service spec at manifest plugin ");
+            logger.debug("Empty service spec found at manifest validator hook ");
             throw new HyscaleException(ControllerErrorCodes.SERVICE_SPEC_REQUIRED);
         }
         TypeReference<List<Port>> listTypeReference = new TypeReference<List<Port>>() {

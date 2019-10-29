@@ -66,7 +66,7 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 	public V1beta2StatefulSet create(ApiClient apiClient, V1beta2StatefulSet resource, String namespace)
 			throws HyscaleException {
 		if (resource == null) {
-			LOGGER.debug("Cannot create null statefulset");
+			LOGGER.debug("Cannot create null StatefulSet");
 			return resource;
 		}
 		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_STATEFULSET);
@@ -92,7 +92,7 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 	@Override
 	public boolean update(ApiClient apiClient, V1beta2StatefulSet resource, String namespace) throws HyscaleException {
 		if (resource == null) {
-			LOGGER.debug("Cannot update null statefulset");
+			LOGGER.debug("Cannot update null StatefulSet");
 			return false;
 		}
 		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
@@ -152,7 +152,7 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 			statefulSets = statefulSetList != null ? statefulSetList.getItems() : null;
 		} catch (ApiException e) {
 			HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_BY_SELECTOR);
-			LOGGER.error("Error while listing statefulsets in namespace {}, with selectors {} , error {}", namespace,
+			LOGGER.error("Error while listing StatefulSets in namespace {}, with selectors {} , error {}", namespace,
 					selector, ex.toString());
 			throw ex;
 		}
@@ -190,7 +190,7 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 			patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1beta2StatefulSet.class),
 					target, V1beta2StatefulSet.class);
 			deleteRequired = isDeletePodRequired(apiClient, serviceName, namespace);
-			LOGGER.debug("Deleting existing pods for updating sts patch required :{}", deleteRequired);
+			LOGGER.debug("Deleting existing pods for updating StatefulSet patch required :{}", deleteRequired);
 			appsV1beta2Api.patchNamespacedStatefulSet(name, namespace, patchObject, TRUE, null);
 		} catch (HyscaleException ex) {
 			LOGGER.error("Error while creating patch for StatefulSet {}, source {}, target {}, error {}", name,
@@ -263,12 +263,12 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 			}
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_DELETE_RESOURCE,
 					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.DELETE));
-			LOGGER.error("Error while deleting statefulset {} in namespace {} , error {}", name, namespace,
+			LOGGER.error("Error while deleting StatefulSet {} in namespace {} , error {}", name, namespace,
 					ex.toString());
 			WorkflowLogger.endActivity(activityContext, Status.FAILED);
 			throw ex;
 		}
-		LOGGER.debug("Deleting statefulsets done");
+		LOGGER.debug("Deleting StatefulSet done");
 		WorkflowLogger.endActivity(activityContext, Status.DONE);
 		return true;
 	}

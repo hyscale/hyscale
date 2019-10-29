@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.plugins;
+package io.hyscale.controller.hooks;
 
 import io.hyscale.commons.component.InvokerHook;
 import io.hyscale.commons.config.SetupConfig;
@@ -27,12 +27,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * Hook to clean service directory to remove files no longer required
+ * Hook to clean apps directory to remove files no longer required
  *
  */
 @Component
-public class ServiceDirCleanUpHook implements InvokerHook<WorkflowContext> {
-
+public class AppDirCleanUpHook implements InvokerHook<WorkflowContext> {
 	private static final Logger logger = LoggerFactory.getLogger(ServiceDirCleanUpHook.class);
 
 	@Autowired
@@ -43,11 +42,11 @@ public class ServiceDirCleanUpHook implements InvokerHook<WorkflowContext> {
 
 	@Override
 	public void preHook(WorkflowContext context) throws HyscaleException {
-		if (context.getServiceName() != null && context.getAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR) != null
-				&& context.getAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR).equals(true)) {
-			String serviceDir = setupConfig.getServiceDir(context.getAppName(), context.getServiceName());
-			filesUtil.deleteDirectory(serviceDir);
-			logger.debug("Cleaning up service dir in the apps");
+		if (context.getAppName() != null && context.getAttribute(WorkflowConstants.CLEAN_UP_APP_DIR) != null
+				&& context.getAttribute(WorkflowConstants.CLEAN_UP_APP_DIR).equals(true)) {
+			String appDir = setupConfig.getAppsDir() + context.getAppName();
+			filesUtil.deleteDirectory(appDir);
+			logger.debug("Cleaning up app dir in the apps");
 		}
 	}
 

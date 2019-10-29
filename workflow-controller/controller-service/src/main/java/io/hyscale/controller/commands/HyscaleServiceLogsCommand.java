@@ -36,7 +36,7 @@ import picocli.CommandLine.Option;
  *  This class executes the 'hyscale get service logs' command
  *  It is a sub-command of the 'hyscale get service' command
  *  @see HyscaleGetServiceCommand .
- *  Every command/sub-command has to implement the Runnable so tha
+ *  Every command/sub-command has to implement the Runnable so that
  *  whenever the command is executed the {@link #run()}
  *  method will be invoked
  *

@@ -41,7 +41,7 @@ public enum DeployerActivity implements Activity {
 	DELETING_PERSISTENT_VOLUME_CLAIMS("Deleting Persistent Volume Claims "),
 	NO_RESOURCES_TO_UNDEPLOY("No resources to undeploy "),
 	STALE_VOLUME_DELETION(
-			"Volume {} seems to have been removed in your hspec. This volume is retained in your namespace {} as pvc {} for review and manual deletion"),
+			"Volumes {} seems to have been removed in your hspec. These volumes are retained in your namespace {} as pvc {} for review and manual deletion"),
 	STALE_VOLUME_REUSE(
 			"These volumes {} are no longer in use. They are retained in your namespace {} as pvc {} for review and manual deletion. To reattach them to service {}, use the same volume name."),
 	IGNORING_VOLUME_MODIFICATION("Detected change in hspec for volumes {}. Changes to storage class or size is currently not supported");

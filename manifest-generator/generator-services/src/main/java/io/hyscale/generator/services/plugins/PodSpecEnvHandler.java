@@ -86,7 +86,7 @@ public class PodSpecEnvHandler implements ManifestHandler {
             snippetList.add(propsEnvSnippet);
 
         } catch (JsonProcessingException e) {
-            logger.error("Error while generating env for pod spec", e);
+            logger.error("Error while generating env for Pod spec", e);
         }
         return snippetList;
     }

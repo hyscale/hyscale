@@ -76,7 +76,7 @@ public class LocalRegistryManagerImpl implements RegistryManager {
     }
 
     /**
-     * gives image registry details based on registry name
+     * Gives image registry details based on registry name
      */
     @Override
     public ImageRegistry getImageRegistry(String registry) throws HyscaleException {

@@ -70,8 +70,8 @@ public class LocalImagePushServiceImpl implements ImagePushService {
     private ImageBuilderConfig imageBuilderConfig;
 
     /**
-     * Check docker exists, If stack image as service image pull tag, If push
-     * required login and push else return
+     * Check docker exists, If stack image as service image pull, tag
+     * Push image if required else return
      *
      * @throws HyscaleException
      */

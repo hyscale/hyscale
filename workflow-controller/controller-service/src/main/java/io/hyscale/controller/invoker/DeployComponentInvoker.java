@@ -21,14 +21,6 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
-import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.builder.K8sAuthConfigBuilder;
-import io.hyscale.controller.constants.WorkflowConstants;
-import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.util.LoggerUtility;
-import io.hyscale.controller.plugins.K8SResourcesCleanUpHook;
-import io.hyscale.controller.plugins.VolumeCleanUpHook;
-import io.hyscale.controller.plugins.VolumeValidatorHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +34,15 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.commons.utils.LogProcessor;
+import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.builder.K8sAuthConfigBuilder;
+import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.core.exception.ControllerErrorCodes;
+import io.hyscale.controller.hooks.K8SResourcesCleanUpHook;
+import io.hyscale.controller.hooks.VolumeCleanUpHook;
+import io.hyscale.controller.hooks.VolumeValidatorHook;
+import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.controller.util.LoggerUtility;
 import io.hyscale.deployer.services.config.DeployerConfig;
 import io.hyscale.deployer.services.deployer.Deployer;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
@@ -76,19 +76,19 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
     private LogProcessor logProcessor;
 
     @Autowired
-    private K8SResourcesCleanUpHook k8sResourcesCleanUpPlugin;
+    private K8SResourcesCleanUpHook k8sResourcesCleanUpHook;
 
     @Autowired
-    private VolumeCleanUpHook volumeCleanUpPlugin;
+    private VolumeCleanUpHook volumeCleanUpHook;
 
     @Autowired
-    private VolumeValidatorHook volumeValidatorPlugin;
+    private VolumeValidatorHook volumeValidatorHook;
 
     @PostConstruct
     public void init() {
-        super.addHook(volumeValidatorPlugin);
-        super.addHook(k8sResourcesCleanUpPlugin);
-        super.addHook(volumeCleanUpPlugin);
+        super.addHook(volumeValidatorHook);
+        super.addHook(k8sResourcesCleanUpHook);
+        super.addHook(volumeCleanUpHook);
     }
 
     /**
@@ -177,7 +177,7 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
     }
 
     /**
-     * write deployment logs to file for later access
+     * Write deployment logs to file for later access
      *
      * @param context
      * @param deploymentContext

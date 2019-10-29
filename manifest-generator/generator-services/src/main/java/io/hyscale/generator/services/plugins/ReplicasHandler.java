@@ -42,7 +42,7 @@ public class ReplicasHandler implements ManifestHandler {
         Integer replicas = serviceSpec.get(HyscaleSpecFields.replicas, Integer.class);
         // In user does not specify replicas field in hspec, by default we consider a single replica
         if (replicas == null || replicas == 0 ) {
-            logger.debug("Cannot find replicas,setting default value to 1.");
+            logger.debug("Cannot find replicas, setting default value to 1.");
             replicas = 1;
         }
 

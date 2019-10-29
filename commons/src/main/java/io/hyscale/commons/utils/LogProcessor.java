@@ -81,7 +81,7 @@ public class LogProcessor {
 				lineRead++;
 			}
 		} catch (FileNotFoundException e) {
-			logger.error("File is requird for logs");
+			logger.error("File is required for logs");
 		} catch (IOException e) {
 			logger.error("Error while reading log file:{} ", logFile.getName());
 		}

@@ -13,38 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.plugins;
+package io.hyscale.controller.hooks;
 
 import io.hyscale.commons.component.InvokerHook;
+import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.HyscaleFilesUtil;
+import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.generator.services.config.ManifestConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * Hook to clean up old manifests
+ * Hook to clean service directory to remove files no longer required
  *
  */
 @Component
-public class ManifestCleanUpHook implements InvokerHook<WorkflowContext> {
+public class ServiceDirCleanUpHook implements InvokerHook<WorkflowContext> {
 
-	private static final Logger logger = LoggerFactory.getLogger(ManifestCleanUpHook.class);
+	private static final Logger logger = LoggerFactory.getLogger(ServiceDirCleanUpHook.class);
+
+	@Autowired
+	private SetupConfig setupConfig;
 
 	@Autowired
 	private HyscaleFilesUtil filesUtil;
 
-	@Autowired
-	private ManifestConfig manifestConfig;
-
 	@Override
 	public void preHook(WorkflowContext context) throws HyscaleException {
-		String manifestDir = manifestConfig.getManifestDir(context.getAppName(), context.getServiceName());
-		logger.debug("Cleaning up manifests directory {}", manifestDir);
-		filesUtil.clearDirectory(manifestDir);
+		if (context.getServiceName() != null && context.getAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR) != null
+				&& context.getAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR).equals(true)) {
+			String serviceDir = setupConfig.getServiceDir(context.getAppName(), context.getServiceName());
+			filesUtil.deleteDirectory(serviceDir);
+			logger.debug("Cleaning up service dir in the apps");
+		}
 	}
 
 	@Override

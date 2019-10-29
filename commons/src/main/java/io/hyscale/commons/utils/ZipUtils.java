@@ -23,7 +23,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-//TODO mvoe to commons
+//TODO move to commons
 public class ZipUtils {
 
 	public static void zipFolder(String srcFolder, String destZipFile) throws Exception {

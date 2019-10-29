@@ -58,7 +58,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 	@Override
 	public V1Pod create(ApiClient apiClient, V1Pod resource, String namespace) throws HyscaleException {
 		if (resource == null) {
-			LOGGER.debug("Cannot create null pod");
+			LOGGER.debug("Cannot create null Pod");
 			return resource;
 		}
 		CoreV1Api coreV1Api = new CoreV1Api();
@@ -81,7 +81,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 	@Override
 	public boolean update(ApiClient apiClient, V1Pod resource, String namespace) throws HyscaleException {
 		if(resource==null){
-			LOGGER.debug("Cannot update null pod");
+			LOGGER.debug("Cannot update null Pod");
 			return false;
 		}
 		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
@@ -136,7 +136,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 			v1Pods = v1PodList != null ? v1PodList.getItems() : null;
 		} catch (ApiException e) {
 			HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_BY_SELECTOR);
-			LOGGER.error("Error while listing pods in namespace {}, with selectors {},  error {}", namespace, selector,
+			LOGGER.error("Error while listing Pods in namespace {}, with selectors {},  error {}", namespace, selector,
 					ex.toString());
 			throw ex;
 		}
@@ -202,7 +202,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 			}
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_DELETE_RESOURCE,
 					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.DELETE));
-			LOGGER.error("Error while deleting pod {} in namespace {} , error {}", name, namespace, ex.toString());
+			LOGGER.error("Error while deleting Pod {} in namespace {} , error {}", name, namespace, ex.toString());
 			throw ex;
 		}
 		return true;
@@ -220,7 +220,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 			}
 		} catch (HyscaleException e) {
 			if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleErrorCode())) {
-				LOGGER.error("Error while deleting pods for selector {} in namespace {}, error {}", selector, namespace,
+				LOGGER.error("Error while deleting Pods for selector {} in namespace {}, error {}", selector, namespace,
 						e.toString());
 				return false;
 			}
@@ -247,7 +247,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 			return logs.streamNamespacedPodLog(namespace, v1Pods.get(0).getMetadata().getName(), name, null, readLines,
 					true);
 		} catch (IOException | ApiException e) {
-			LOGGER.error("Failed to tail pod logs for service {} in namespace {} ", name, namespace);
+			LOGGER.error("Failed to tail Pod logs for service {} in namespace {} ", name, namespace);
 			throw new HyscaleException(DeployerErrorCodes.FAILED_TO_TAIL_POD, name, namespace);
 		}
 	}
@@ -265,13 +265,13 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 					false, null, TRUE, false, null, readLines, true, null, null);
 			Response response = call.execute();
 			if (!response.isSuccessful()) {
-				LOGGER.error("Failed to get pod logs for service {} in namespace {} : {}", name, namespace,
+				LOGGER.error("Failed to get Pod logs for service {} in namespace {} : {}", name, namespace,
 						response.body().string());
 				throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_LOGS, name, namespace);
 			}
 			return response.body().byteStream();
 		} catch (IOException | ApiException e) {
-			LOGGER.error("Error while fetching pod logs for service {} in namespace {} ", name, namespace,
+			LOGGER.error("Error while fetching Pod logs for service {} in namespace {} ", name, namespace,
 					e.getMessage());
 			throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_LOGS, name, namespace);
 		}

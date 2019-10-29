@@ -15,9 +15,6 @@
  */
 package io.hyscale.controller.invoker;
 
-import io.hyscale.controller.plugins.BuildSpecValidatorHook;
-import io.hyscale.controller.plugins.ImageValidatorHook;
-import io.hyscale.controller.plugins.ServiceDirCleanUpHook;
 import io.hyscale.dockerfile.gen.services.exception.DockerfileErrorCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +28,9 @@ import io.hyscale.commons.models.DockerfileEntity;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.core.exception.ControllerErrorCodes;
+import io.hyscale.controller.hooks.BuildSpecValidatorHook;
+import io.hyscale.controller.hooks.ImageValidatorHook;
+import io.hyscale.controller.hooks.ServiceDirCleanUpHook;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.dockerfile.gen.services.model.DockerfileGenContext;
 import io.hyscale.dockerfile.gen.services.generator.DockerfileGenerator;
@@ -44,7 +44,7 @@ import javax.annotation.PostConstruct;
  * It acts as a bridge between workflow controller and docker file generator
  * provides link between {@link WorkflowContext} and {@link DockerfileGenContext}
  * <p>
- * The registered plugins are executed as a part of component invocation
+ * The registered hooks are executed as a part of component invocation
  */
 @Component
 public class DockerfileGeneratorComponentInvoker extends ComponentInvoker<WorkflowContext> {
@@ -55,19 +55,19 @@ public class DockerfileGeneratorComponentInvoker extends ComponentInvoker<Workfl
     private DockerfileGenerator dockerfileGenerator;
 
     @Autowired
-    private ServiceDirCleanUpHook serviceDirCleanUpPlugin;
+    private ServiceDirCleanUpHook serviceDirCleanUpHook;
 
     @Autowired
-    private BuildSpecValidatorHook buildSpecValidatorPlugin;
+    private BuildSpecValidatorHook buildSpecValidatorHook;
 
     @Autowired
-    private ImageValidatorHook imageValidatorPlugin;
+    private ImageValidatorHook imageValidatorHook;
 
     @PostConstruct
     public void init() {
-        super.addHook(imageValidatorPlugin);
-        super.addHook(buildSpecValidatorPlugin);
-        super.addHook(serviceDirCleanUpPlugin);
+        super.addHook(imageValidatorHook);
+        super.addHook(buildSpecValidatorHook);
+        super.addHook(serviceDirCleanUpHook);
     }
 
     @Override

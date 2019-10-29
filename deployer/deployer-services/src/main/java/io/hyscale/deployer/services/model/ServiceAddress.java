@@ -48,7 +48,7 @@ public class ServiceAddress {
     }
 
     /**
-     * returns 
+     * @return 
      * null if serviceIP is null or empty
      * else String representing
      * serviceIP:port1, serviceIP:port2

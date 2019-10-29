@@ -80,7 +80,7 @@ public class SecretsDataHandler implements ManifestHandler {
                 Collectors.toMap(key -> key.getKey(), value -> Base64.encodeBase64String(value.getValue().getBytes())));
 
         if (StringUtils.isNotBlank(secretsVolumePath)) {
-            logger.debug("Writing secrets into file {}",secretsVolumePath);
+            logger.debug("Writing secrets into file {}.",secretsVolumePath);
             StringBuilder stringBuilder = new StringBuilder();
             secrets.getSecretsMap().entrySet().stream().forEach(each -> {
                 stringBuilder.append(each.getKey()).append("=").append(each.getValue()).append("\n");
@@ -89,7 +89,7 @@ public class SecretsDataHandler implements ManifestHandler {
                 modifiedMap.put(filesUtil.getFileName(secretsVolumePath), 
                 		Base64.encodeBase64String(stringBuilder.toString().getBytes()));
             } catch (HyscaleException e) {
-                logger.error("Error while processing secrets volumes path {}", secretsVolumePath);
+                logger.error("Error while processing secrets volumes path {}.", secretsVolumePath);
             }
         }
         snippet.setSnippet(JsonSnippetConvertor.serialize(modifiedMap));

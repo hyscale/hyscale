@@ -112,8 +112,6 @@ public class VolumeMountsHandler implements ManifestHandler {
     private ManifestSnippet buildVolumeMountSnippet(ServiceSpec serviceSpec, MetaDataContext metaDataContext) throws JsonProcessingException, HyscaleException {
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ?
                 ManifestResource.STATEFUL_SET.getKind() : ManifestResource.DEPLOYMENT.getKind();
-        TypeReference<List<Volume>> volumesList = new TypeReference<List<Volume>>() {
-        };
         ManifestSnippet volumeMountSnippet = new ManifestSnippet();
         volumeMountSnippet.setSnippet(JsonSnippetConvertor.serialize(getVolumeMounts(serviceSpec, metaDataContext)));
         volumeMountSnippet.setKind(podSpecOwner);

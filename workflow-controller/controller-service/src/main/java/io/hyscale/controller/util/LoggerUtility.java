@@ -56,7 +56,7 @@ public class LoggerUtility {
 	}
 
 	/**
-	 * deployment logs 
+	 * Deployment logs 
 	 * @param context
 	 */
 	public void deploymentLogs(WorkflowContext context) {

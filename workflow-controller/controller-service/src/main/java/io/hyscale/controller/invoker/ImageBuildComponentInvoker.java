@@ -22,7 +22,7 @@ import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.manager.RegistryManager;
 import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.plugins.ImageCleanUpHook;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +34,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DockerfileEntity;
 import io.hyscale.controller.core.exception.ControllerErrorCodes;
+import io.hyscale.controller.hooks.ImageCleanUpHook;
 import io.hyscale.builder.services.service.ImageBuildPushService;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
@@ -53,11 +54,11 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
     private RegistryManager registryManager;
 
     @Autowired
-    private ImageCleanUpHook imageCleanUpPlugin;
+    private ImageCleanUpHook imageCleanUpHook;
 
     @PostConstruct
     public void init() {
-        super.addHook(imageCleanUpPlugin);
+        super.addHook(imageCleanUpHook);
     }
 
     private static final Logger logger = LoggerFactory.getLogger(ImageBuildComponentInvoker.class);
@@ -70,7 +71,7 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
             context.setFailed(true);
-            logger.error(" Cannot generate manifests with empty service specs ");
+            logger.error(" Cannot build image for empty service spec");
             throw new HyscaleException(ControllerErrorCodes.SERVICE_SPEC_REQUIRED);
         }
         String serviceName;

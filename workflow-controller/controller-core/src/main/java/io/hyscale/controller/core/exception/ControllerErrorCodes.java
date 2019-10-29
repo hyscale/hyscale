@@ -31,7 +31,7 @@ public enum ControllerErrorCodes implements HyscaleErrorCode {
     SERVICE_SPEC_PROCESSING_FAILED("Failed to process service spec "),
     INVALID_PORTS_FOUND("Ports found to be invalid in service spec"),
     INVALID_VOLUMES_FOUND("Volumes found to be invalid in service spec"),
-    UNEXPECTED_ERROR("Unexpected error occured"),
+    UNEXPECTED_ERROR("Unexpected error occurred"),
     UNDEPLOYMENT_FAILED("Failed to Undeploy");
 
     private String message;

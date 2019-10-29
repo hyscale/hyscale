@@ -92,7 +92,7 @@ public class V1PersistentVolumeClaimHandler implements ResourceLifeCycleHandler<
 					: null;
 		} catch (ApiException e) {
 			HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_BY_SELECTOR);
-			logger.error("Error while listing persisteing volume claims in namespace {}, with selectors {}, error {} ",
+			logger.error("Error while listing Persistent volume claims in namespace {}, with selectors {}, error {} ",
 					namespace, selector, ex.toString());
 			throw ex;
 		}

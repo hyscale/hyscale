@@ -124,9 +124,11 @@ public class KubernetesDeployer implements Deployer {
 
     @Override
     public ResourceStatus status(String namespace, Manifest manifest, AuthConfig authConfig) throws Exception {
-        // get respective kind , name
-        // get live manifest
-        // query respective handler for status
+    	/*
+    	 * For each resource kind and name, using resource handler
+    	 * Get resource from cluster
+    	 * Get status of the fetched resource 
+    	 */
         ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
         YAMLManifest yamlManifest = (YAMLManifest) manifest;
         try {
@@ -280,7 +282,7 @@ public class KubernetesDeployer implements Deployer {
 				deploymentStatus.setServiceAddress(serviceAddress.toString());
 			}
 		} catch (HyscaleException e) {
-			logger.debug("Failed to get serice address {} ", e.getHyscaleErrorCode());
+			logger.debug("Failed to get service address {} ", e.getHyscaleErrorCode());
 		}
 
 		return deploymentStatus;

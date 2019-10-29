@@ -25,7 +25,7 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 /**
  * Interface to generate kubernetes manifests from the service spec
  * <p>Implementation Notes</p>
- * Implementations to this interface should generate a kubernets manifest
+ * Implementations to this interface should generate a kubernetes manifest
  * @see {@link Manifest}
  *
  */

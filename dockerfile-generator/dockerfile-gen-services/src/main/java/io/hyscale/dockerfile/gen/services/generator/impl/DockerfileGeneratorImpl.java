@@ -81,7 +81,7 @@ public class DockerfileGeneratorImpl implements DockerfileGenerator {
     private DockerfilePersistenceService dockerfilePersistenceService;
 
     /**
-     * validates service spec if dockerfile generation has to be skipped
+     * Validates service spec if dockerfile generation has to be skipped
      * Copies the artifacts to relative path of dockerfile
      * Copies the scripts to relative path of dockerfile
      * Generates the dockerfile content
@@ -156,12 +156,12 @@ public class DockerfileGeneratorImpl implements DockerfileGenerator {
     }
 
     /**
-     * Skip dockerfile generation when 1. When user has provided dockerfile in the
-     * service spec 2. When both dockerfile & buildSpec is not provided 3. When
-     * buildSpec exists & if they have no artifacts , configureCommands, runCommands
-     * ,configScript, runScript
+     * Skip dockerfile generation when 1. User has provided dockerfile in the
+     * service spec 2. Both dockerfile & buildSpec is not provided 
+     * 3. BuildSpec exists & if they don't have artifacts , configureCommands, runCommands
+     * ,configScript and runScript
      * <p>
-     * Alsp, validates whether dockerfile & buildSpec both are provided. According
+     * Also, validates whether dockerfile & buildSpec both are provided. According
      * to service spec dockerfile & buildSpec are mutually exclusive
      *
      * @param serviceSpec

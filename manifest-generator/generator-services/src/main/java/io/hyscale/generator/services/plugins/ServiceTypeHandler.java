@@ -48,7 +48,7 @@ public class ServiceTypeHandler implements ManifestHandler {
             Boolean external = serviceSpec.get(HyscaleSpecFields.external, Boolean.class);
             K8sServiceType serviceType = getServiceType(external == null ? false : external);
             String serviceTypeName = serviceType != null ? serviceType.name() : K8sServiceType.ClusterIP.name();
-            logger.debug("Processing serviceType {}.",serviceTypeName);
+            logger.debug("Processing Service Type {}.",serviceTypeName);
             serviceTypeSnippet.setSnippet(serviceTypeName);
             manifestSnippetList.add(serviceTypeSnippet);
         }

@@ -50,7 +50,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
     @Override
     public V1ConfigMap create(ApiClient apiClient, V1ConfigMap resource, String namespace) throws HyscaleException {
         if (resource == null) {
-            LOGGER.debug("Cannot create null configmap");
+            LOGGER.debug("Cannot create null ConfigMap");
             return resource;
         }
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_CONFIGMAP);
@@ -64,7 +64,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
                     ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.CREATE));
-            LOGGER.error("Error while creating configmap {} in namespace {}, error {}", name, namespace, ex.toString());
+            LOGGER.error("Error while creating ConfigMap {} in namespace {}, error {}", name, namespace, ex.toString());
             WorkflowLogger.endActivity(Status.FAILED);
             throw ex;
         }
@@ -78,7 +78,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
     @Override
     public boolean update(ApiClient apiClient, V1ConfigMap resource, String namespace) throws HyscaleException {
         if(resource==null){
-            LOGGER.debug("Cannot update null configmap");
+            LOGGER.debug("Cannot update null ConfigMap");
             return false;
         }
         CoreV1Api coreV1Api = new CoreV1Api(apiClient);
@@ -99,7 +99,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
                     ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.UPDATE));
-            LOGGER.error("Error while updating configmap {} in namespace {}, error {}", name, namespace, ex.toString());
+            LOGGER.error("Error while updating ConfigMap {} in namespace {}, error {}", name, namespace, ex.toString());
             WorkflowLogger.endActivity(Status.FAILED);
             throw ex;
         }
@@ -116,7 +116,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
             configMap = coreV1Api.readNamespacedConfigMap(name, namespace, TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET);
-            LOGGER.error("Error while fetching configMap {} in namespace {}, error {}", name, namespace, ex.toString());
+            LOGGER.error("Error while fetching ConfigMap {} in namespace {}, error {}", name, namespace, ex.toString());
             throw ex;
         }
         return configMap;
@@ -136,7 +136,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
             configMaps = configMapList != null ? configMapList.getItems() : null;
         } catch (ApiException e) {
             HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_BY_SELECTOR);
-            LOGGER.error("Error while listing configMaps in namespace {}, with selectors {}, error {} ", namespace,
+            LOGGER.error("Error while listing ConfigMaps in namespace {}, with selectors {}, error {} ", namespace,
                     selector, ex.toString());
             throw ex;
         }
@@ -173,14 +173,14 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
                     V1ConfigMap.class);
             coreV1Api.patchNamespacedConfigMap(name, namespace, patchObject, TRUE, null);
         } catch (HyscaleException e) {
-            LOGGER.error("Error while creating patch for configMap {}, source {}, target {}", name, sourceConfigMap,
+            LOGGER.error("Error while creating patch for ConfigMap {}, source {}, target {}", name, sourceConfigMap,
                     target);
             WorkflowLogger.endActivity(Status.FAILED);
             throw e;
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_PATCH_RESOURCE,
                     ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.PATCH));
-            LOGGER.error("Error while patching configMap {} in namespace {} , error {}", name, namespace,
+            LOGGER.error("Error while patching ConfigMap {} in namespace {} , error {}", name, namespace,
                     ex.toString());
             WorkflowLogger.endActivity(Status.FAILED);
             throw ex;
@@ -214,7 +214,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
             }
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_DELETE_RESOURCE,
                     ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.DELETE));
-            LOGGER.error("Error while deleting configMap {} in namespace {}, error {}", name, namespace, ex.toString());
+            LOGGER.error("Error while deleting ConfigMap {} in namespace {}, error {}", name, namespace, ex.toString());
             WorkflowLogger.endActivity(activityContext, Status.FAILED);
             throw ex;
         }

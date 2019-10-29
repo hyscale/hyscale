@@ -21,10 +21,10 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 /**
  * Interface to build & push from the service spec
- * if buildSpec is defined in the servicespec
+ * If buildSpec is defined in the service spec
  * <p>Implementation Notes</p>
- * Implementations to this interface should be responsible for
- * building the image either from the dockerfile that was defined servicespec or
+ * Implementations of this interface should be responsible for
+ * building the image either from the dockerfile that was defined in service spec or
  * from BuildContext.
  * After a successful build , image has to be tagged with the image directive
  * specified in the service spec and push it to the #BuildContext.imageRegistry
@@ -34,7 +34,7 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 public interface ImageBuildPushService {
 
 	/**
-	 *  Builds the image either from the dockerfile that was defined servicespec or
+	 *  Builds the image either from the dockerfile that was defined in service spec or
 	 *  from BuildContext.
 	 *  After a successful build , image has to be tagged with the image directive
 	 *  specified in the service spec and push it to the #BuildContext.imageRegistry

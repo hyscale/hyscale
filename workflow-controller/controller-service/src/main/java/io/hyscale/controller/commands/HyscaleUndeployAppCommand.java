@@ -44,8 +44,8 @@ import picocli.CommandLine.Option;
  *
  * Undeploys the app from the given namespace in the
  * configured kubernetes cluster.
- * Undeploys all the resources from the cluster related to the
- * app from the namespace.
+ * Undeploys all the resources except the pvcs from the cluster related 
+ * to the app from the namespace.
  * @Note Note: Undeploy does not clear the namespace
  *
  */

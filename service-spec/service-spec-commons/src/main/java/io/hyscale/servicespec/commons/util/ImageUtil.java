@@ -30,7 +30,7 @@ public class ImageUtil {
     private static final String DELIMITER = "/";
     
     /**
-     * get complete image name from service spec
+     * Get complete image name from service spec
      * @param serviceSpec
      * @return image complete name
      * registry url + "/" + imageName:tag

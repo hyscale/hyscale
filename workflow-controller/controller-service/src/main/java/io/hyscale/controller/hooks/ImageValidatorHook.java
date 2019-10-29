@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.plugins;
+package io.hyscale.controller.hooks;
 
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
 import io.hyscale.commons.component.InvokerHook;
