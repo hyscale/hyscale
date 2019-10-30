@@ -71,7 +71,8 @@ public class SecretsDataHandler implements ManifestHandler {
                 stringBuilder.append(each.getKey()).append("=").append(each.getValue()).append("\n");
             });
             try {
-                modifiedMap.put(filesUtil.getFileName(secretsVolumePath), stringBuilder.toString());
+                modifiedMap.put(filesUtil.getFileName(secretsVolumePath), 
+                		Base64.encodeBase64String(stringBuilder.toString().getBytes()));
             } catch (HyscaleException e) {
                 logger.error("Error while processing secrets volumes path {}", secretsVolumePath);
             }
