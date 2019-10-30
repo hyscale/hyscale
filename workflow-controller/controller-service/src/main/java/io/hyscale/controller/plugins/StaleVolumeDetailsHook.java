@@ -1,11 +1,9 @@
 package io.hyscale.controller.plugins;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +70,7 @@ public class StaleVolumeDetailsHook implements InvokerHook<WorkflowContext> {
 			return;
 		}
 
-		Map<String, Set<String>> serviceVsVolumes = KubernetesVolumeUtil.getServiceVolNamesFromPVC(pvcItemsList);
+		Map<String, Set<String>> serviceVsVolumes = KubernetesVolumeUtil.getServiceVolumeNames(pvcItemsList);
 
 		Map<String, Set<String>> serviceVsPVC = KubernetesVolumeUtil.getServicePVCs(pvcItemsList);
 

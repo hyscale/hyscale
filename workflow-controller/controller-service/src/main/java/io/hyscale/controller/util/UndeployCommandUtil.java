@@ -5,7 +5,7 @@ import io.hyscale.controller.activity.ControllerActivity;
 
 public class UndeployCommandUtil {
 
-	public static void logWorkflowInfo() {
+	public static void logUndeployInfo() {
 
 		WorkflowLogger.header(ControllerActivity.UNDEPLOYMENT_INFO);
 

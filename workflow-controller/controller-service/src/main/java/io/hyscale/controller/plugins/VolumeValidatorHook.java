@@ -194,7 +194,7 @@ public class VolumeValidatorHook implements InvokerHook<WorkflowContext> {
 			return;
 		}
 		Map<String, V1PersistentVolumeClaim> volumeVsPVC = pvcList.stream().collect(
-				Collectors.toMap(pvc -> KubernetesVolumeUtil.getVolumeNameFromPVC(pvc), pvc -> pvc, (key1, key2) -> {
+				Collectors.toMap(pvc -> KubernetesVolumeUtil.getVolumeName(pvc), pvc -> pvc, (key1, key2) -> {
 					return key1;
 				}));
 
