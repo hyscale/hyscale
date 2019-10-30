@@ -36,8 +36,12 @@ public class ToolConstants {
     public static final String VERSION_KEY = "Version : ";
 
     public static final String BUILDDATE_KEY = "BuildDate : ";
+    
+    public static final String RELEASE_NAME_KEY = "ReleaseName: ";
 
     public static final String HYSCALE_BUILD_TIME = "hyscale.build.time";
+    
+    public static final String HYSCALE_RELASE_NAME = "hyscale.release.name";
 
     public static final String HYSCALE_PREVIEW = "Preview";
 
