@@ -45,6 +45,12 @@ public class HyscaleVersionProvider implements CommandLine.IVersionProvider {
         } else {
             sb.append(buildProperties.getTime());
         }
+        String buildName = buildProperties.get(ToolConstants.HYSCALE_RELASE_NAME);
+        if (StringUtils.isNotBlank(buildName)) {
+        	sb.append(ToolConstants.LINE_SEPARATOR);
+        	sb.append(ToolConstants.RELEASE_NAME_KEY);
+        	sb.append(buildName);
+        }
         return new String[]{sb.toString()};
     }
 }
