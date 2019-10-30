@@ -26,7 +26,7 @@ public class ExceptionHandler implements IExecutionExceptionHandler {
 
 		logger.error("Unexpected error: ", ex);
 		WorkflowLogger.footer();
-		WorkflowLogger.error(ControllerActivity.UNEXPECTED_ERROR, SetupConfig.getToolLogDir());
+		WorkflowLogger.error(ControllerActivity.UNEXPECTED_ERROR, SetupConfig.getMountPathOf(SetupConfig.getToolLogDir()));
 		WorkflowLogger.footer();
 
 		return 0;

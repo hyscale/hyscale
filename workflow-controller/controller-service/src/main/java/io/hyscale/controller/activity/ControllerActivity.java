@@ -39,7 +39,7 @@ public enum ControllerActivity implements Activity {
     SERVICE_NAME("SERVICE: {}"),
     SERVICE_URL("Service IP : {}"),
     CHECK_SERVICE_STATUS("Check service status for more information"),
-    FAILED_TO_STREAM_SERVICE_LOGS("Cannot to fetch service logs "),
+    FAILED_TO_STREAM_SERVICE_LOGS("Unable to fetch service logs "),
     SERVICE_NOT_CREATED("Service is not created "),
     BUILD_LOGS("Build Logs : {}"),
     PUSH_LOGS("Push Logs : {}"),
