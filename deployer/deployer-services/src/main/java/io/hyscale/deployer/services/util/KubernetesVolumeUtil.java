@@ -42,7 +42,7 @@ import io.kubernetes.client.models.V1Volume;
  */
 public class KubernetesVolumeUtil {
 
-	public static Map<String, Set<String>> getServiceVolNamesFromPVC(List<V1PersistentVolumeClaim> pvcList) {
+	public static Map<String, Set<String>> getServiceVolumeNames(List<V1PersistentVolumeClaim> pvcList) {
 		if (pvcList == null || pvcList.isEmpty()) {
 			return null;
 		}
@@ -51,11 +51,11 @@ public class KubernetesVolumeUtil {
 
 		pvcList.stream().forEach(pvc -> {
 			Map<String, String> labels = pvc.getMetadata().getLabels();
-			String serviceName = ResourceLabelUtil.getServiceFromLabel(labels);
+			String serviceName = ResourceLabelUtil.getServiceName(labels);
 			if (serviceVolumes.get(serviceName) == null) {
 				serviceVolumes.put(serviceName, new HashSet<String>());
 			}
-			serviceVolumes.get(serviceName).add(getVolumeNameFromPVC(pvc));
+			serviceVolumes.get(serviceName).add(getVolumeName(pvc));
 		});
 
 		return serviceVolumes;
@@ -68,7 +68,7 @@ public class KubernetesVolumeUtil {
 
 		Map<String, Set<String>> servicePVCs = new HashMap<String, Set<String>>();
 		pvcList.stream().forEach(pvc -> {
-			String serviceName = ResourceLabelUtil.getServiceFromLabel(pvc.getMetadata().getLabels());
+			String serviceName = ResourceLabelUtil.getServiceName(pvc.getMetadata().getLabels());
 
 			if (servicePVCs.get(serviceName) == null) {
 				servicePVCs.put(serviceName, new HashSet<String>());
@@ -85,14 +85,14 @@ public class KubernetesVolumeUtil {
 	 * @param pvcName
 	 * @return volume_name
 	 */
-	public static String getVolumeNameFromPVC(V1PersistentVolumeClaim pvc) {
+	public static String getVolumeName(V1PersistentVolumeClaim pvc) {
 		if (pvc == null) {
 			return null;
 		}
 		String pvcName = pvc.getMetadata().getName();
 		Map<String, String> labels = pvc.getMetadata().getLabels();
-		String appName = ResourceLabelUtil.getAppFromLabel(labels);
-		String serviceName = ResourceLabelUtil.getServiceFromLabel(labels);
+		String appName = ResourceLabelUtil.getAppName(labels);
+		String serviceName = ResourceLabelUtil.getServiceName(labels);
 
 		if (StringUtils.isBlank(appName) || StringUtils.isBlank(serviceName)) {
 			return pvcName;

@@ -80,7 +80,7 @@ public class HyscaleUndeploySeviceCommand implements Runnable {
 			workflowContext.setServiceName(serviceName);
 			undeployComponentInvoker.execute(workflowContext);
 		}
-		UndeployCommandUtil.logWorkflowInfo();
+		UndeployCommandUtil.logUndeployInfo();
 	}
 
 }

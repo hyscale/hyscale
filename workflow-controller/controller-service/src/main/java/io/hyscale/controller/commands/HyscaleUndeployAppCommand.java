@@ -75,7 +75,7 @@ public class HyscaleUndeployAppCommand implements Runnable {
 		WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
 		undeployComponentInvoker.execute(workflowContext);
 		
-		UndeployCommandUtil.logWorkflowInfo();
+		UndeployCommandUtil.logUndeployInfo();
 	}
 
 }
