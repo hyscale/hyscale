@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.ObjectMapperFactory;
-import io.hyscale.servicespec.json.parser.JsonTreeParser;
+import io.hyscale.servicespec.commons.json.parser.JsonTreeParser;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;

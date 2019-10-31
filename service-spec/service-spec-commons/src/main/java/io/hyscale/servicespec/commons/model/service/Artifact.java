@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class Artifact {
 
 	private String name;
-	private ArtifactProvider provider;
 	private String destination;
 	private String source;
 
@@ -49,15 +48,4 @@ public class Artifact {
 		this.source = source;
 	}
 
-	public ArtifactProvider getProvider() {
-		return provider;
-	}
-
-	public void setProvider(ArtifactProvider provider) {
-		this.provider = provider;
-	}
-
-	public void setProvider(String provider) {
-		this.provider = ArtifactProvider.fromString(provider);
-	}
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.servicespec.json.parser;
+package io.hyscale.servicespec.commons.json.parser;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +26,8 @@ import com.jayway.jsonpath.JsonPath;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
-import io.hyscale.servicespec.json.config.JsonPathConfiguration;
-import io.hyscale.servicespec.json.parser.constants.JsonPathConstants;
+import io.hyscale.servicespec.commons.json.config.JsonPathConfiguration;
+import io.hyscale.servicespec.commons.json.parser.constants.JsonPathConstants;
 
 /**
  * Parser for json tree

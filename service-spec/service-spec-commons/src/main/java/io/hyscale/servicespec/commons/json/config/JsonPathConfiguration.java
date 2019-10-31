@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.servicespec.json.config;
+package io.hyscale.servicespec.commons.json.config;
 
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Option;

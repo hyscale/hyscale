@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.hyscale.servicespec.commons.model.service.BuildSpecImage;
+import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +35,7 @@ public class ImageDeserializer extends JsonDeserializer {
     public Object deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
         JsonNode specNode = jsonParser.readValueAsTree();
         BuildSpecImage buildSpecImage = new BuildSpecImage();
-        if(specNode.has("buildSpec")){
+        if(specNode.has(HyscaleSpecFields.buildSpec)){
             ObjectMapper objectMapper = new ObjectMapper();
             buildSpecImage = objectMapper.readValue(specNode.toString(), BuildSpecImage.class);
         }

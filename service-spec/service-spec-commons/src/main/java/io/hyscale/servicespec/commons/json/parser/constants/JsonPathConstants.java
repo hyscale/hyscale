@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.servicespec.json.parser.constants;
+package io.hyscale.servicespec.commons.json.parser.constants;
 
 public class JsonPathConstants {
 

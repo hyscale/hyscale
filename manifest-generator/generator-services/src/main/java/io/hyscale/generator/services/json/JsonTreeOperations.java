@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import io.hyscale.servicespec.json.config.JsonPathConfiguration;
+import io.hyscale.servicespec.commons.json.config.JsonPathConfiguration;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
