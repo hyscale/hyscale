@@ -4,7 +4,7 @@
 
 ---
 
-**HyScale** (_hyscale_) is an app deployment tool designed to help developers deploy apps to Kubernetes without having to learn k8s concepts or write & maintain k8s manifests. Powered by HyScale’s enterprise-grade deployment automation & abstraction capabilities, hyscale-ctl accelerates developer adoption of Kubernetes for dev/test environments.
+**HyScale** (_hyscale_) is an app deployment tool designed to help developers deploy apps to Kubernetes without having to learn k8s concepts or write & maintain k8s manifests. Powered by HyScale’s enterprise-grade deployment automation & abstraction capabilities, hyscale accelerates developer adoption of Kubernetes for dev/test environments.
 
 ### Prerequisites
 
@@ -103,7 +103,7 @@ Generates the kube manifest from the given service spec. Manifest generation is 
 *   All the snippets are merged into manifests using a tree insertion treating each snippet to be node to the manifest tree .
 *   Each plugin can insert multiple snippets into a set of manifests, which results in injecting multiple nodes to the tree.
 *   If a snippet injection fails the rest of the plugins will still be processed and injected . Plugin order is decided by the plugins.txt file the generator-services module. 
-*   After processing all the plugins, each manifest of a specific kind & name are written to a file at `<user.home>/.hyscale/hyscale-ctl/apps/<app_name>/<service_name>/generated-files/manifests/` . The name of the manifest file is determined by the kind & name, while the name of the manifest resource is normalized(`<app_name>-<service_name>`).
+*   After processing all the plugins, each manifest of a specific kind & name are written to a file at `<user.home>/.hyscale/hyscale/apps/<app_name>/<service_name>/generated-files/manifests/` . The name of the manifest file is determined by the kind & name, while the name of the manifest resource is normalized(`<app_name>-<service_name>`).
 *   Each service might result in the set of manifest resources : ConfigMap for _props_, Secrets for _secrets_, ImagePullSecret for _image-registry-credentials_, Deployment / Statefulset ,Service , Pods, PVC. 
 *   Tool creates a statefulset if and only if volumes are present in the servicespec else deployment is created.
 
