@@ -18,27 +18,26 @@ package io.hyscale.dockerfile.gen.services.generator.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.hyscale.commons.models.DecoratedArrayList;
-import io.hyscale.dockerfile.gen.services.generator.DockerfileContentGenerator;
-import io.hyscale.dockerfile.gen.services.templates.DockerfileTemplateProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.servicespec.commons.model.service.BuildSpec;
 import io.hyscale.commons.models.ConfigTemplate;
+import io.hyscale.commons.models.DecoratedArrayList;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
-import io.hyscale.dockerfile.gen.services.constants.DockerfileGenConstants;
-import io.hyscale.dockerfile.gen.services.model.DockerfileGenContext;
 import io.hyscale.dockerfile.gen.core.models.CommandType;
 import io.hyscale.dockerfile.gen.core.models.DockerfileContent;
-import io.hyscale.dockerfile.gen.services.exception.DockerfileErrorCodes;
-import io.hyscale.dockerfile.gen.core.models.ImageType;
 import io.hyscale.dockerfile.gen.services.config.DockerfileGenConfig;
+import io.hyscale.dockerfile.gen.services.constants.DockerfileGenConstants;
+import io.hyscale.dockerfile.gen.services.exception.DockerfileErrorCodes;
+import io.hyscale.dockerfile.gen.services.generator.DockerfileContentGenerator;
 import io.hyscale.dockerfile.gen.services.manager.impl.DockerScriptManagerImpl;
+import io.hyscale.dockerfile.gen.services.model.DockerfileGenContext;
+import io.hyscale.dockerfile.gen.services.templates.DockerfileTemplateProvider;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.service.BuildSpec;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
-import org.springframework.util.CollectionUtils;
 
 @Component
 public class DockerfileContentGenImpl implements DockerfileContentGenerator {
@@ -64,8 +63,6 @@ public class DockerfileContentGenImpl implements DockerfileContentGenerator {
 		if (buildSpec == null) {
 			throw new HyscaleException(DockerfileErrorCodes.BUILD_SPEC_REQUIRED);
 		}
-		// TODO other image type
-		ConfigTemplate configTemplate = templateProvider.getTemplateFor(ImageType.ARTIFACT);
 		Map<String, Object> dockerfileContext = new HashMap<String, Object>();
 		dockerfileContext.put(DockerfileGenConstants.STACK_IMAGE, buildSpec.getStackImage());
 
@@ -94,6 +91,8 @@ public class DockerfileContentGenImpl implements DockerfileContentGenerator {
 		if (configScriptAvailable || runScriptAvailable) {
 			dockerfileContext.put(DockerfileGenConstants.PERMISSION_COMMAND_FIELD, PERMISSION_COMMAND);
 		}
+		// TODO other image type
+		ConfigTemplate configTemplate = templateProvider.getDockerfileTemplate();
 		String content = templateResolver.resolveTemplate(configTemplate.getTemplatePath(), dockerfileContext);
 
 		DockerfileContent dockerfileContent = new DockerfileContent();
