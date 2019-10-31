@@ -56,7 +56,7 @@
 		<maven.build.timestamp.format>EEE d MMM yyyy HH:mm:ss</maven.build.timestamp.format>
 		<copyright.year>2019</copyright.year>
 		<copyright.company>Pramati Prism, Inc.</copyright.company>
-		<release.name>Kon-tiki</release.name>
+		<release.name>First Light</release.name>
 	</properties>
 
 	<dependencies>
