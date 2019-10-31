@@ -15,7 +15,6 @@
  */
 module dockerfilegenservices {
 	exports io.hyscale.dockerfile.gen.services.generator;
-	exports io.hyscale.dockerfile.gen.services.util;
 	exports io.hyscale.dockerfile.gen.services.model;
 	exports io.hyscale.dockerfile.gen.services.constants;
 	exports io.hyscale.dockerfile.gen.services.persist;
