@@ -34,12 +34,14 @@ import picocli.CommandLine.Command;
  *
  * Also check the sub-commands at @Command annotation
  * </p>
+ *
+ * @see <a href="https://github.com/hyscale/hyscale/blob/master/docs/hyscale-commands-reference.md">Command Reference</a>
  */
 @Command(name = "hyscale", versionProvider = HyscaleVersionProvider.class, mixinStandardHelpOptions = true, subcommands = {
         HyscaleGetCommand.class, HyscaleDeployCommand.class, HyscaleUndeployCommand.class,
         HyscaleGenerateCommand.class})
 @Component
-public class HyscaleCtlCommand implements Runnable {
+public class HyscaleCommand implements Runnable {
 
     /**
      * Executes the hyscale command
@@ -47,7 +49,7 @@ public class HyscaleCtlCommand implements Runnable {
      */
     @Override
     public void run() {
-        new CommandLine(new HyscaleCtlCommand()).usage(System.out);
+        new CommandLine(new HyscaleCommand()).usage(System.out);
     }
 
 }

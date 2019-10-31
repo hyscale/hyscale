@@ -29,6 +29,8 @@ import java.io.IOException;
 /**
  * Defines {@link ServiceSpec} as tree of JsonNode
  *
+ * @see <a href="https://github.com/hyscale/hyscale/blob/master/docs/hyscale-spec-reference.md">Spec Reference</a>
+ *
  */
 public final class ServiceSpec {
 

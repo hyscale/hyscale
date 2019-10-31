@@ -23,7 +23,7 @@ import picocli.CommandLine.Command;
 /**
  * This class executes 'hyscale get' command
  * It is a sub-command of the 'hyscale' command
- * @see HyscaleCtlCommand
+ * @see HyscaleCommand
  * Every command/sub-command has to implement the Runnable so that
  * whenever the command is executed the {@link #run()}
  * method will be invoked

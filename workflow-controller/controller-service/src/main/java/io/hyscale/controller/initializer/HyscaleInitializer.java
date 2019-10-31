@@ -27,7 +27,7 @@ import io.hyscale.builder.core.models.ImageBuilder;
 import io.hyscale.builder.services.config.ImageBuilderConfig;
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
-import io.hyscale.controller.commands.HyscaleCtlCommand;
+import io.hyscale.controller.commands.HyscaleCommand;
 import io.hyscale.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.controller.util.ExceptionHandler;
 import io.hyscale.controller.util.ShutdownHook;
@@ -40,15 +40,15 @@ import picocli.CommandLine.ParameterException;
  * <p>
  * This class is responsible for initializing the spring application context
  * and execute the given commands. It works on top of picoli
- * {@See <a href="https://picocli.info/">https://picocli.info/</a>}
+ * @see <a href="https://picocli.info/">https://picocli.info/</a>
  *
  * </p>
  */
 @SpringBootApplication
 @ComponentScan("io.hyscale")
-public class HyscaleCtlInitializer implements CommandLineRunner {
+public class HyscaleInitializer implements CommandLineRunner {
 
-    private final Logger logger = LoggerFactory.getLogger(HyscaleCtlInitializer.class);
+    private final Logger logger = LoggerFactory.getLogger(HyscaleInitializer.class);
 
     @Autowired
     private IFactory factory;
@@ -62,7 +62,7 @@ public class HyscaleCtlInitializer implements CommandLineRunner {
     }
 
     public static void main(String[] args) {
-        SpringApplication app = new SpringApplication(HyscaleCtlInitializer.class);
+        SpringApplication app = new SpringApplication(HyscaleInitializer.class);
         app.run(args);
     }
 
@@ -70,7 +70,7 @@ public class HyscaleCtlInitializer implements CommandLineRunner {
 
         try {
             Runtime.getRuntime().addShutdownHook(new ShutdownHook());
-            CommandLine commandLine = new CommandLine(new HyscaleCtlCommand(), factory);
+            CommandLine commandLine = new CommandLine(new HyscaleCommand(), factory);
             commandLine.setExecutionExceptionHandler(exceptionHandler);
             commandLine.execute(args);
         } catch (ParameterException e) {
