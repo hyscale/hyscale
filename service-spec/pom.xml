@@ -13,7 +13,6 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>service-spec-commons</module>
-		<module>service-spec-generator</module>
 		<module>schema-validator</module>
 	</modules>
 

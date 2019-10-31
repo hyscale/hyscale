@@ -100,6 +100,16 @@ public interface Deployer {
 	public InputStream logs(DeploymentContext deploymentContext) throws HyscaleException;
 	
 	/**
+	 * Get logs of a specific Pod of a Service
+	 * tail logs or read specific number of lines
+	 * @param deploymentContext
+	 * @return Input Stream with logs
+	 * @throws HyscaleException
+	 */
+	public InputStream logs(AuthConfig authConfig, String serviceName, String namespace, String podName,
+			Integer readLines, boolean tail) throws HyscaleException;
+	
+	/**
 	 * 
 	 * @param context
 	 * @return ServiceAddress

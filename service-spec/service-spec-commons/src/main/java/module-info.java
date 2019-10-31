@@ -27,7 +27,6 @@ module service_spec_commons {
 	exports io.hyscale.servicespec.commons.model;
 	exports io.hyscale.servicespec.commons.exception;
 	exports io.hyscale.servicespec.commons.fields;
-	exports io.hyscale.servicespec.commons.model.profile;
 	exports io.hyscale.servicespec.commons.model.service;
 	exports io.hyscale.servicespec.commons.json.parser;
 	exports io.hyscale.servicespec.commons.json.parser.constants;

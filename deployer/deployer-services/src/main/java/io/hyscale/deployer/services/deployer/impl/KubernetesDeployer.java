@@ -164,27 +164,34 @@ public class KubernetesDeployer implements Deployer {
         return false;
     }
 
-    @Override
-    public InputStream logs(DeploymentContext deploymentContext) throws HyscaleException {
-        try {
-            ApiClient apiClient = clientProvider.get((K8sAuthorisation) deploymentContext.getAuthConfig());
-            V1PodHandler podHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
-            String serviceName = deploymentContext.getServiceName();
-            String namespace = deploymentContext.getNamespace();
-            Integer readLines = deploymentContext.getReadLines();
-            if (readLines == null) {
-                readLines = deployerConfig.getDefaultTailLines();
-            }
-            if (deploymentContext.isTailLogs()) {
-                return podHandler.tailLogs(apiClient, serviceName, namespace, readLines);
-            } else {
-                return podHandler.getLogs(apiClient, serviceName, namespace, readLines);
-            }
-        } catch (HyscaleException e) {
-            logger.error("Error while tailing logs, error {} ", e.toString());
-            throw e;
-        }
-    }
+	@Override
+	public InputStream logs(DeploymentContext deploymentContext) throws HyscaleException {
+		String serviceName = deploymentContext.getServiceName();
+		String namespace = deploymentContext.getNamespace();
+		Integer readLines = deploymentContext.getReadLines();
+		return logs(deploymentContext.getAuthConfig(), serviceName, namespace, null, readLines,
+				deploymentContext.isTailLogs());
+	}
+    
+	@Override
+	public InputStream logs(AuthConfig authConfig, String serviceName, String namespace, String podName,
+			Integer readLines, boolean tail) throws HyscaleException {
+		try {
+			ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
+			V1PodHandler podHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
+			if (readLines == null) {
+				readLines = deployerConfig.getDefaultTailLines();
+			}
+			if (tail) {
+				return podHandler.tailLogs(apiClient, serviceName, namespace, podName, readLines);
+			} else {
+				return podHandler.getLogs(apiClient, serviceName, namespace, podName, readLines);
+			}
+		} catch (HyscaleException e) {
+			logger.error("Error while tailing logs, error {} ", e.toString());
+			throw e;
+		}
+	}
 
     @Override
     public ServiceAddress getServiceAddress(DeploymentContext context) throws HyscaleException {
