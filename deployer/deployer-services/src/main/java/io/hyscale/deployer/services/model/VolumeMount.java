@@ -15,18 +15,17 @@
  */
 package io.hyscale.deployer.services.model;
 
-public class Volume {
-
+public class VolumeMount {
+	private String mountPath;
 	private String name;
-	private String size;
-	private String claimName;
+	private Boolean readOnly;
 
-	public String getClaimName() {
-		return claimName;
+	public String getMountPath() {
+		return mountPath;
 	}
 
-	public void setClaimName(String claimName) {
-		this.claimName = claimName;
+	public void setMountPath(String mountPath) {
+		this.mountPath = mountPath;
 	}
 
 	public String getName() {
@@ -37,12 +36,12 @@ public class Volume {
 		this.name = name;
 	}
 
-	public String getSize() {
-		return size;
+	public Boolean getReadOnly() {
+		return readOnly;
 	}
 
-	public void setSize(String size) {
-		this.size = size;
+	public void setReadOnly(Boolean readOnly) {
+		this.readOnly = readOnly;
 	}
 
 }

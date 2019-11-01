@@ -15,10 +15,13 @@
  */
 package io.hyscale.deployer.services.model;
 
+import java.util.List;
+
 public class Container {
 	private String name;
 	// TODO enum?
 	private String status;
+	private List<VolumeMount> volumeMounts;
 
 	public String getName() {
 		return name;
@@ -35,4 +38,13 @@ public class Container {
 	public void setStatus(String status) {
 		this.status = status;
 	}
+
+	public List<VolumeMount> getVolumeMounts() {
+		return volumeMounts;
+	}
+
+	public void setVolumeMounts(List<VolumeMount> volumeMounts) {
+		this.volumeMounts = volumeMounts;
+	}
+
 }
