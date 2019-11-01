@@ -236,10 +236,10 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 
 	public InputStream tailLogs(ApiClient apiClient, String name, String namespace, Integer readLines)
 			throws HyscaleException {
-		return tailLogs(apiClient, name, namespace, null, readLines);
+		return tailLogs(apiClient, name, namespace, null, name, readLines);
 	}
 	
-	public InputStream tailLogs(ApiClient apiClient, String name, String namespace, String podName, Integer readLines)
+	public InputStream tailLogs(ApiClient apiClient, String name, String namespace, String podName, String containerName, Integer readLines)
 			throws HyscaleException {
 		if(podName == null) {
 			List<V1Pod> v1Pods = getBySelector(apiClient, ResourceLabelKey.SERVICE_NAME.getLabel() + "=" + name, true,
@@ -252,7 +252,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 		try {
 			apiClient.getHttpClient().setReadTimeout(120, TimeUnit.MINUTES);
 			PodLogs logs = new PodLogs(apiClient);
-			return logs.streamNamespacedPodLog(namespace, podName, name, null, readLines,
+			return logs.streamNamespacedPodLog(namespace, podName, containerName, null, readLines,
 					true);
 		} catch (IOException | ApiException e) {
 			LOGGER.error("Failed to tail Pod logs for service {} in namespace {} ", name, namespace);
@@ -262,10 +262,10 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 
 	public InputStream getLogs(ApiClient apiClient, String name, String namespace, Integer readLines)
 			throws HyscaleException {
-		return getLogs(apiClient, name, namespace, null, readLines);
+		return getLogs(apiClient, name, namespace, null, name, readLines);
 	}
 	
-	public InputStream getLogs(ApiClient apiClient, String name, String namespace, String podName, Integer readLines)
+	public InputStream getLogs(ApiClient apiClient, String name, String namespace, String podName, String containerName, Integer readLines)
 			throws HyscaleException {
 		if(podName == null) {
 			List<V1Pod> v1Pods = getBySelector(apiClient, ResourceLabelKey.SERVICE_NAME.getLabel() + "=" + name, true,
@@ -277,7 +277,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 		}
 		try {
 			CoreV1Api coreClient = new CoreV1Api(apiClient);
-			Call call = coreClient.readNamespacedPodLogCall(podName, namespace, name, false, null, TRUE, false, null,
+			Call call = coreClient.readNamespacedPodLogCall(podName, namespace, containerName, false, null, TRUE, false, null,
 					readLines, true, null, null);
 			Response response = call.execute();
 			if (!response.isSuccessful()) {

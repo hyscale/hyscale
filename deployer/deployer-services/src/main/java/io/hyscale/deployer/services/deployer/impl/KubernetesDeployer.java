@@ -169,12 +169,12 @@ public class KubernetesDeployer implements Deployer {
 		String serviceName = deploymentContext.getServiceName();
 		String namespace = deploymentContext.getNamespace();
 		Integer readLines = deploymentContext.getReadLines();
-		return logs(deploymentContext.getAuthConfig(), serviceName, namespace, null, readLines,
+		return logs(deploymentContext.getAuthConfig(), serviceName, namespace, null, serviceName, readLines,
 				deploymentContext.isTailLogs());
 	}
     
 	@Override
-	public InputStream logs(AuthConfig authConfig, String serviceName, String namespace, String podName,
+	public InputStream logs(AuthConfig authConfig, String serviceName, String namespace, String podName, String containerName,
 			Integer readLines, boolean tail) throws HyscaleException {
 		try {
 			ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
@@ -183,9 +183,9 @@ public class KubernetesDeployer implements Deployer {
 				readLines = deployerConfig.getDefaultTailLines();
 			}
 			if (tail) {
-				return podHandler.tailLogs(apiClient, serviceName, namespace, podName, readLines);
+				return podHandler.tailLogs(apiClient, serviceName, namespace, podName, containerName, readLines);
 			} else {
-				return podHandler.getLogs(apiClient, serviceName, namespace, podName, readLines);
+				return podHandler.getLogs(apiClient, serviceName, namespace, podName, containerName, readLines);
 			}
 		} catch (HyscaleException e) {
 			logger.error("Error while tailing logs, error {} ", e.toString());

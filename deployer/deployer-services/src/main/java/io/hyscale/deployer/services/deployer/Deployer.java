@@ -106,7 +106,7 @@ public interface Deployer {
 	 * @return Input Stream with logs
 	 * @throws HyscaleException
 	 */
-	public InputStream logs(AuthConfig authConfig, String serviceName, String namespace, String podName,
+	public InputStream logs(AuthConfig authConfig, String serviceName, String namespace, String podName, String containerName,
 			Integer readLines, boolean tail) throws HyscaleException;
 	
 	/**
