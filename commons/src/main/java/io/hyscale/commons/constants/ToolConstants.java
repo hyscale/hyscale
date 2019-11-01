@@ -31,19 +31,23 @@ public class ToolConstants {
 
     public static final String EMPTY_STRING = "";
 
+    public static final String QUOTES = "\"";
+
     public static final String SPACE = " ";
 
-    public static final String VERSION_KEY = "Version : ";
+    public static final String HYSCALE = "Hyscale";
+
+    public static final String VERSION_KEY = "Version";
+
+    public static final String BUILD = "build";
 
     public static final String BUILDDATE_KEY = "BuildDate : ";
-    
+
     public static final String RELEASE_NAME_KEY = "ReleaseName: ";
 
     public static final String HYSCALE_BUILD_TIME = "hyscale.build.time";
-    
-    public static final String HYSCALE_RELASE_NAME = "hyscale.release.name";
 
-    public static final String HYSCALE_PREVIEW = "Preview";
+    public static final String HYSCALE_RELEASE_NAME = "hyscale.release.name";
 
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 

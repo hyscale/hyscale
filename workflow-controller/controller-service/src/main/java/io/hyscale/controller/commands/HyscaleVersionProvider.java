@@ -15,6 +15,8 @@
  */
 package io.hyscale.controller.commands;
 
+import io.hyscale.controller.constants.GitPropertyConstants;
+import io.hyscale.controller.util.GitPropertyProvider;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
@@ -24,8 +26,10 @@ import io.hyscale.commons.constants.ToolConstants;
 import picocli.CommandLine;
 
 /**
- * Provides version when 'hyscale version' command
+ * Provides version when 'hyscale --version' command
  * is executed
+ * <p>
+ * HyScale Version <version> "<release-name>, build <commitID>
  */
 @Component
 public class HyscaleVersionProvider implements CommandLine.IVersionProvider {
@@ -33,23 +37,25 @@ public class HyscaleVersionProvider implements CommandLine.IVersionProvider {
     @Autowired
     BuildProperties buildProperties;
 
+    @Autowired
+    GitPropertyProvider gitPropertyProvider;
+
     @Override
     public String[] getVersion() throws Exception {
         StringBuilder sb = new StringBuilder();
-        sb.append(ToolConstants.VERSION_KEY).append(buildProperties.getVersion());
-        sb.append(ToolConstants.LINE_SEPARATOR);
-        String buildDate = buildProperties.get(ToolConstants.HYSCALE_BUILD_TIME);
-        sb.append(ToolConstants.BUILDDATE_KEY);
-        if (StringUtils.isNotBlank(buildDate)) {
-            sb.append(buildDate);
-        } else {
-            sb.append(buildProperties.getTime());
-        }
-        String buildName = buildProperties.get(ToolConstants.HYSCALE_RELASE_NAME);
+        String buildName = buildProperties.get(ToolConstants.HYSCALE_RELEASE_NAME);
+        sb.append(ToolConstants.HYSCALE).append(ToolConstants.SPACE);
+        sb.append(ToolConstants.VERSION_KEY).append(ToolConstants.SPACE);
+        sb.append(buildProperties.getVersion()).append(ToolConstants.SPACE);
         if (StringUtils.isNotBlank(buildName)) {
-        	sb.append(ToolConstants.LINE_SEPARATOR);
-        	sb.append(ToolConstants.RELEASE_NAME_KEY);
-        	sb.append(buildName);
+            sb.append(ToolConstants.QUOTES).append(buildName).append(ToolConstants.QUOTES);
+        }
+
+        String gitLastCommitId =gitPropertyProvider.getGitProperty(GitPropertyConstants.GIT_COMMIT_ID);
+        if(StringUtils.isNotBlank(gitLastCommitId)){
+            sb.append(ToolConstants.COMMA).append(ToolConstants.SPACE);
+            sb.append(ToolConstants.BUILD).append(ToolConstants.SPACE);
+            sb.append(gitLastCommitId.substring(0,10));
         }
         return new String[]{sb.toString()};
     }
