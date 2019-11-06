@@ -16,10 +16,7 @@
 package io.hyscale.deployer.services.deployer.impl;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -355,6 +352,30 @@ public class KubernetesDeployer implements Deployer {
 			}
 
 			for (V1Pod v1Pod : v1PodList) {
+				List<V1Volume> v1VolumeList = v1Pod.getSpec().getVolumes();
+				List<Volume> podVolumeList = new ArrayList<Volume>();
+				Set<String> volumeNames = new HashSet<>();
+				if (v1VolumeList != null) {
+					for (V1Volume v1Volume : v1VolumeList) {
+						if (v1Volume.getPersistentVolumeClaim() != null) {
+							String claimName = v1Volume.getPersistentVolumeClaim().getClaimName();
+							if (claimName != null) {
+								Volume volume = new Volume();
+								volume.setName(v1Volume.getName());
+								volume.setClaimName(claimName);
+
+								V1PersistentVolumeClaim pvc = v1PersistentVolumeClaimHandler.get(apiClient, claimName,
+										namespace);
+								if (pvc.getStatus() != null && pvc.getStatus().getCapacity() != null
+										&& pvc.getStatus().getCapacity().get(STORAGE) != null) {
+									volume.setSize(pvc.getStatus().getCapacity().get(STORAGE).toSuffixedString());
+								}
+								volumeNames.add(volume.getName());
+								podVolumeList.add(volume);
+							}
+						}
+					}
+				}
 				// get all status
 				Map<String, String> containerVsStatus = new HashMap<>();
 				if (v1Pod.getStatus() != null && v1Pod.getStatus().getContainerStatuses() != null) {
@@ -377,38 +398,15 @@ public class KubernetesDeployer implements Deployer {
 					container.setName(v1Container.getName());
 					container.setStatus(containerVsStatus.get(v1Container.getName()));
 					if (v1Container.getVolumeMounts() != null) {
-						List<VolumeMount> volumeMounts = v1Container.getVolumeMounts().stream().map(v1VolumeMount -> {
-							return getVolumeMount(v1VolumeMount);
-						}).collect(Collectors.toList());
+						List<VolumeMount> volumeMounts = v1Container.getVolumeMounts().stream()
+								.filter(v1VolumeMount -> volumeNames.contains(v1VolumeMount.getName()))
+								.map(this::getVolumeMount).collect(Collectors.toList());
 						container.setVolumeMounts(volumeMounts);
 					}
 					containers.add(container);
 				});
 
 				pod.setContainers(containers);
-
-				List<V1Volume> v1VolumeList = v1Pod.getSpec().getVolumes();
-				List<Volume> podVolumeList = new ArrayList<Volume>();
-				if (v1VolumeList != null) {
-					for (V1Volume v1Volume : v1VolumeList) {
-						if (v1Volume.getPersistentVolumeClaim() != null) {
-							String claimName = v1Volume.getPersistentVolumeClaim().getClaimName();
-							if (claimName != null) {
-								Volume volume = new Volume();
-								volume.setName(v1Volume.getName());
-								volume.setClaimName(claimName);
-
-								V1PersistentVolumeClaim pvc = v1PersistentVolumeClaimHandler.get(apiClient, claimName,
-										namespace);
-								if (pvc.getStatus() != null && pvc.getStatus().getCapacity() != null
-										&& pvc.getStatus().getCapacity().get(STORAGE) != null) {
-									volume.setSize(pvc.getStatus().getCapacity().get(STORAGE).toSuffixedString());
-								}
-								podVolumeList.add(volume);
-							}
-						}
-					}
-				}
 				pod.setVolumes(podVolumeList);
 				podList.add(pod);
 			}
@@ -422,7 +420,9 @@ public class KubernetesDeployer implements Deployer {
 		VolumeMount volumeMount = new VolumeMount();
 		volumeMount.setMountPath(v1VolumeMount.getMountPath());
 		volumeMount.setName(v1VolumeMount.getName());
-		volumeMount.setReadOnly(v1VolumeMount.isReadOnly());
+		if(v1VolumeMount.isReadOnly() != null) {
+			volumeMount.setReadOnly(v1VolumeMount.isReadOnly());
+		}
 		return volumeMount;
 	}
 
