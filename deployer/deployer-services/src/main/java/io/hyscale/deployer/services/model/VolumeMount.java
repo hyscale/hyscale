@@ -18,7 +18,15 @@ package io.hyscale.deployer.services.model;
 public class VolumeMount {
 	private String mountPath;
 	private String name;
-	private Boolean readOnly;
+	private boolean readOnly;
+
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
+	}
 
 	public String getMountPath() {
 		return mountPath;
@@ -34,14 +42,6 @@ public class VolumeMount {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public Boolean getReadOnly() {
-		return readOnly;
-	}
-
-	public void setReadOnly(Boolean readOnly) {
-		this.readOnly = readOnly;
 	}
 
 }
