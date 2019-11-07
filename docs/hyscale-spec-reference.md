@@ -1,7 +1,7 @@
 
 # Hyscale Spec File Reference
 
-> Version 1.0B <br /> Last Updated 13th September 2019
+> Version 0.5 <br />
 
 
 Table of contents
