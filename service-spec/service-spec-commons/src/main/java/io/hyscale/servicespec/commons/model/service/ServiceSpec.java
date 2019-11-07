@@ -78,7 +78,7 @@ public final class ServiceSpec {
      * @return object of class T
      * @throws HyscaleException
      */
-    public <T> T get(String path, TypeReference typeReference) throws HyscaleException {
+    public <T> T get(String path, TypeReference<T> typeReference) throws HyscaleException {
         return JsonTreeParser.get(root, path, typeReference);
     }
 

@@ -27,13 +27,11 @@ public class ObjectMapperFactory {
 
 	public static ObjectMapper jsonMapper() {
 		jsonObjectMapper = new ObjectMapper();
-
 		return defaultConfig(jsonObjectMapper);
 	}
 
 	public static ObjectMapper yamlMapper() {
 		yamlObjectMapper = new ObjectMapper(new YAMLFactory());
-
 		return defaultConfig(yamlObjectMapper);
 	}
 
