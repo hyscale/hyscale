@@ -16,10 +16,6 @@
           "type": "string",
           "default": "Dockerfile"
         },
-        "target": {
-          "description": "defines the target to build, optional if not given final stage will be built.",
-          "type": "string"
-        },
         "args": {
           "description": "args is the list of build arguments to be passed during container image build. should be given in this format <key>=<value> ",
           "items": {
@@ -36,16 +32,6 @@
         "name": {
           "description": "defines the name of the artifacti. should be unique",
           "type": "string"
-        },
-        "provider": {
-          "description": "defines provider any of local, http, ssh",
-          "type": "string",
-          "enum": [
-            "local",
-            "ssh",
-            "http"
-          ],
-          "default": "local"
         },
         "source": {
           "description": "defines the source path of the artifact. should be relative path if provider is local. full remote url if http is given, file path to the artifact in the remote ssh",
@@ -77,7 +63,7 @@
           },
           "type": "array"
         },
-        "configScript": {
+        "configCommandsScript": {
           "description": "defines a script containing configuration commands. script execution happens at the time of image build",
           "type": "string"
         },
@@ -85,7 +71,7 @@
           "description": "defines configuration commands. execution happens at the time of image build",
           "type": "string"
         },
-        "runScript": {
+        "runCommandsScript": {
           "description": "defines a script containing run commands. Gets executed at the time of container start",
           "type": "string"
         },
@@ -95,8 +81,7 @@
         }
       },
       "required": [
-        "stackImage",
-        "artifacts"
+        "stackImage"
       ],
       "type": "object"
     },
@@ -114,7 +99,7 @@
         "registry": {
           "description": "docker registry url along with namespace",
           "type": "string",
-          "default": "docker.io/library"
+          "default": "registry.hub.docker.com"
         },
         "dockerfile": {
           "$ref": "#/definitions/io.hyscale.api.image.Dockerfile",
@@ -133,10 +118,14 @@
   },
   "required": [
     "name",
-    "image",
-    "ports"
+    "image"
   ],
   "properties": {
+    "hspecVersion":{
+      "description" : "Defines the hspec version",
+      "type" : "string",
+      "enum":["0.5"]
+    },
     "name": {
       "description": "name of service spec, also used as endpoint",
       "type": "string"
@@ -172,6 +161,10 @@
             "type": "string",
             "description": "size of volume",
             "default": "1g"
+          },
+          "storageClass": {
+            "type": "string",
+            "description": "defines the class for storage provider of your cluster volumes"
           }
         }
       }
@@ -193,6 +186,14 @@
       },
       "description": "props is an unstructured key value map",
       "type": "object"
+    },
+    "propsVolumePath": {
+      "description": "Defines the absolute path to where the props have to be mounted in the container",
+      "type": "string"
+    },
+    "external": {
+      "description": "Exposes the service externally ",
+      "type": "boolean"
     },
     "ports": {
       "type": "array",
@@ -217,114 +218,28 @@
                 "description": "describes httpPath of http healthcheck"
               }
             }
-          },
-          "external": {
-            "type": "boolean",
-            "description": "defines external service",
-            "default": false
-          },
-          "lbMappings": {
-            "type": "array",
-            "description": "defines lb mappings",
-            "items": {
-              "type": "object",
-              "description": "",
-              "required": [
-                "path"
-              ],
-              "properties": {
-                "host": {
-                  "type": "string",
-                  "description": "defines the host"
-                },
-                "tls": {
-                  "type": "boolean",
-                  "description": "defines ssl settings",
-                  "default": false
-                },
-                "path": {
-                  "type": "string",
-                  "description": "The Path Schema"
-                },
-                "httpHeaders": {
-                  "additionalProperties": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "description": "props is an unstructured key value map",
-                  "type": "object"
-                }
-              }
-            }
           }
         }
       }
     },
-    "agents": {
-      "type": "array",
-      "description": "defines sidecars creation and attachment",
-      "items": {
-        "type": "object",
-        "required": [
-          "name",
-          "image",
-          "props",
-          "volumes"
-        ],
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "defines the name of sidecar"
-          },
-          "image": {
-            "type": "string",
-            "description": "sidecar full image name"
-          },
-          "props": {
-            "additionalProperties": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "description": "props is an unstructured key value map",
-            "type": "object"
-          },
-          "volumes": {
-            "type": "array",
-            "description": "defines volumes attachment for sidecar",
-            "items": {
-              "type": "object",
-              "description": "The Items Schema",
-              "required": [
-                "path",
-                "name"
-              ],
-              "properties": {
-                "path": {
-                  "type": "string",
-                  "description": "mount path inside sidecar"
-                },
-                "name": {
-                  "type": "string",
-                  "description": "volume name can be a shared volume if it matches any of main container volume"
-                }
-              }
-            }
-          }
-        }
-      }
+    "secretsVolumePath": {
+      "description": "Defines the absolute path to where the secrets have to be mounted in the container",
+      "type": "string"
     },
-    "profiles": {
-      "type": "array",
-      "description": "list of profiles",
-      "items": {
-        "type": "object",
-        "description": "The Items Schema",
-        "properties": {}
-      }
+    "memory": {
+      "description": "Defines the range of memory the service has to use in the container",
+      "type": "string",
+      "pattern": "(\\d+.*(Ki|Mi|Gi|Ti|Pi|Ei|[numkMGTPE]|))-(\\d+.*((Ki|Mi|Gi|Ti|Pi|Ei|[numkMGTPE]|)))+"
+    },
+    "cpu": {
+      "description": "Defines the range of cpu the service has to use in the container",
+      "type": "string",
+      "pattern": "(\\d+.*(([.][\\d])[m]|))-(\\d+.*(([.][\\d])[m]|))"
+    },
+    "startCommand": {
+      "description": "Defines the command which gets executed at the time of container start",
+      "type": "string",
+      "pattern": "[\\w,]*"
     }
   }
 }
