@@ -39,9 +39,8 @@ public class PodHandlerTest {
     @BeforeAll
     public static void createPod() throws IOException {
         InputStream resourceAsStream = JsonPatchTest.class.getResourceAsStream("/test-data/test-pod.yaml");
-        String podData = IOUtils.toString(resourceAsStream, "UTF-8");
         ObjectMapper mapper = ObjectMapperFactory.yamlMapper();
-        pod = mapper.readValue(podData, V1Pod.class);
+        pod = mapper.readValue(resourceAsStream, V1Pod.class);
         resourceAsStream.close();
     }
 

@@ -24,7 +24,7 @@ module commons {
 	exports io.hyscale.commons.exception;
 
 	requires client.java.proto;
-	requires jackson.annotations;
+	requires com.fasterxml.jackson.annotation;
 	requires protobuf.java;
 	requires client.java.api;
 	requires gson;

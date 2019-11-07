@@ -33,8 +33,7 @@
 		<commons-io.version>2.6</commons-io.version>
 		<commons-cli.version>1.4</commons-cli.version>
 		<commons-codec.version>1.12</commons-codec.version>
-		<jackson.databind.version>2.9.9</jackson.databind.version>
-		<jackson.dataformat.yaml.version>2.9.9</jackson.dataformat.yaml.version>
+		<jackson.version>2.10.0</jackson.version>
 		<javax.validation-api.version>2.0.1.Final</javax.validation-api.version>
 		<javax.el-api.version>3.0.0</javax.el-api.version>
 		<glassfish.web.javax.el-api.version>2.2.6</glassfish.web.javax.el-api.version>
@@ -85,12 +84,17 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>${jackson.databind.version}</version>
+			<version>${jackson.version}</version>
 		</dependency>
+                <dependency>
+            		<groupId>com.fasterxml.jackson.core</groupId>
+           		<artifactId>jackson-core</artifactId>
+	            	<version>${jackson.version}</version>
+	        </dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-yaml</artifactId>
-			<version>${jackson.dataformat.yaml.version}</version>
+			<version>${jackson.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

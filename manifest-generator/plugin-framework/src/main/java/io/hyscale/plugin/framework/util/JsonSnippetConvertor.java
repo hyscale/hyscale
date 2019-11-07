@@ -44,7 +44,7 @@ public class JsonSnippetConvertor {
 		return objectMapper.readValue(element, klazz);
 	}
 
-	public static <T> T deserialize(String element, TypeReference typeReference) throws IOException {
+	public static <T> T deserialize(String element, TypeReference<T> typeReference) throws IOException {
 		if (element == null) {
 			return null;
 		}

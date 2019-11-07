@@ -83,7 +83,7 @@ public class JsonTreeParser {
 	 * @throws HyscaleException
 	 */
 
-    public static <T> T get(JsonNode root, String field, TypeReference typeReference) throws HyscaleException {
+    public static <T> T get(JsonNode root, String field, TypeReference<T> typeReference) throws HyscaleException {
         JsonNode jsonNode = get(root, field);
         return deserializeJsonNode(jsonNode, typeReference);
     }
@@ -115,7 +115,7 @@ public class JsonTreeParser {
 	 * @throws HyscaleException
 	 */
 
-    private static <T> T deserializeJsonNode(JsonNode jsonNode, TypeReference typeReference) throws HyscaleException {
+    private static <T> T deserializeJsonNode(JsonNode jsonNode, TypeReference<T> typeReference) throws HyscaleException {
         if (jsonNode == null || jsonNode.isMissingNode()) {
             return null;
         }
