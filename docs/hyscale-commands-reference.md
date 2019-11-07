@@ -1,6 +1,6 @@
 # HyScale Tool Command Reference
 
-> Version 0.5 <br />
+> Version 0.9 <br />
 
 ---
 
