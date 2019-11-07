@@ -15,11 +15,18 @@
  */
 package io.hyscale.generator.services.plugins;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.hyscale.commons.utils.ObjectMapperFactory;
+import io.hyscale.generator.services.provider.SecretsProvider;
+import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.service.Secrets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -52,13 +59,22 @@ public class ServiceSpecAnnotationHandler implements ManifestHandler {
         ManifestSnippet manifestSnippet = new ManifestSnippet();
         manifestSnippet.setKind(podSpecOwner);
         manifestSnippet.setPath("metadata.annotations");
+
+        Map<String, String> annotations = new HashMap<>();
         try {
-            Map<String, String> annotations = new HashMap<>();
-            annotations.put(AnnotationKey.HYSCALE_SERVICE_SPEC.getAnnotation(), serviceSpec.toString());
+            Secrets secrets = SecretsProvider.getSecrets(serviceSpec);
+            if (secrets != null && secrets.getSecretsMap() != null && !secrets.getSecretsMap().isEmpty()) {
+                ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
+                ObjectNode serviceSpecNode = mapper.readValue(serviceSpec.toString(), ObjectNode.class);
+                serviceSpecNode.remove(HyscaleSpecFields.secrets);
+                annotations.put(AnnotationKey.HYSCALE_SERVICE_SPEC.getAnnotation(), mapper.writeValueAsString(serviceSpecNode));
+            } else {
+                annotations.put(AnnotationKey.HYSCALE_SERVICE_SPEC.getAnnotation(), serviceSpec.toString());
+            }
             manifestSnippet.setSnippet(JsonSnippetConvertor.serialize(annotations));
             manifestSnippetList.add(manifestSnippet);
             return manifestSnippetList;
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             logger.error("Error while processing service spec annotations");
             return null;
         }
