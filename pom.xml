@@ -33,7 +33,7 @@
 		<commons-io.version>2.6</commons-io.version>
 		<commons-cli.version>1.4</commons-cli.version>
 		<commons-codec.version>1.12</commons-codec.version>
-		<jackson.databind.version>2.9.9</jackson.databind.version>
+		<jackson.databind.version>2.10.0</jackson.databind.version>
 		<jackson.dataformat.yaml.version>2.9.9</jackson.dataformat.yaml.version>
 		<javax.validation-api.version>2.0.1.Final</javax.validation-api.version>
 		<javax.el-api.version>3.0.0</javax.el-api.version>
