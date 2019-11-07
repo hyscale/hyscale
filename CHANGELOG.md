@@ -1,18 +1,17 @@
-# v0.9 Release 
+# v0.9 Release
 
-This is the first release of Hyscale.
+This is the first open source release of HyScale.
 
 ### Features:
 
-* Generates Dockerfile with artifacts, commands 
+* Generates Dockerfile with artifacts, commands
 
 * Builds docker image &  pushes the image to target registry
 
-* Generates kubernetes manifests
+* Generates Kubernetes manifests
 
-* Applies the manifests to configured kubernetes cluster
+* Applies the manifests to configured Kubernetes cluster
 
-* Troubleshoots deployments with service status & logs
+* Enables troubleshooting of deployments with service status & logs
 
-* Undeploys service / app from the cluster 
-
+* Provides undeployment of service / app from the cluster
