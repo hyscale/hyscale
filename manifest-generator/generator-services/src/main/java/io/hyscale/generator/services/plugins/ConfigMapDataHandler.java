@@ -23,7 +23,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.commons.utils.HyscaleFilesUtil;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.MetaDataContext;
+import io.hyscale.generator.services.model.AppMetaData;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.generator.services.provider.PropsProvider;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
@@ -44,10 +44,7 @@ import org.springframework.stereotype.Component;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 @ManifestPlugin(name = "ConfigMapDataHandler")
@@ -65,26 +62,26 @@ public class ConfigMapDataHandler implements ManifestHandler {
             logger.debug("Props found to be empty while processing ConfigMap data.");
             return null;
         }
-        MetaDataContext metaDataContext = new MetaDataContext();
-        metaDataContext.setAppName(manifestContext.getAppName());
-        metaDataContext.setEnvName(manifestContext.getEnvName());
-        metaDataContext.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
-
+        AppMetaData appMetaData = new AppMetaData();
+        appMetaData.setAppName(manifestContext.getAppName());
+        appMetaData.setEnvName(manifestContext.getEnvName());
+        appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
 
         String propsVolumePath = serviceSpec.get(HyscaleSpecFields.propsVolumePath, String.class);
 
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         try {
-            manifestSnippetList.add(getConfigMapData(props, propsVolumePath, metaDataContext));
+            manifestSnippetList.addAll(getConfigMapData(props, propsVolumePath, appMetaData));
             logger.debug("Added ConfigMap map data to the manifest snippet list");
         } catch (JsonProcessingException e) {
-            logger.error("Error while generating manifest for props of service {}", metaDataContext.getServiceName(), e);
+            logger.error("Error while generating manifest for props of service {}", appMetaData.getServiceName(), e);
         }
         return manifestSnippetList;
     }
 
-    private ManifestSnippet getConfigMapData(Props props, String propsVolumePath, MetaDataContext metaDataContext)
+    private List<ManifestSnippet> getConfigMapData(Props props, String propsVolumePath, AppMetaData metaDataContext)
             throws JsonProcessingException, HyscaleException {
+        List<ManifestSnippet> manifestSnippets = new LinkedList<>();
         Map<String, String> configProps = new HashMap<>();
         StringBuilder sb = new StringBuilder();
         props.getProps().entrySet().stream().forEach(each -> {
@@ -93,7 +90,7 @@ public class ConfigMapDataHandler implements ManifestHandler {
                 String fileContent = null;
                 try (InputStream is = new FileInputStream(SetupConfig.getAbsolutePath(PropType.FILE.extractPropValue(value)))) {
                     fileContent = IOUtils.toString(is, ToolConstants.CHARACTER_ENCODING);
-                    logger.debug(" Adding file {} to config props." , value);
+                    logger.debug(" Adding file {} to config props.", value);
                     configProps.put(each.getKey(), Base64.encodeBase64String(fileContent.getBytes()));
                 } catch (IOException e) {
                     logger.error("Error while reading file content of config prop {}", each.getKey(), e);
@@ -101,12 +98,12 @@ public class ConfigMapDataHandler implements ManifestHandler {
             } else if (PropType.ENDPOINT.getPatternMatcher().matcher(value).matches()) {
                 String propValue = PropType.ENDPOINT.extractPropValue(each.getValue());
                 configProps.put(each.getKey(), propValue);
-                logger.debug(" Adding endpoint {} to config props." , value);
+                logger.debug(" Adding endpoint {} to config props.", value);
                 sb.append(each.getKey()).append("=").append(propValue).append("\n");
             } else {
                 String propValue = PropType.STRING.extractPropValue(each.getValue());
                 configProps.put(each.getKey(), propValue);
-                logger.debug(" Adding prop {} to config props." ,value);
+                logger.debug(" Adding prop {} to config props.", value);
                 sb.append(each.getKey()).append("=").append(propValue).append("\n");
             }
         });
@@ -121,8 +118,8 @@ public class ConfigMapDataHandler implements ManifestHandler {
         configMapDataSnippet.setKind(ManifestResource.CONFIG_MAP.getKind());
         configMapDataSnippet.setPath("data");
         configMapDataSnippet.setSnippet(JsonSnippetConvertor.serialize(configProps));
-        logger.debug("Generated ConfigMap snippet.");
-        return configMapDataSnippet;
+        manifestSnippets.add(configMapDataSnippet);
+        return manifestSnippets;
     }
 
 }

@@ -15,7 +15,7 @@
  */
 package io.hyscale.generator.services.model;
 
-public class MetaDataContext {
+public class AppMetaData {
 
 	private String serviceName;
 	private String appName;

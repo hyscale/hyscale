@@ -16,11 +16,12 @@
 package io.hyscale.generator.services.plugins;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.hyscale.generator.services.builder.DefaultLabelBuilder;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.MetaDataContext;
+import io.hyscale.generator.services.model.AppMetaData;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
@@ -43,19 +44,19 @@ public class SelectorLabelsHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
-        MetaDataContext metaDataContext = new MetaDataContext();
-        metaDataContext.setAppName(manifestContext.getAppName());
-        metaDataContext.setEnvName(manifestContext.getEnvName());
-        metaDataContext.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
+        AppMetaData appMetaData = new AppMetaData();
+        appMetaData.setAppName(manifestContext.getAppName());
+        appMetaData.setEnvName(manifestContext.getEnvName());
+        appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
         List<ManifestSnippet> snippetList = new ArrayList<>();
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec)
                 ? ManifestResource.STATEFUL_SET.getKind()
                 : ManifestResource.DEPLOYMENT.getKind();
         try {
-            snippetList.add(getPodSpecSelectorLabels(metaDataContext, podSpecOwner));
+            snippetList.add(getPodSpecSelectorLabels(appMetaData, podSpecOwner));
             if (ManifestResource.SERVICE.getPredicate().test(serviceSpec)) {
                 logger.debug("Checking  for service ports in spec and adding service seletor labels to the snippet.");
-                snippetList.add(getServiceSelectorLabels(metaDataContext, podSpecOwner));
+                snippetList.add(getServiceSelectorLabels(appMetaData, podSpecOwner));
             }
         } catch (JsonProcessingException e) {
             logger.error("Error while serializing pod spec labels snippet ", e);
@@ -63,30 +64,30 @@ public class SelectorLabelsHandler implements ManifestHandler {
         return snippetList;
     }
 
-    private ManifestSnippet getServiceSelectorLabels(MetaDataContext metaDataContext, String podSpecOwner)
+    private ManifestSnippet getServiceSelectorLabels(AppMetaData appMetaData, String podSpecOwner)
             throws JsonProcessingException {
         ManifestSnippet selectorSnippet = new ManifestSnippet();
         selectorSnippet.setPath("spec.selector");
         selectorSnippet.setKind(ManifestResource.SERVICE.getKind());
-        selectorSnippet.setSnippet(JsonSnippetConvertor.serialize(getSelectorLabels(metaDataContext, podSpecOwner)));
+        selectorSnippet.setSnippet(JsonSnippetConvertor.serialize(getSelectorLabels(appMetaData, podSpecOwner)));
         return selectorSnippet;
     }
 
-    private ManifestSnippet getPodSpecSelectorLabels(MetaDataContext metaDataContext, String podSpecOwner)
+    private ManifestSnippet getPodSpecSelectorLabels(AppMetaData appMetaData, String podSpecOwner)
             throws JsonProcessingException {
         ManifestSnippet selectorSnippet = new ManifestSnippet();
         selectorSnippet.setPath("spec.selector.matchLabels");
         selectorSnippet.setKind(podSpecOwner);
-        selectorSnippet.setSnippet(JsonSnippetConvertor.serialize(getSelectorLabels(metaDataContext, podSpecOwner)));
+        selectorSnippet.setSnippet(JsonSnippetConvertor.serialize(getSelectorLabels(appMetaData, podSpecOwner)));
         return selectorSnippet;
     }
 
-    private Map<String, String> getSelectorLabels(MetaDataContext metaDataContext, String podSpecOwner) {
+    private Map<String, String> getSelectorLabels(AppMetaData appMetaData, String podSpecOwner) {
         ManifestResource manifestResource = ManifestResource.fromString(podSpecOwner);
         if (manifestResource == null) {
             return null;
         }
-        return manifestResource.getLabels(metaDataContext);
+        return DefaultLabelBuilder.build(appMetaData);
     }
 
 }

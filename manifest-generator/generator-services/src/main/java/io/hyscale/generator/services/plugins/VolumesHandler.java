@@ -20,7 +20,7 @@ import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.MetaDataContext;
+import io.hyscale.generator.services.model.AppMetaData;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.generator.services.generator.K8sResourceNameGenerator;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
@@ -47,39 +47,39 @@ public class VolumesHandler implements ManifestHandler {
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext)
             throws HyscaleException {
-        MetaDataContext metaDataContext = new MetaDataContext();
-        metaDataContext.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
-        metaDataContext.setEnvName(manifestContext.getEnvName());
-        metaDataContext.setAppName(manifestContext.getAppName());
+        AppMetaData appMetaData = new AppMetaData();
+        appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
+        appMetaData.setEnvName(manifestContext.getEnvName());
+        appMetaData.setAppName(manifestContext.getAppName());
 
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec)
                 ? ManifestResource.STATEFUL_SET.getKind()
                 : ManifestResource.DEPLOYMENT.getKind();
         List<ManifestSnippet> snippetList = new ArrayList<>();
         try {
-            snippetList.add(buildVolumeSnippet(serviceSpec, metaDataContext, podSpecOwner));
+            snippetList.add(buildVolumeSnippet(serviceSpec, appMetaData, podSpecOwner));
         } catch (JsonProcessingException e) {
             logger.error("Error while generating volume mounts manifest for service {}", e);
         }
         return snippetList;
     }
 
-    private ManifestSnippet buildVolumeSnippet(ServiceSpec serviceSpec, MetaDataContext metaDataContext,
+    private ManifestSnippet buildVolumeSnippet(ServiceSpec serviceSpec, AppMetaData appMetaData,
                                                String podSpecOwner) throws JsonProcessingException, HyscaleException {
         ManifestSnippet manifestSnippet = new ManifestSnippet();
         manifestSnippet.setKind(podSpecOwner);
         manifestSnippet.setPath("spec.template.spec.volumes");
-        manifestSnippet.setSnippet(JsonSnippetConvertor.serialize(getVolumes(serviceSpec, metaDataContext)));
+        manifestSnippet.setSnippet(JsonSnippetConvertor.serialize(getVolumes(serviceSpec, appMetaData)));
         return manifestSnippet;
     }
 
-    private List<V1Volume> getVolumes(ServiceSpec serviceSpec, MetaDataContext metaDataContext)
+    private List<V1Volume> getVolumes(ServiceSpec serviceSpec, AppMetaData appMetaData)
             throws HyscaleException {
         List<V1Volume> volumes = new ArrayList<>();
         if (ManifestPredicates.haveConfigmapVolume().test(serviceSpec)
                 && ManifestPredicates.getPropsPredicate().test(serviceSpec)) {
             V1Volume v1Volume = new V1Volume();
-            String configMapName = ManifestResource.CONFIG_MAP.getName(metaDataContext);
+            String configMapName = ManifestResource.CONFIG_MAP.getName(appMetaData);
             v1Volume.setName(K8sResourceNameGenerator.getResourceVolumeName(configMapName,
                     ManifestResource.CONFIG_MAP.getKind()));
             V1ConfigMapVolumeSource v1ConfigMapVolumeSource = new V1ConfigMapVolumeSource();
@@ -92,7 +92,7 @@ public class VolumesHandler implements ManifestHandler {
         if (ManifestPredicates.haveSecretsVolume().test(serviceSpec)
                 && ManifestPredicates.getSecretsEnvPredicate().test(serviceSpec)) {
             V1Volume v1Volume = new V1Volume();
-            String secretName = ManifestResource.SECRET.getName(metaDataContext);
+            String secretName = ManifestResource.SECRET.getName(appMetaData);
             v1Volume.setName(
                     K8sResourceNameGenerator.getResourceVolumeName(secretName, ManifestResource.SECRET.getKind()));
             V1SecretVolumeSource v1SecretVolumeSource = new V1SecretVolumeSource();

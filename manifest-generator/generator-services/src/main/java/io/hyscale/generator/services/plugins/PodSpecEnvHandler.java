@@ -21,7 +21,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.DecoratedArrayList;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.MetaDataContext;
+import io.hyscale.generator.services.model.AppMetaData;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.generator.services.provider.PropsProvider;
 import io.hyscale.generator.services.provider.SecretsProvider;
@@ -53,10 +53,10 @@ public class PodSpecEnvHandler implements ManifestHandler {
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         List<ManifestSnippet> snippetList = new ArrayList<>();
-        MetaDataContext metaDataContext = new MetaDataContext();
-        metaDataContext.setAppName(manifestContext.getAppName());
-        metaDataContext.setEnvName(manifestContext.getEnvName());
-        metaDataContext.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
+        AppMetaData appMetaData = new AppMetaData();
+        appMetaData.setAppName(manifestContext.getAppName());
+        appMetaData.setEnvName(manifestContext.getEnvName());
+        appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ?
                 ManifestResource.STATEFUL_SET.getKind() : ManifestResource.DEPLOYMENT.getKind();
 
@@ -66,14 +66,14 @@ public class PodSpecEnvHandler implements ManifestHandler {
             Props props = PropsProvider.getProps(serviceSpec);
             if (ManifestPredicates.getPropsPredicate().test(serviceSpec)) {
                 logger.debug("Preparing Pod Spec env's from props.");
-                envVarList.addAll(getPodSpecEnv(props, metaDataContext));
+                envVarList.addAll(getPodSpecEnv(props, appMetaData));
             }
 
             // Preparing Pod Spec secrets from props
             Secrets secrets = SecretsProvider.getSecrets(serviceSpec);
             if (ManifestPredicates.getSecretsEnvPredicate().test(serviceSpec)) {
                 logger.debug("Preparing Pod Spec env's from secrets.");
-                envVarList.addAll(getSecretsSnippet(getSecretKeys(secrets), metaDataContext));
+                envVarList.addAll(getSecretsSnippet(getSecretKeys(secrets), appMetaData));
             }
             if (envVarList.isEmpty()) {
                 return null;
@@ -91,7 +91,7 @@ public class PodSpecEnvHandler implements ManifestHandler {
         return snippetList;
     }
 
-    private List<V1EnvVar> getSecretsSnippet(Set<String> secretKeys, MetaDataContext metaDataContext) {
+    private List<V1EnvVar> getSecretsSnippet(Set<String> secretKeys, AppMetaData appMetaData) {
         if (secretKeys == null || secretKeys.isEmpty()) {
             return null;
         }
@@ -102,7 +102,7 @@ public class PodSpecEnvHandler implements ManifestHandler {
 
             V1EnvVarSource envVarSource = new V1EnvVarSource();
             V1SecretKeySelector secretKeySelector = new V1SecretKeySelector();
-            secretKeySelector.setName(ManifestResource.SECRET.getName(metaDataContext));
+            secretKeySelector.setName(ManifestResource.SECRET.getName(appMetaData));
             secretKeySelector.setKey(each);
             envVarSource.setSecretKeyRef(secretKeySelector);
             envVar.setValueFrom(envVarSource);
@@ -125,7 +125,7 @@ public class PodSpecEnvHandler implements ManifestHandler {
         return null;
     }
 
-    private List<V1EnvVar> getPodSpecEnv(Props props, MetaDataContext metaDataContext) {
+    private List<V1EnvVar> getPodSpecEnv(Props props, AppMetaData appMetaData) {
         if (props == null || props.getProps().isEmpty()) {
             return null;
         }
@@ -136,7 +136,7 @@ public class PodSpecEnvHandler implements ManifestHandler {
 
             V1EnvVarSource envVarSource = new V1EnvVarSource();
             V1ConfigMapKeySelector configMapKeySelector = new V1ConfigMapKeySelector();
-            configMapKeySelector.setName(ManifestResource.CONFIG_MAP.getName(metaDataContext));
+            configMapKeySelector.setName(ManifestResource.CONFIG_MAP.getName(appMetaData));
             configMapKeySelector.setKey(each.getKey());
             envVarSource.setConfigMapKeyRef(configMapKeySelector);
             envVar.setValueFrom(envVarSource);
