@@ -16,6 +16,7 @@
 package io.hyscale.generator.services.plugins;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
@@ -44,10 +45,7 @@ import org.springframework.stereotype.Component;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 @ManifestPlugin(name = "ConfigMapDataHandler")
@@ -70,12 +68,11 @@ public class ConfigMapDataHandler implements ManifestHandler {
         metaDataContext.setEnvName(manifestContext.getEnvName());
         metaDataContext.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
 
-
         String propsVolumePath = serviceSpec.get(HyscaleSpecFields.propsVolumePath, String.class);
 
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         try {
-            manifestSnippetList.add(getConfigMapData(props, propsVolumePath, metaDataContext));
+            manifestSnippetList.addAll(getConfigMapData(props, propsVolumePath, metaDataContext));
             logger.debug("Added ConfigMap map data to the manifest snippet list");
         } catch (JsonProcessingException e) {
             logger.error("Error while generating manifest for props of service {}", metaDataContext.getServiceName(), e);
@@ -83,9 +80,11 @@ public class ConfigMapDataHandler implements ManifestHandler {
         return manifestSnippetList;
     }
 
-    private ManifestSnippet getConfigMapData(Props props, String propsVolumePath, MetaDataContext metaDataContext)
+    private List<ManifestSnippet> getConfigMapData(Props props, String propsVolumePath, MetaDataContext metaDataContext)
             throws JsonProcessingException, HyscaleException {
         Map<String, String> configProps = new HashMap<>();
+        Map<String, String> fileProps = new HashMap<>();
+        List<ManifestSnippet> manifestSnippets = new LinkedList<>();
         StringBuilder sb = new StringBuilder();
         props.getProps().entrySet().stream().forEach(each -> {
             String value = each.getValue();
@@ -93,36 +92,47 @@ public class ConfigMapDataHandler implements ManifestHandler {
                 String fileContent = null;
                 try (InputStream is = new FileInputStream(SetupConfig.getAbsolutePath(PropType.FILE.extractPropValue(value)))) {
                     fileContent = IOUtils.toString(is, ToolConstants.CHARACTER_ENCODING);
-                    logger.debug(" Adding file {} to config props." , value);
-                    configProps.put(each.getKey(), Base64.encodeBase64String(fileContent.getBytes()));
+                    logger.debug(" Adding file {} to file props.", value);
+                    fileProps.put(each.getKey(), Base64.encodeBase64String(fileContent.getBytes()));
                 } catch (IOException e) {
                     logger.error("Error while reading file content of config prop {}", each.getKey(), e);
                 }
             } else if (PropType.ENDPOINT.getPatternMatcher().matcher(value).matches()) {
                 String propValue = PropType.ENDPOINT.extractPropValue(each.getValue());
                 configProps.put(each.getKey(), propValue);
-                logger.debug(" Adding endpoint {} to config props." , value);
+                logger.debug(" Adding endpoint {} to config props.", value);
                 sb.append(each.getKey()).append("=").append(propValue).append("\n");
             } else {
                 String propValue = PropType.STRING.extractPropValue(each.getValue());
                 configProps.put(each.getKey(), propValue);
-                logger.debug(" Adding prop {} to config props." ,value);
+                logger.debug(" Adding prop {} to config props.", value);
                 sb.append(each.getKey()).append("=").append(propValue).append("\n");
             }
         });
 
         String fileData = sb.toString();
+
+        /**
+         *  Consolidating all the props (string & endpoint) when propsVolumePath is defined as @see ManifestGenConstants.DEFAULT_CONFIG_PROPS_FILE
+         */
         if (StringUtils.isNotBlank(fileData) && StringUtils.isNotBlank(propsVolumePath)) {
-            logger.debug("Processing props file data.");
-            configProps.put(filesUtil.getFileName(propsVolumePath), fileData);
+            logger.debug("Consolidating config props to file {}", ManifestGenConstants.DEFAULT_CONFIG_PROPS_FILE);
+            configProps.put(ManifestGenConstants.DEFAULT_CONFIG_PROPS_FILE, fileData);
         }
 
         ManifestSnippet configMapDataSnippet = new ManifestSnippet();
         configMapDataSnippet.setKind(ManifestResource.CONFIG_MAP.getKind());
         configMapDataSnippet.setPath("data");
         configMapDataSnippet.setSnippet(JsonSnippetConvertor.serialize(configProps));
-        logger.debug("Generated ConfigMap snippet.");
-        return configMapDataSnippet;
+        manifestSnippets.add(configMapDataSnippet);
+
+        ManifestSnippet binaryDataSnippet = new ManifestSnippet();
+        binaryDataSnippet.setKind(ManifestResource.CONFIG_MAP.getKind());
+        binaryDataSnippet.setPath("binaryData");
+        binaryDataSnippet.setSnippet(JsonSnippetConvertor.serialize(fileProps));
+        manifestSnippets.add(binaryDataSnippet);
+
+        return manifestSnippets;
     }
 
 }
