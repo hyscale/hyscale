@@ -22,6 +22,7 @@ import io.hyscale.generator.services.model.AppMetaData;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+//TODO Normaliza label as per regex (([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?
 public class DefaultLabelBuilder {
 
     public static Map<String, String> build(AppMetaData appMetaData) {
