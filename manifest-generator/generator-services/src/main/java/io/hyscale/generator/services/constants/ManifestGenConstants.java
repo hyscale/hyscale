@@ -25,4 +25,6 @@ public class ManifestGenConstants {
 
 	public static final String IMAGE_SHA_SUM = "IMAGE_SHA_SUM";
 
+	public static final String DEFAULT_CONFIG_PROPS_FILE = "config.props";
+
 }

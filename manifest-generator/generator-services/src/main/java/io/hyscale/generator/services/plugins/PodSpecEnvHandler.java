@@ -28,6 +28,7 @@ import io.hyscale.generator.services.provider.SecretsProvider;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.PropType;
 import io.hyscale.servicespec.commons.model.service.Props;
 import io.hyscale.servicespec.commons.model.service.Secrets;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
@@ -130,7 +131,9 @@ public class PodSpecEnvHandler implements ManifestHandler {
             return null;
         }
         List<V1EnvVar> envVarList = new DecoratedArrayList<V1EnvVar>();
-        props.getProps().entrySet().stream().forEach(each -> {
+        props.getProps().entrySet().stream().filter(each -> {
+            return each != null && !PropType.FILE.getPatternMatcher().matcher(each.getValue()).matches();
+        }).forEach(each -> {
             V1EnvVar envVar = new V1EnvVar();
             envVar.setName(each.getKey());
 
