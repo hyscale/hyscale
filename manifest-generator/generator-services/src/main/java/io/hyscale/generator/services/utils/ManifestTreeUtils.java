@@ -58,7 +58,7 @@ public class ManifestTreeUtils {
             parentKey = "$";
             return jsonTreeOperations.put(rootNode, parentKey, JsonTreeUtil.getKey(path), elementNode);
         }
-        rootNode = (ObjectNode) createParentsIfNotExists(rootNode,
+        createParentsIfNotExists(rootNode,
                 JsonTreeUtil.getParentKey(path).split("\\."), 0);
         rootNode = (ObjectNode) createLeafNodeIfNotExists(rootNode, elementNode, path);
         return insertSnippet(rootNode, path, elementNode);
@@ -91,23 +91,55 @@ public class ManifestTreeUtils {
      *
      * @param root
      * @param paths
-     * @param  index
+     * @param index
      * @return
      * @throws IOException
      */
 
     private JsonNode createParentsIfNotExists(JsonNode root, String[] paths, int index) throws IOException {
+        if (root == null) {
+            return root;
+        }
+
         if (paths == null) {
             return root;
         }
         if (index >= paths.length) {
             return root;
         }
-        String effectivePath = "$";
-        for (int i = 0; i <= index; i++) {
-            effectivePath += "." + paths[i];
+
+        int arrayIndex = JsonTreeUtil.getArrayIndex(paths[index]);
+        JsonNode parent = root.get(normalize(paths[index]));
+        if (parent == null) {
+            if (JsonTreeUtil.isArrayPath(paths[index])) {
+                ArrayNode arrayNode = jsonTreeOperations.arrayNode();
+                if (arrayIndex >= 0) {
+                    for (int j = 0; j <= arrayIndex; j++) {
+                        arrayNode.add(jsonTreeOperations.objectNode());
+                    }
+                }
+                parent = arrayNode;
+            } else {
+                parent = jsonTreeOperations.objectNode();
+            }
+            root = root.isArray() ? ((ArrayNode) root).add(parent) : ((ObjectNode) root).put(normalize(paths[index]), parent);
+        } else {
+            if (arrayIndex >= 0) {
+                if (!parent.isArray()) {
+                    throw new IOException("Parent found to be non-array node while the path claims to be an array " + paths[index]);
+                }
+                ArrayNode arrayNode = (ArrayNode) parent;
+                for (int j = 0; j <= arrayIndex; j++) {
+                    if (arrayNode.get(j) == null) {
+                        arrayNode.add(jsonTreeOperations.objectNode());
+                    }
+                }
+            }
         }
-        JsonNode parent = jsonTreeOperations.read(root, effectivePath);
+        return createParentsIfNotExists(parent, paths, index + 1);
+    }
+
+        /*
         if (parent == null) {
             if (JsonTreeUtil.isArrayPath(paths[index])) {
                 parent = jsonTreeOperations.arrayNode();
@@ -127,7 +159,9 @@ public class ManifestTreeUtils {
             }
         }
         return createParentsIfNotExists(root, paths, index + 1);
-    }
+
+        
+    }*/
 
     /*
      * Prepares the leaf node to inject the snippet Checks if the leaf node to be
@@ -143,6 +177,17 @@ public class ManifestTreeUtils {
             root = jsonTreeOperations.put(root, JsonTreeUtil.getParentKey(path), JsonTreeUtil.getKey(path), leafNode);
         }
         return root;
+    }
+
+    private String normalize(String path) {
+        if (StringUtils.isBlank(path)) {
+            return path;
+        }
+
+        if (JsonTreeUtil.isArrayPath(path)) {
+            return JsonTreeUtil.getSanitizedArrayPath(path);
+        }
+        return path;
     }
 
 }
