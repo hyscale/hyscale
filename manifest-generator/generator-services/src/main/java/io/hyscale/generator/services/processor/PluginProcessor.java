@@ -158,10 +158,10 @@ public class PluginProcessor {
 
             } catch (IOException e) {
                 failedSnippets.add(each.getPath());
-                logger.error("Error while Injecting manifest snippet for {} ", each);
+                logger.error("Error while Injecting manifest snippet for {} ", each, e);
             } catch (HyscaleException e) {
                 failedSnippets.add(each + ": " + e.getMessage());
-                logger.error("Error while Injecting manifest snippet for {} ", each);
+                logger.error("Error while Injecting manifest snippet for {} ", each, e);
             }
         });
         if (!failedSnippets.isEmpty()) {

@@ -18,10 +18,14 @@ package io.hyscale.generator.services.json;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.regex.Pattern;
 
 public class JsonTreeUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(JsonTreeUtil.class);
 
     private static final String JSON_PATH_ARRAY_REGEX = "\\w+(\\[([0-9]*|\\*)?\\])+";
     private static final Pattern arrayRegexPattern = Pattern.compile(JSON_PATH_ARRAY_REGEX);
@@ -93,7 +97,7 @@ public class JsonTreeUtil {
                 return Integer.parseInt(leafPath.substring(start + 1, end));
             }
         } catch (NumberFormatException e) {
-            System.out.println(e);
+            logger.error("Cannot parse number from the field {}", field);
         }
         return -1;
     }
