@@ -19,11 +19,15 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import io.hyscale.commons.exception.CommonErrorCode;
-import io.hyscale.commons.exception.HyscaleException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import io.hyscale.commons.config.SetupConfig;
+import io.hyscale.commons.exception.CommonErrorCode;
+import io.hyscale.commons.exception.HyscaleException;
 
 /**
  * Utility class to handle file operation
@@ -31,155 +35,194 @@ import org.springframework.stereotype.Component;
 @Component
 public class HyscaleFilesUtil {
 
-    public static final String FILE_SEPARATOR = System.getProperty("file.separator");
-    
-    private static final String NULL_STRING = "null";
+	private static final Logger logger = LoggerFactory.getLogger(HyscaleFilesUtil.class);
 
-    /**
-     * Create file in required directory
-     *
-     * @param filename
-     * @param fileData
-     * @throws HyscaleException
-     */
-    public File createFile(String filename, String fileData) throws HyscaleException {
-        if (StringUtils.isBlank(filename) || StringUtils.isBlank(fileData)) {
-            throw new HyscaleException(CommonErrorCode.FAILED_TO_WRITE_FILE_DATA);
-        }
-        File file = new File(filename);
-        // create parent dir if missing
-        file.getParentFile().mkdirs();
-        try (FileWriter fileWriter = new FileWriter(file)) {
-            fileWriter.write(fileData);
-        } catch (IOException e) {
-            HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_WRITE_FILE, filename);
-            throw ex;
-        }
-        return file;
-    }
+	private static final String NULL_STRING = "null";
 
-    /**
-     * Update/Create file in required directory
-     *
-     * @param filename
-     * @param fileData
-     * @throws HyscaleException
-     */
-    public File updateFile(String filename, String fileData) throws HyscaleException {
-        if (StringUtils.isBlank(filename) || StringUtils.isBlank(fileData)) {
-            throw new HyscaleException(CommonErrorCode.FAILED_TO_WRITE_FILE_DATA);
-        }
-        File file = new File(filename);
-        // create parent dir if missing
-        file.getParentFile().mkdirs();
-        try (FileWriter fileWriter = new FileWriter(file, true)) {
-            fileWriter.write(fileData);
-        } catch (IOException e) {
-            HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_WRITE_FILE, filename);
-            throw ex;
-        }
-        return file;
-    }
+	/**
+	 * Create file in required directory
+	 *
+	 * @param filename
+	 * @param fileData
+	 * @throws HyscaleException
+	 */
+	public File createFile(String filename, String fileData) throws HyscaleException {
+		if (StringUtils.isBlank(filename)) {
+			throw new HyscaleException(CommonErrorCode.FAILED_TO_WRITE_FILE_DATA);
+		}
+		File file = createEmptyFile(filename);
+		if (StringUtils.isBlank(fileData)) {
+			logger.debug("Created empty file {}", filename);
+			return file;
+		}
 
-    /**
-     * Copy file to given directory Makes directory if not exist
-     *
-     * @param sourceFile
-     * @param dest
-     * @throws HyscaleException
-     */
-    public void copyFileToDir(File sourceFile, File dest) throws HyscaleException {
-        if (sourceFile == null || !sourceFile.exists()) {
-            String[] args = new String[]{sourceFile != null ? sourceFile.getName() : NULL_STRING};
-            throw new HyscaleException(CommonErrorCode.FILE_NOT_FOUND, args);
-        }
-        if (dest == null) {
-            throw new HyscaleException(CommonErrorCode.DIRECTORY_REQUIRED_TO_COPY_FILE, sourceFile.getName());
-        }
-        // create dir if not exist
-        dest.mkdirs();
-        try {
-            FileUtils.copyFileToDirectory(sourceFile, dest);
-        } catch (IOException e) {
-            HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_COPY_FILE, sourceFile.getName());
-            throw ex;
-        }
-    }
+		try (FileWriter fileWriter = new FileWriter(file)) {
+			fileWriter.write(fileData);
+		} catch (IOException e) {
+			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_WRITE_FILE, filename);
+			throw ex;
+		}
+		return file;
+	}
 
-    /**
-     * Copy file to destination file Create parent directory if does not exist
-     */
-    public void copyFile(File sourceFile, File destFile) throws HyscaleException {
-        if (sourceFile == null || !sourceFile.exists()) {
-            String[] args = new String[]{sourceFile != null ? sourceFile.getName() : NULL_STRING};
-            throw new HyscaleException(CommonErrorCode.FILE_NOT_FOUND, args);
-        }
-        if (destFile == null) {
-            throw new HyscaleException(CommonErrorCode.DIRECTORY_REQUIRED_TO_COPY_FILE, sourceFile.getName());
-        }
-        // Create parent dirs
-        destFile.getParentFile().mkdirs();
-        try {
-            FileUtils.copyFile(sourceFile, destFile);
-        } catch (IOException e) {
-            HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_COPY_FILE, sourceFile.getName());
-            throw ex;
-        }
-    }
+	/**
+	 * Create empty file with name
+	 * 
+	 * @param filename
+	 * @return
+	 * @throws HyscaleException if failed to create file
+	 */
+	public File createEmptyFile(String filename) throws HyscaleException {
+		File file = new File(filename);
+		return createEmptyFile(file);
+	}
 
-    /**
-     * Returns the file name from the given filepath
-     *
-     * @param filePath
-     * @return
-     */
+	/**
+	 * Creates empty file if does not exist
+	 * @param file
+	 * @return file
+	 * @throws HyscaleException
+	 */
+	public File createEmptyFile(File file) throws HyscaleException {
+		if (file == null) {
+			return null;
+		}
+		if (file.exists()) {
+			return file;
+		}
+		file.getParentFile().mkdirs();
+		try {
+			file.createNewFile();
+		} catch (IOException e) {
+			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_WRITE_FILE, file.getName());
+			throw ex;
+		}
+		return file;
+	}
 
-    public String getFileName(String filePath) throws HyscaleException {
-        if (StringUtils.isBlank(filePath)) {
-            throw new HyscaleException(CommonErrorCode.EMPTY_FILE_PATH);
-        }
+	/**
+	 * Update/Create file in required directory
+	 *
+	 * @param filename
+	 * @param fileData
+	 * @throws HyscaleException
+	 */
+	public File updateFile(String filename, String fileData) throws HyscaleException {
+		if (StringUtils.isBlank(filename) || StringUtils.isBlank(fileData)) {
+			throw new HyscaleException(CommonErrorCode.FAILED_TO_WRITE_FILE_DATA);
+		}
+		File file = new File(filename);
+		// create parent dir if missing
+		file.getParentFile().mkdirs();
+		try (FileWriter fileWriter = new FileWriter(file, true)) {
+			fileWriter.write(fileData);
+		} catch (IOException e) {
+			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_WRITE_FILE, filename);
+			throw ex;
+		}
+		return file;
+	}
 
-        if (filePath.substring(filePath.length() - 1, filePath.length()).equals(FILE_SEPARATOR)) {
-            throw new HyscaleException(CommonErrorCode.FOUND_DIRECTORY_INSTEAD_OF_FILE, filePath);
-        }
+	/**
+	 * Copy file to given directory Makes directory if not exist
+	 *
+	 * @param sourceFile
+	 * @param dest
+	 * @throws HyscaleException
+	 */
+	public void copyFileToDir(File sourceFile, File dest) throws HyscaleException {
+		if (sourceFile == null || !sourceFile.exists()) {
+			String[] args = new String[] { sourceFile != null ? sourceFile.getName() : NULL_STRING };
+			throw new HyscaleException(CommonErrorCode.FILE_NOT_FOUND, args);
+		}
+		if (dest == null) {
+			throw new HyscaleException(CommonErrorCode.DIRECTORY_REQUIRED_TO_COPY_FILE, sourceFile.getName());
+		}
+		// create dir if not exist
+		dest.mkdirs();
+		try {
+			FileUtils.copyFileToDirectory(sourceFile, dest);
+		} catch (IOException e) {
+			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_COPY_FILE, sourceFile.getName());
+			throw ex;
+		}
+	}
 
-        int lastDirIndex = filePath.lastIndexOf(FILE_SEPARATOR);
-        if (lastDirIndex >= 0) {
-            return filePath.substring(lastDirIndex + 1, filePath.length());
-        } else {
-            return filePath;
-        }
-    }
+	/**
+	 * Copy file to destination file Create parent directory if does not exist
+	 */
+	public void copyFile(File sourceFile, File destFile) throws HyscaleException {
+		if (sourceFile == null || !sourceFile.exists()) {
+			String[] args = new String[] { sourceFile != null ? sourceFile.getName() : NULL_STRING };
+			throw new HyscaleException(CommonErrorCode.FILE_NOT_FOUND, args);
+		}
+		if (destFile == null) {
+			throw new HyscaleException(CommonErrorCode.DIRECTORY_REQUIRED_TO_COPY_FILE, sourceFile.getName());
+		}
+		// Create parent dirs
+		destFile.getParentFile().mkdirs();
+		try {
+			FileUtils.copyFile(sourceFile, destFile);
+		} catch (IOException e) {
+			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_COPY_FILE, sourceFile.getName());
+			throw ex;
+		}
+	}
 
-    /**
-     * Clears directory including internal dirs
-     *
-     * @param dir
-     * @throws HyscaleException
-     */
-    public void clearDirectory(String dir) throws HyscaleException {
-        File directory = new File(dir);
-        if (directory.isDirectory()) {
-            // true only if file path is directory and exists
-            try {
-                FileUtils.cleanDirectory(directory);
-            } catch (IOException e) {
-                HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_CLEAN_DIRECTORY, dir);
-                throw ex;
-            }
-        }
-    }
+	/**
+	 * Returns the file name from the given filepath
+	 *
+	 * @param filePath
+	 * @return
+	 */
 
-    public void deleteDirectory(String dir) throws HyscaleException {
-        File directory = new File(dir);
-        if (directory.isDirectory()) {
-            // true only if file path is directory and exists
-            try {
-                FileUtils.deleteDirectory(directory);
-            } catch (IOException e) {
-                HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_DELETE_DIRECTORY, dir);
-                throw ex;
-            }
-        }
-    }
+	public String getFileName(String filePath) throws HyscaleException {
+		if (StringUtils.isBlank(filePath)) {
+			throw new HyscaleException(CommonErrorCode.EMPTY_FILE_PATH);
+		}
+
+		if (filePath.substring(filePath.length() - 1, filePath.length()).equals(SetupConfig.FILE_SEPARATOR)) {
+			throw new HyscaleException(CommonErrorCode.FOUND_DIRECTORY_INSTEAD_OF_FILE, filePath);
+		}
+
+		int lastDirIndex = filePath.lastIndexOf(SetupConfig.FILE_SEPARATOR);
+		if (lastDirIndex >= 0) {
+			return filePath.substring(lastDirIndex + 1, filePath.length());
+		} else {
+			return filePath;
+		}
+	}
+
+	/**
+	 * Clears directory including internal dirs
+	 *
+	 * @param dir
+	 * @throws HyscaleException
+	 */
+	public void clearDirectory(String dir) throws HyscaleException {
+		File directory = new File(dir);
+		if (directory.isDirectory()) {
+			// true only if file path is directory and exists
+			try {
+				FileUtils.cleanDirectory(directory);
+			} catch (IOException e) {
+				HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_CLEAN_DIRECTORY, dir);
+				throw ex;
+			}
+		}
+	}
+
+	public void deleteDirectory(String dir) throws HyscaleException {
+		File directory = new File(dir);
+		if (directory.isDirectory()) {
+			// true only if file path is directory and exists
+			try {
+				FileUtils.deleteDirectory(directory);
+			} catch (IOException e) {
+				HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_DELETE_DIRECTORY, dir);
+				throw ex;
+			}
+		}
+	}
+
 }

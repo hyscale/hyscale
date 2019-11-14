@@ -16,6 +16,7 @@
 package io.hyscale.servicespec.commons.model.service;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class Props {
 
@@ -28,4 +29,22 @@ public class Props {
 	public void setProps(Map<String, String> props) {
 		this.props = props;
 	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(props);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Props other = (Props) obj;
+		return Objects.equals(props, other.props);
+	}
+	
 }

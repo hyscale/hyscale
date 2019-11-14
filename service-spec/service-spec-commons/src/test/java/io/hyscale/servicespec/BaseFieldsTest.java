@@ -22,7 +22,6 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.*;
-import io.hyscale.servicespec.commons.model.service.*;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;

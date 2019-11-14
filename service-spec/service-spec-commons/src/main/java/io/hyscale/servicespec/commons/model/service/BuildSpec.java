@@ -18,6 +18,7 @@ package io.hyscale.servicespec.commons.model.service;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
+import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BuildSpec {
@@ -75,6 +76,28 @@ public class BuildSpec {
 
 	public void setRunCommandsScript(String runCommandsScript) {
 		this.runCommandsScript = runCommandsScript;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(artifacts, configCommands, configCommandsScript, runCommands, runCommandsScript,
+				stackImage);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		BuildSpec other = (BuildSpec) obj;
+		return Objects.equals(artifacts, other.artifacts) && Objects.equals(configCommands, other.configCommands)
+				&& Objects.equals(configCommandsScript, other.configCommandsScript)
+				&& Objects.equals(runCommands, other.runCommands)
+				&& Objects.equals(runCommandsScript, other.runCommandsScript)
+				&& Objects.equals(stackImage, other.stackImage);
 	}
 
 }

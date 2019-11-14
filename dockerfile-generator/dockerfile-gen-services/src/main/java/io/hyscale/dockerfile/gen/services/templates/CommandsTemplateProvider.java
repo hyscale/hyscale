@@ -31,7 +31,7 @@ public class CommandsTemplateProvider {
 
 	private Map<CommandType, ConfigTemplate> commandVsTemplateMap;
 
-	protected static final String TEMPLATES_PATH = "templates/";
+	protected static final String TEMPLATES_PATH = "templates";
 	private static final String CONFIGURE_COMMAND_TPL = "configure-cmd-script.tpl";
 	private static final String RUN_COMMAND_TPL = "run-cmd-script.tpl";
 

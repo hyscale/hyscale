@@ -26,12 +26,20 @@ public class ObjectMapperFactory {
 	private static ObjectMapper yamlObjectMapper;
 
 	public static ObjectMapper jsonMapper() {
-		jsonObjectMapper = new ObjectMapper();
+		if (jsonObjectMapper == null) {
+			synchronized (ObjectMapperFactory.class) {
+				jsonObjectMapper = new ObjectMapper();
+			}
+		}
 		return defaultConfig(jsonObjectMapper);
 	}
 
 	public static ObjectMapper yamlMapper() {
-		yamlObjectMapper = new ObjectMapper(new YAMLFactory());
+		if (yamlObjectMapper == null) {
+			synchronized (ObjectMapperFactory.class) {
+				yamlObjectMapper = new ObjectMapper(new YAMLFactory());
+			}
+		}
 		return defaultConfig(yamlObjectMapper);
 	}
 
