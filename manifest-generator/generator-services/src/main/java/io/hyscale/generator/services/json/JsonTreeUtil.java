@@ -26,6 +26,16 @@ public class JsonTreeUtil {
     private static final String JSON_PATH_ARRAY_REGEX = "\\w+(\\[([0-9]*|\\*)?\\])+";
     private static final Pattern arrayRegexPattern = Pattern.compile(JSON_PATH_ARRAY_REGEX);
 
+    public static String getEffectivePath(String path) {
+        if (path == null || path.isBlank()) {
+            return path;
+        }
+        if (!path.startsWith("$")) {
+            path = "$." + path;
+        }
+        return path;
+    }
+
     private static boolean isEmptyArray(JsonNode jsonNode) {
         if (jsonNode.isArray()) {
             ArrayNode arrayNode = (ArrayNode) jsonNode;
