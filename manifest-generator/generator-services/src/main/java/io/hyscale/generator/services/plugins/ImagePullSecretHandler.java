@@ -24,6 +24,7 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DockerConfig;
 import io.hyscale.generator.services.model.ManifestGeneratorActivity;
 import io.hyscale.generator.services.builder.DefaultLabelBuilder;
+import io.hyscale.generator.services.model.ManifestGeneratorActivity;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.model.AppMetaData;
 import io.hyscale.generator.services.model.ResourceName;

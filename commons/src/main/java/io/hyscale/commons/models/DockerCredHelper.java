@@ -30,7 +30,6 @@ import java.io.IOException;
  * the "docker-credential-helperFuntion get" command and gets credentials if exists.
  */
 public class DockerCredHelper {
-
     private static final Logger logger = LoggerFactory.getLogger(DockerCredHelper.class);
     private static final String DOCKER_CREDENTIAL = "docker-credential-";
     private static final String GET = "get";

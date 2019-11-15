@@ -66,5 +66,4 @@ public class CredsStoreEntity {
     public void setSecret(String secret) {
         this.secret = secret;
     }
-
 }
