@@ -55,7 +55,6 @@ public class ImageRegistryBuilder {
 
     /**
      * returns ImageRegistry from Auths of local docker config if found else returns null.
-<<<<<<< c2653ba73f1c6cd7e2ae08f4346d491ad20d99ad
      * <p> Example of Auths:
      * "auths": {
      * 		"registry": {
@@ -65,9 +64,6 @@ public class ImageRegistryBuilder {
      *        }
      * if auth exists with matching registry returns credentials by base64 decoding auth and spliting them by colon
      * and creates ImageRegistry object.
-=======
-     *
->>>>>>> docker credStore and credHelper support  changes
      * @param auths
      * @return ImageRegistry
      */
