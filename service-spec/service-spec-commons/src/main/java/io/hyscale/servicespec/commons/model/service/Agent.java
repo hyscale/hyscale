@@ -25,7 +25,10 @@ public class Agent {
 	private String name;
 	private String image;
 	private Props props;
+	private Secrets secrets;
 	private List<AgentVolume> volumes;
+	private String propsVolumePath;
+	private String secretsVolumePath;
 
 	public String getName() {
 		return name;
@@ -59,4 +62,27 @@ public class Agent {
 		this.volumes = volumes;
 	}
 
+	public String getPropsVolumePath() {
+		return propsVolumePath;
+	}
+
+	public void setPropsVolumePath(String propsVolumePath) {
+		this.propsVolumePath = propsVolumePath;
+	}
+
+	public String getSecretsVolumePath() {
+		return secretsVolumePath;
+	}
+
+	public void setSecretsVolumePath(String secretsVolumePath) {
+		this.secretsVolumePath = secretsVolumePath;
+	}
+
+	public Secrets getSecrets() {
+		return secrets;
+	}
+
+	public void setSecrets(Secrets secrets) {
+		this.secrets = secrets;
+	}
 }

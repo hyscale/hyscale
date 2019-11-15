@@ -23,6 +23,7 @@ import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.*;
 import org.apache.commons.lang3.StringUtils;
 
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -39,6 +40,23 @@ public class ManifestPredicates {
 				return false;
 			}
 			if (volumes != null && !volumes.isEmpty()) {
+				return true;
+			}
+			return false;
+		};
+	}
+
+	public static Predicate<ServiceSpec> getAgentsPredicate(){
+		return serviceSpec -> {
+			TypeReference<List<Agent>> agentsList = new TypeReference<List<Agent>>() {
+			};
+			List<Agent> agents = null;
+			try{
+				agents = serviceSpec.get(HyscaleSpecFields.agents,agentsList);
+			}catch (HyscaleException e){
+				return false;
+			}
+			if(agents != null && !agents.isEmpty()){
 				return true;
 			}
 			return false;

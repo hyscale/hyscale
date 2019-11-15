@@ -26,7 +26,7 @@ import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.model.MetaDataContext;
 import io.hyscale.generator.services.model.ResourceName;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
-import io.hyscale.generator.services.generator.MetadatManifestSnippetGenerator;
+import io.hyscale.generator.services.generator.MetadataManifestSnippetGenerator;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,12 +72,12 @@ public class ImagePullSecretHandler implements ManifestHandler {
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         try {
             // Override the name because image-pull-secret has either the registry-name or registry-url as the name of the manifest
-            ManifestSnippet apiVersionSnippet = MetadatManifestSnippetGenerator.getApiVersion(ManifestResource.SECRET, metaDataContext);
+            ManifestSnippet apiVersionSnippet = MetadataManifestSnippetGenerator.getApiVersion(ManifestResource.SECRET, metaDataContext);
             //Api Version snippet
             manifestSnippetList.add(apiVersionSnippet);
 
             // Get the secret kind of image pull secret
-            manifestSnippetList.add(MetadatManifestSnippetGenerator.getKind(ManifestResource.SECRET));
+            manifestSnippetList.add(MetadataManifestSnippetGenerator.getKind(ManifestResource.SECRET));
             // Get the labels of secret as image pull secret also have the same set of labels
             manifestSnippetList.add(getMetaDataSnippet(metaDataContext, name));
             logger.debug("Added labels to image pull secret manifest snippet.");
