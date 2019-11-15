@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.commons.utils.OperatingSystemHelper;
+import io.hyscale.commons.utils.WindowsUtil;
 import io.hyscale.controller.directive.ServiceSpecDirectiveUpdateHandler;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Artifact;
@@ -47,7 +47,7 @@ public class BuildSpecJsonHandler extends ServiceSpecDirectiveUpdateHandler<Buil
 		List<Artifact> artifacts = buildSpec.getArtifacts();
 		if (artifacts != null) {
 			artifacts.forEach(artifact -> {
-				artifact.setSource(OperatingSystemHelper.modifyWindowsFileSeparator(artifact.getSource()));
+				artifact.setSource(WindowsUtil.updateToUnixFileSeparator(artifact.getSource()));
 			});
 			buildSpec.setArtifacts(artifacts);
 		}
@@ -55,13 +55,13 @@ public class BuildSpecJsonHandler extends ServiceSpecDirectiveUpdateHandler<Buil
 		// Config Commands Script
 		String configCmdScript = buildSpec.getConfigCommandsScript();
 		if (StringUtils.isNotBlank(configCmdScript)) {
-			buildSpec.setConfigCommandsScript(OperatingSystemHelper.modifyWindowsFileSeparator(configCmdScript));
+			buildSpec.setConfigCommandsScript(WindowsUtil.updateToUnixFileSeparator(configCmdScript));
 		}
 
 		// Run Commands Script
 		String runCmdScripts = buildSpec.getRunCommandsScript();
 		if (StringUtils.isNotBlank(runCmdScripts)) {
-			buildSpec.setRunCommandsScript(OperatingSystemHelper.modifyWindowsFileSeparator(runCmdScripts));
+			buildSpec.setRunCommandsScript(WindowsUtil.updateToUnixFileSeparator(runCmdScripts));
 		}
 		return buildSpec;
 	}
