@@ -19,12 +19,10 @@ import java.io.File;
 
 import io.hyscale.commons.models.YAMLManifest;
 import io.hyscale.commons.utils.NormalizationUtil;
-import io.hyscale.generator.services.config.ManifestConfig;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.plugin.framework.models.ManifestMeta;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
@@ -38,12 +36,6 @@ import io.hyscale.commons.utils.HyscaleFilesUtil;
 @Component
 public class ManifestFileGenerator {
 
-	@Autowired
-	private HyscaleFilesUtil filesUtil;
-
-	@Autowired
-	private ManifestConfig manifestConfig;
-
 	public YAMLManifest getYamlManifest(String manifestDir, String yaml, ManifestMeta manifestMeta)
 			throws HyscaleException {
 		if (StringUtils.isBlank(yaml) || StringUtils.isBlank(manifestDir)) {
@@ -52,7 +44,7 @@ public class ManifestFileGenerator {
 		StringBuilder sb = new StringBuilder(manifestDir);
 		sb.append(getManifestFileName(manifestMeta));
 		sb.append(ManifestGenConstants.YAML_EXTENSION);
-		File manifestFile = filesUtil.createFile(sb.toString(), yaml);
+		File manifestFile = HyscaleFilesUtil.createFile(sb.toString(), yaml);
 		YAMLManifest yamlManifest = new YAMLManifest();
 		yamlManifest.setYamlManifest(manifestFile);
 		return yamlManifest;

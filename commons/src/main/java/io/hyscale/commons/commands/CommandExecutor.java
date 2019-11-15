@@ -23,8 +23,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
@@ -50,19 +48,15 @@ import io.hyscale.commons.utils.ThreadPoolUtil;
  * String writer is used to get command output when required
  * </p>
  */
-@Component
 public class CommandExecutor {
 
 	private static final Logger logger = LoggerFactory.getLogger(CommandExecutor.class);
-
-	@Autowired
-	private HyscaleFilesUtil filesUtil;
 
 	/**
 	 * @param command to be executed
 	 * @return {@link CommandResult} which contains command output and exit code
 	 */
-	public CommandResult executeAndGetResults(String command) {
+	public static CommandResult executeAndGetResults(String command) {
 		CommandResult commandResult = null;
 		try {
 			commandResult = _execute(command, null, null);
@@ -77,7 +71,7 @@ public class CommandExecutor {
 	 * @param command to be executed
 	 * @return whether command was successful or not
 	 */
-	public boolean execute(String command) {
+	public static boolean execute(String command) {
 		CommandResult commandResult = null;
 		try {
 			commandResult = _execute(command, null, null);
@@ -94,7 +88,7 @@ public class CommandExecutor {
 	 * @param commandOutputFile    to which command output is redirected
 	 * @return whether command was successful or not
 	 */
-	public boolean execute(String command, File commandOutputFile) {
+	public static boolean execute(String command, File commandOutputFile) {
 		return executeInDir(command, commandOutputFile, null);
 	}
 
@@ -105,7 +99,7 @@ public class CommandExecutor {
 	 * @param dir in which command is executed
 	 * @return whether command was successful or not
 	 */
-	public boolean executeInDir(String command, File commandOutputFile, String dir) {
+	public static boolean executeInDir(String command, File commandOutputFile, String dir) {
 		CommandResult commandResult = null;
 		try {
 			commandResult = _execute(command, commandOutputFile, dir);
@@ -132,7 +126,7 @@ public class CommandExecutor {
 	 * @throws InterruptedException
 	 * @throws HyscaleException
 	 */
-	private CommandResult _execute(String command, File file, String dir)
+	private static CommandResult _execute(String command, File file, String dir)
 			throws IOException, InterruptedException, HyscaleException {
 		ProcessBuilder processBuilder = new ProcessBuilder();
 		if (StringUtils.isBlank(dir) || dir.equals(".")) {
@@ -142,7 +136,7 @@ public class CommandExecutor {
 		processBuilder.command(command.split(" "));
 		processBuilder.redirectErrorStream(true);
 		if (file != null) {
-			filesUtil.createEmptyFile(file);
+			HyscaleFilesUtil.createEmptyFile(file);
 			processBuilder.redirectOutput(file);
 		}
 		Process process = processBuilder.start();
@@ -172,7 +166,7 @@ public class CommandExecutor {
 	 * @param strWriter
 	 * @return is thread started
 	 */
-	private boolean copyOutput(Process process, StringWriter strWriter) {
+	private static boolean copyOutput(Process process, StringWriter strWriter) {
 		return ThreadPoolUtil.getInstance().execute(() -> {
 			try {
 				while (process.isAlive()) {
