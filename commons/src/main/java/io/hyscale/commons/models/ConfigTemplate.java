@@ -15,7 +15,7 @@
  */
 package io.hyscale.commons.models;
 
-import java.io.File;
+import io.hyscale.commons.config.SetupConfig;
 
 public class ConfigTemplate {
 
@@ -39,7 +39,7 @@ public class ConfigTemplate {
 	}
 
 	public String getTemplatePath() {
-		return rootPath + File.separator + templateName;
+		return rootPath + SetupConfig.FILE_SEPARATOR + templateName;
 	}
 
 }

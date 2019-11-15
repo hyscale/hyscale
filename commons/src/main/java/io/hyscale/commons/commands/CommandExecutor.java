@@ -15,100 +15,173 @@
  */
 package io.hyscale.commons.commands;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.StringWriter;
 
-import io.hyscale.commons.config.SetupConfig;
-import io.hyscale.commons.exception.CommonErrorCode;
-import io.hyscale.commons.exception.HyscaleException;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.hyscale.commons.config.SetupConfig;
+import io.hyscale.commons.constants.ToolConstants;
+import io.hyscale.commons.exception.CommonErrorCode;
+import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.CommandResult;
+import io.hyscale.commons.utils.HyscaleFilesUtil;
+import io.hyscale.commons.utils.ThreadPoolUtil;
 
+/**
+ * Class to execute commands using java process
+ * Use case:
+ * To execute command and check if it was successful
+ * To execute command and get output in String
+ * To execute command and copy output to a file
+ * To execute command in a particular directory
+ * 
+ * <p>
+ * In case file is not provided, an async thread is started
+ * to read copy command output to string writer
+ * This is done to ensure output buffer is not exhausted
+ * This thread runs until the process is alive
+ * String writer is used to get command output when required
+ * </p>
+ */
 @Component
 public class CommandExecutor {
 
-    private static final Logger logger = LoggerFactory.getLogger(CommandExecutor.class);
+	private static final Logger logger = LoggerFactory.getLogger(CommandExecutor.class);
 
-    public CommandResult executeAndGetResults(String command) {
-        CommandResult commandResult = null;
-        int exitCode = 1;
-        try {
-            Process process = executeProcess(command, null, null);
-            exitCode = process.waitFor();
-            commandResult = new CommandResult();
-            commandResult
-                    .setCommandOutput(getResult(exitCode == 0 ? process.getInputStream() : process.getErrorStream()));
-            commandResult.setExitCode(exitCode);
-        } catch (IOException | InterruptedException e) {
-            HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_EXECUTE_COMMAND, command);
-            logger.error("Failed while executing command, error {}", ex.toString());
-        }
-        return commandResult;
-    }
+	@Autowired
+	private HyscaleFilesUtil filesUtil;
 
-    public boolean execute(String command) {
-        int exitCode = 1;
-        try {
-            Process process = executeProcess(command, null, null);
-            exitCode = process.waitFor();
-        } catch (IOException | InterruptedException e) {
-            HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_EXECUTE_COMMAND, command);
-            logger.error("Failed while executing command, error {}", ex.toString());
-            return false;
-        }
-        return exitCode == 0 ? true : false;
-    }
+	/**
+	 * @param command to be executed
+	 * @return {@link CommandResult} which contains command output and exit code
+	 */
+	public CommandResult executeAndGetResults(String command) {
+		CommandResult commandResult = null;
+		try {
+			commandResult = _execute(command, null, null);
+		} catch (IOException | InterruptedException | HyscaleException e) {
+			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_EXECUTE_COMMAND, command);
+			logger.error("Failed while executing command, error {}", ex.toString());
+		}
+		return commandResult;
+	}
 
-    public boolean execute(String command, File file) {
-        return executeInDir(command, file, null);
-    }
+	/**
+	 * @param command to be executed
+	 * @return whether command was successful or not
+	 */
+	public boolean execute(String command) {
+		CommandResult commandResult = null;
+		try {
+			commandResult = _execute(command, null, null);
+		} catch (IOException | InterruptedException | HyscaleException e) {
+			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_EXECUTE_COMMAND, command);
+			logger.error("Failed while executing command, error {}", ex.toString());
+			return false;
+		}
+		return commandResult == null || commandResult.getExitCode() != 0 ? false : true;
+	}
 
-    public boolean executeInDir(String command, File file, String dir) {
-        int exitCode = 1;
-        try {
-            Process process = executeProcess(command, file, dir);
-            exitCode = process.waitFor();
-        } catch (IOException | InterruptedException e) {
-            HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_EXECUTE_COMMAND, command);
-            logger.error("Failed while executing command, error {}", ex.toString());
-            return false;
-        }
-        return exitCode == 0 ? true : false;
-    }
+	/**
+	 * @param command to be executed
+	 * @param commandOutputFile    to which command output is redirected
+	 * @return whether command was successful or not
+	 */
+	public boolean execute(String command, File commandOutputFile) {
+		return executeInDir(command, commandOutputFile, null);
+	}
 
-    private String getResult(InputStream inputStream) throws IOException {
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-        StringBuilder output = new StringBuilder();
-        String line = "";
-        while ((line = bufferedReader.readLine()) != null) {
-            output.append(line);
-        }
-        return output.toString();
-    }
+	/**
+	 * 
+	 * @param command to be executed
+	 * @param commandOutputFile to which command output is redirected
+	 * @param dir in which command is executed
+	 * @return whether command was successful or not
+	 */
+	public boolean executeInDir(String command, File commandOutputFile, String dir) {
+		CommandResult commandResult = null;
+		try {
+			commandResult = _execute(command, commandOutputFile, dir);
+		} catch (IOException | InterruptedException | HyscaleException e) {
+			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_EXECUTE_COMMAND, command);
+			logger.error("Failed while executing command, error {}", ex.toString());
+			return false;
+		}
+		return commandResult == null || commandResult.getExitCode() != 0 ? false : true;
+	}
 
-    private Process executeProcess(String command, File file, String dir) throws IOException {
-        ProcessBuilder processBuilder = new ProcessBuilder();
-        if (StringUtils.isBlank(dir) || dir.equals(".")) {
-            dir = SetupConfig.CURRENT_WORKING_DIR;
-        }
-        logger.debug("Executing command in dir {}", dir);
-        processBuilder.directory(new File(dir));
-        processBuilder.command(command.split(" "));
-        processBuilder.redirectErrorStream(true);
-        if (file != null) {
-            if (!file.exists()) {
-                file.getParentFile().mkdirs();
-                file.createNewFile();
-            }
-            processBuilder.redirectOutput(file);
-        }
-        return processBuilder.start();
-    }
+	/**
+	 * Executes command in the directory specified, uses current directory if not
+	 * specified If file provided directs output to file (creates if does not exist)
+	 * else Asynchronously copy command output in
+	 * {@link CommandResult#setCommandOutput(String)} waits for the process to
+	 * complete
+	 * 
+	 * @param command
+	 * @param file
+	 * @param dir
+	 * @return {@link CommandResult}
+	 * @throws IOException
+	 * @throws InterruptedException
+	 * @throws HyscaleException
+	 */
+	private CommandResult _execute(String command, File file, String dir)
+			throws IOException, InterruptedException, HyscaleException {
+		ProcessBuilder processBuilder = new ProcessBuilder();
+		if (StringUtils.isBlank(dir) || dir.equals(".")) {
+			dir = SetupConfig.CURRENT_WORKING_DIR;
+		}
+		logger.debug("Executing command in dir {}", dir);
+		processBuilder.command(command.split(" "));
+		processBuilder.redirectErrorStream(true);
+		if (file != null) {
+			filesUtil.createEmptyFile(file);
+			processBuilder.redirectOutput(file);
+		}
+		Process process = processBuilder.start();
+		boolean readOutput = false;
+		StringWriter strWriter = new StringWriter();
+		if (file == null) {
+			readOutput = copyOutput(process, strWriter);
+		}
+		CommandResult cmdResult = new CommandResult();
+		int exitCode = 1;
+		try {
+			exitCode = process.waitFor();
+		} catch (InterruptedException e) {
+			logger.error("Error while waiting for process to complete");
+			throw e;
+		}
+		if (readOutput) {
+			cmdResult.setCommandOutput(strWriter.toString());
+		}
+		cmdResult.setExitCode(exitCode);
+		return cmdResult;
+	}
+
+	/**
+	 * Copy output from process input stream to string writer
+	 * @param process
+	 * @param strWriter
+	 * @return is thread started
+	 */
+	private boolean copyOutput(Process process, StringWriter strWriter) {
+		return ThreadPoolUtil.getInstance().execute(() -> {
+			try {
+				while (process.isAlive()) {
+					IOUtils.copy(process.getInputStream(), strWriter, ToolConstants.CHARACTER_ENCODING);
+				}
+			} catch (IOException e) {
+				logger.error("Error while reading command output", e);
+			}
+		});
+	}
+
 }

@@ -30,6 +30,7 @@ import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.controller.commands.HyscaleCommand;
 import io.hyscale.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.controller.util.ExceptionHandler;
+import io.hyscale.controller.util.ResourceCleanUpUtil;
 import io.hyscale.controller.util.ShutdownHook;
 import picocli.CommandLine;
 import picocli.CommandLine.IFactory;
@@ -77,7 +78,9 @@ public class HyscaleInitializer implements CommandLineRunner {
             logger.error("Error while processing command, error {}", ControllerErrorCodes.INVALID_COMMAND.getErrorMessage(), e);
         } catch (Throwable e) {
         	logger.error("Unexpected error in processing command, error {}", ControllerErrorCodes.UNEXPECTED_ERROR.getErrorMessage(), e);
-        }
+		} finally {
+			ResourceCleanUpUtil.performCleanUp();
+		}
     }
 
 }
