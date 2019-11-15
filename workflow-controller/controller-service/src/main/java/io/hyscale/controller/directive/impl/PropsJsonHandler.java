@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.utils.OperatingSystemHelper;
+import io.hyscale.commons.utils.WindowsUtil;
 import io.hyscale.controller.directive.ServiceSpecDirectiveUpdateHandler;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.PropType;
@@ -49,7 +49,7 @@ public class PropsJsonHandler extends ServiceSpecDirectiveUpdateHandler<Map<Stri
 		props.entrySet().forEach(each -> {
 			String value = String.valueOf(each.getValue());
 			if (PropType.FILE.getPatternMatcher().matcher(value).matches()) {
-				each.setValue(OperatingSystemHelper.modifyWindowsFileSeparator(value));
+				each.setValue(WindowsUtil.updateToUnixFileSeparator(value));
 			}
 		});
 

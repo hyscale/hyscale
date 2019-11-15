@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.commons.utils.OperatingSystemHelper;
+import io.hyscale.commons.utils.WindowsUtil;
 import io.hyscale.controller.directive.ServiceSpecDirectiveUpdateHandler;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Dockerfile;
@@ -38,8 +38,8 @@ public class DockerfileJsonHandler extends ServiceSpecDirectiveUpdateHandler<Doc
 	private static final Logger logger = LoggerFactory.getLogger(DockerfileJsonHandler.class);
 
 	public Dockerfile updateObject(Dockerfile dockerfile) {
-		dockerfile.setPath(OperatingSystemHelper.modifyWindowsFileSeparator(dockerfile.getPath()));
-		dockerfile.setDockerfilePath(OperatingSystemHelper.modifyWindowsFileSeparator(dockerfile.getDockerfilePath()));
+		dockerfile.setPath(WindowsUtil.updateToUnixFileSeparator(dockerfile.getPath()));
+		dockerfile.setDockerfilePath(WindowsUtil.updateToUnixFileSeparator(dockerfile.getDockerfilePath()));
 		return dockerfile;
 	}
 

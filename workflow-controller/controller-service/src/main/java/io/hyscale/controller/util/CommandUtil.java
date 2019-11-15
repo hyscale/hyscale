@@ -25,7 +25,9 @@ import javax.validation.ValidatorFactory;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.utils.WindowsUtil;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.constants.WorkflowConstants;
 
@@ -51,9 +53,11 @@ public class CommandUtil {
 	}
 
 	public static void logMetaInfo(String info, ControllerActivity controllerActivity) {
-		if (StringUtils.isNotBlank(info)) {
-			WorkflowLogger.info(controllerActivity, info);
+		if (StringUtils.isBlank(info)) {
+			return;
 		}
+		info = WindowsUtil.updateToHostFileSeparator(info);
+		WorkflowLogger.info(controllerActivity, info);
 	}
 	
 	/**
