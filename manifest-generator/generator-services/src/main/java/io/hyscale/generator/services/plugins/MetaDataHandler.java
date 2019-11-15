@@ -20,7 +20,7 @@ import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.MetaDataContext;
+import io.hyscale.generator.services.model.AppMetaData;
 import io.hyscale.generator.services.generator.MetadatManifestSnippetGenerator;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
@@ -42,10 +42,10 @@ public class MetaDataHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext context) throws HyscaleException {
-        MetaDataContext metaDataContext = new MetaDataContext();
-        metaDataContext.setAppName(context.getAppName());
-        metaDataContext.setEnvName(context.getEnvName());
-        metaDataContext.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
+        AppMetaData appMetaData = new AppMetaData();
+        appMetaData.setAppName(context.getAppName());
+        appMetaData.setEnvName(context.getEnvName());
+        appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
         List<ManifestSnippet> snippetList = new ArrayList<>();
         try {
             for (ManifestResource manifestResource : ManifestResource.values()) {
@@ -56,10 +56,10 @@ public class MetaDataHandler implements ManifestHandler {
                     snippetList.add(MetadatManifestSnippetGenerator.getKind(manifestResource));
 
                     /* Snippet for apiVersion for each manifest */
-                    snippetList.add(MetadatManifestSnippetGenerator.getApiVersion(manifestResource, metaDataContext));
+                    snippetList.add(MetadatManifestSnippetGenerator.getApiVersion(manifestResource, appMetaData));
 
                     /* Snippet for metadata for each manifest */
-                    snippetList.add(MetadatManifestSnippetGenerator.getMetaData(manifestResource, metaDataContext));
+                    snippetList.add(MetadatManifestSnippetGenerator.getMetaData(manifestResource, appMetaData));
                 }
 
             }
@@ -67,13 +67,6 @@ public class MetaDataHandler implements ManifestHandler {
             logger.error("Error while serializing metadata snippet.", e);
         }
         return snippetList;
-    }
-
-    public V1ObjectMeta getMetaData(ManifestResource manifestResource, MetaDataContext metaDataContext) {
-        V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
-        v1ObjectMeta.setName(manifestResource.getName(metaDataContext));
-        v1ObjectMeta.setLabels(manifestResource.getLabels(metaDataContext));
-        return v1ObjectMeta;
     }
 
 

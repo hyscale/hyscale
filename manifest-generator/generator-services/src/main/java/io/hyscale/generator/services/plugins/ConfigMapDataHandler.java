@@ -24,7 +24,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.commons.utils.HyscaleFilesUtil;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.MetaDataContext;
+import io.hyscale.generator.services.model.AppMetaData;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.generator.services.provider.PropsProvider;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
@@ -63,28 +63,28 @@ public class ConfigMapDataHandler implements ManifestHandler {
             logger.debug("Props found to be empty while processing ConfigMap data.");
             return null;
         }
-        MetaDataContext metaDataContext = new MetaDataContext();
-        metaDataContext.setAppName(manifestContext.getAppName());
-        metaDataContext.setEnvName(manifestContext.getEnvName());
-        metaDataContext.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
+        AppMetaData appMetaData = new AppMetaData();
+        appMetaData.setAppName(manifestContext.getAppName());
+        appMetaData.setEnvName(manifestContext.getEnvName());
+        appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
 
         String propsVolumePath = serviceSpec.get(HyscaleSpecFields.propsVolumePath, String.class);
 
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         try {
-            manifestSnippetList.addAll(getConfigMapData(props, propsVolumePath, metaDataContext));
+            manifestSnippetList.addAll(getConfigMapData(props, propsVolumePath, appMetaData));
             logger.debug("Added ConfigMap map data to the manifest snippet list");
         } catch (JsonProcessingException e) {
-            logger.error("Error while generating manifest for props of service {}", metaDataContext.getServiceName(), e);
+            logger.error("Error while generating manifest for props of service {}", appMetaData.getServiceName(), e);
         }
         return manifestSnippetList;
     }
 
-    private List<ManifestSnippet> getConfigMapData(Props props, String propsVolumePath, MetaDataContext metaDataContext)
-            throws JsonProcessingException, HyscaleException {
+    private List<ManifestSnippet> getConfigMapData(Props props, String propsVolumePath, AppMetaData appMetaData)
+            throws JsonProcessingException {
+        List<ManifestSnippet> manifestSnippets = new LinkedList<>();
         Map<String, String> configProps = new HashMap<>();
         Map<String, String> fileProps = new HashMap<>();
-        List<ManifestSnippet> manifestSnippets = new LinkedList<>();
         StringBuilder sb = new StringBuilder();
         props.getProps().entrySet().stream().forEach(each -> {
             String value = each.getValue();

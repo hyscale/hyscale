@@ -21,7 +21,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.commons.utils.HyscaleFilesUtil;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.MetaDataContext;
+import io.hyscale.generator.services.model.AppMetaData;
 import io.hyscale.generator.services.provider.SecretsProvider;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
@@ -58,22 +58,22 @@ public class SecretsDataHandler implements ManifestHandler {
         }
 
         String secretsVolumePath = serviceSpec.get(HyscaleSpecFields.secretsVolumePath, String.class);
-        MetaDataContext metaDataContext = new MetaDataContext();
-        metaDataContext.setAppName(manifestContext.getAppName());
-        metaDataContext.setEnvName(manifestContext.getEnvName());
-        metaDataContext.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
+        AppMetaData appMetaData = new AppMetaData();
+        appMetaData.setAppName(manifestContext.getAppName());
+        appMetaData.setEnvName(manifestContext.getEnvName());
+        appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
 
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         try {
-            manifestSnippetList.add(getSecretsData(secrets, secretsVolumePath, metaDataContext));
+            manifestSnippetList.add(getSecretsData(secrets, secretsVolumePath, appMetaData));
         } catch (JsonProcessingException e) {
-            logger.error("Error while generating manifest for props of service {}", metaDataContext.getServiceName(), e);
+            logger.error("Error while generating manifest for props of service {}", appMetaData.getServiceName(), e);
         }
         return manifestSnippetList;
 
     }
 
-    private ManifestSnippet getSecretsData(Secrets secrets, String secretsVolumePath, MetaDataContext metaDataContext)
+    private ManifestSnippet getSecretsData(Secrets secrets, String secretsVolumePath, AppMetaData metaDataContext)
             throws JsonProcessingException {
         ManifestSnippet snippet = new ManifestSnippet();
         Map<String, String> modifiedMap = secrets.getSecretsMap().entrySet().stream().collect(

@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import io.hyscale.generator.services.builder.DefaultLabelBuilder;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import org.apache.commons.lang3.StringUtils;
@@ -30,166 +31,142 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 public enum ManifestResource {
 
-	STATEFUL_SET("StatefulSet", "apps/v1beta2") {
-		@Override
-		public String getName(MetaDataContext metaDataContext) {
-			StringBuilder sb = new StringBuilder();
-			sb.append(NormalizationUtil.normalize(metaDataContext.getAppName()));
-			sb.append(ManifestGenConstants.NAME_DELIMITER);
-			sb.append(NormalizationUtil.normalize(metaDataContext.getServiceName()));
-			return sb.toString();
-		}
+    STATEFUL_SET("StatefulSet", "apps/v1beta2") {
+        @Override
+        public String getName(AppMetaData appMetaData) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(NormalizationUtil.normalize(appMetaData.getAppName()));
+            sb.append(ManifestGenConstants.NAME_DELIMITER);
+            sb.append(NormalizationUtil.normalize(appMetaData.getServiceName()));
+            return sb.toString();
+        }
 
-		@Override
-		public Map<String, String> getLabels(MetaDataContext metaDataContext) {
-			Map<ResourceLabelKey, String> podLabelKeyMap = ResourceLabelBuilder.build(metaDataContext.getAppName(),
-					metaDataContext.getEnvName(), metaDataContext.getServiceName());
-			Map<String, String> podLabels = podLabelKeyMap.entrySet().stream().filter(each -> {
-				return each != null;
-			}).collect(Collectors.toMap(k -> k.getKey().getLabel(), v -> v.getValue()));
-			return podLabels;
-		}
+        @Override
+        public Map<String, String> getLabels(AppMetaData appMetaData) {
+            return DefaultLabelBuilder.build(appMetaData);
 
-		@Override
-		public Predicate<ServiceSpec> getPredicate() {
-			return ManifestPredicates.getVolumesPredicate();
-		}
-	},
-	DEPLOYMENT("Deployment", "apps/v1beta2") {
-		@Override
-		public String getName(MetaDataContext metaDataContext) {
-			StringBuilder sb = new StringBuilder();
-			sb.append(NormalizationUtil.normalize(metaDataContext.getAppName()));
-			sb.append(ManifestGenConstants.NAME_DELIMITER);
-			sb.append(NormalizationUtil.normalize(metaDataContext.getServiceName()));
-			return sb.toString();
-		}
+        }
 
-		@Override
-		public Map<String, String> getLabels(MetaDataContext metaDataContext) {
-			Map<ResourceLabelKey, String> podLabelKeyMap = ResourceLabelBuilder.build(metaDataContext.getAppName(),
-					metaDataContext.getEnvName(), metaDataContext.getServiceName());
-			Map<String, String> podLabels = podLabelKeyMap.entrySet().stream().filter(each -> {
-				return each != null;
-			}).collect(Collectors.toMap(k -> k.getKey().getLabel(), v -> v.getValue()));
-			return podLabels;
-		}
+        @Override
+        public Predicate<ServiceSpec> getPredicate() {
+            return ManifestPredicates.getVolumesPredicate();
+        }
+    },
+    DEPLOYMENT("Deployment", "apps/v1beta2") {
+        @Override
+        public String getName(AppMetaData appMetaData) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(NormalizationUtil.normalize(appMetaData.getAppName()));
+            sb.append(ManifestGenConstants.NAME_DELIMITER);
+            sb.append(NormalizationUtil.normalize(appMetaData.getServiceName()));
+            return sb.toString();
+        }
 
-		@Override
-		public Predicate<ServiceSpec> getPredicate() {
-			return servicespec -> {
-				return !ManifestPredicates.getVolumesPredicate().test(servicespec);
-			};
-		}
-	},
-	CONFIG_MAP("ConfigMap", "v1") {
-		@Override
-		public String getName(MetaDataContext metaDataContext) {
-			StringBuilder sb = new StringBuilder();
-			sb.append(NormalizationUtil.normalize(metaDataContext.getAppName()));
-			sb.append(ManifestGenConstants.NAME_DELIMITER);
-			sb.append(NormalizationUtil.normalize(metaDataContext.getServiceName()));
-			return sb.toString();
-		}
+        @Override
+        public Map<String, String> getLabels(AppMetaData appMetaData) {
+            return DefaultLabelBuilder.build(appMetaData);
+        }
 
-		@Override
-		public Map<String, String> getLabels(MetaDataContext metaDataContext) {
-			Map<ResourceLabelKey, String> podLabelKeyMap = ResourceLabelBuilder.build(metaDataContext.getAppName(),
-					metaDataContext.getEnvName(), metaDataContext.getServiceName());
-			Map<String, String> podLabels = podLabelKeyMap.entrySet().stream().filter(each -> {
-				return each != null;
-			}).collect(Collectors.toMap(k -> k.getKey().getLabel(), v -> v.getValue()));
-			return podLabels;
-		}
+        @Override
+        public Predicate<ServiceSpec> getPredicate() {
+            return servicespec -> {
+                return !ManifestPredicates.getVolumesPredicate().test(servicespec);
+            };
+        }
+    },
+    CONFIG_MAP("ConfigMap", "v1") {
+        @Override
+        public String getName(AppMetaData appMetaData) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(NormalizationUtil.normalize(appMetaData.getAppName()));
+            sb.append(ManifestGenConstants.NAME_DELIMITER);
+            sb.append(NormalizationUtil.normalize(appMetaData.getServiceName()));
+            return sb.toString();
+        }
 
-		// TODO set this value to false by default on props plugin should be true
-		@Override
-		public Predicate<ServiceSpec> getPredicate() {
-			return ManifestPredicates.getPropsPredicate();
-		}
+        @Override
+        public Map<String, String> getLabels(AppMetaData appMetaData) {
+            return DefaultLabelBuilder.build(appMetaData);
+        }
 
-	},
-	SECRET("Secret", "v1") {
-		@Override
-		public String getName(MetaDataContext metaDataContext) {
-			StringBuilder sb = new StringBuilder();
-			sb.append(NormalizationUtil.normalize(metaDataContext.getAppName()));
-			sb.append(ManifestGenConstants.NAME_DELIMITER);
-			sb.append(NormalizationUtil.normalize(metaDataContext.getServiceName()));
-			return sb.toString();
-		}
+        // TODO set this value to false by default on props plugin should be true
+        @Override
+        public Predicate<ServiceSpec> getPredicate() {
+            return ManifestPredicates.getPropsPredicate();
+        }
 
-		@Override
-		public Map<String, String> getLabels(MetaDataContext metaDataContext) {
-			Map<ResourceLabelKey, String> podLabelKeyMap = ResourceLabelBuilder.build(metaDataContext.getAppName(),
-					metaDataContext.getEnvName(), metaDataContext.getServiceName());
-			Map<String, String> podLabels = podLabelKeyMap.entrySet().stream().filter(each -> {
-				return each != null;
-			}).collect(Collectors.toMap(k -> k.getKey().getLabel(), v -> v.getValue()));
-			return podLabels;
-		}
+    },
+    SECRET("Secret", "v1") {
+        @Override
+        public String getName(AppMetaData appMetaData) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(NormalizationUtil.normalize(appMetaData.getAppName()));
+            sb.append(ManifestGenConstants.NAME_DELIMITER);
+            sb.append(NormalizationUtil.normalize(appMetaData.getServiceName()));
+            return sb.toString();
+        }
 
-		@Override
-		public Predicate<ServiceSpec> getPredicate() {
-			return ManifestPredicates.getSecretsPredicate();
-		}
+        @Override
+        public Map<String, String> getLabels(AppMetaData appMetaData) {
+            return DefaultLabelBuilder.build(appMetaData);
+        }
 
-	},
-	SERVICE("Service", "v1") {
-		@Override
-		public String getName(MetaDataContext metaDataContext) {
-			return NormalizationUtil.normalize(metaDataContext.getServiceName());
-		}
+        @Override
+        public Predicate<ServiceSpec> getPredicate() {
+            return ManifestPredicates.getSecretsPredicate();
+        }
 
-		@Override
-		public Map<String, String> getLabels(MetaDataContext metaDataContext) {
-			Map<ResourceLabelKey, String> podLabelKeyMap = ResourceLabelBuilder.build(metaDataContext.getAppName(),
-					metaDataContext.getEnvName(), metaDataContext.getServiceName());
-			Map<String, String> podLabels = podLabelKeyMap.entrySet().stream().filter(each -> {
-				return each != null;
-			}).collect(Collectors.toMap(k -> k.getKey().getLabel(), v -> v.getValue()));
-			return podLabels;
-		}
+    },
+    SERVICE("Service", "v1") {
+        @Override
+        public String getName(AppMetaData appMetaData) {
+            return NormalizationUtil.normalize(appMetaData.getServiceName());
+        }
 
-		@Override
-		public Predicate<ServiceSpec> getPredicate() {
-			return ManifestPredicates.getPortsPredicate();
-		}
+        @Override
+        public Map<String, String> getLabels(AppMetaData appMetaData) {
+            return DefaultLabelBuilder.build(appMetaData);
+        }
 
-	};
+        @Override
+        public Predicate<ServiceSpec> getPredicate() {
+            return ManifestPredicates.getPortsPredicate();
+        }
 
-	private String kind;
-	private String apiVersion;
+    };
 
-	ManifestResource(String kind, String apiVersion) {
-		this.kind = kind;
-		this.apiVersion = apiVersion;
-	}
+    private String kind;
+    private String apiVersion;
 
-	public String getKind() {
-		return this.kind;
-	}
+    ManifestResource(String kind, String apiVersion) {
+        this.kind = kind;
+        this.apiVersion = apiVersion;
+    }
 
-	public String getApiVersion() {
-		return apiVersion;
-	}
+    public String getKind() {
+        return this.kind;
+    }
 
-	public static ManifestResource fromString(String kind) {
-		if (StringUtils.isBlank(kind)) {
-			return null;
-		}
-		for (ManifestResource resourceKind : ManifestResource.values()) {
-			if (resourceKind.getKind().equalsIgnoreCase(kind)) {
-				return resourceKind;
-			}
-		}
-		return null;
-	}
+    public String getApiVersion() {
+        return apiVersion;
+    }
 
-	public abstract String getName(MetaDataContext metaDataContext);
+    public static ManifestResource fromString(String kind) {
+        if (StringUtils.isBlank(kind)) {
+            return null;
+        }
+        for (ManifestResource resourceKind : ManifestResource.values()) {
+            if (resourceKind.getKind().equalsIgnoreCase(kind)) {
+                return resourceKind;
+            }
+        }
+        return null;
+    }
 
-	public abstract Map<String, String> getLabels(MetaDataContext metaDataContext);
+    public abstract String getName(AppMetaData appMetaData);
 
-	public abstract Predicate<ServiceSpec> getPredicate();
+    public abstract Map<String, String> getLabels(AppMetaData appMetaData);
+
+    public abstract Predicate<ServiceSpec> getPredicate();
 
 }

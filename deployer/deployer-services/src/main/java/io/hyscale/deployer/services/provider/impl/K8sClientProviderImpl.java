@@ -21,7 +21,7 @@ import java.io.IOException;
 
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
-import io.hyscale.deployer.service.model.K8sKubeConfigAuth;
+import io.hyscale.deployer.services.model.K8sKubeConfigAuth;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
