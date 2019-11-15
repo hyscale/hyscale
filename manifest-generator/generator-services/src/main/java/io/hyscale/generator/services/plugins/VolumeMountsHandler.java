@@ -21,7 +21,7 @@ import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.MetaDataContext;
+import io.hyscale.generator.services.model.AppMetaData;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.generator.services.generator.K8sResourceNameGenerator;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
@@ -46,22 +46,22 @@ public class VolumeMountsHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
-        MetaDataContext metaDataContext = new MetaDataContext();
-        metaDataContext.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
-        metaDataContext.setEnvName(manifestContext.getEnvName());
-        metaDataContext.setAppName(manifestContext.getAppName());
+        AppMetaData appMetaData = new AppMetaData();
+        appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
+        appMetaData.setEnvName(manifestContext.getEnvName());
+        appMetaData.setAppName(manifestContext.getAppName());
 
         List<ManifestSnippet> snippetList = new ArrayList<>();
         // Build Volume Mounts from dataDir
         try {
-            snippetList.add(buildVolumeMountSnippet(serviceSpec, metaDataContext));
+            snippetList.add(buildVolumeMountSnippet(serviceSpec, appMetaData));
         } catch (JsonProcessingException e) {
             logger.error("Error while generating volume mounts manifest for service {}", e);
         }
         return snippetList;
     }
 
-    private List<V1VolumeMount> getVolumeMounts(ServiceSpec serviceSpec, MetaDataContext metaDataContext)
+    private List<V1VolumeMount> getVolumeMounts(ServiceSpec serviceSpec, AppMetaData appMetaData)
             throws HyscaleException {
         TypeReference<List<Volume>> volumesList = new TypeReference<List<Volume>>() {
         };
@@ -85,7 +85,7 @@ public class VolumeMountsHandler implements ManifestHandler {
                 && ManifestResource.CONFIG_MAP.getPredicate().test(serviceSpec)) {
             logger.debug("Preparing volume mount for service spec props.");
             V1VolumeMount volumeMount = new V1VolumeMount();
-            String configMapName = ManifestResource.CONFIG_MAP.getName(metaDataContext);
+            String configMapName = ManifestResource.CONFIG_MAP.getName(appMetaData);
             volumeMount.setName(K8sResourceNameGenerator.getResourceVolumeName(configMapName,
                     ManifestResource.CONFIG_MAP.getKind()));
             volumeMount.setMountPath(propsVolumePath);
@@ -99,7 +99,7 @@ public class VolumeMountsHandler implements ManifestHandler {
                 && ManifestResource.SECRET.getPredicate().test(serviceSpec)) {
             logger.debug("Preparing volume mount for service spec secrets.");
             V1VolumeMount volumeMount = new V1VolumeMount();
-            String secretName = ManifestResource.SECRET.getName(metaDataContext);
+            String secretName = ManifestResource.SECRET.getName(appMetaData);
             volumeMount.setName(
                     K8sResourceNameGenerator.getResourceVolumeName(secretName, ManifestResource.SECRET.getKind()));
             volumeMount.setMountPath(secretsVolumePath);
@@ -109,11 +109,11 @@ public class VolumeMountsHandler implements ManifestHandler {
         return v1VolumeMounts.isEmpty() ? null : v1VolumeMounts;
     }
 
-    private ManifestSnippet buildVolumeMountSnippet(ServiceSpec serviceSpec, MetaDataContext metaDataContext) throws JsonProcessingException, HyscaleException {
+    private ManifestSnippet buildVolumeMountSnippet(ServiceSpec serviceSpec, AppMetaData appMetaData) throws JsonProcessingException, HyscaleException {
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ?
                 ManifestResource.STATEFUL_SET.getKind() : ManifestResource.DEPLOYMENT.getKind();
         ManifestSnippet volumeMountSnippet = new ManifestSnippet();
-        volumeMountSnippet.setSnippet(JsonSnippetConvertor.serialize(getVolumeMounts(serviceSpec, metaDataContext)));
+        volumeMountSnippet.setSnippet(JsonSnippetConvertor.serialize(getVolumeMounts(serviceSpec, appMetaData)));
         volumeMountSnippet.setKind(podSpecOwner);
         volumeMountSnippet.setPath("spec.template.spec.containers[0].volumeMounts");
         return volumeMountSnippet;

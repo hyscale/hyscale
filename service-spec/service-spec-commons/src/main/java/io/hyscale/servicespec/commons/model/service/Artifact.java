@@ -15,6 +15,8 @@
  */
 package io.hyscale.servicespec.commons.model.service;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -46,6 +48,24 @@ public class Artifact {
 
 	public void setSource(String source) {
 		this.source = source;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(destination, name, source);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Artifact other = (Artifact) obj;
+		return Objects.equals(destination, other.destination) && Objects.equals(name, other.name)
+				&& Objects.equals(source, other.source);
 	}
 
 }

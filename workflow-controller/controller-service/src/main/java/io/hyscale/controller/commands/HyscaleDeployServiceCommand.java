@@ -97,6 +97,9 @@ public class HyscaleDeployServiceCommand implements Runnable {
 
     @Autowired
     private DeployComponentInvoker deployComponentInvoker;
+    
+    @Autowired
+    private ServiceSpecMapper serviceSpecMapper;
 
     @Override
     public void run() {
@@ -107,7 +110,7 @@ public class HyscaleDeployServiceCommand implements Runnable {
             String serviceName = null;
             try {
                 File serviceSpecFile = new File(serviceSpecs[i]);
-                ServiceSpec serviceSpec = ServiceSpecMapper.from(serviceSpecFile);
+                ServiceSpec serviceSpec = serviceSpecMapper.from(serviceSpecFile);
                 workflowContext.setServiceSpec(serviceSpec);
                 serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
                 workflowContext.setServiceName(serviceName);

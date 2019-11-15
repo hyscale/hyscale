@@ -13,24 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.deployer.service.model;
+package io.hyscale.generator.services.model;
 
+public class AppMetaData {
 
-import io.hyscale.commons.models.K8sAuthType;
-import io.hyscale.commons.models.K8sAuthorisation;
-import io.kubernetes.client.util.KubeConfig;
+	private String serviceName;
+	private String appName;
+	private String envName;
 
-public class K8sKubeConfigAuth implements K8sAuthorisation {
+	public String getServiceName() {
+		return serviceName;
+	}
 
-    private KubeConfig kubeConfig;
+	public void setServiceName(String serviceName) {
+		this.serviceName = serviceName;
+	}
 
-    public KubeConfig getKubeConfig() { return kubeConfig; }
+	public String getAppName() {
+		return appName;
+	}
 
-    public void setKubeConfig(KubeConfig kubeConfig) { this.kubeConfig = kubeConfig; }
+	public void setAppName(String appName) {
+		this.appName = appName;
+	}
 
-    @Override
-    public K8sAuthType getK8sAuthType() {
-        return K8sAuthType.KUBE_CONFIG_OBJECT;
-    }
+	public String getEnvName() {
+		return envName;
+	}
 
+	public void setEnvName(String envName) {
+		this.envName = envName;
+	}
 }

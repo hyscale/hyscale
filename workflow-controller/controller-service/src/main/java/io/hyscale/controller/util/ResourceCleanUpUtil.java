@@ -15,17 +15,18 @@
  */
 package io.hyscale.controller.util;
 
-/**
- * <p>
- * This class runs just before termination of program when
- * registered with Java Runtime.
- * Responsible for cleaning stale resources,
- * stop any running executors etc
- * </p>
- */
-public class ShutdownHook extends Thread {
+import io.hyscale.commons.utils.ThreadPoolUtil;
 
-    @Override
-    public void run() {
-    }
+/**
+ * Executed after completion of command
+ * Helps to clean local resources no longer in use 
+ * like threads
+ *
+ */
+public class ResourceCleanUpUtil {
+	
+	public static void performCleanUp() {
+		ThreadPoolUtil.getInstance().shutdown();
+	}
+
 }

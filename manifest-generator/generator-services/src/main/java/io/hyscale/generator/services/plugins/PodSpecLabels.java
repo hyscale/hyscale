@@ -16,11 +16,12 @@
 package io.hyscale.generator.services.plugins;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.hyscale.generator.services.builder.DefaultLabelBuilder;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.MetaDataContext;
+import io.hyscale.generator.services.model.AppMetaData;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
@@ -43,10 +44,10 @@ public class PodSpecLabels implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
-        MetaDataContext metaDataContext = new MetaDataContext();
-        metaDataContext.setAppName(manifestContext.getAppName());
-        metaDataContext.setEnvName(manifestContext.getEnvName());
-        metaDataContext.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
+        AppMetaData appMetaData = new AppMetaData();
+        appMetaData.setAppName(manifestContext.getAppName());
+        appMetaData.setEnvName(manifestContext.getEnvName());
+        appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
         List<ManifestSnippet> snippetList = new ArrayList<>();
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ?
                 ManifestResource.STATEFUL_SET.getKind() : ManifestResource.DEPLOYMENT.getKind();
@@ -54,23 +55,18 @@ public class PodSpecLabels implements ManifestHandler {
             ManifestSnippet metaDataSnippet = new ManifestSnippet();
             metaDataSnippet.setPath("spec.template.metadata");
             metaDataSnippet.setKind(podSpecOwner);
-            metaDataSnippet.setSnippet(JsonSnippetConvertor.serialize(getTemplateMetaData(metaDataContext, podSpecOwner)));
+            metaDataSnippet.setSnippet(JsonSnippetConvertor.serialize(getTemplateMetaData(appMetaData, podSpecOwner)));
             snippetList.add(metaDataSnippet);
 
         } catch (JsonProcessingException e) {
             logger.error("Error while serializing Pod spec labels snippet ", e);
         }
-        return snippetList;
-    }
+        return snippetList;    }
 
-    private V1ObjectMeta getTemplateMetaData(MetaDataContext metaDataContext, String podSpecOwner) {
+    private V1ObjectMeta getTemplateMetaData(AppMetaData appMetaData, String podSpecOwner) {
         V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
-        ManifestResource manifestResource = ManifestResource.fromString(podSpecOwner);
-        if (manifestResource == null) {
-            return null;
-        }
+        v1ObjectMeta.setLabels(DefaultLabelBuilder.build(appMetaData));
         //TODO Add release-version ??
-        v1ObjectMeta.setLabels(manifestResource.getLabels(metaDataContext));
         return v1ObjectMeta;
     }
 }

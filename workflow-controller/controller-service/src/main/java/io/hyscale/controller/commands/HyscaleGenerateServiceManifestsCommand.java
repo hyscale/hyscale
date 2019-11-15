@@ -70,6 +70,9 @@ public class HyscaleGenerateServiceManifestsCommand implements Runnable {
 
     @Autowired
     private ManifestGeneratorComponentInvoker manifestGeneratorComponentInvoker;
+    
+    @Autowired
+    private ServiceSpecMapper serviceSpecMapper;
 
     @Override
     public void run() {
@@ -80,7 +83,7 @@ public class HyscaleGenerateServiceManifestsCommand implements Runnable {
             String serviceName = null;
             try {
                 File serviceSpecFile = new File(serviceSpecs[i]);
-                ServiceSpec serviceSpec = ServiceSpecMapper.from(serviceSpecFile);
+                ServiceSpec serviceSpec = serviceSpecMapper.from(serviceSpecFile);
                 serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
                 workflowContext.setServiceSpec(serviceSpec);
                 workflowContext.setServiceName(serviceName);

@@ -22,7 +22,7 @@ import io.hyscale.commons.models.ConfigTemplate;
 @Component
 public class DockerfileTemplateProvider {
 
-	protected static final String TEMPLATES_PATH = "templates/";
+	protected static final String TEMPLATES_PATH = "templates";
 	private static final String IMAGE_TPL = "image.tpl";
 
 	public ConfigTemplate getDockerfileTemplate() {

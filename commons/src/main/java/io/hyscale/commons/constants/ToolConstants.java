@@ -34,6 +34,8 @@ public class ToolConstants {
     public static final String QUOTES = "\"";
 
     public static final String SPACE = " ";
+    
+    public static final String LINUX_FILE_SEPARATOR = "/";
 
     public static final String HYSCALE = "Hyscale";
 

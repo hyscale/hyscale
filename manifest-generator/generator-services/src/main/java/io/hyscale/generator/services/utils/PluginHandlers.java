@@ -15,19 +15,24 @@
  */
 package io.hyscale.generator.services.utils;
 
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.generator.services.exception.ManifestErrorCodes;
-import io.hyscale.plugin.framework.handler.ManifestHandler;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.stream.Collectors;
+import io.hyscale.commons.constants.ToolConstants;
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.generator.services.exception.ManifestErrorCodes;
+import io.hyscale.plugin.framework.handler.ManifestHandler;
 
 @Component
 public class PluginHandlers {
@@ -38,13 +43,15 @@ public class PluginHandlers {
 	private List<ManifestHandler> manifestHandlerBeans;
 
 	private List<ManifestHandler> manifestHandlers;
+	
+	private static final String PLUGINS_LIST = "config/plugins.txt";
 
 	public void registerHandlers() throws HyscaleException {
 		if (manifestHandlerBeans != null) {
 			manifestHandlers = new ArrayList<>();
-			InputStream is = PluginHandlers.class.getClassLoader().getResourceAsStream("config/plugins.txt");
+			InputStream is = PluginHandlers.class.getClassLoader().getResourceAsStream(PLUGINS_LIST);
 			try {
-				List<String> pluginsList = IOUtils.readLines(is);
+				List<String> pluginsList = IOUtils.readLines(is, ToolConstants.CHARACTER_ENCODING);
 
 				Map<String, ManifestHandler> classVsHandlerMap = manifestHandlerBeans.stream()
 						.collect(Collectors.toMap(key -> key.getClass().getName(), value -> value));
