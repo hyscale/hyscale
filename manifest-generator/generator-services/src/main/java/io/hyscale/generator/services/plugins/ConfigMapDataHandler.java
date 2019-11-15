@@ -22,7 +22,6 @@ import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
-import io.hyscale.commons.utils.HyscaleFilesUtil;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.model.MetaDataContext;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
@@ -39,7 +38,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.FileInputStream;
@@ -52,9 +50,6 @@ import java.util.*;
 public class ConfigMapDataHandler implements ManifestHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigMapDataHandler.class);
-
-    @Autowired
-    private HyscaleFilesUtil filesUtil;
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {

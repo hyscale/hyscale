@@ -35,16 +35,13 @@ public class ManifestCleanUpHook implements InvokerHook<WorkflowContext> {
 	private static final Logger logger = LoggerFactory.getLogger(ManifestCleanUpHook.class);
 
 	@Autowired
-	private HyscaleFilesUtil filesUtil;
-
-	@Autowired
 	private ManifestConfig manifestConfig;
 
 	@Override
 	public void preHook(WorkflowContext context) throws HyscaleException {
 		String manifestDir = manifestConfig.getManifestDir(context.getAppName(), context.getServiceName());
 		logger.debug("Cleaning up manifests directory {}", manifestDir);
-		filesUtil.clearDirectory(manifestDir);
+		HyscaleFilesUtil.clearDirectory(manifestDir);
 	}
 
 	@Override

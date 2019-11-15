@@ -42,9 +42,6 @@ public class LocalPersistenceService extends DockerfilePersistenceService {
 	@Autowired
 	private DockerfileGenConfig dockerfileGenConfig;
 
-	@Autowired
-	private HyscaleFilesUtil filesUtil;
-
 	@Override
 	protected boolean copySupportingFiles(List<SupportingFile> supportingFiles, DockerfileGenContext context) {
 		if (supportingFiles == null || supportingFiles.isEmpty()) {
@@ -64,7 +61,7 @@ public class LocalPersistenceService extends DockerfilePersistenceService {
 					return false;
 				}
 				try {
-					filesUtil.createFile(dir + fileSpec.getName(), fileSpec.getContent());
+					HyscaleFilesUtil.createFile(dir + fileSpec.getName(), fileSpec.getContent());
 				} catch (HyscaleException e) {
 					logger.error("Failed to create support file {} in directory {}", fileSpec.getName(), dir);
 					return false;
@@ -73,7 +70,7 @@ public class LocalPersistenceService extends DockerfilePersistenceService {
 			}
 			// Copy file to dir
 			try {
-				filesUtil.copyFileToDir(file, new File(dir));
+				HyscaleFilesUtil.copyFileToDir(file, new File(dir));
 			} catch (HyscaleException e) {
 				logger.error("Failed to copy support file {} to directory {}, error {}", file.getName(), dir,
 						e.toString());
@@ -97,7 +94,7 @@ public class LocalPersistenceService extends DockerfilePersistenceService {
 		String filename = dockerfileGenConfig.getDockerFileDir(appName, serviceName);
 
 		try {
-			filesUtil.createFile(filename, dockerfileContent.getContent());
+			HyscaleFilesUtil.createFile(filename, dockerfileContent.getContent());
 		} catch (HyscaleException e) {
 			logger.error("Failed to persist dockerfile, error {}", e.toString());
 			WorkflowLogger.endActivity(Status.FAILED);

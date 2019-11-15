@@ -34,9 +34,6 @@ public class DockerImageUtil {
     private static final Logger logger = LoggerFactory.getLogger(DockerImageUtil.class);
 
     @Autowired
-    private CommandExecutor commandExecutor;
-
-    @Autowired
     private ImageCommandGenerator commandGenerator;
 
     /**
@@ -45,13 +42,13 @@ public class DockerImageUtil {
     public void isDockerRunning() throws HyscaleException {
         String command = commandGenerator.getDockerInstalledCommand();
         logger.debug("Docker Installed check command: {}", command);
-        boolean success = commandExecutor.execute(command);
+        boolean success = CommandExecutor.execute(command);
         if (!success) {
             throw new HyscaleException(ImageBuilderErrorCodes.DOCKER_NOT_INSTALLED);
         }
         command = commandGenerator.getDockerDaemonRunningCommand();
         logger.debug("Docker Daemon running check command: {}", command);
-        success = commandExecutor.execute(command);
+        success = CommandExecutor.execute(command);
         if (!success) {
             WorkflowLogger.error(ImageBuilderActivity.DOCKER_DAEMON_NOT_RUNNING);
             throw new HyscaleException(ImageBuilderErrorCodes.DOCKER_DAEMON_NOT_RUNNING);
@@ -63,7 +60,7 @@ public class DockerImageUtil {
         String tagImageCommand = commandGenerator.getImageTagCommand(sourceImageFullPath, targetImageFullPath);
 
         logger.debug("Docker tag command: {}", tagImageCommand);
-        boolean success = commandExecutor.execute(tagImageCommand);
+        boolean success = CommandExecutor.execute(tagImageCommand);
         if (!success) {
             throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_TAG_IMAGE);
         }
@@ -73,7 +70,7 @@ public class DockerImageUtil {
         String pullImageCommand = commandGenerator.getImagePullCommand(imageName);
 
         logger.debug("Docker pull command: {}", pullImageCommand);
-        boolean success = commandExecutor.execute(pullImageCommand);
+        boolean success = CommandExecutor.execute(pullImageCommand);
         if (!success) {
             throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_PULL_IMAGE, imageName);
         }
@@ -81,7 +78,7 @@ public class DockerImageUtil {
 
     public void loginToRegistry(ImageRegistry imageRegistry) throws HyscaleException {
         String loginCommand = commandGenerator.getLoginCommand(imageRegistry);
-        boolean success = commandExecutor.execute(loginCommand);
+        boolean success = CommandExecutor.execute(loginCommand);
         if (!success) {
             throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_LOGIN);
         }
