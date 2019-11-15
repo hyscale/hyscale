@@ -23,7 +23,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.exception.CommonErrorCode;
@@ -32,7 +31,6 @@ import io.hyscale.commons.exception.HyscaleException;
 /**
  * Utility class to handle file operation
  */
-@Component
 public class HyscaleFilesUtil {
 
 	private static final Logger logger = LoggerFactory.getLogger(HyscaleFilesUtil.class);
@@ -46,7 +44,7 @@ public class HyscaleFilesUtil {
 	 * @param fileData
 	 * @throws HyscaleException
 	 */
-	public File createFile(String filename, String fileData) throws HyscaleException {
+	public static File createFile(String filename, String fileData) throws HyscaleException {
 		if (StringUtils.isBlank(filename)) {
 			throw new HyscaleException(CommonErrorCode.FAILED_TO_WRITE_FILE_DATA);
 		}
@@ -69,10 +67,10 @@ public class HyscaleFilesUtil {
 	 * Create empty file with name
 	 * 
 	 * @param filename
-	 * @return
+	 * @return created file
 	 * @throws HyscaleException if failed to create file
 	 */
-	public File createEmptyFile(String filename) throws HyscaleException {
+	public static File createEmptyFile(String filename) throws HyscaleException {
 		File file = new File(filename);
 		return createEmptyFile(file);
 	}
@@ -83,7 +81,7 @@ public class HyscaleFilesUtil {
 	 * @return file
 	 * @throws HyscaleException
 	 */
-	public File createEmptyFile(File file) throws HyscaleException {
+	public static File createEmptyFile(File file) throws HyscaleException {
 		if (file == null) {
 			return null;
 		}
@@ -107,7 +105,7 @@ public class HyscaleFilesUtil {
 	 * @param fileData
 	 * @throws HyscaleException
 	 */
-	public File updateFile(String filename, String fileData) throws HyscaleException {
+	public static File updateFile(String filename, String fileData) throws HyscaleException {
 		if (StringUtils.isBlank(filename) || StringUtils.isBlank(fileData)) {
 			throw new HyscaleException(CommonErrorCode.FAILED_TO_WRITE_FILE_DATA);
 		}
@@ -130,7 +128,7 @@ public class HyscaleFilesUtil {
 	 * @param dest
 	 * @throws HyscaleException
 	 */
-	public void copyFileToDir(File sourceFile, File dest) throws HyscaleException {
+	public static void copyFileToDir(File sourceFile, File dest) throws HyscaleException {
 		if (sourceFile == null || !sourceFile.exists()) {
 			String[] args = new String[] { sourceFile != null ? sourceFile.getName() : NULL_STRING };
 			throw new HyscaleException(CommonErrorCode.FILE_NOT_FOUND, args);
@@ -151,7 +149,7 @@ public class HyscaleFilesUtil {
 	/**
 	 * Copy file to destination file Create parent directory if does not exist
 	 */
-	public void copyFile(File sourceFile, File destFile) throws HyscaleException {
+	public static void copyFile(File sourceFile, File destFile) throws HyscaleException {
 		if (sourceFile == null || !sourceFile.exists()) {
 			String[] args = new String[] { sourceFile != null ? sourceFile.getName() : NULL_STRING };
 			throw new HyscaleException(CommonErrorCode.FILE_NOT_FOUND, args);
@@ -176,7 +174,7 @@ public class HyscaleFilesUtil {
 	 * @return
 	 */
 
-	public String getFileName(String filePath) throws HyscaleException {
+	public static String getFileName(String filePath) throws HyscaleException {
 		if (StringUtils.isBlank(filePath)) {
 			throw new HyscaleException(CommonErrorCode.EMPTY_FILE_PATH);
 		}
@@ -199,7 +197,7 @@ public class HyscaleFilesUtil {
 	 * @param dir
 	 * @throws HyscaleException
 	 */
-	public void clearDirectory(String dir) throws HyscaleException {
+	public static void clearDirectory(String dir) throws HyscaleException {
 		File directory = new File(dir);
 		if (directory.isDirectory()) {
 			// true only if file path is directory and exists
@@ -212,7 +210,7 @@ public class HyscaleFilesUtil {
 		}
 	}
 
-	public void deleteDirectory(String dir) throws HyscaleException {
+	public static void deleteDirectory(String dir) throws HyscaleException {
 		File directory = new File(dir);
 		if (directory.isDirectory()) {
 			// true only if file path is directory and exists

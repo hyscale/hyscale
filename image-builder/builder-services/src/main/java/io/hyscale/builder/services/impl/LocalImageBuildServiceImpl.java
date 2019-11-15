@@ -50,9 +50,6 @@ public class LocalImageBuildServiceImpl implements ImageBuildService {
     private static final Logger logger = LoggerFactory.getLogger(LocalImageBuildServiceImpl.class);
 
     @Autowired
-    private CommandExecutor commandExecutor;
-
-    @Autowired
     private ImageCommandGenerator imageCommandGenerator;
 
     @Autowired
@@ -101,7 +98,7 @@ public class LocalImageBuildServiceImpl implements ImageBuildService {
         context.setBuildLogs(logFilePath);
 
         // TODO keep continuation activity for user
-        boolean status = commandExecutor.executeInDir(dockerBuildCommand, logFile,
+        boolean status = CommandExecutor.executeInDir(dockerBuildCommand, logFile,
                 userDockerfile != null ? SetupConfig.getAbsolutePath(userDockerfile.getPath()) : null);
         if (!status) {
             WorkflowLogger.endActivity(Status.FAILED);

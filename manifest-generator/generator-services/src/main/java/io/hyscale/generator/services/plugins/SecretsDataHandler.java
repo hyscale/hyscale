@@ -33,7 +33,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -46,9 +45,6 @@ import java.util.stream.Collectors;
 public class SecretsDataHandler implements ManifestHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(SecretsDataHandler.class);
-
-    @Autowired
-    private HyscaleFilesUtil filesUtil;
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
@@ -86,7 +82,7 @@ public class SecretsDataHandler implements ManifestHandler {
                 stringBuilder.append(each.getKey()).append("=").append(each.getValue()).append("\n");
             });
             try {
-                modifiedMap.put(filesUtil.getFileName(secretsVolumePath), 
+                modifiedMap.put(HyscaleFilesUtil.getFileName(secretsVolumePath), 
                 		Base64.encodeBase64String(stringBuilder.toString().getBytes()));
             } catch (HyscaleException e) {
                 logger.error("Error while processing secrets volumes path {}.", secretsVolumePath);

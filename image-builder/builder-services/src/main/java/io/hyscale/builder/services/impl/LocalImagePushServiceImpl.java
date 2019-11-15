@@ -58,9 +58,6 @@ public class LocalImagePushServiceImpl implements ImagePushService {
     private DockerImageUtil dockerImageUtil;
 
     @Autowired
-    private CommandExecutor commandExecutor;
-
-    @Autowired
     private ImageCommandGenerator commandGenerator;
 
     @Autowired
@@ -111,13 +108,13 @@ public class LocalImagePushServiceImpl implements ImagePushService {
         File logFile = new File(logFilePath);
         buildContext.setPushLogs(logFilePath);
         // TODO keep continuation activity for user , launch a new thread & waitFor
-        boolean status = commandExecutor.execute(pushImageCommand, logFile);
+        boolean status = CommandExecutor.execute(pushImageCommand, logFile);
         if (!status) {
             WorkflowLogger.endActivity(Status.FAILED);
             logger.error("Failed to push docker image");
         } else {
             String inspectCommand = commandGenerator.getImageInspectCommand(ImageUtil.getImage(serviceSpec));
-            CommandResult result = commandExecutor.executeAndGetResults(inspectCommand);
+            CommandResult result = CommandExecutor.executeAndGetResults(inspectCommand);
             buildContext.setImageShaSum(getShaSum(result));
             WorkflowLogger.endActivity(Status.DONE);
         }

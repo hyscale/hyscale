@@ -40,9 +40,6 @@ public class ImageCleanUpHook implements InvokerHook<WorkflowContext> {
 	private static final Logger logger = LoggerFactory.getLogger(ImageCleanUpHook.class);
 
 	@Autowired
-	private CommandExecutor commandExecutor;
-
-	@Autowired
 	private ImageCommandGenerator imageCommandGenerator;
 
 	@Override
@@ -64,7 +61,7 @@ public class ImageCleanUpHook implements InvokerHook<WorkflowContext> {
 				String.class);
 		String cleanUpCommand = imageCommandGenerator.getImageCleanUpCommand(context.getAppName(), serviceName, tag);
 		logger.debug("Starting image cleanup, command {}", cleanUpCommand);
-		boolean success = commandExecutor.execute(cleanUpCommand);
+		boolean success = CommandExecutor.execute(cleanUpCommand);
 
 		logger.debug("Image clean up {}", success ? Status.DONE.getMessage() : Status.FAILED.getMessage());
 

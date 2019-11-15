@@ -38,15 +38,12 @@ public class ServiceDirCleanUpHook implements InvokerHook<WorkflowContext> {
 	@Autowired
 	private SetupConfig setupConfig;
 
-	@Autowired
-	private HyscaleFilesUtil filesUtil;
-
 	@Override
 	public void preHook(WorkflowContext context) throws HyscaleException {
 		if (context.getServiceName() != null && context.getAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR) != null
 				&& context.getAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR).equals(true)) {
 			String serviceDir = setupConfig.getServiceDir(context.getAppName(), context.getServiceName());
-			filesUtil.deleteDirectory(serviceDir);
+			HyscaleFilesUtil.deleteDirectory(serviceDir);
 			logger.debug("Cleaning up service dir in the apps");
 		}
 	}
