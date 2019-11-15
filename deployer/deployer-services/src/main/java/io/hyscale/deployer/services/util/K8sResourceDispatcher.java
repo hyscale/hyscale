@@ -30,6 +30,7 @@ import io.hyscale.deployer.services.manager.AnnotationsUpdateManager;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.model.ResourceUpdatePolicy;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,7 +106,7 @@ public class K8sResourceDispatcher {
             try {
                 KubernetesResource k8sResource = KubernetesResourceUtil.getKubernetesResource(manifest, namespace);
                 AnnotationsUpdateManager.update(k8sResource, AnnotationKey.LAST_UPDATED_AT.LAST_UPDATED_AT,
-                        TimeStampProvider.get().replace(" ", "T").concat("Z"));
+                        DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
                 ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(k8sResource.getKind());
                 if (lifeCycleHandler != null && k8sResource != null && k8sResource.getResource() != null && k8sResource.getV1ObjectMeta() != null) {
                     try {
