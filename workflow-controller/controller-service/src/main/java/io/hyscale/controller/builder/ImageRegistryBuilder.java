@@ -43,7 +43,7 @@ public class ImageRegistryBuilder {
         if (dockerCredHelper == null) {
             return null;
         }
-        return from(dockerCredHelper.getCredentials(registry));
+        return from(dockerCredHelper.get(registry));
     }
 
     private ImageRegistry from(CredsStoreEntity credsStoreEntity) {
@@ -55,7 +55,15 @@ public class ImageRegistryBuilder {
 
     /**
      * returns ImageRegistry from Auths of local docker config if found else returns null.
-     *
+     * <p> Example of Auths:
+     * "auths": {
+     * 		"registry": {
+     * 			"auth": "Base64Encoded(username:password)"
+     *                },
+     * 		"another reistry"....
+     *        }
+     * if auth exists with matching registry returns credentials by base64 decoding auth and spliting them by colon
+     * and creates ImageRegistry object.
      * @param auths
      * @return ImageRegistry
      */

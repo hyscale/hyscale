@@ -17,7 +17,9 @@ package io.hyscale.commons.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -111,6 +113,22 @@ public class CommandExecutor {
 		return commandResult == null || commandResult.getExitCode() != 0 ? false : true;
 	}
 
+	//CommandResult
+	public static String executeAndGetResults(String command,String stdInput){
+		StringWriter output = new StringWriter();
+		try {
+			Process process = executeProcess(command, null, null);
+			try(OutputStream processStdin = process.getOutputStream()){
+				processStdin.write(stdInput.getBytes(StandardCharsets.UTF_8));
+			}
+			copyOutput(process,output);
+		}catch (IOException e){
+			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_EXECUTE_COMMAND, command);
+			logger.error("Failed while executing command, error {}", ex.toString());
+		}
+		return output != null? output.toString():null;
+	}
+
 	/**
 	 * Executes command in the directory specified, uses current directory if not
 	 * specified If file provided directs output to file (creates if does not exist)
@@ -178,4 +196,22 @@ public class CommandExecutor {
 		});
 	}
 
+    private static Process executeProcess(String command, File file, String dir) throws IOException {
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        if (StringUtils.isBlank(dir) || dir.equals(".")) {
+            dir = SetupConfig.CURRENT_WORKING_DIR;
+        }
+        logger.debug("Executing command in dir {}", dir);
+        processBuilder.directory(new File(dir));
+        processBuilder.command(command.split(" "));
+        processBuilder.redirectErrorStream(true);
+        if (file != null) {
+            if (!file.exists()) {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            }
+            processBuilder.redirectOutput(file);
+        }
+        return processBuilder.start();
+    }
 }

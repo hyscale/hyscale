@@ -31,10 +31,8 @@ import java.io.IOException;
  */
 public class DockerCredHelper {
 
-    private static final Logger logger = LoggerFactory.getLogger(CommandExecutor.class);
-    private static final String ECHO = "echo";
+    private static final Logger logger = LoggerFactory.getLogger(DockerCredHelper.class);
     private static final String DOCKER_CREDENTIAL = "docker-credential-";
-    private static final String PIPE = " | ";
     private static final String GET = "get";
 
     private String helperFunction;
@@ -48,26 +46,22 @@ public class DockerCredHelper {
     }
 
     /**
-     * Fetches the credentials from credstore given registryUrl
+     * Fetches the credentials from credstore given registryUrl,Helper name.
      *
+     * Takes image registry creates command "docker-credential-<helper> get"  executes with registry url as input and
+     * fetches credenials from  the credsStore entity pattern if found.
      * @param registryUrl the registry server url
      * @return CredsStoreEntity object containing username and password if found ,else returns null.
      */
-    public CredsStoreEntity getCredentials(String registryUrl) {
+    public CredsStoreEntity get(String registryUrl) {
         String s = null;
-        CommandResult result = null;
+        String result = null;
         StringBuilder stringBuilder = new StringBuilder();
+        String command = stringBuilder.append(DOCKER_CREDENTIAL).append(getHelperFunction()).append(ToolConstants.SPACE).append(GET).toString();
         try {
-
-            String command = stringBuilder.append(ECHO).append(ToolConstants.SPACE).append('"').append(registryUrl).append('"').append(ToolConstants.SPACE).append(PIPE).append(DOCKER_CREDENTIAL).append(getHelperFunction()).append(ToolConstants.SPACE).append(GET).toString();
-            CommandExecutor commandExecutor = new CommandExecutor();
-            //TODO change command executor
-            result = commandExecutor.executeAndGetResults(command);
-            if (result == null || result.getExitCode() != 0 || StringUtils.isBlank(result.getCommandOutput())) {
-                return null;
-            }
+            result=CommandExecutor.executeAndGetResults(command,registryUrl);
             ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
-            CredsStoreEntity credsStore = mapper.readValue(result.getCommandOutput(), CredsStoreEntity.class);
+            CredsStoreEntity credsStore = mapper.readValue(result, CredsStoreEntity.class);
             if (!credsStore.getServerURL().isEmpty() && !credsStore.getUsername().isEmpty() && !credsStore.getSecret().isEmpty()) {
                 return credsStore;
             }

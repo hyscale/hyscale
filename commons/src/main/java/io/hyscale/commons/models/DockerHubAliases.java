@@ -33,8 +33,8 @@ public class DockerHubAliases {
     public static List<String> getDockerRegistryAliases(String registry) {
         if (DOCKER_REGISTRY_ALIASES.contains(registry)) {
             return REGISTRY_HOST_LIST;
-        } else
-            return List.of(registry);
+        }
+        return List.of(registry);
     }
 
 }

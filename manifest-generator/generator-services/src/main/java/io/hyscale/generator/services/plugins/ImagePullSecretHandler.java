@@ -30,6 +30,7 @@ import io.hyscale.generator.services.model.ResourceName;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.generator.services.generator.MetadatManifestSnippetGenerator;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -63,7 +64,7 @@ public class ImagePullSecretHandler implements ManifestHandler {
         if (imageRegistry == null) {
             logger.debug("ImageRegistry is found to be null, skipping image pull secret creation ");
             String registry = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.registry), String.class);
-            if (registry != null) {
+            if (StringUtils.isBlank(registry)) {
                 WorkflowLogger.persist(ManifestGeneratorActivity.FAILED_TO_CREATE_IMAGE_PULL_SECRET, registry, registry);
             }
             return null;

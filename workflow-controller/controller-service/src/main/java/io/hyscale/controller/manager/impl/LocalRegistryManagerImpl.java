@@ -104,7 +104,8 @@ public class LocalRegistryManagerImpl implements RegistryManager {
     }
 
     /**
-     *Returns credential helper if resgistry pattern found  in credHelpers if specified  or directly credsStore if specified else returns null.
+     *Returns credential helper if resgistry pattern found  in credHelpers if specified
+     *  or directly credsStore if specified else returns null.
      *
      * @param pattern
      * @return docker credential helper

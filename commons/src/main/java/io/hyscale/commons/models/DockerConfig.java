@@ -62,12 +62,10 @@ public class DockerConfig {
         this.credsStore = credsStore;
     }
 
-     /** maps a registry to its credential helper name. */
     public void setCredHelpers(Map<String, String> credHelpers) {
         this.credHelpers = credHelpers;
     }
 
-    /** maps each registry to its auth. */
     public Map<String, Auth> getAuths() {
         return auths;
     }
