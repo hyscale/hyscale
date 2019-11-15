@@ -20,8 +20,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DockerConfig;
 import io.hyscale.commons.models.ResourceLabelKey;
+import io.hyscale.generator.services.model.ManifestGeneratorActivity;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.model.MetaDataContext;
 import io.hyscale.generator.services.model.ResourceName;
@@ -59,7 +61,11 @@ public class ImagePullSecretHandler implements ManifestHandler {
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         ImageRegistry imageRegistry = manifestContext.getImageRegistry();
         if (imageRegistry == null) {
-            logger.debug("ImageRegistry is null,no image pull secret manifest snippet.");
+            logger.debug("ImageRegistry is found to be null, skipping image pull secret creation ");
+            String registry = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.registry), String.class);
+            if (registry != null) {
+                WorkflowLogger.persist(ManifestGeneratorActivity.FAILED_TO_CREATE_IMAGE_PULL_SECRET, registry, registry);
+            }
             return null;
         }
 

@@ -15,21 +15,64 @@
  */
 package io.hyscale.commons.models;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+/**
+ * Model of Docker config file.
+ * <p>Example:
+ * <pre>{
+ *  * {
+ *  *   "auths": {
+ *  *     "registry": {
+ *  *       "auth": "username:password string in base64"
+ *  *     },
+ *  *     "another registry": {},
+ *  *     ...
+ *  *   },
+ *  *   "credsStore": "credential helper acts a default helper",
+ *  *   "credHelpers": {
+ *  *     "registry": "credential helper name",
+ *  *     "anotherregistry": "another credential helper name",
+ *  *     ...
+ *  *   }
+ *  * }
+ *  * }</pre>
+ *  <p>Each registry in credHelpers is matched to a credential helper that stores authorization for the registry.
+ *     It may take precedence over credsStore if match exists.
+ * <p>credsStore is a config that provides default credential helper if it not exists in credHelpers.
+ * <p>Auths contains individual Auth for each registry,if specified it is the basic authorization to use for the registry.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DockerConfig {
+    private String credsStore;
+    private Map<String, String> credHelpers;
+    private Map<String, Auth> auths;
 
-	private Map<String, Auth> auths = new HashMap<>();
+    public Map<String, String> getCredHelpers() {
+        return this.credHelpers;
+    }
 
-	public Map<String, Auth> getAuths() {
-		return auths;
-	}
+    public String getCredsStore() {
+        return this.credsStore;
+    }
 
-	public void setAuths(Map<String, Auth> auths) {
-		this.auths = auths;
-	}
+    public void setCredsStore(String credsStore) {
+        this.credsStore = credsStore;
+    }
+
+     /** maps a registry to its credential helper name. */
+    public void setCredHelpers(Map<String, String> credHelpers) {
+        this.credHelpers = credHelpers;
+    }
+
+    /** maps each registry to its auth. */
+    public Map<String, Auth> getAuths() {
+        return auths;
+    }
+
+    public void setAuths(Map<String, Auth> auths) {
+        this.auths = auths;
+    }
 }

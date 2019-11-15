@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.hyscale.commons.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -30,6 +29,15 @@ public class ImageRegistry implements Serializable {
     private String userName;
     private String password;
     private FileMeta sslCertificate;
+
+    public ImageRegistry() {
+    }
+
+    public ImageRegistry(String userName, String password, String url) {
+        this.userName = userName;
+        this.password = password;
+        this.url = url;
+    }
 
     public FileMeta getSslCertificate() {
         return sslCertificate;
@@ -70,5 +78,4 @@ public class ImageRegistry implements Serializable {
     public void setPassword(String password) {
         this.password = password;
     }
-
 }
