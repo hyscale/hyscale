@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.utils.WindowsUtil;
 import io.hyscale.controller.activity.ControllerActivity;
 import picocli.CommandLine;
 import picocli.CommandLine.IExecutionExceptionHandler;
@@ -41,7 +42,9 @@ public class ExceptionHandler implements IExecutionExceptionHandler {
 
 		logger.error("Unexpected error: ", ex);
 		WorkflowLogger.footer();
-		WorkflowLogger.error(ControllerActivity.UNEXPECTED_ERROR, SetupConfig.getMountPathOf(SetupConfig.getToolLogDir()));
+		String logDir = SetupConfig.getMountPathOf(SetupConfig.getToolLogDir());
+		logDir = WindowsUtil.updateToHostFileSeparator(logDir);
+		WorkflowLogger.error(ControllerActivity.UNEXPECTED_ERROR, logDir);
 		WorkflowLogger.footer();
 
 		return 0;

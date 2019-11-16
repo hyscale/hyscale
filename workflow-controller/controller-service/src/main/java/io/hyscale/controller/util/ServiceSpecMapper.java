@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.ObjectMapperFactory;
+import io.hyscale.commons.utils.WindowsUtil;
 import io.hyscale.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
@@ -49,9 +50,13 @@ public class ServiceSpecMapper {
         checkForFile(serviceSpecFile);
         ObjectMapper mapper = ObjectMapperFactory.yamlMapper();
         try {
-            ObjectNode rootNode = (ObjectNode) mapper.readTree(serviceSpecFile);
-            JsonNode updatedRootNode = effectiveServiceSpecUtil.updateFilePath(rootNode);
-            ServiceSpec serviceSpec = new ServiceSpec(updatedRootNode);
+            JsonNode rootNode = mapper.readTree(serviceSpecFile);
+            
+            if(WindowsUtil.isHostWindows()) {
+    			logger.debug("Updating service spec as host system is windows");
+    			rootNode = effectiveServiceSpecUtil.updateFilePath((ObjectNode)rootNode);
+    		}
+            ServiceSpec serviceSpec = new ServiceSpec(rootNode);
             return serviceSpec;
         } catch (IOException e) {
             logger.error("Error while processing service spec ", e);
