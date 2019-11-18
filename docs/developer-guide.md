@@ -148,12 +148,12 @@ Deploys the manifest into kubernetes cluster . The cluster details are read from
 *   Every resource is created with a default annotation as `_hyscale.io/last-applied-configuration_` which actually has the actual manifest that has been deployed. This helps to patch the  resources on update. The patch is a json-patch constructed from the diff of new-manifest & old-manifest( fetched from the cluster with `_hyscale.io/last-applied-configuration_`) . The json-patch is then applied to the cluster and therefore the resource is updated.
 *   Incase patching fails , the resource is automatically deleted & created again to ensure the availability of the resource. 
 *   The deployer also undeploys all the resources incase of undeploy service / undeploy app.
-*   Fetches the pod logs from the cluster and persists them as deployment logs, this ensures the deployment logs to be there even after the pod restarts incase of failures. The pod logs can be fetched at any point of time with the "_hyscalectl get service logs_" command which are then persisted in service.logs file.
-*   Pod logs can also be tailed with _`-t`_ option in `_hyscalectl get service logs_`.
-*   `_hyscalectl get service status_` responds to whether the service has been Running, Not Running ,Not Deployed along with proper message of the action
+*   Fetches the pod logs from the cluster and persists them as deployment logs, this ensures the deployment logs to be there even after the pod restarts incase of failures. The pod logs can be fetched at any point of time with the "_hyscale get service logs_" command which are then persisted in service.logs file.
+*   Pod logs can also be tailed with _`-t`_ option in `_hyscale get service logs_`.
+*   `_hyscale get service status_` responds to whether the service has been Running, Not Running ,Not Deployed along with proper message of the action
 
 ### Debugging:
 
 *   In case the service deployment fails at any stage, the respective stage logs can be found at `<user.home>`/.hyscale/hyscale/apps/`<app_name>`/`<service_name>`/logs/ to debug the cause of failure.
-*   hyscalectl get service status -s `<service_name>` -a `<app_name>` -n `<namespace>` the message field gives the reason in case failed pods.
-*   User can check for pod logs using hyscalectl get service logs -s `<service_name>` -a `<app_name>` -n `<namespace>` for troubleshooting.                                            
+*   hyscale get service status -s `<service_name>` -a `<app_name>` -n `<namespace>` the message field gives the reason in case failed pods.
+*   User can check for pod logs using hyscale get service logs -s `<service_name>` -a `<app_name>` -n `<namespace>` for troubleshooting.                                            
