@@ -15,51 +15,56 @@
  */
 package io.hyscale.commons.models;
 
-/** Template of credsStore entity.
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+/**
+ * Template of credsStore entity.
  *
- *<p>Example:
- *<pre>{
+ * <p>Example:
+ * <pre>{
  * {
- *   "ServerURL": "registry",
- *   "Username": "username",
- *   "Secret": "password"
+ *   "serverURL": "registry",
+ *   "username": "username",
+ *   "secret": "password"
  * }
- *}</pre>
+ * }</pre>
  * Provides credentials from the credsStore.
  */
 public class CredsStoreEntity {
-    private String ServerURL;
-    private String Username;
-    private String Secret;
+    private String serverURL;
+    private String username;
+    private String secret;
 
-    public CredsStoreEntity(String serverURL, String username, String secret) {
-        ServerURL = serverURL;
-        this.Username = username;
-        this.Secret = secret;
+    @JsonCreator
+    public CredsStoreEntity(@JsonProperty("ServerURL") String serverURL, @JsonProperty("Username") String username, @JsonProperty("Secret") String secret) {
+        this.serverURL = serverURL;
+        this.username = username;
+        this.secret = secret;
     }
 
     public String getServerURL() {
-        return ServerURL;
+        return serverURL;
     }
 
     public void setServerURL(String serverURL) {
-        ServerURL = serverURL;
+        this.serverURL = serverURL;
     }
 
     public String getUsername() {
-        return Username;
+        return username;
     }
 
     public void setUsername(String username) {
-        this.Username = username;
+        this.username = username;
     }
 
     public String getSecret() {
-        return Secret;
+        return secret;
     }
 
     public void setSecret(String secret) {
-        this.Secret = secret;
+        this.secret = secret;
     }
 
 }

@@ -47,26 +47,27 @@ public class DockerCredHelper {
 
     /**
      * Fetches the credentials from credstore given registryUrl,Helper name.
-     *
+     * <p>
      * Takes image registry creates command "docker-credential-<helper> get"  executes with registry url as input and
      * fetches credenials from  the credsStore entity pattern if found.
+     *
      * @param registryUrl the registry server url
      * @return CredsStoreEntity object containing username and password if found ,else returns null.
      */
     public CredsStoreEntity get(String registryUrl) {
         String s = null;
-        String result = null;
+        CommandResult result = null;
         StringBuilder stringBuilder = new StringBuilder();
         String command = stringBuilder.append(DOCKER_CREDENTIAL).append(getHelperFunction()).append(ToolConstants.SPACE).append(GET).toString();
         try {
-            result=CommandExecutor.executeAndGetResults(command,registryUrl);
+            result = CommandExecutor.executeAndGetResults(command, registryUrl);
             ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
-            CredsStoreEntity credsStore = mapper.readValue(result, CredsStoreEntity.class);
-            if (!credsStore.getServerURL().isEmpty() && !credsStore.getUsername().isEmpty() && !credsStore.getSecret().isEmpty()) {
+            CredsStoreEntity credsStore = mapper.readValue(result.getCommandOutput(), CredsStoreEntity.class);
+            if (!StringUtils.isBlank(credsStore.getServerURL()) && !StringUtils.isBlank(credsStore.getUsername()) && !StringUtils.isBlank(credsStore.getSecret())) {
                 return credsStore;
             }
         } catch (IOException e) {
-            logger.error("Error while fetching credentials from {}", helperFunction);
+            logger.error("Error while fetching credentials from {}", helperFunction, e);
         }
         return null;
     }
