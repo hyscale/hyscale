@@ -12,6 +12,8 @@ Here is what you need to do:
 
 HyScale offers a declarative spec for k8s abstraction using which k8s manifests & docker files are automatically generated, docker images are built & pushed to the target docker registry, and the manifests are deployed to the k8s cluster resulting in a URL.
 
+Here is a glimpse of what HyScale does when you invoke it
+
 <img src="docs/images/inside-hyscale.png" height="400" />
 
 To get started, install hyscale as per the below instructions & follow the [tutorial](https://www.hyscale.io/tutorial/get-started/) to deploy your first app.
