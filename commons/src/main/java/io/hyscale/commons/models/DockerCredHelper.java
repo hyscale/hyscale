@@ -26,8 +26,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 /**
- * Provides credential from the docker-credential-helper.Takes inputs @helperFuntion ie..credential helper name and registry name generates
- * the "docker-credential-helperFuntion get" command and gets credentials if exists.
+ * Provides credential from the docker-credential-helper.
+ * Takes inputs @helperFuntion ie..credential helper name and registry name.
+ * Generates the "docker-credential-helperFuntion get" command and gets credentials if exists.
  */
 public class DockerCredHelper {
     private static final Logger logger = LoggerFactory.getLogger(DockerCredHelper.class);
@@ -55,15 +56,16 @@ public class DockerCredHelper {
      */
     public CredsStoreEntity get(String registryUrl) {
         String s = null;
-        CommandResult result = null;
         StringBuilder stringBuilder = new StringBuilder();
         String command = stringBuilder.append(DOCKER_CREDENTIAL).append(getHelperFunction()).append(ToolConstants.SPACE).append(GET).toString();
         try {
-            result = CommandExecutor.executeAndGetResults(command, registryUrl);
+            CommandResult result = CommandExecutor.executeAndGetResults(command, registryUrl);
             ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
-            CredsStoreEntity credsStore = mapper.readValue(result.getCommandOutput(), CredsStoreEntity.class);
-            if (!StringUtils.isBlank(credsStore.getServerURL()) && !StringUtils.isBlank(credsStore.getUsername()) && !StringUtils.isBlank(credsStore.getSecret())) {
-                return credsStore;
+            if(StringUtils.isNotBlank(result.getCommandOutput())&& result.getExitCode()!=1) {
+                CredsStoreEntity credsStore = mapper.readValue(result.getCommandOutput(), CredsStoreEntity.class);
+                if (StringUtils.isNotBlank(credsStore.getServerURL()) && StringUtils.isNotBlank(credsStore.getUsername()) && StringUtils.isNotBlank(credsStore.getSecret())) {
+                    return credsStore;
+                }
             }
         } catch (IOException e) {
             logger.error("Error while fetching credentials from {}", helperFunction, e);

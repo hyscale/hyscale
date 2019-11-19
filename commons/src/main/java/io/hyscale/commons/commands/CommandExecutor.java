@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Pramati Prism, Inc.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -55,13 +55,26 @@ public class CommandExecutor {
      * @return {@link CommandResult} which contains command output and exit code
      */
     public static CommandResult executeAndGetResults(String command) {
-        CommandResult commandResult = null;
+        return executeAndGetResults(command, null);
+    }
+
+    /**
+     * Executes command with the given input,
+     * if command execution fails it returns CommandResult with null CommandOutput and exit code as 1.
+     *
+     * @param command
+     * @param stdInput it is passed to the process as input
+     * @return commandResult
+     */
+    public static CommandResult executeAndGetResults(String command, String stdInput) {
         try {
-            commandResult = _execute(command, null, null,null);
-        } catch (IOException | InterruptedException | HyscaleException e) {
+            return _execute(command, null, null, stdInput);
+        } catch (Exception e) {
             HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_EXECUTE_COMMAND, command);
-            logger.error("Failed while executing command, error {}", ex.toString());
+            logger.error("Error while reading command output,error {} for the standard input {}", ex, stdInput);
         }
+        CommandResult commandResult = new CommandResult();
+        commandResult.setExitCode(1);
         return commandResult;
     }
 
@@ -72,7 +85,7 @@ public class CommandExecutor {
     public static boolean execute(String command) {
         CommandResult commandResult = null;
         try {
-            commandResult = _execute(command, null, null,null);
+            commandResult = _execute(command, null, null, null);
         } catch (IOException | InterruptedException | HyscaleException e) {
             HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_EXECUTE_COMMAND, command);
             logger.error("Failed while executing command, error {}", ex.toString());
@@ -99,7 +112,7 @@ public class CommandExecutor {
     public static boolean executeInDir(String command, File commandOutputFile, String dir) {
         CommandResult commandResult = null;
         try {
-            commandResult = _execute(command, commandOutputFile, dir,null);
+            commandResult = _execute(command, commandOutputFile, dir, null);
         } catch (IOException | InterruptedException | HyscaleException e) {
             HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_EXECUTE_COMMAND, command);
             logger.error("Failed while executing command, error {}", ex.toString());
@@ -108,32 +121,31 @@ public class CommandExecutor {
         return commandResult == null || commandResult.getExitCode() != 0 ? false : true;
     }
 
-    public static CommandResult executeAndGetResults(String command, String stdInput) {
-        try {
-            return _execute(command, null, null,stdInput);
-        }catch (Exception e){
-            logger.error("Error while reading command output", e);
-        }
-        return null;
-    }
-
     /**
      * Executes command in the directory specified, uses current directory if not
      * specified If file provided directs output to file (creates if does not exist)
      * else Asynchronously copy command output in
      * {@link CommandResult#setCommandOutput(String)} waits for the process to
      * complete
+     * if standard input is specified, it is passed as input to the process.
      *
      * @param command
      * @param file
      * @param dir
+     * @param stdInput
      * @return {@link CommandResult}
      * @throws IOException
      * @throws InterruptedException
      * @throws HyscaleException
      */
-    private static CommandResult _execute(String command, File file, String dir,String stdInput)
+    private static CommandResult _execute(String command, File file, String dir, String stdInput)
             throws IOException, InterruptedException, HyscaleException {
+        CommandResult cmdResult = new CommandResult();
+        int exitCode = 1;
+        cmdResult.setExitCode(exitCode);
+        if (StringUtils.isBlank(command)) {
+            return cmdResult;
+        }
         ProcessBuilder processBuilder = new ProcessBuilder();
         if (StringUtils.isBlank(dir) || dir.equals(".")) {
             dir = SetupConfig.CURRENT_WORKING_DIR;
@@ -146,23 +158,22 @@ public class CommandExecutor {
             processBuilder.redirectOutput(file);
         }
         Process process = processBuilder.start();
-        if(!StringUtils.isBlank(stdInput)) {
-            try (OutputStream processStdin = process.getOutputStream()) {
-                processStdin.write(stdInput.getBytes(StandardCharsets.UTF_8));
-            } catch (IOException e) {
-                throw e;
-            }
+
+        try {
+            handleStandardInput(process, command, stdInput);
+        } catch (HyscaleException e) {
+            throw e;
         }
+
         boolean readOutput = false;
         StringWriter strWriter = new StringWriter();
         if (file == null) {
             readOutput = copyOutput(process, strWriter);
         }
-        CommandResult cmdResult = new CommandResult();
-        int exitCode = 1;
         try {
             exitCode = process.waitFor();
-        } catch (InterruptedException e) {
+        } catch (
+                InterruptedException e) {
             logger.error("Error while waiting for process to complete");
             throw e;
         }
@@ -192,22 +203,15 @@ public class CommandExecutor {
         });
     }
 
-    private static Process executeProcess(String command, File file, String dir) throws IOException {
-        ProcessBuilder processBuilder = new ProcessBuilder();
-        if (StringUtils.isBlank(dir) || dir.equals(".")) {
-            dir = SetupConfig.CURRENT_WORKING_DIR;
-        }
-        logger.debug("Executing command in dir {}", dir);
-        processBuilder.directory(new File(dir));
-        processBuilder.command(command.split(" "));
-        processBuilder.redirectErrorStream(true);
-        if (file != null) {
-            if (!file.exists()) {
-                file.getParentFile().mkdirs();
-                file.createNewFile();
+    private static void handleStandardInput(Process process, String command, String stdInput) throws HyscaleException {
+        if (StringUtils.isNotBlank(stdInput)) {
+            try (OutputStream processStdin = process.getOutputStream()) {
+                processStdin.write(stdInput.getBytes(StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_WRITE_STDIN, command);
+                logger.error("Error while writing std input to the process, error {}", ex.toString());
+                throw ex;
             }
-            processBuilder.redirectOutput(file);
         }
-        return processBuilder.start();
     }
 }
