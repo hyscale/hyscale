@@ -1,0 +1,14 @@
+name: rabbitmq
+
+image:
+     registry: registry.hub.docker.com
+     name: library/rabbitmq
+     tag: 3.7
+
+ports:
+   - port: 4369/tcp
+   - port: 5671/tcp
+   - port: 5672/tcp
+     healthCheck: {}
+   - port: 25672/tcp
+

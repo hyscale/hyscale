@@ -1,0 +1,29 @@
+name: helloworld
+
+image:
+   registry: registry.hub.docker.com  
+   name: {{username}}/helloworld # replace with your dockerhub username for {{username}}
+   tag: 3.6-python
+   buildSpec:
+     stackImage: python:3.6
+     artifacts:
+      - name: helloworld
+        source: helloworld.py
+        destination: /app/
+      - name: requirements
+        source: requirements.txt
+        destination: /app/
+     configCommands: |-
+       pip install -r /app/requirements.txt
+
+startCommand: "python,/app/helloworld.py"
+
+external: true
+
+props:
+   AUTOWRAPT_BOOTSTRAP: flask
+
+ports:
+  - port: 5000/tcp
+    healthCheck:
+       httpPath: /

@@ -1,0 +1,15 @@
+name: redis
+
+image:
+     registry: registry.hub.docker.com
+     name: library/redis
+     tag: 5.0
+
+props:
+    NO_OF_CONNECTIONS: 10
+
+ports:
+   - port: 6379/tcp
+     healthCheck: {}
+
+

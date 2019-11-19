@@ -1,0 +1,21 @@
+name: mysql
+
+image:
+     registry: registry.hub.docker.com
+     name: library/mysql
+     tag: 8
+
+volumes:
+   - name: mysql-data-dir
+     path: /var/lib/mysql
+     size: 1Gi
+
+secrets:
+   MYSQL_ROOT_PASSWORD: hyscale
+
+ports:
+   - port: 3306/tcp
+     healthCheck: {}
+   - port: 33060/tcp
+
+

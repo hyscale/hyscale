@@ -1,7 +1,7 @@
 name: frontend
 image: 
-     registry: {{dockerRegistryUrl}} # registry url like registry.hub.docker.com/userName
-     name: {{imageName}} # replace with your required image name
+     registry: registry.hub.docker.com  
+     name: {{username}}/frontend # replace with your dockerhub username for {{username}}
      tag: 4.0.1
      buildSpec:
        stackImage: tomcat:8.5.0-jre8
