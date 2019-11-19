@@ -55,13 +55,12 @@ public class DockerCredHelper {
      * @return CredsStoreEntity object containing username and password if found ,else returns null.
      */
     public CredsStoreEntity get(String registryUrl) {
-        String s = null;
         StringBuilder stringBuilder = new StringBuilder();
         String command = stringBuilder.append(DOCKER_CREDENTIAL).append(getHelperFunction()).append(ToolConstants.SPACE).append(GET).toString();
         try {
             CommandResult result = CommandExecutor.executeAndGetResults(command, registryUrl);
             ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
-            if(StringUtils.isNotBlank(result.getCommandOutput())&& result.getExitCode()!=1) {
+            if(result!=null && StringUtils.isNotBlank(result.getCommandOutput())&& result.getExitCode()!=1) {
                 CredsStoreEntity credsStore = mapper.readValue(result.getCommandOutput(), CredsStoreEntity.class);
                 if (StringUtils.isNotBlank(credsStore.getServerURL()) && StringUtils.isNotBlank(credsStore.getUsername()) && StringUtils.isNotBlank(credsStore.getSecret())) {
                     return credsStore;

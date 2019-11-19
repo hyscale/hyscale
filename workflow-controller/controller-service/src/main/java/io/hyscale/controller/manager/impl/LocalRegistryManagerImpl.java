@@ -79,7 +79,7 @@ public class LocalRegistryManagerImpl implements RegistryManager {
     /**returns image registry credentials if found in docker config in the credHelpers,credsStore or Auths else returns null.
      *
      * @param registry
-     * @return ImageRegistry object
+     * @return ImageRegistry object if found in credHelpers,credsStore or Auths else returns null.
      */
     @Override
     public ImageRegistry getImageRegistry(String registry) throws HyscaleException {
@@ -108,7 +108,7 @@ public class LocalRegistryManagerImpl implements RegistryManager {
      *  or directly credsStore if specified else returns null.
      *
      * @param pattern
-     * @return docker credential helper
+     * @return docker credential helper else returns null
      */
     public DockerCredHelper getDockerCredHelper(String pattern) {
         String helperFunc = dockerConfig.getCredHelpers() != null ? getHelperFunction(pattern) : null;

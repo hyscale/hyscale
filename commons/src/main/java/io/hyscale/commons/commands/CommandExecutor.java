@@ -59,12 +59,12 @@ public class CommandExecutor {
     }
 
     /**
-     * Executes command with the given input,
-     * if command execution fails it returns CommandResult with null CommandOutput and exit code as 1.
+     * Executes command with the given input.
+     *
      *
      * @param command
-     * @param stdInput it is passed to the process as input
-     * @return commandResult
+     * @param stdInput it is passed to the command as input
+     * @return commandResult  if command execution fails it returns CommandResult with null CommandOutput and exit code as 1.
      */
     public static CommandResult executeAndGetResults(String command, String stdInput) {
         try {
@@ -127,7 +127,7 @@ public class CommandExecutor {
      * else Asynchronously copy command output in
      * {@link CommandResult#setCommandOutput(String)} waits for the process to
      * complete
-     * if standard input is specified, it is passed as input to the process.
+     * if standard input is specified, it is passed as input to the command.
      *
      * @param command
      * @param file
@@ -158,12 +158,7 @@ public class CommandExecutor {
             processBuilder.redirectOutput(file);
         }
         Process process = processBuilder.start();
-
-        try {
-            handleStandardInput(process, command, stdInput);
-        } catch (HyscaleException e) {
-            throw e;
-        }
+        handleStandardInput(process, command, stdInput);
 
         boolean readOutput = false;
         StringWriter strWriter = new StringWriter();
@@ -203,6 +198,15 @@ public class CommandExecutor {
         });
     }
 
+
+    /**
+     * Passes input to command.
+     *
+     * @param process
+     * @param command
+     * @param stdInput
+     * @throws HyscaleException
+     */
     private static void handleStandardInput(Process process, String command, String stdInput) throws HyscaleException {
         if (StringUtils.isNotBlank(stdInput)) {
             try (OutputStream processStdin = process.getOutputStream()) {
