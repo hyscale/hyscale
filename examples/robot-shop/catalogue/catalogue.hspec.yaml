@@ -1,8 +1,8 @@
 name: catalogue
 
 image:
-     registry: {{dockerRegistryUrl}} # registry url like registry.hub.docker.com/userName
-     name: {{imageName}} # replace with your required image name
+     registry: registry.hub.docker.com  
+     name: {{username}}/catalogue # replace with your dockerhub username for {{username}}
      tag: 1.0
      buildSpec:
        stackImage: node:8

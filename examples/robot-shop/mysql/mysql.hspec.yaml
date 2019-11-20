@@ -1,8 +1,8 @@
 name: mysql
 
 image:
-     registry: {{dockerRegistryUrl}} # registry url like registry.hub.docker.com/userName
-     name: {{imageName}} # replace with your required image name
+     registry: registry.hub.docker.com  
+     name: {{username}}/mysql # replace with your dockerhub username for {{username}}
      tag: 1.0
      buildSpec:
        stackImage: mysql:5.7.20

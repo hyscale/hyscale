@@ -1,8 +1,8 @@
 name: dispatch
 
 image:
-   registry: {{dockerRegistryUrl}} # registry url like registry.hub.docker.com/userName
-   name: {{imageName}} # replace with your required image name
+   registry: registry.hub.docker.com  
+   name: {{username}}/dispatch # replace with your dockerhub username for {{username}}
    tag: 1.0
    buildSpec:
      stackImage: golang:1.9.2

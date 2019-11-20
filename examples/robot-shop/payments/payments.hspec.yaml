@@ -1,8 +1,8 @@
 name: payments
 
 image:
-   registry: {{dockerRegistryUrl}} # registry url like registry.hub.docker.com/userName
-   name: {{imageName}} # replace with your required image name
+   registry: registry.hub.docker.com  
+   name: {{username}}/payments # replace with your dockerhub username for {{username}}
    tag: 1.0
    buildSpec:
      stackImage: python:3.6

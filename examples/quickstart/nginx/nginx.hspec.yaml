@@ -1,0 +1,13 @@
+name: nginx
+
+image:
+   registry: registry.hub.docker.com
+   name: library/nginx
+   tag: 1.13.8
+
+external: true
+
+ports:
+  - port: 80/tcp
+    healthCheck: 
+       httpPath: /

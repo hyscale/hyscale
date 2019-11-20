@@ -1,0 +1,24 @@
+name: helloworld-go
+
+image:
+   registry: registry.hub.docker.com  
+   name: {{username}}/helloworld-go # replace with your dockerhub username for {{username}}
+   tag: 1.0
+   buildSpec:
+      stackImage: golang:1.9.2
+      artifacts:
+        - name: helloworld
+          source: helloworld.go
+          destination: /app/
+
+startCommand: "go ,run, /app/helloworld.go"
+
+external: true
+ports:
+   - port: 8001/tcp
+     healthCheck:
+        httpPath: /
+
+props:
+   GOPATH: /go
+
