@@ -15,15 +15,16 @@
  */
 package io.hyscale.controller.manager.impl;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Base64;
+import java.io.*;
+import java.util.*;
 
 import javax.annotation.PostConstruct;
 
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.*;
 import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.builder.ImageRegistryBuilder;
 import io.hyscale.controller.config.ControllerConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -34,28 +35,28 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.models.Auth;
-import io.hyscale.commons.models.DockerConfig;
-import io.hyscale.commons.models.ImageRegistry;
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.controller.manager.RegistryManager;
 
 /**
- * Reads local docker registry config
+ * Provides registry credentials.
+ * Reads local docker registry config.
+ * Takes registry name as input,tries to find the matching registry in credential helpers if present and return credentials,else searches in
+ * credStore if specified in config file,else tries to get from the auths.
  */
 @Component
 public class LocalRegistryManagerImpl implements RegistryManager {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalRegistryManagerImpl.class);
 
-    private static DockerConfig dockerConfig = new DockerConfig();
+    private static DockerConfig dockerConfig;
 
     @Autowired
     private ControllerConfig controllerConfig;
 
+    /**Reads local docker config*/
     @PostConstruct
     public void init() throws HyscaleException {
         ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
@@ -75,36 +76,60 @@ public class LocalRegistryManagerImpl implements RegistryManager {
         }
     }
 
-    /**
-     * Gives image registry details based on registry name
+    /**returns image registry credentials if found in docker config in the credHelpers,credsStore or Auths else returns null.
+     *
+     * @param registry
+     * @return ImageRegistry object if found in credHelpers,credsStore or Auths else returns null.
      */
     @Override
     public ImageRegistry getImageRegistry(String registry) throws HyscaleException {
         if (StringUtils.isBlank(registry)) {
-            logger.debug("Image push not required");
             return null;
         }
-        Auth auth = dockerConfig.getAuths().get(registry);
-        if (auth == null) {
-            return null;
+
+        List<String> dockerRegistryAliases = DockerHubAliases.getDockerRegistryAliases(registry);
+        List<String> registryPatterns = new ArrayList<>();
+        for (String registryAlias : dockerRegistryAliases) {
+            registryPatterns.addAll(getRegistryPatterns(registryAlias));
         }
-        return getPrivateRegistry(auth, registry);
+        for (String pattern : registryPatterns) {
+            ImageRegistryBuilder builder = new ImageRegistryBuilder(pattern);
+            DockerCredHelper dockerCredHelper = getDockerCredHelper(pattern);
+            ImageRegistry imageRegistry = dockerCredHelper != null ? builder.from(dockerCredHelper) : builder.from(dockerConfig.getAuths());
+            if (imageRegistry != null) {
+                return imageRegistry;
+            }
+        }
+        return null;
     }
 
-    private ImageRegistry getPrivateRegistry(Auth auth, String url) {
-        String encodedAuth = auth.getAuth();
-        if (StringUtils.isBlank(encodedAuth)) {
-            return null;
+    /**
+     *Returns credential helper if resgistry pattern found  in credHelpers if specified
+     *  or directly credsStore if specified else returns null.
+     *
+     * @param pattern
+     * @return docker credential helper else returns null
+     */
+    public DockerCredHelper getDockerCredHelper(String pattern) {
+        String helperFunc = dockerConfig.getCredHelpers() != null ? getHelperFunction(pattern) : null;
+        if (helperFunc != null) {
+            return new DockerCredHelper(helperFunc);
+        } else if (dockerConfig.getCredsStore() != null) {
+            return new DockerCredHelper(dockerConfig.getCredsStore());
         }
-        // Format username:password
-        String decodedAuth = new String(Base64.getDecoder().decode(encodedAuth));
-        String[] authArray = decodedAuth.split(ToolConstants.COLON);
-        ImageRegistry imageRegistry = new ImageRegistry();
-        imageRegistry.setUrl(url);
-        imageRegistry.setUserName(authArray[0]);
-        imageRegistry.setPassword(authArray[1]);
+        return null;
+    }
 
-        return imageRegistry;
+    private static String getHelperFunction(String registry) {
+        return dockerConfig.getCredHelpers().containsKey(registry) ? dockerConfig.getCredHelpers().get(registry) : null;
+    }
+
+    private static List<String> getRegistryPatterns(String registry) {
+        String exactMatch = registry;
+        String withHttps = "https://" + registry;
+        String withSuffix = registry + "/";
+        String withHttpsAndSuffix = "https://" + registry + "/";
+        return Arrays.asList(exactMatch, withHttps, withSuffix, withHttpsAndSuffix);
     }
 
 }

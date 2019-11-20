@@ -17,6 +17,7 @@ package io.hyscale.commons.exception;
 
 public enum CommonErrorCode implements HyscaleErrorCode {
     FAILED_TO_EXECUTE_COMMAND("Failed to execute command {}"),
+    FAILED_TO_WRITE_STDIN("Failed to write standard input to the process"),
     FAILED_TO_COPY_FILE("Failed to copy the file {}"),
     DIRECTORY_REQUIRED_TO_COPY_FILE("Directory required to copy file {}"),
     FILE_NOT_FOUND("File {} not found"),
