@@ -29,6 +29,14 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Pod spec manifest snippet builder for agent image information.
+ * <p>
+ * This class is responsible for building manifest snippets
+ * for agent name,image and image pull policy.
+ * </p>
+ *
+ */
 @Component
 public class AgentImageBuilder implements AgentBuilder {
 
@@ -41,25 +49,26 @@ public class AgentImageBuilder implements AgentBuilder {
         List<ManifestSnippet> podSnippets = new ArrayList<ManifestSnippet>();
         int agentCount = 1;
         for (Agent agent : agents) {
+            String pathPrefix = "spec.template.spec.containers[" + agentCount+"].";
             // name
             ManifestSnippet agentNameSnippet = new ManifestSnippet();
             agentNameSnippet.setKind(podSpecOwner);
             agentNameSnippet.setSnippet(agent.getName());
-            String namePath = "spec.template.spec.containers[" + agentCount + "].name";
+            String namePath = pathPrefix+"name";
             agentNameSnippet.setPath(namePath);
             podSnippets.add(agentNameSnippet);
             // image
             ManifestSnippet agentImageSnippet = new ManifestSnippet();
             agentImageSnippet.setKind(podSpecOwner);
             agentImageSnippet.setSnippet(agent.getImage());
-            String imagePath = "spec.template.spec.containers[" + agentCount + "].image";
+            String imagePath = pathPrefix+"image";
             agentImageSnippet.setPath(imagePath);
             podSnippets.add(agentImageSnippet);
             // pull policy
             ManifestSnippet agentPullPolicySnippet = new ManifestSnippet();
             agentPullPolicySnippet.setKind(podSpecOwner);
             agentPullPolicySnippet.setSnippet(ManifestGenConstants.DEFAULT_IMAGE_PULL_POLICY);
-            String pullPolicyPath = "spec.template.spec.containers[" + agentCount + "].imagePullPolicy";
+            String pullPolicyPath = pathPrefix+"imagePullPolicy";
             agentPullPolicySnippet.setPath(pullPolicyPath);
             podSnippets.add(agentPullPolicySnippet);
 

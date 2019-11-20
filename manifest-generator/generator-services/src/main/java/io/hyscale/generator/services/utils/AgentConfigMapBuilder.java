@@ -26,13 +26,23 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.kubernetes.client.models.V1ObjectMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ * Config map manifest snippet builder for agents.
+ * <p>
+ * This class is responsible for building manifest snippets related to config maps
+ * for agents.
+ * </p>
+ *
+ */
 @Component
 public class AgentConfigMapBuilder implements AgentBuilder {
+    @Autowired
+    AgentManifestNameGenerator agentManifestNameGenerator;
     private static final Logger logger = LoggerFactory.getLogger(AgentConfigMapBuilder.class);
 
     @Override
@@ -42,7 +52,7 @@ public class AgentConfigMapBuilder implements AgentBuilder {
             if(agent.getProps() == null || agent.getProps().isEmpty()){
                 continue;
             }
-            String configMapName = generateConfigMapName(agent.getName());
+            String configMapName = agentManifestNameGenerator.generateConfigMapName(agent.getName());
             configMapSnippets.addAll(createConfigMapSnippet(configMapName));
             Props props = new Props();
             props.setProps(agent.getProps());
@@ -54,10 +64,6 @@ public class AgentConfigMapBuilder implements AgentBuilder {
             configMapSnippets.addAll(agentConfigMapSnippets);
         }
         return configMapSnippets;
-    }
-
-    private String generateConfigMapName(String agentName) {
-        return "agent-" + agentName;
     }
 
     private List<ManifestSnippet> createConfigMapSnippet(String configMapName) throws JsonProcessingException {

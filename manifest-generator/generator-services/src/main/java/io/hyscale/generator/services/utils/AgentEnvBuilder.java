@@ -27,14 +27,25 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.kubernetes.client.models.V1EnvVar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Pod spec manifest snippet builder for environment variables of agents.
+ * <p>
+ * This class is responsible for building manifest snippets related to Env variables
+ * for agents.
+ * </p>
+ *
+ */
 @Component
 public class AgentEnvBuilder implements AgentBuilder {
     private static final Logger logger = LoggerFactory.getLogger(AgentEnvBuilder.class);
+    @Autowired
+    AgentManifestNameGenerator agentManifestNameGenerator;
 
     @Override
     public List<ManifestSnippet> build(List<Agent> agents, ServiceSpec serviceSpec) throws JsonProcessingException {
@@ -49,13 +60,13 @@ public class AgentEnvBuilder implements AgentBuilder {
             agentCount++;
             List<V1EnvVar> envVarList = new DecoratedArrayList<V1EnvVar>();
             if (agent.getProps() != null && !agent.getProps().isEmpty()) {
-                String configMapName = generateConfigMapName(agent.getName());
+                String configMapName = agentManifestNameGenerator.generateConfigMapName(agent.getName());
                 Props props = new Props();
                 props.setProps(agent.getProps());
                 envVarList.addAll(PodSpecEnvUtil.getPropEnv(props, configMapName));
             }
             if (agent.getSecrets() != null) {
-                String secretName = generateSecretName(agent.getName());
+                String secretName = agentManifestNameGenerator.generateSecretName(agent.getName());
                 envVarList.addAll(PodSpecEnvUtil.getSecretEnv(agent.getSecrets(), secretName));
             }
             if (!envVarList.isEmpty()) {
@@ -64,13 +75,5 @@ public class AgentEnvBuilder implements AgentBuilder {
             }
         }
         return envSnippets;
-    }
-
-    private String generateConfigMapName(String agentName) {
-        return "agent-" + agentName;
-    }
-
-    private String generateSecretName(String agentName) {
-        return "agent-" + agentName;
     }
 }

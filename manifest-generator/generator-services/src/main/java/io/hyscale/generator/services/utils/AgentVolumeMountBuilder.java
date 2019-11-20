@@ -25,13 +25,24 @@ import io.hyscale.servicespec.commons.model.service.Agent;
 import io.hyscale.servicespec.commons.model.service.AgentVolume;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.kubernetes.client.models.V1VolumeMount;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Pod spec manifest snippet builder for volume mounts in agents.
+ * <p>
+ * This class is responsible for building manifest snippets related to volume mounts
+ * in container spec for agents.
+ * </p>
+ *
+ */
 @Component
 public class AgentVolumeMountBuilder implements AgentBuilder {
+    @Autowired
+    AgentManifestNameGenerator agentManifestNameGenerator;
     @Override
     public List<ManifestSnippet> build(List<Agent> agents, ServiceSpec serviceSpec) throws JsonProcessingException {
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ?
@@ -57,12 +68,12 @@ public class AgentVolumeMountBuilder implements AgentBuilder {
                 });
             }
             if (agent.getProps() != null && !agent.getProps().isEmpty()) {
-                String configMapName = generateConfigMapName(agent.getName());
+                String configMapName = agentManifestNameGenerator.generateConfigMapName(agent.getName());
                 volumeMounts.add(VolumeMountsUtil.buildForProps(propsVolumePath,
                         K8sResourceNameGenerator.getResourceVolumeName(configMapName, ManifestResource.CONFIG_MAP.getKind())));
             }
             if (agent.getSecrets() != null) {
-                String secretName = generateSecretName(agent.getName());
+                String secretName = agentManifestNameGenerator.generateSecretName(agent.getName());
                 volumeMounts.add(VolumeMountsUtil.buildForSecrets(secretsVolumePath,
                         K8sResourceNameGenerator.getResourceVolumeName(secretName, ManifestResource.SECRET.getKind())));
             }
@@ -71,13 +82,5 @@ public class AgentVolumeMountBuilder implements AgentBuilder {
         }
 
         return volumeMountSnippets;
-    }
-
-    private String generateConfigMapName(String agentName) {
-        return "agent-" + agentName;
-    }
-
-    private String generateSecretName(String agentName) {
-        return "agent-" + agentName;
     }
 }

@@ -25,14 +25,25 @@ import io.hyscale.servicespec.commons.model.service.Agent;
 import io.hyscale.servicespec.commons.model.service.Secrets;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.kubernetes.client.models.V1ObjectMeta;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Secrets manifest snippet builder for agents.
+ * <p>
+ * This class is responsible for building manifest snippets related to secrets
+ * for agents.
+ * </p>
+ *
+ */
 @Component
 public class AgentSecretBuilder implements AgentBuilder {
 
+    @Autowired
+    AgentManifestNameGenerator agentManifestNameGenerator;
     @Override
     public List<ManifestSnippet> build(List<Agent> agents, ServiceSpec serviceSpec) throws JsonProcessingException {
         List<ManifestSnippet> secretSnippets = new ArrayList<ManifestSnippet>();
@@ -42,7 +53,7 @@ public class AgentSecretBuilder implements AgentBuilder {
             if (secrets == null) {
                 continue;
             }
-            String secretName = generateSecretName(agent.getName());
+            String secretName = agentManifestNameGenerator.generateSecretName(agent.getName());
             secretSnippets.addAll(createSecretSnippet(secretName));
             String secretsVolumePath = agent.getSecretsVolumePath();
             ManifestSnippet secretSnippet = SecretsDataUtil.build(secrets, secretsVolumePath, ManifestGenConstants.DEFAULT_SECRETS_FILE);
@@ -52,10 +63,6 @@ public class AgentSecretBuilder implements AgentBuilder {
             }
         }
         return secretSnippets;
-    }
-
-    private String generateSecretName(String agentName) {
-        return "agent-" + agentName;
     }
 
     private List<ManifestSnippet> createSecretSnippet(String secretName) throws JsonProcessingException {

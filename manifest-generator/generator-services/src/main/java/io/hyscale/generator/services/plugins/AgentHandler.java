@@ -37,7 +37,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author nishanth.panthangi created on 05-Nov-2019
+ * Plugin for Agent/Sidecar
+ * <p>
+ * This class is responsible for generating manifests based on Agents
+ * context from service spec.
+ * </p>
+ *
+ * @author Nishanth Panthangi
  */
 @Component
 @ManifestPlugin(name = "AgentHandler")

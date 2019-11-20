@@ -26,13 +26,25 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.kubernetes.client.models.V1ConfigMapVolumeSource;
 import io.kubernetes.client.models.V1SecretVolumeSource;
 import io.kubernetes.client.models.V1Volume;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Volumes manifest snippet builder for agents.
+ * <p>
+ * This class is responsible for building manifest snippets based on volumes
+ * belonging to agents.
+ * </p>
+ *
+ */
 @Component
 public class AgentVolumesBuilder implements AgentBuilder {
+    @Autowired
+    AgentManifestNameGenerator agentManifestNameGenerator;
+
     @Override
     public List<ManifestSnippet> build(List<Agent> agents, ServiceSpec serviceSpec) throws JsonProcessingException {
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ?
@@ -44,7 +56,7 @@ public class AgentVolumesBuilder implements AgentBuilder {
         for (Agent agent : agents) {
             if (agent.getProps() != null && !agent.getProps().isEmpty()) {
                 V1Volume volume = new V1Volume();
-                String configMapName = generateConfigMapName(agent.getName());
+                String configMapName = agentManifestNameGenerator.generateConfigMapName(agent.getName());
                 volume.setName(K8sResourceNameGenerator.getResourceVolumeName(configMapName, ManifestResource.CONFIG_MAP.getKind()));
                 V1ConfigMapVolumeSource v1ConfigMapVolumeSource = new V1ConfigMapVolumeSource();
                 v1ConfigMapVolumeSource.setName(configMapName);
@@ -53,7 +65,7 @@ public class AgentVolumesBuilder implements AgentBuilder {
             }
             if (agent.getSecrets() != null) {
                 V1Volume volume = new V1Volume();
-                String secretName = generateSecretName(agent.getName());
+                String secretName = agentManifestNameGenerator.generateSecretName(agent.getName());
                 volume.setName(K8sResourceNameGenerator.getResourceVolumeName(secretName, ManifestResource.SECRET.getKind()));
                 V1SecretVolumeSource v1SecretVolumeSource = new V1SecretVolumeSource();
                 v1SecretVolumeSource.secretName(secretName);
@@ -65,13 +77,5 @@ public class AgentVolumesBuilder implements AgentBuilder {
         List<ManifestSnippet> volumeSnippets = new ArrayList<ManifestSnippet>();
         volumeSnippets.add(volumeSnippet);
         return volumeSnippets;
-    }
-
-    private String generateConfigMapName(String agentName) {
-        return "agent-" + agentName;
-    }
-
-    private String generateSecretName(String agentName) {
-        return "agent-" + agentName;
     }
 }
