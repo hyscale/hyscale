@@ -24,9 +24,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * <p>Example:
  * <pre>{
  * {
- *   "serverURL": "registry",
- *   "username": "username",
- *   "secret": "password"
+ *   "ServerURL": "registry",
+ *   "Username": "username",
+ *   "Secret": "password"
  * }
  * }</pre>
  * Provides credentials from the credsStore.
