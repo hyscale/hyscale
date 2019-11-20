@@ -22,6 +22,7 @@ public class AgentVolume {
 
 	private String path;
 	private String name;
+	private boolean readOnly;
 
 	public String getPath() {
 		return path;
@@ -39,4 +40,11 @@ public class AgentVolume {
 		this.name = name;
 	}
 
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
+	}
 }
