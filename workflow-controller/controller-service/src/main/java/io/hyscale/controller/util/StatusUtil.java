@@ -27,6 +27,9 @@ import io.hyscale.deployer.core.model.DeploymentStatus;
 public class StatusUtil {
 	
 	public static String[] getRowData(DeploymentStatus deploymentStatus) {
+		if (deploymentStatus == null) {
+			return null;
+		}
         String age = getAge(deploymentStatus.getAge());
         String statusMsg = deploymentStatus.getStatus() != null ? deploymentStatus.getStatus().getMessage() : null;
         String[] rowData = new String[]{deploymentStatus.getServiceName(), statusMsg, age, deploymentStatus.getServiceAddress(),
@@ -40,7 +43,7 @@ public class StatusUtil {
 	 * @return time in social-networking style timestamps
 	 * @see PrettyTime
 	 */
-	private static String getAge(DateTime dateTime) {
+	public static String getAge(DateTime dateTime) {
         if (dateTime == null) {
             return null;
         }

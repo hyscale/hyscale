@@ -1,0 +1,19 @@
+name: myservice
+image:
+  registry: x.y.z
+  name: myServiceImage
+  tag: 1.2.3
+  buildSpec:
+    artifacts:
+      - name: update
+        source: \tmp\sample.war
+        destination: \abc\def\ghi\sample.txt
+      - name: dont
+        source: /tmp/sample.war
+        destination: \abc\def\ghi\sample.txt
+    configCommands: |-
+      echo "Hello, I'm configure commands"
+    configCommandsScript: abc\def\configure.sh
+    runCommandsScript: \abc\def\run.sh
+    runCommands: |-
+      echo "Hello, I'm run commands"
