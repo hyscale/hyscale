@@ -25,7 +25,6 @@ import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.model.AppMetaData;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.generator.services.provider.PropsProvider;
-import io.hyscale.generator.services.provider.SecretsProvider;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -67,7 +66,8 @@ public class PodSpecEnvHandler implements ManifestHandler {
             }
 
             // Preparing Pod Spec secrets from props
-            Secrets secrets = SecretsProvider.getSecrets(serviceSpec);
+         //   Secrets secrets = SecretsProvider.getSecrets(serviceSpec);
+            Secrets secrets = serviceSpec.get(HyscaleSpecFields.secrets, Secrets.class);
             if (ManifestPredicates.getSecretsEnvPredicate().test(serviceSpec)) {
                 logger.debug("Preparing Pod Spec env's from secrets.");
                 envVarList.addAll(getSecretsSnippet(secrets, appMetaData));

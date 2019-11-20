@@ -15,10 +15,17 @@
  */
 package io.hyscale.servicespec.commons.model.service;
 
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-@JsonDeserialize(using = SecretDeserializer.class)
-public interface Secrets {
+import java.util.HashSet;
 
-    SecretType getType();
+@JsonDeserialize(using = JsonDeserializer.None.class)
+public class SetBasedSecrets extends HashSet<String> implements Secrets {
+
+    @Override
+    public SecretType getType() {
+        return SecretType.SET;
+    }
+
 }

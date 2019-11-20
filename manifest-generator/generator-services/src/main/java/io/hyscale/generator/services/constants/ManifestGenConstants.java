@@ -27,4 +27,8 @@ public class ManifestGenConstants {
 
 	public static final String DEFAULT_CONFIG_PROPS_FILE = "config.props";
 
+	public static final String DEFAULT_SECRETS_FILE = "secrets.props";
+
+	public static final String DEFAULT_IMAGE_PULL_POLICY = "Always";
+
 }

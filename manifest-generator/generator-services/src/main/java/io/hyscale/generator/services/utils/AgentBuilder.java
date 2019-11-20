@@ -13,12 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.servicespec.commons.model.service;
+package io.hyscale.generator.services.utils;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import io.hyscale.plugin.framework.models.ManifestSnippet;
+import io.hyscale.servicespec.commons.model.service.Agent;
+import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
-@JsonDeserialize(using = SecretDeserializer.class)
-public interface Secrets {
+import java.util.List;
 
-    SecretType getType();
+public interface AgentBuilder {
+
+    public List<ManifestSnippet> build(List<Agent> agents, ServiceSpec serviceSpec) throws JsonProcessingException;
+
 }

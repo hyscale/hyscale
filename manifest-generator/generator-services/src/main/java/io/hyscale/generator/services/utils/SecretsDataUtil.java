@@ -19,7 +19,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
+import io.hyscale.servicespec.commons.model.service.MapBasedSecrets;
 import io.hyscale.servicespec.commons.model.service.Secrets;
+import io.hyscale.servicespec.commons.model.service.SecretType;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -36,21 +38,28 @@ public class SecretsDataUtil {
 
     public static ManifestSnippet build(Secrets secrets, String secretsVolumePath, String fileName) throws JsonProcessingException{
         ManifestSnippet snippet = new ManifestSnippet();
-        Map<String, String> modifiedMap = secrets.getSecretsMap().entrySet().stream().collect(
-                Collectors.toMap(key -> key.getKey(), value -> Base64.encodeBase64String(value.getValue().getBytes())));
-
-        if (StringUtils.isNotBlank(secretsVolumePath)) {
-            logger.debug("Writing secrets into file {}.",secretsVolumePath);
-            StringBuilder stringBuilder = new StringBuilder();
-            secrets.getSecretsMap().entrySet().stream().forEach(each -> {
-                stringBuilder.append(each.getKey()).append("=").append(each.getValue()).append("\n");
-            });
-            modifiedMap.put(fileName,
-                    Base64.encodeBase64String(stringBuilder.toString().getBytes()));
+        if(secrets == null) {
+            return null;
         }
-        snippet.setSnippet(JsonSnippetConvertor.serialize(modifiedMap));
-        snippet.setKind(ManifestResource.SECRET.getKind());
-        snippet.setPath("data");
-        return snippet;
+        if(secrets.getType() == SecretType.MAP){
+            MapBasedSecrets mapBasedSecrets = (MapBasedSecrets) secrets;
+            Map<String, String> modifiedMap = mapBasedSecrets.entrySet().stream().collect(
+                    Collectors.toMap(key -> key.getKey(), value -> Base64.encodeBase64String(value.getValue().getBytes())));
+
+            if (StringUtils.isNotBlank(secretsVolumePath)) {
+                logger.debug("Writing secrets into file {}.",secretsVolumePath);
+                StringBuilder stringBuilder = new StringBuilder();
+                mapBasedSecrets.entrySet().stream().forEach(each -> {
+                    stringBuilder.append(each.getKey()).append("=").append(each.getValue()).append("\n");
+                });
+                modifiedMap.put(fileName,
+                        Base64.encodeBase64String(stringBuilder.toString().getBytes()));
+            }
+            snippet.setSnippet(JsonSnippetConvertor.serialize(modifiedMap));
+            snippet.setKind(ManifestResource.SECRET.getKind());
+            snippet.setPath("data");
+            return snippet;
+        }
+        return null;
     }
 }

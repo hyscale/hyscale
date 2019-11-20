@@ -39,7 +39,6 @@ import java.util.List;
 public class ImageHandler implements ManifestHandler {
 
     private static final String DELIMITER = "/";
-    private static final String DEFAULT_IMAGE_PULL_POLICY = "Always";
     private static final Logger logger = LoggerFactory.getLogger(ImageHandler.class);
 
     @Override
@@ -58,7 +57,7 @@ public class ImageHandler implements ManifestHandler {
 
     private ManifestSnippet getImagePullPolicy(ServiceSpec serviceSpec) {
         ManifestSnippet manifestSnippet = new ManifestSnippet();
-        manifestSnippet.setSnippet(DEFAULT_IMAGE_PULL_POLICY);
+        manifestSnippet.setSnippet(ManifestGenConstants.DEFAULT_IMAGE_PULL_POLICY);
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec)
                 ? ManifestResource.STATEFUL_SET.getKind()
                 : ManifestResource.DEPLOYMENT.getKind();

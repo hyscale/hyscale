@@ -18,6 +18,7 @@ package io.hyscale.generator.services.utils;
 import io.hyscale.commons.models.DecoratedArrayList;
 import io.hyscale.servicespec.commons.model.service.Props;
 import io.hyscale.servicespec.commons.model.service.Secrets;
+import io.hyscale.servicespec.commons.model.service.*;
 import io.kubernetes.client.models.V1ConfigMapKeySelector;
 import io.kubernetes.client.models.V1EnvVar;
 import io.kubernetes.client.models.V1EnvVarSource;
@@ -51,7 +52,7 @@ public class PodSpecEnvUtil {
     }
 
     public static List<V1EnvVar> getSecretEnv(Secrets secrets, String secretName) {
-        if (secrets == null || secrets.getSecretsMap().isEmpty()) {
+        if (secrets == null ) {
             return null;
         }
         Set<String> secretKeys = getSecretKeys(secrets);
@@ -75,11 +76,13 @@ public class PodSpecEnvUtil {
         if (secrets == null) {
             return null;
         }
-        if (secrets.getSecretsMap() != null && !secrets.getSecretsMap().isEmpty()) {
-            return secrets.getSecretsMap().keySet();
+        if(secrets.getType()  == SecretType.MAP){
+            MapBasedSecrets mapBasedSecrets = (MapBasedSecrets) secrets;
+            return mapBasedSecrets.keySet();
         }
-        if (secrets.getSecretKeys() != null && !secrets.getSecretKeys().isEmpty()) {
-            return secrets.getSecretKeys();
+        if(secrets.getType() == SecretType.SET){
+            SetBasedSecrets setBasedSecrets = (SetBasedSecrets) secrets;
+            return setBasedSecrets;
         }
         return null;
     }

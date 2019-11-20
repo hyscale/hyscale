@@ -23,7 +23,6 @@ import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.commons.utils.HyscaleFilesUtil;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.model.AppMetaData;
-import io.hyscale.generator.services.provider.SecretsProvider;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -44,7 +43,8 @@ public class SecretsDataHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
-        Secrets secrets = SecretsProvider.getSecrets(serviceSpec);
+     //   Secrets secrets = SecretsProvider.getSecrets(serviceSpec);
+        Secrets secrets = serviceSpec.get(HyscaleSpecFields.secrets, Secrets.class);
         if (!ManifestResource.SECRET.getPredicate().test(serviceSpec)) {
             return null;
         }

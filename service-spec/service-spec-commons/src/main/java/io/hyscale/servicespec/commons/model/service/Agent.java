@@ -25,7 +25,6 @@ public class Agent {
 
 	private String name;
 	private String image;
-//	private Props props;
 	private Map<String,String> props;
 	private Secrets secrets;
 	private List<AgentVolume> volumes;
@@ -47,14 +46,6 @@ public class Agent {
 	public void setImage(String image) {
 		this.image = image;
 	}
-
-//	public Props getProps() {
-//		return props;
-//	}
-
-//	public void setProps(Props props) {
-//		this.props = props;
-//	}
 
 	public List<AgentVolume> getVolumes() {
 		return volumes;

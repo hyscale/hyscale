@@ -18,7 +18,6 @@ package io.hyscale.generator.services.predicates;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.generator.services.provider.PropsProvider;
-import io.hyscale.generator.services.provider.SecretsProvider;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.*;
 import org.apache.commons.lang3.StringUtils;
@@ -97,43 +96,57 @@ public class ManifestPredicates {
 
 	public static Predicate<ServiceSpec> getSecretsPredicate() {
 		return serviceSpec -> {
+		//	Secrets secrets = null;
 			Secrets secrets = null;
 			try {
-				secrets = SecretsProvider.getSecrets(serviceSpec);
+		//		secrets = SecretsProvider.getSecrets(serviceSpec);
+				secrets = serviceSpec.get(HyscaleSpecFields.secrets, Secrets.class);
 			} catch (HyscaleException e) {
 				return false;
 			}
-			if (secrets == null || (secrets.getSecretKeys() == null && secrets.getSecretsMap() == null)) {
-				return false;
-			}
-			if (secrets.getSecretsMap() != null && !secrets.getSecretsMap().isEmpty()) {
-				return true;
-			}
-			if (secrets.getSecretKeys() != null && !secrets.getSecretKeys().isEmpty()) {
-				return false;
-			}
+			if(secrets == null){
+			    return false;
+            }
+			if(secrets.getType() == SecretType.MAP){
+			    MapBasedSecrets mapBasedSecrets = (MapBasedSecrets) secrets;
+			    if(mapBasedSecrets != null && !mapBasedSecrets.isEmpty()){
+			        return true;
+                }
+            }
+            if(secrets.getType() == SecretType.SET){
+                SetBasedSecrets setBasedSecrets = (SetBasedSecrets) secrets;
+                if(setBasedSecrets != null && !setBasedSecrets.isEmpty()){
+                    return false;
+                }
+            }
 			return false;
 		};
 	}
 
 	public static Predicate<ServiceSpec> getSecretsEnvPredicate() {
 		return serviceSpec -> {
-			Secrets secrets = null;
-			try {
-				secrets = SecretsProvider.getSecrets(serviceSpec);
-			} catch (HyscaleException e) {
-				return false;
-			}
-			if (secrets == null || (secrets.getSecretKeys() == null && secrets.getSecretsMap() == null)) {
-				return false;
-			}
-			if (secrets.getSecretKeys() != null && !secrets.getSecretKeys().isEmpty()) {
-				return true;
-			}
-			if (secrets.getSecretsMap() != null && !secrets.getSecretsMap().isEmpty()) {
-				return true;
-			}
-			return false;
+            Secrets secrets = null;
+            try {
+                secrets = serviceSpec.get(HyscaleSpecFields.secrets, Secrets.class);
+            } catch (HyscaleException e) {
+                return false;
+            }
+            if(secrets == null){
+                return false;
+            }
+            if(secrets.getType() == SecretType.MAP){
+                MapBasedSecrets mapBasedSecrets = (MapBasedSecrets) secrets;
+                if(mapBasedSecrets != null && !mapBasedSecrets.isEmpty()){
+                    return true;
+                }
+            }
+            if(secrets.getType() == SecretType.SET){
+                SetBasedSecrets setBasedSecrets = (SetBasedSecrets) secrets;
+                if(setBasedSecrets != null && !setBasedSecrets.isEmpty()){
+                    return true;
+                }
+            }
+            return false;
 		};
 	}
 

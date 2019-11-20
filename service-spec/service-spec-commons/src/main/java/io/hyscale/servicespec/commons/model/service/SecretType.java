@@ -15,10 +15,7 @@
  */
 package io.hyscale.servicespec.commons.model.service;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+public enum SecretType {
 
-@JsonDeserialize(using = SecretDeserializer.class)
-public interface Secrets {
-
-    SecretType getType();
+    MAP, SET
 }
