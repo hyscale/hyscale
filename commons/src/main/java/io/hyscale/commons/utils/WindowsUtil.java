@@ -57,12 +57,12 @@ public class WindowsUtil {
 		if (!isHostWindows()) {
 			return filepath;
 		}
-		return filepath.replaceAll(SetupConfig.FILE_SEPARATOR, WINDOWS_FS_MATCHER);
+		return filepath.replaceAll(ToolConstants.FILE_SEPARATOR, WINDOWS_FS_MATCHER);
 	}
 	
 	/**
      * Replace windows file separator(\) with unix file separator(/)
-     * @param fileSeperator
+     * @param filePath
      * @return unix file separator based file path
      */
     public static String updateToUnixFileSeparator(String filePath) {

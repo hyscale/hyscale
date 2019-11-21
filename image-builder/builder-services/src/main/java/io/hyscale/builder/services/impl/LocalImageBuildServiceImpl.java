@@ -17,12 +17,13 @@ package io.hyscale.builder.services.impl;
 
 import java.io.File;
 
-import io.hyscale.builder.services.command.ImageCommandGenerator;
+import io.hyscale.builder.services.ImageCommandGenerator;
 import io.hyscale.builder.services.config.LocalImageBuildCondition;
 import io.hyscale.builder.services.util.DockerImageUtil;
 import io.hyscale.builder.services.util.ImageLogUtil;
 import io.hyscale.builder.services.service.ImageBuildService;
 import io.hyscale.commons.config.SetupConfig;
+import io.hyscale.commons.constants.ToolConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,7 +140,7 @@ public class LocalImageBuildServiceImpl implements ImageBuildService {
             StringBuilder sb = new StringBuilder();
             String path = userDockerfile.getPath();
             if (StringUtils.isNotBlank(path)) {
-                sb.append(path).append(SetupConfig.FILE_SEPARATOR);
+                sb.append(path).append(ToolConstants.FILE_SEPARATOR);
             }
             String dockerfileDir = userDockerfile.getDockerfilePath();
             if (StringUtils.isNotBlank(dockerfileDir)) {
