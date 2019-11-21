@@ -60,13 +60,13 @@ public class DockerCredHelper {
         try {
             CommandResult result = CommandExecutor.executeAndGetResults(command, registryUrl);
             ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
-            if(result==null || StringUtils.isBlank(result.getCommandOutput()) || result.getExitCode()!=1) {
-                logger.debug("could'nt find credentials of registry {} in the credential store {}.",registryUrl,getHelperFunction());
+            if(result==null || StringUtils.isBlank(result.getCommandOutput()) || result.getExitCode()!=0) {
+                logger.debug("Could not fetch credentials for registry {} from helper function {}.",registryUrl,getHelperFunction());
                 return null;
             }
             CredsStoreEntity credsStore = mapper.readValue(result.getCommandOutput(), CredsStoreEntity.class);
                 if (StringUtils.isNotBlank(credsStore.getServerURL()) && StringUtils.isNotBlank(credsStore.getUsername()) && StringUtils.isNotBlank(credsStore.getSecret())) {
-                    logger.debug("Found credentials for the registry {} in credential store {}.",registryUrl,getHelperFunction());
+                    logger.debug("Found credentials for registry {} from helper function {}.",registryUrl,getHelperFunction());
                     return credsStore;
             }
         } catch (IOException e) {
