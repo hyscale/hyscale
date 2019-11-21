@@ -114,7 +114,19 @@ secrets:		 	# Secrets accept both list of keys & key value pairs
    - <secretN>			# - <keyN> : <valueN>
 
 secretsVolumePath: <volume-path-of-secrets>
-
+agents:
+    - name: <sidecarName>
+      image: [<pull-registry-url>/]<sidecar-image-name>[:<sidecar-image-tag>]
+      props: 
+          <key1>: [<file/endpoint/string>(]<value1>[)]
+         [<key2>: [<file/endpoint/string>(]<value2>[)]
+      volumes: 
+          - path: <volume-mount-path1>
+            name: <volume-name1>             # use same name as service vol for sharing
+           [readOnly: <true/false>]        # readOnly is valid for shared volume
+         [- path: <volume-mount-path2>
+            name: <volume-name2>]
+           [readOnly: <true/false>]
 ```
 
 Here is the [Service Spec Schema](../schema/service-spec.json)
@@ -152,6 +164,15 @@ ports:
   - port: 8080/tcp
     healthCheck:
   	httpPath: /hrms
+
+agents:
+  - name: logging-agent
+    image: gcr.io/test/logstash:2.2
+    props:
+        FLUEND_CONF: file(./config/log/fluentd.conf)
+    volumes:
+      - path: /usr/local/tomcat/logs
+        name: logs
     
 profiles: # we can also write conditions to automatically activate one of the profile
 # dev profile
@@ -398,6 +419,18 @@ secrets:
    <td><em>Optional</em> <em>Can be overridden</em>
 <p>
 List of volumes to be specified in a pod.
+   </td>
+  </tr>
+  <tr>
+   <td><a href="#agents">agents</a>
+   </td>
+   <td>list
+   </td>
+   <td>
+   </td>
+   <td><em>Optional</em> <em>Can be overridden</em>
+<p>
+List of sidecars to be attached to the pod.
    </td>
   </tr>
 </table>
@@ -971,7 +1004,7 @@ Note:
 volumes referring other volumes is _future, currently unspecified_
 `
 
-Following are the **Fields** in dataPath object
+Following are the **Fields** in volume object
 
 <table>
   <tr>
@@ -1043,6 +1076,75 @@ volumes:
   - name: data
     path: /usr/local/content/tomcat/current/webapps
 ```
+
+### agents
+
+List of agent (aka sidecar) objects.
+
+```yaml
+agents:
+  - name: <sidecarName>
+    image: <sidecarWithVersion>
+    props:
+    - "<sidecarKey1Name>=<file/endpoint/string>(<sidecarValue1>)"
+    [- "<sidecarKey2Name>=<file/endpoint/string>(<sidecarValue2>)"]
+    volumes: 
+    - path: <sidecarVolumeMountPath1>
+      name: <sidecarVolumeName1>
+   [- path: <sidecarVolumeMountPath2>
+      name: <sidecarVolumeName2>]
+
+```
+
+**agent Object contains:**
+
+*   name - name of sidecar attachment
+*   image - sidecar image full name
+*   props - list of env including secrets
+*   volumes - list of volumes
+
+Following are the **Fields** in agent object
+
+<table> 
+ <tr>
+  <td><strong>Option</strong> </td>
+  <td><strong>Type</strong> </td>
+  <td><strong>default</strong> </td>
+  <td><strong>Explanation</strong> </td>
+ </tr>
+ <tr> 
+  <td>name </td>
+  <td>string </td>
+  <td> </td>
+  <td>Name of sidecar Attachment <p> should be up to maximum length of 253 characters and consist of lower case alphanumeric characters, -, and ., but certain resources have more specific restrictions. <p> Eg: <p> name: fluentd </td>
+ </tr>
+ <tr>
+  <td>image </td>
+  <td>string </td>
+  <td> </td>
+  <td>sidecar with version <p> Eg: <p> sidecar: fluentd:5.6 </td>
+ </tr>
+ <tr>
+  <td>props </td>
+  <td>list </td>
+  <td>2 </td>
+  <td>Optional <p> <sidecarenvkeyName>=[<file/endpoint/string>(]<value>[)] <ul>
+
+   <li>List of key value pairs
+
+   <li>Value is typed and can be of type: string, file, endpoint
+
+   <li>DEFAULT type is string
+
+   <p> Eg: <p> props: <p> - "FLUENTD_ARGS=--no-supervisor -vv" <p> - "system.input.conf=file(/system.input.conf)" <p> - "output.conf=file(/tmp/output.conf)" </li> </ul> </td>
+ </tr> 
+ <tr>
+  <td>volumes </td>
+  <td>list </td>
+  <td> </td>
+  <td>List of volumes to be declared for a sidecar </td>
+ </tr>
+</table>
 
 ### 
 
