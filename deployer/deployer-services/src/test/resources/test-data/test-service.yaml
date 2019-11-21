@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    hyscale.io/app-name: test
+    hyscale.io/environment-name: test-dev
+    hyscale.io/service-name: test-frontend
+  name: test-frontend
+  namespace: test
+spec:
+  clusterIP: 127.0.0.1
+  externalTrafficPolicy: Cluster
+  ports:
+  - name: 8080-tcp
+    nodePort: 31105
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    hyscale.io/app-name: test
+    hyscale.io/environment-name: test-dev
+    hyscale.io/service-name: test-frontend
+  sessionAffinity: None
+  type: LoadBalancer
+status:
+  loadBalancer:
+    ingress:
+    - ip: 127.0.0.1
