@@ -16,13 +16,15 @@
 package io.hyscale.controller.manager;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
+
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -56,42 +58,25 @@ public class RegistryManagerTest {
         this.registryManager.init();
     }
 
-    @Test
-    public void testRegistryDetails() {
+    public static Stream<Arguments> input() {
+        ImageRegistry registry = new ImageRegistry();
+        registry.setUrl("test.registry.com");
+        registry.setUserName("admin");
+        registry.setPassword("admin");
+        return Stream.of(Arguments.of(null, null), Arguments.of("doesNotExist", null),
+                Arguments.of("test.registry.com", registry));
+    }
 
+    @ParameterizedTest
+    @MethodSource("input")
+    public void testRegistry(String registryUrl, ImageRegistry expectedRegistry) {
         ImageRegistry registry = null;
-        String registryUrl = "test.registry.com";
         try {
             registry = registryManager.getImageRegistry(registryUrl);
         } catch (HyscaleException e) {
             fail();
         }
-
-        assertNotNull(registry);
-        assertEquals(registryUrl, registry.getUrl());
-        String userName = "admin";
-        String password = "admin";
-        assertEquals(userName, registry.getUserName());
-        assertEquals(password, registry.getPassword());
+        assertEquals(expectedRegistry, registry);
     }
 
-    @Test
-    public void testRegistryNotFound() {
-
-        ImageRegistry registry = null;
-        String registryUrl = "doesNotExist";
-        try {
-            registry = registryManager.getImageRegistry(registryUrl);
-        } catch (HyscaleException e) {
-        }
-        assertNull(registry);
-    }
-
-    @Test
-    public void testNullRegistry() {
-        try {
-            assertNull(registryManager.getImageRegistry(null));
-        } catch (HyscaleException e) {
-        }
-    }
 }

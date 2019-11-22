@@ -20,27 +20,29 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.WindowsUtil;
+import io.hyscale.controller.ControllerTestInitializer;
 import io.hyscale.controller.directive.impl.DockerfileJsonHandler;
 import io.hyscale.controller.util.ServiceSpecTestUtil;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Dockerfile;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
+@SpringJUnitConfig(classes = ControllerTestInitializer.class)
 public class DockerfileJsonHandlerTest {
-
-    private static final String FILEPATH = "/servicespecs/dockerfile_update.hspec.yaml";
 
     private static final String JSON_PATH = HyscaleSpecFields.getPath(HyscaleSpecFields.image,
             HyscaleSpecFields.dockerfile);
 
-    private static DockerfileJsonHandler dockerfileHandler = new DockerfileJsonHandler();
+    @Autowired
+    private DockerfileJsonHandler dockerfileHandler;
 
     private static ObjectNode serviceSpecNode = null;
 
@@ -48,20 +50,18 @@ public class DockerfileJsonHandlerTest {
 
     private static ServiceSpec updatedServiceSpec = null;
 
-    @BeforeAll
-    public static void beforeAll() {
+    @Test
+    public void updateDockerfile() {
         try {
-            oldServiceSpec = ServiceSpecTestUtil.getServiceSpec(FILEPATH);
-            serviceSpecNode = (ObjectNode) ServiceSpecTestUtil.getServiceSpecJsonNode(FILEPATH);
+            oldServiceSpec = ServiceSpecTestUtil.getServiceSpec("/servicespecs/dockerfile_update.hspec.yaml");
+            serviceSpecNode = (ObjectNode) ServiceSpecTestUtil
+                    .getServiceSpecJsonNode("/servicespecs/dockerfile_update.hspec.yaml");
             dockerfileHandler.update(serviceSpecNode);
             updatedServiceSpec = new ServiceSpec(serviceSpecNode);
         } catch (IOException | HyscaleException e) {
             fail();
         }
-    }
 
-    @Test
-    public void updateDockerfile() {
         Dockerfile oldDockerfile = null;
         Dockerfile updatedDockerfile = null;
         try {

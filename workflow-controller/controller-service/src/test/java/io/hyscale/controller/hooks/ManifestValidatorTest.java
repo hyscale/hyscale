@@ -19,34 +19,54 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.controller.ControllerTestInitializer;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.controller.util.ServiceSpecTestUtil;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
+@SpringJUnitConfig(classes = ControllerTestInitializer.class)
 public class ManifestValidatorTest {
 
-    private static ManifestValidatorHook manifestValidatorHook = new ManifestValidatorHook();
+    @Autowired
+    private ManifestValidatorHook manifestValidatorHook;
 
-    @Test
-    public void nullServiceSpec() {
+    public static Stream<Arguments> input() {
+        return Stream.of(Arguments.of(null, HyscaleException.class),
+                Arguments.of("/servicespecs/invalid_vol.hspec.yaml", HyscaleException.class),
+                Arguments.of("/servicespecs/invalid_ports.hspec.yaml", HyscaleException.class));
+    }
+
+    @ParameterizedTest
+    @MethodSource(value = "input")
+    public void testInvalidManifest(String serviceSpecPath, Class klazz) {
         WorkflowContext context = new WorkflowContext();
-        assertThrows(HyscaleException.class, () -> manifestValidatorHook.preHook(context));
+        ServiceSpec serviceSpec = null;
+        try {
+            serviceSpec = ServiceSpecTestUtil.getServiceSpec(serviceSpecPath);
+        } catch (IOException e1) {
+            fail();
+        }
+        context.setServiceSpec(serviceSpec);
+        assertThrows(klazz, () -> {
+            manifestValidatorHook.preHook(context);
+        });
     }
 
     @Test
     public void validManifest() {
         WorkflowContext context = new WorkflowContext();
         try {
-            context.setServiceSpec(getServiceSpec("/servicespecs/myservice.hspec.yaml"));
+            context.setServiceSpec(ServiceSpecTestUtil.getServiceSpec("/servicespecs/myservice.hspec.yaml"));
         } catch (IOException e) {
             fail();
         }
@@ -57,33 +77,4 @@ public class ManifestValidatorTest {
         }
     }
 
-    @Test
-    public void invalidVolumes() {
-        WorkflowContext context = new WorkflowContext();
-        try {
-            context.setServiceSpec(getServiceSpec("/servicespecs/invalid_vol.hspec.yaml"));
-        } catch (IOException e) {
-            fail();
-        }
-        assertThrows(HyscaleException.class, () -> manifestValidatorHook.preHook(context));
-    }
-
-    @Test
-    public void invalidPorts() {
-        WorkflowContext context = new WorkflowContext();
-        try {
-            context.setServiceSpec(getServiceSpec("/servicespecs/invalid_ports.hspec.yaml"));
-        } catch (IOException e) {
-            fail();
-        }
-        assertThrows(HyscaleException.class, () -> manifestValidatorHook.preHook(context));
-    }
-
-    private ServiceSpec getServiceSpec(String filePath) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
-        InputStream resourceAsStream = ManifestValidatorTest.class.getResourceAsStream(filePath);
-        String testData = IOUtils.toString(resourceAsStream, "UTF-8");
-        ObjectNode rootNode = (ObjectNode) objectMapper.readTree(testData);
-        return new ServiceSpec(rootNode);
-    }
 }

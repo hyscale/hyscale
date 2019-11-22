@@ -26,12 +26,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.hyscale.commons.utils.ObjectMapperFactory;
-import io.hyscale.controller.hooks.BuildSpecValidatorTest;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 public class ServiceSpecTestUtil {
 
     public static ServiceSpec getServiceSpec(String filepath) throws IOException {
+        if (StringUtils.isBlank(filepath)) {
+            return null;
+        }
         return new ServiceSpec(getServiceSpecJsonNode(filepath));
     }
 
@@ -40,7 +42,7 @@ public class ServiceSpecTestUtil {
             return null;
         }
         ObjectMapper objectMapper = ObjectMapperFactory.yamlMapper();
-        InputStream resourceAsStream = BuildSpecValidatorTest.class.getResourceAsStream(filepath);
+        InputStream resourceAsStream = ServiceSpecTestUtil.class.getResourceAsStream(filepath);
         String testData = IOUtils.toString(resourceAsStream, StandardCharsets.UTF_8);
         return objectMapper.readTree(testData);
     }

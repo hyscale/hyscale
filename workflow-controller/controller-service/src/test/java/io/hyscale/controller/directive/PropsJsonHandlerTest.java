@@ -22,27 +22,29 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.WindowsUtil;
+import io.hyscale.controller.ControllerTestInitializer;
 import io.hyscale.controller.directive.impl.PropsJsonHandler;
 import io.hyscale.controller.util.ServiceSpecTestUtil;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.PropType;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
+@SpringJUnitConfig(classes = ControllerTestInitializer.class)
 public class PropsJsonHandlerTest {
-
-    private static final String FILEPATH = "/servicespecs/props_update.hspec.yaml";
 
     private static final String JSON_PATH = HyscaleSpecFields.getPath(HyscaleSpecFields.props);
 
-    private static PropsJsonHandler propsHandler = new PropsJsonHandler();
+    @Autowired
+    private PropsJsonHandler propsHandler;
 
     private static ObjectNode serviceSpecNode = null;
 
@@ -50,20 +52,17 @@ public class PropsJsonHandlerTest {
 
     private static ServiceSpec updatedServiceSpec = null;
 
-    @BeforeAll
-    public static void beforeAll() {
+    @Test
+    public void updateProps() {
         try {
-            oldServiceSpec = ServiceSpecTestUtil.getServiceSpec(FILEPATH);
-            serviceSpecNode = (ObjectNode) ServiceSpecTestUtil.getServiceSpecJsonNode(FILEPATH);
+            oldServiceSpec = ServiceSpecTestUtil.getServiceSpec("/servicespecs/props_update.hspec.yaml");
+            serviceSpecNode = (ObjectNode) ServiceSpecTestUtil
+                    .getServiceSpecJsonNode("/servicespecs/props_update.hspec.yaml");
             propsHandler.update(serviceSpecNode);
             updatedServiceSpec = new ServiceSpec(serviceSpecNode);
         } catch (IOException | HyscaleException e) {
             fail();
         }
-    }
-
-    @Test
-    public void updateProps() {
         Map<String, String> oldProps = null;
         Map<String, String> updatedProps = null;
         try {
@@ -82,8 +81,6 @@ public class PropsJsonHandlerTest {
             } else {
                 assertEquals(oldProps.get(each.getKey()), value);
             }
-
         }
-
     }
 }

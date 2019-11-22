@@ -19,52 +19,45 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.controller.ControllerTestInitializer;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.ServiceSpecTestUtil;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
+@SpringJUnitConfig(classes = ControllerTestInitializer.class)
 public class BuildSpecValidatorTest {
 
-    private BuildSpecValidatorHook buildSpecValidatorHook = new BuildSpecValidatorHook();
+    @Autowired
+    private BuildSpecValidatorHook buildSpecValidatorHook;
 
-    @Test
-    public void NoServiceSpec() {
-        WorkflowContext context = new WorkflowContext();
-        assertThrows(HyscaleException.class, () -> {
-            buildSpecValidatorHook.preHook(context);
-        });
+    public static Stream<Arguments> input() {
+        return Stream.of(Arguments.of(null, HyscaleException.class),
+                Arguments.of("/servicespecs/invalid_buildSpec1.hspec.yaml", HyscaleException.class),
+                Arguments.of("/servicespecs/invalid_buildSpec2.hspec.yaml", HyscaleException.class));
     }
 
-    @Test
-    public void noStackImage() {
+    @ParameterizedTest
+    @MethodSource(value = "input")
+    public void testInvalidServiceSpec(String serviceSpecPath, Class exception) {
         WorkflowContext context = new WorkflowContext();
         ServiceSpec serviceSpec = null;
         try {
-            serviceSpec = ServiceSpecTestUtil.getServiceSpec("/servicespecs/invalid_buildSpec1.hspec.yaml");
+            serviceSpec = ServiceSpecTestUtil.getServiceSpec(serviceSpecPath);
         } catch (IOException e1) {
             fail();
         }
         context.setServiceSpec(serviceSpec);
-        assertThrows(HyscaleException.class, () -> {
-            buildSpecValidatorHook.preHook(context);
-        });
-    }
-
-    @Test
-    public void inValidArtifacts() {
-        WorkflowContext context = new WorkflowContext();
-        ServiceSpec serviceSpec = null;
-        try {
-            serviceSpec = ServiceSpecTestUtil.getServiceSpec("/servicespecs/invalid_buildSpec2.hspec.yaml");
-        } catch (IOException e1) {
-            fail();
-        }
-        context.setServiceSpec(serviceSpec);
-        assertThrows(HyscaleException.class, () -> {
+        assertThrows(exception, () -> {
             buildSpecValidatorHook.preHook(context);
         });
     }

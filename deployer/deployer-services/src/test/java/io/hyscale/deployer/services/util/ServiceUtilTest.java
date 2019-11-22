@@ -39,7 +39,7 @@ public class ServiceUtilTest {
 
     @BeforeAll
     public static void createService() throws IOException {
-        InputStream resourceAsStream = PodHandlerTest.class.getResourceAsStream("/test-data/test-service.yaml");
+        InputStream resourceAsStream = ServiceUtilTest.class.getResourceAsStream("/test-data/test-service.yaml");
         ObjectMapper mapper = ObjectMapperFactory.yamlMapper();
         v1Service = mapper.readValue(resourceAsStream, V1Service.class);
         resourceAsStream.close();
@@ -55,7 +55,6 @@ public class ServiceUtilTest {
     @Test
     public void testGetPorts() {
         List<Integer> ports = K8sServiceUtil.getPorts(v1Service);
-
         assertEquals(getPorts(), ports);
     }
     
