@@ -85,4 +85,4 @@ For all possible commands, see the [command reference](docs/hyscale-commands-ref
 
 ### Contributing
 
-If you wish to contribute, see the architecture & contributor documentation [here](docs/developer-guide.md).
+If you wish to contribute, see the architecture & contributor documentation [here](docs/contributor-guide.md).
