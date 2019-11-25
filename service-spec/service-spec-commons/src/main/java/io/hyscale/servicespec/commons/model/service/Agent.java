@@ -18,14 +18,18 @@ package io.hyscale.servicespec.commons.model.service;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
+import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Agent {
 
 	private String name;
 	private String image;
-	private Props props;
+	private Map<String,String> props;
+	private Secrets secrets;
 	private List<AgentVolume> volumes;
+	private String propsVolumePath;
+	private String secretsVolumePath;
 
 	public String getName() {
 		return name;
@@ -43,14 +47,6 @@ public class Agent {
 		this.image = image;
 	}
 
-	public Props getProps() {
-		return props;
-	}
-
-	public void setProps(Props props) {
-		this.props = props;
-	}
-
 	public List<AgentVolume> getVolumes() {
 		return volumes;
 	}
@@ -59,4 +55,35 @@ public class Agent {
 		this.volumes = volumes;
 	}
 
+	public String getPropsVolumePath() {
+		return propsVolumePath;
+	}
+
+	public void setPropsVolumePath(String propsVolumePath) {
+		this.propsVolumePath = propsVolumePath;
+	}
+
+	public String getSecretsVolumePath() {
+		return secretsVolumePath;
+	}
+
+	public void setSecretsVolumePath(String secretsVolumePath) {
+		this.secretsVolumePath = secretsVolumePath;
+	}
+
+	public Secrets getSecrets() {
+		return secrets;
+	}
+
+	public void setSecrets(Secrets secrets) {
+		this.secrets = secrets;
+	}
+
+	public Map<String, String> getProps() {
+		return props;
+	}
+
+	public void setProps(Map<String, String> props) {
+		this.props = props;
+	}
 }

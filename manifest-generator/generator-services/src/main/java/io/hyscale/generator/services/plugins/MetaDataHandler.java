@@ -21,7 +21,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.model.AppMetaData;
-import io.hyscale.generator.services.generator.MetadatManifestSnippetGenerator;
+import io.hyscale.generator.services.generator.MetadataManifestSnippetGenerator;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -53,13 +53,14 @@ public class MetaDataHandler implements ManifestHandler {
                 if (manifestResource.getPredicate().test(serviceSpec)) {
                     logger.debug("Creating metadata for resource {}.",manifestResource.getKind());
                     /* Snippet for kind for each manifest */
-                    snippetList.add(MetadatManifestSnippetGenerator.getKind(manifestResource));
+                    snippetList.add(MetadataManifestSnippetGenerator.getKind(manifestResource));
 
                     /* Snippet for apiVersion for each manifest */
-                    snippetList.add(MetadatManifestSnippetGenerator.getApiVersion(manifestResource, appMetaData));
+                    snippetList.add(MetadataManifestSnippetGenerator.getApiVersion(manifestResource, appMetaData));
 
                     /* Snippet for metadata for each manifest */
-                    snippetList.add(MetadatManifestSnippetGenerator.getMetaData(manifestResource, appMetaData));
+                    snippetList.add(MetadataManifestSnippetGenerator.getMetaData(manifestResource, appMetaData));
+
                 }
 
             }
