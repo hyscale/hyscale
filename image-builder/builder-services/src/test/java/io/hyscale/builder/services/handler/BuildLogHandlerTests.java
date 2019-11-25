@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TestBuildLogHandler {
+public class BuildLogHandlerTests {
     private BuildLogHandler buildLogHandler;
     private static String EOF_MARKER = "(.*)Successfully tagged(.*)";
     private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

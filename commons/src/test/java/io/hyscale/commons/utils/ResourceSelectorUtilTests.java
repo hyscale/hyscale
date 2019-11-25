@@ -16,7 +16,6 @@
 package io.hyscale.commons.utils;
 
 import io.hyscale.commons.models.ResourceLabelKey;
-import io.hyscale.commons.utils.ResourceSelectorUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TestResourceSelectorUtil {
+public class ResourceSelectorUtilTests {
     private static String appName;
     private static String svcName;
     private static String envName;

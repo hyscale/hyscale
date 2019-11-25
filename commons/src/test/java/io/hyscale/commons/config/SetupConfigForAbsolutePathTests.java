@@ -16,8 +16,8 @@
 package io.hyscale.commons.config;
 
 import io.hyscale.commons.constants.ToolConstants;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -28,18 +28,18 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TestSetupConfigForAbsolutePath {
-    private  static StringBuilder stringBuilder = new StringBuilder();
-    private static String absolutePath = stringBuilder.append(ToolConstants.FILE_SEPARATOR).append("absolute").append(ToolConstants.FILE_SEPARATOR).append("path").append(ToolConstants.FILE_SEPARATOR).append("test").toString();
+public class SetupConfigForAbsolutePathTests {
+    private static String absolutePath;
 
-    @BeforeEach
-    public void setAbsolutePath() {
+    @BeforeAll
+    public static void setAbsolutePath() {
+        absolutePath = ToolConstants.FILE_SEPARATOR+"absolute"+ToolConstants.FILE_SEPARATOR+"path"+ToolConstants.FILE_SEPARATOR+"test";
         SetupConfig.setAbsolutePath(absolutePath);
     }
 
 
     public static Stream<Arguments> input() {
-        URL resourceAsUrl = TestSetupConfigForAbsolutePath.class.getResource("/sample.txt");
+        URL resourceAsUrl = SetupConfigForAbsolutePathTests.class.getResource("/sample.txt");
         String sample_path = resourceAsUrl.getPath();
         File f = new File(sample_path);
         return Stream.of(Arguments.of("notBlank", absolutePath + ToolConstants.FILE_SEPARATOR + "notBlank"),
@@ -55,8 +55,8 @@ public class TestSetupConfigForAbsolutePath {
         assertEquals(expected, absPath);
     }
 
-    @AfterEach
-    public void unsetAbsolutePath() {
+    @AfterAll
+    public static void unsetAbsolutePath() {
         SetupConfig.clearAbsolutePath();
     }
 }

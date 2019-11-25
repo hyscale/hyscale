@@ -16,20 +16,21 @@
 package io.hyscale.commons.commandExecutor;
 
 import io.hyscale.commons.commands.CommandExecutor;
+import io.hyscale.commons.constants.TestConstants;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.models.CommandResult;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class TestCommandExecutor {
-    private final String DOCKER_COMMAND = "docker --version";
-    StringBuilder stringBuilder;
+public class CommandExecutorTests {
+    private String EXECUTE_COMMAND = "echo HelloWorld";
+    private StringBuilder stringBuilder;
 
     @BeforeEach
     public void init() {
@@ -38,32 +39,32 @@ public class TestCommandExecutor {
 
     @Test
     public void testExecuteAndGetResults() {
-        CommandResult result = CommandExecutor.executeAndGetResults(DOCKER_COMMAND);
+        CommandResult result = CommandExecutor.executeAndGetResults(EXECUTE_COMMAND);
         assertNotNull(result);
-        assertNotNull(result.getExitCode());
+        assertEquals(0,result.getExitCode());
     }
 
     @Test
     public void testExecute() {
-        boolean flag = CommandExecutor.execute(DOCKER_COMMAND);
+        boolean flag = CommandExecutor.execute(EXECUTE_COMMAND);
         assertTrue(flag);
     }
 
     @Test
     public void testExecuteWithFile() throws IOException {
-        File testFile = new File(stringBuilder.append(ToolConstants.TMP_DIR).append(ToolConstants.FILE_SEPARATOR).append("testExecute").toString());
+        File testFile = new File(stringBuilder.append(TestConstants.TMP_DIR).append(ToolConstants.FILE_SEPARATOR).append("testExecute").toString());
         testFile.createNewFile();
-        boolean flag = CommandExecutor.execute(DOCKER_COMMAND, testFile);
+        boolean flag = CommandExecutor.execute(EXECUTE_COMMAND, testFile);
         assertTrue(testFile.exists());
-        assertNotNull(testFile.length());
+        assertEquals(EXECUTE_COMMAND.split(" ")[1], FileUtils.readFileToString(testFile,"UTF-8").trim());
         assertTrue(flag);
         testFile.delete();
     }
 
     @Test
     public void testExecuteInDir() {
-        File testFile = new File(stringBuilder.append(ToolConstants.TMP_DIR).append(ToolConstants.FILE_SEPARATOR).append("testExecuteInDir").toString());
-        boolean flag = CommandExecutor.executeInDir(DOCKER_COMMAND, testFile, ToolConstants.TMP_DIR);
+        File testFile = new File(stringBuilder.append(TestConstants.TMP_DIR).append(ToolConstants.FILE_SEPARATOR).append("testExecuteInDir").toString());
+        boolean flag = CommandExecutor.executeInDir(EXECUTE_COMMAND, testFile, TestConstants.TMP_DIR);
         assertTrue(testFile.exists());
         assertTrue(flag);
         testFile.delete();

@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.builder.services.util;
+package io.hyscale.builder.services.command;
 
 import io.hyscale.builder.services.ImageCommandGenerator;
-import io.hyscale.builder.services.constants.DockerImageConstants;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.models.ImageRegistry;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +31,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TestImageCommandGenerator {
+public class ImageCommandGeneratorTests {
     private static String appName ;
     private static String svcName ;
     private static String tag;
@@ -40,29 +39,9 @@ public class TestImageCommandGenerator {
     private static String expectedSvc;
     private static String dockerFilePath;
     private static String imageName;
-    private static String imageFullPath = "sample"+ToolConstants.FILE_SEPARATOR+"Path";
+    private static String imageFullPath;
     private static ImageCommandGenerator imageCommandGenerator;
-    private static String BUILD_ARGS = " --build-arg ";
-    private static String EQUALS = "=";
-    private static String SPACE = " ";
-    private static String DOCKER_BUILD = "docker build";
-    private static String DOCKER_COMMAND = "docker";
-    private static String TAG_ARG = " -t ";
-    private static String PULL_COMMAND = "pull";
     private ImageRegistry imageRegistry;
-    private String dockerCommand = "docker ";
-    private String HYSCALE_IO_URL = "hyscale.io";
-    private String SLASH = "/";
-    private String VERSION_COMMAND = "-v";
-    private String IMAGES = "images";
-    private String PUSH_COMMAND = "push";
-    private String INSPECT_COMMAND = "inspect";
-    private String TAG_COMMAND = "tag";
-    private String LOGIN_COMMAND = "login";
-    private String USER_ARG = " -u ";
-    private String PASSWORD_ARG = " -p ";
-    private String REMOVE_IMAGE = "rmi";
-
 
     @BeforeEach
     public void performBeforeAll() {
@@ -71,10 +50,11 @@ public class TestImageCommandGenerator {
         tag = "1.0";
         expectedApp = "sampleapp";
         expectedSvc = "samplesvc";
+        imageFullPath = "sample"+ToolConstants.FILE_SEPARATOR+"Path";
         imageCommandGenerator = new ImageCommandGenerator();
-        URL dockerFileUrl = TestImageCommandGenerator.class.getClassLoader().getResource("Dockerfile");
+        URL dockerFileUrl = ImageCommandGeneratorTests.class.getClassLoader().getResource("Dockerfile");
         dockerFilePath = dockerFileUrl.getPath();
-        imageName = HYSCALE_IO_URL + SLASH + expectedApp + SLASH + expectedSvc;
+        imageName = TestImageConstants.HYSCALE_IO_URL + TestImageConstants.SLASH + expectedApp + TestImageConstants.SLASH + expectedSvc;
         imageRegistry = new ImageRegistry();
     }
 
@@ -101,9 +81,9 @@ public class TestImageCommandGenerator {
         Map<String, String> buildArgs = new HashMap<String, String>();
         buildArgs.put("flag", "true");
         StringBuilder expected = new StringBuilder();
-        expected.append(DOCKER_BUILD).append(TAG_ARG).append(imageName).append(ToolConstants.COLON).append(tag).append(SPACE).append(dockerFilePath).append(ToolConstants.FILE_SEPARATOR);
+        expected.append(TestImageConstants.DOCKER_BUILD).append(TestImageConstants.TAG_ARG).append(imageName).append(ToolConstants.COLON).append(tag).append(TestImageConstants.SPACE).append(dockerFilePath).append(ToolConstants.FILE_SEPARATOR);
         StringBuilder buildArgsCmd = new StringBuilder();
-        buildArgsCmd.append(BUILD_ARGS).append("flag").append(EQUALS).append(buildArgs.get("flag"));
+        buildArgsCmd.append(TestImageConstants.BUILD_ARGS).append("flag").append(TestImageConstants.EQUALS).append(buildArgs.get("flag"));
         return Stream.of(Arguments.of(null, expected.toString()),
                 Arguments.of(buildArgs, expected.insert(12, buildArgsCmd).toString()));
     }
@@ -117,29 +97,29 @@ public class TestImageCommandGenerator {
     @Test
     public void testGetDockerInstalledCommand() {
         StringBuilder expected = new StringBuilder();
-        expected.append(dockerCommand).append(VERSION_COMMAND);
+        expected.append(TestImageConstants.dockerCommand).append(TestImageConstants.VERSION_COMMAND);
         assertEquals(expected.toString(), imageCommandGenerator.getDockerInstalledCommand());
     }
 
     @Test
     public void testGetDockerDaemonRunningCommand() {
         StringBuilder expected = new StringBuilder();
-        expected.append(dockerCommand).append(IMAGES);
+        expected.append(TestImageConstants.dockerCommand).append(TestImageConstants.IMAGES);
         assertEquals(expected.toString(), imageCommandGenerator.getDockerDaemonRunningCommand());
     }
 
     @Test
     public void testGetLoginCommand() {
         StringBuilder expected = new StringBuilder();
-        expected.append(DOCKER_COMMAND).append(SPACE).append(LOGIN_COMMAND).append(SPACE).append(imageRegistry.getUrl()).append(USER_ARG)
-                .append(imageRegistry.getUserName()).append(PASSWORD_ARG).append(imageRegistry.getPassword());
+        expected.append(TestImageConstants.DOCKER_COMMAND).append(TestImageConstants.SPACE).append(TestImageConstants.LOGIN_COMMAND).append(TestImageConstants.SPACE).append(imageRegistry.getUrl()).append(TestImageConstants.USER_ARG)
+                .append(imageRegistry.getUserName()).append(TestImageConstants.PASSWORD_ARG).append(imageRegistry.getPassword());
         assertEquals(expected.toString(), imageCommandGenerator.getLoginCommand(imageRegistry));
     }
 
     @Test
     public void testGetImagePushCommand() {
         StringBuilder expected = new StringBuilder();
-        expected.append(DOCKER_COMMAND).append(SPACE).append(PUSH_COMMAND).append(SPACE).append(imageFullPath.toLowerCase());
+        expected.append(TestImageConstants.DOCKER_COMMAND).append(TestImageConstants.SPACE).append(TestImageConstants.PUSH_COMMAND).append(TestImageConstants.SPACE).append(imageFullPath.toLowerCase());
         assertEquals(expected.toString(), imageCommandGenerator.getImagePushCommand(imageFullPath));
     }
 
@@ -148,13 +128,13 @@ public class TestImageCommandGenerator {
         String source = "baseImage";
         String target = "baseImage:2";
         StringBuilder expected = new StringBuilder();
-        expected.append(DOCKER_COMMAND).append(SPACE).append(TAG_COMMAND).append(SPACE).append(source.toLowerCase()).append(SPACE).append(target.toLowerCase());
+        expected.append(TestImageConstants.DOCKER_COMMAND).append(TestImageConstants.SPACE).append(TestImageConstants.TAG_COMMAND).append(TestImageConstants.SPACE).append(source.toLowerCase()).append(TestImageConstants.SPACE).append(target.toLowerCase());
         assertEquals(expected.toString(), imageCommandGenerator.getImageTagCommand(source, target));
     }
 
     public static Stream<Arguments> pull() {
         StringBuilder expected = new StringBuilder();
-        expected.append(DOCKER_COMMAND).append(SPACE).append(PULL_COMMAND).append(SPACE).append(imageFullPath.toLowerCase());
+        expected.append(TestImageConstants.DOCKER_COMMAND).append(TestImageConstants.SPACE).append(TestImageConstants.PULL_COMMAND).append(TestImageConstants.SPACE).append(imageFullPath.toLowerCase());
         return Stream.of(Arguments.of(null, null),
                 Arguments.of(imageFullPath, expected.toString()));
     }
@@ -168,14 +148,14 @@ public class TestImageCommandGenerator {
     @Test
     public void testGetImageCleanUpCommand() {
         StringBuilder expected = new StringBuilder();
-        expected.append(DOCKER_COMMAND).append(SPACE).append(REMOVE_IMAGE).append(SPACE).append(imageCommandGenerator.getBuildImageNameWithTag(expectedApp, expectedSvc, tag));
+        expected.append(TestImageConstants.DOCKER_COMMAND).append(TestImageConstants.SPACE).append(TestImageConstants.REMOVE_IMAGE).append(TestImageConstants.SPACE).append(imageCommandGenerator.getBuildImageNameWithTag(expectedApp, expectedSvc, tag));
         assertEquals(expected.toString(), imageCommandGenerator.getImageCleanUpCommand(appName, svcName, tag));
     }
 
     @Test
     public void testGetImageInspectCommand() {
         StringBuilder expected = new StringBuilder();
-        expected.append(DOCKER_COMMAND).append(SPACE).append(INSPECT_COMMAND).append(SPACE).append(imageFullPath.toLowerCase());
+        expected.append(TestImageConstants.DOCKER_COMMAND).append(TestImageConstants.SPACE).append(TestImageConstants.INSPECT_COMMAND).append(TestImageConstants.SPACE).append(imageFullPath.toLowerCase());
         assertEquals(expected.toString(), imageCommandGenerator.getImageInspectCommand(imageFullPath));
     }
 }

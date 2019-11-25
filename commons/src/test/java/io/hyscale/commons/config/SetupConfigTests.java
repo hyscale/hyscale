@@ -21,27 +21,31 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TestSetupConfig {
+public class SetupConfigTests {
     private static String appName;
     private static String svcName;
-    private static StringBuilder APPS_DIR;
-    private static StringBuilder SERVICE_DIR;
+    private static StringBuilder appsDir;
+    private static StringBuilder serviceDir;
     private static SetupConfig setupConfig;
-    private static String hyscale = "hyscale";
-    private static String generatedFilesDir = "generated-files";
-    private static String logDir = "logs";
-    private static String appsDirectory = "apps";
-
+    private static String hyscale;
+    private static String generatedFilesDir;
+    private static String logDir;
+    private static String appsDirectory;
+    //TODO autowire setup config
     @BeforeAll
     public static void init() {
         appName = "myApp";
         svcName = "mySvc";
-        APPS_DIR = new StringBuilder();
-        APPS_DIR.append(SetupConfig.USER_HOME_DIR).append(ToolConstants.FILE_SEPARATOR).append(hyscale).
+        hyscale = "hyscale";
+        generatedFilesDir = "generated-files";
+        logDir = "logs";
+        appsDirectory = "apps";
+        appsDir = new StringBuilder();
+        appsDir.append(SetupConfig.USER_HOME_DIR).append(ToolConstants.FILE_SEPARATOR).append(hyscale).
                 append(ToolConstants.
                         FILE_SEPARATOR).append(appsDirectory).append(ToolConstants.FILE_SEPARATOR).toString();
-        SERVICE_DIR = new StringBuilder();
-        SERVICE_DIR.append(APPS_DIR).append(appName).append(ToolConstants.FILE_SEPARATOR).append(svcName).append(ToolConstants.FILE_SEPARATOR).toString();
+        serviceDir = new StringBuilder();
+        serviceDir.append(appsDir).append(appName).append(ToolConstants.FILE_SEPARATOR).append(svcName).append(ToolConstants.FILE_SEPARATOR).toString();
         setupConfig = new SetupConfig();
     }
 
@@ -62,25 +66,25 @@ public class TestSetupConfig {
 
     @Test
     public void testGetAppsDir() {
-        assertEquals(APPS_DIR.toString(), setupConfig.getAppsDir());
+        assertEquals(appsDir.toString(), setupConfig.getAppsDir());
     }
 
     @Test
     public void testGetServiceDir() {
-        assertEquals(SERVICE_DIR.toString(), setupConfig.getServiceDir(appName, svcName));
+        assertEquals(serviceDir.toString(), setupConfig.getServiceDir(appName, svcName));
     }
 
     @Test
     public void testGetGeneratedFilesDir() {
         StringBuilder expected = new StringBuilder();
-        expected.append(SERVICE_DIR).append(generatedFilesDir).append(ToolConstants.FILE_SEPARATOR);
+        expected.append(serviceDir).append(generatedFilesDir).append(ToolConstants.FILE_SEPARATOR);
         assertEquals(expected.toString(), setupConfig.getGeneratedFilesDir(appName, svcName));
     }
 
     @Test
-    public void testGetLogsDir() {
+    public void testGetServiceLogsDir() {
         StringBuilder expected = new StringBuilder();
-        expected.append(SERVICE_DIR).append(logDir).append(ToolConstants.FILE_SEPARATOR);
+        expected.append(serviceDir).append(logDir).append(ToolConstants.FILE_SEPARATOR);
         assertEquals(expected.toString(), setupConfig.getLogsDir(appName, svcName));
     }
 

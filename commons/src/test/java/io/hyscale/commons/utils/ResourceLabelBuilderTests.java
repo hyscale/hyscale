@@ -16,7 +16,6 @@
 package io.hyscale.commons.utils;
 
 import io.hyscale.commons.models.ResourceLabelKey;
-import io.hyscale.commons.utils.ResourceLabelBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -30,7 +29,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.stream.Stream;
 
-public class TestResourceLabelBuilder {
+public class ResourceLabelBuilderTests {
     private static String appName;
     private static String svcName;
     private static String envName;
@@ -89,7 +88,7 @@ public class TestResourceLabelBuilder {
                 Arguments.of("normalize@1","normalize1"),
                 Arguments.of(null,null),
                 Arguments.arguments(" ",""),
-                Arguments.arguments("normalize@ 1","normalize1"),
+                Arguments.arguments("normalize@ 1","normalize-1"),
                 Arguments.arguments("normalize@1 ","normalize1"),
                 Arguments.arguments("normalize@1$","normalize1"),
                 Arguments.arguments("norm@3alize ","norm3alize"),
@@ -101,6 +100,4 @@ public class TestResourceLabelBuilder {
     public void testNormalize(String input,String expected) {
         assertEquals(expected, ResourceLabelBuilder.normalize(input));
     }
-
-
 }

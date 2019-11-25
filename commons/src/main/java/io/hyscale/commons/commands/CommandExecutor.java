@@ -189,9 +189,9 @@ public class CommandExecutor {
     private static boolean copyOutput(Process process, StringWriter strWriter) {
         return ThreadPoolUtil.getInstance().execute(() -> {
             try {
-                while (process.isAlive()) {
+                do{
                     IOUtils.copy(process.getInputStream(), strWriter, StandardCharsets.UTF_8);
-                }
+                } while (process.isAlive());
             } catch (IOException e) {
                 logger.error("Error while reading command output", e);
             }

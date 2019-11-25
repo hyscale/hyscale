@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package io.hyscale.commons.utils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -22,23 +23,24 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TestNormalizationUtil {
+public class NormalizationUtilTests {
     public static Stream<Arguments> input() {
         return Stream.of(Arguments.of("normaLize","normalize"),
                 Arguments.of("normalize@1","normalize1"),
                 Arguments.of(null,null),
                 Arguments.arguments(" ",""),
-                Arguments.arguments("normalize@ 1","normalize1"),
+                Arguments.arguments("normalize@ 1","normalize-1"),
                 Arguments.arguments("normalize@1 ","normalize1"),
                 Arguments.arguments("normalize@1$","normalize1"),
-                Arguments.arguments("norm@3alize ","norm3alize"));
+                Arguments.arguments("norm@3alize ","norm3alize"),
+                Arguments.arguments("norm@ alize ","norm-alize"));
     }
 
     @ParameterizedTest
     @MethodSource(value = "input")
     public void testNormalizeWithLenth(String input,String expected) {
-        String actualString = NormalizationUtil.normalize(input, 10);
-        assertEquals(expected, actualString);
+        String actualString = NormalizationUtil.normalize(input,7);
+        assertEquals(StringUtils.isEmpty(expected)?expected:expected.substring(0,7), actualString);
     }
 
     @ParameterizedTest
@@ -47,5 +49,4 @@ public class TestNormalizationUtil {
         String actualString = NormalizationUtil.normalize(input);
         assertEquals(expected, actualString);
     }
-
 }
