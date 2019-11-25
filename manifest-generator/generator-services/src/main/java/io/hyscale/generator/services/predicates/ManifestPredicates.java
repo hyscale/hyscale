@@ -96,6 +96,7 @@ public class ManifestPredicates {
 
 	public static Predicate<ServiceSpec> getSecretsPredicate() {
 		return serviceSpec -> {
+		//	Secrets secrets = null;
 			Secrets secrets = null;
 			try {
 				secrets = serviceSpec.get(HyscaleSpecFields.secrets, Secrets.class);
