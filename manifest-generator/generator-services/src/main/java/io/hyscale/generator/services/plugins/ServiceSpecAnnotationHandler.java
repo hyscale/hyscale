@@ -24,14 +24,11 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.hyscale.commons.utils.ObjectMapperFactory;
-import io.hyscale.generator.services.provider.SecretsProvider;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Secrets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.AnnotationKey;
@@ -62,8 +59,8 @@ public class ServiceSpecAnnotationHandler implements ManifestHandler {
 
         Map<String, String> annotations = new HashMap<>();
         try {
-            Secrets secrets = SecretsProvider.getSecrets(serviceSpec);
-            if (secrets != null && secrets.getSecretsMap() != null && !secrets.getSecretsMap().isEmpty()) {
+            Secrets secrets = serviceSpec.get(HyscaleSpecFields.secrets, Secrets.class);
+            if (secrets != null ) {
                 ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
                 ObjectNode serviceSpecNode = mapper.readValue(serviceSpec.toString(), ObjectNode.class);
                 serviceSpecNode.remove(HyscaleSpecFields.secrets);
