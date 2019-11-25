@@ -36,10 +36,10 @@ spec:
          configMap:
            name: {{ name }}
          {{/configMap}}
-         {{#secret}}
-         secret:
+         {{#secrets}}
+         secrets:
             secretName: {{secretName}}
-         {{/secret}}
+         {{/secrets}}
       {{/volumes}}
       imagePullSecrets:
        - name: {{IMAGE_PULL_SECRET_NAME}}

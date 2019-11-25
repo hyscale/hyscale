@@ -15,36 +15,16 @@
  */
 package io.hyscale.servicespec.commons.model.service;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class AgentVolume {
+import java.util.HashMap;
 
-	private String path;
-	private String name;
-	private boolean readOnly;
+@JsonDeserialize(using = JsonDeserializer.None.class)
+public class MapBasedSecrets  extends HashMap<String, String> implements Secrets {
 
-	public String getPath() {
-		return path;
-	}
-
-	public void setPath(String path) {
-		this.path = path;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public boolean isReadOnly() {
-		return readOnly;
-	}
-
-	public void setReadOnly(boolean readOnly) {
-		this.readOnly = readOnly;
-	}
+    @Override
+    public SecretType getType() {
+        return SecretType.MAP;
+    }
 }

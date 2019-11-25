@@ -23,7 +23,7 @@ import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
 import io.kubernetes.client.models.V1ObjectMeta;
 
-public class MetadatManifestSnippetGenerator {
+public class MetadataManifestSnippetGenerator {
 
 	public static ManifestSnippet getMetaData(ManifestResource manifestResource, AppMetaData appMetaData)
 			throws JsonProcessingException {

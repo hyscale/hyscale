@@ -13,38 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.servicespec.commons.model.service;
+package io.hyscale.generator.services.utils;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.springframework.stereotype.Component;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class AgentVolume {
+@Component
+public class AgentManifestNameGenerator {
 
-	private String path;
-	private String name;
-	private boolean readOnly;
+    public String generateConfigMapName(String agentName) {
+        return "agent-" + agentName;
+    }
 
-	public String getPath() {
-		return path;
-	}
+    public String generateSecretName(String agentName) {
+        return "agent-" + agentName;
+    }
 
-	public void setPath(String path) {
-		this.path = path;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public boolean isReadOnly() {
-		return readOnly;
-	}
-
-	public void setReadOnly(boolean readOnly) {
-		this.readOnly = readOnly;
-	}
 }
