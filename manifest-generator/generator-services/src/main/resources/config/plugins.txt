@@ -17,3 +17,4 @@ io.hyscale.generator.services.plugins.ResourceLimitsHandler
 io.hyscale.generator.services.plugins.VolumeTemplatesHandler
 io.hyscale.generator.services.plugins.ServiceTypeHandler
 io.hyscale.generator.services.plugins.ServiceSpecAnnotationHandler
+io.hyscale.generator.services.plugins.AgentHandler

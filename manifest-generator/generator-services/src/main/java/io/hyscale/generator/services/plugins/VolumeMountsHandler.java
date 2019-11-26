@@ -17,6 +17,7 @@ package io.hyscale.generator.services.plugins;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import io.hyscale.generator.services.utils.VolumeMountsUtil;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
@@ -84,13 +85,9 @@ public class VolumeMountsHandler implements ManifestHandler {
         if (ManifestPredicates.haveConfigmapVolume().test(serviceSpec)
                 && ManifestResource.CONFIG_MAP.getPredicate().test(serviceSpec)) {
             logger.debug("Preparing volume mount for service spec props.");
-            V1VolumeMount volumeMount = new V1VolumeMount();
             String configMapName = ManifestResource.CONFIG_MAP.getName(appMetaData);
-            volumeMount.setName(K8sResourceNameGenerator.getResourceVolumeName(configMapName,
-                    ManifestResource.CONFIG_MAP.getKind()));
-            volumeMount.setMountPath(propsVolumePath);
-            volumeMount.setReadOnly(true);
-            v1VolumeMounts.add(volumeMount);
+            v1VolumeMounts.add(VolumeMountsUtil.buildForProps(propsVolumePath,K8sResourceNameGenerator.getResourceVolumeName(configMapName,
+                    ManifestResource.CONFIG_MAP.getKind())));
         }
 
         String secretsVolumePath = serviceSpec.get(HyscaleSpecFields.secretsVolumePath, String.class);
@@ -98,13 +95,9 @@ public class VolumeMountsHandler implements ManifestHandler {
         if (ManifestPredicates.haveSecretsVolume().test(serviceSpec)
                 && ManifestResource.SECRET.getPredicate().test(serviceSpec)) {
             logger.debug("Preparing volume mount for service spec secrets.");
-            V1VolumeMount volumeMount = new V1VolumeMount();
             String secretName = ManifestResource.SECRET.getName(appMetaData);
-            volumeMount.setName(
-                    K8sResourceNameGenerator.getResourceVolumeName(secretName, ManifestResource.SECRET.getKind()));
-            volumeMount.setMountPath(secretsVolumePath);
-            volumeMount.setReadOnly(true);
-            v1VolumeMounts.add(volumeMount);
+            v1VolumeMounts.add(VolumeMountsUtil.buildForSecrets(secretsVolumePath,K8sResourceNameGenerator.getResourceVolumeName(secretName,
+                    ManifestResource.SECRET.getKind())));
         }
         return v1VolumeMounts.isEmpty() ? null : v1VolumeMounts;
     }

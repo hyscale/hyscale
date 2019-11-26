@@ -16,6 +16,7 @@
 package io.hyscale.generator.services.plugins;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.hyscale.generator.services.utils.PodSpecEnvUtil;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.DecoratedArrayList;
@@ -24,26 +25,20 @@ import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.model.AppMetaData;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.generator.services.provider.PropsProvider;
-import io.hyscale.generator.services.provider.SecretsProvider;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
-import io.hyscale.servicespec.commons.model.PropType;
 import io.hyscale.servicespec.commons.model.service.Props;
 import io.hyscale.servicespec.commons.model.service.Secrets;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
-import io.kubernetes.client.models.V1ConfigMapKeySelector;
 import io.kubernetes.client.models.V1EnvVar;
-import io.kubernetes.client.models.V1EnvVarSource;
-import io.kubernetes.client.models.V1SecretKeySelector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Component
 @ManifestPlugin(name = "PodSpecEnvHandler")
@@ -71,10 +66,10 @@ public class PodSpecEnvHandler implements ManifestHandler {
             }
 
             // Preparing Pod Spec secrets from props
-            Secrets secrets = SecretsProvider.getSecrets(serviceSpec);
+            Secrets secrets = serviceSpec.get(HyscaleSpecFields.secrets, Secrets.class);
             if (ManifestPredicates.getSecretsEnvPredicate().test(serviceSpec)) {
                 logger.debug("Preparing Pod Spec env's from secrets.");
-                envVarList.addAll(getSecretsSnippet(getSecretKeys(secrets), appMetaData));
+                envVarList.addAll(getSecretsSnippet(secrets, appMetaData));
             }
             if (envVarList.isEmpty()) {
                 return null;
@@ -92,59 +87,14 @@ public class PodSpecEnvHandler implements ManifestHandler {
         return snippetList;
     }
 
-    private List<V1EnvVar> getSecretsSnippet(Set<String> secretKeys, AppMetaData appMetaData) {
-        if (secretKeys == null || secretKeys.isEmpty()) {
-            return null;
-        }
-        List<V1EnvVar> envVarList = new DecoratedArrayList<V1EnvVar>();
-        secretKeys.stream().forEach(each -> {
-            V1EnvVar envVar = new V1EnvVar();
-            envVar.setName(each);
 
-            V1EnvVarSource envVarSource = new V1EnvVarSource();
-            V1SecretKeySelector secretKeySelector = new V1SecretKeySelector();
-            secretKeySelector.setName(ManifestResource.SECRET.getName(appMetaData));
-            secretKeySelector.setKey(each);
-            envVarSource.setSecretKeyRef(secretKeySelector);
-            envVar.setValueFrom(envVarSource);
-            envVarList.add(envVar);
-        });
-
-        return envVarList;
-    }
-
-    private Set<String> getSecretKeys(Secrets secrets) {
-        if (secrets == null) {
-            return null;
-        }
-        if (secrets.getSecretsMap() != null && !secrets.getSecretsMap().isEmpty()) {
-            return secrets.getSecretsMap().keySet();
-        }
-        if (secrets.getSecretKeys() != null && !secrets.getSecretKeys().isEmpty()) {
-            return secrets.getSecretKeys();
-        }
-        return null;
+    private List<V1EnvVar> getSecretsSnippet(Secrets secrets, AppMetaData appMetaData) {
+        String secretName = ManifestResource.SECRET.getName(appMetaData);
+        return PodSpecEnvUtil.getSecretEnv(secrets,secretName);
     }
 
     private List<V1EnvVar> getPodSpecEnv(Props props, AppMetaData appMetaData) {
-        if (props == null || props.getProps().isEmpty()) {
-            return null;
-        }
-        List<V1EnvVar> envVarList = new DecoratedArrayList<V1EnvVar>();
-        props.getProps().entrySet().stream().filter(each -> {
-            return each != null && !PropType.FILE.getPatternMatcher().matcher(each.getValue()).matches();
-        }).forEach(each -> {
-            V1EnvVar envVar = new V1EnvVar();
-            envVar.setName(each.getKey());
-
-            V1EnvVarSource envVarSource = new V1EnvVarSource();
-            V1ConfigMapKeySelector configMapKeySelector = new V1ConfigMapKeySelector();
-            configMapKeySelector.setName(ManifestResource.CONFIG_MAP.getName(appMetaData));
-            configMapKeySelector.setKey(each.getKey());
-            envVarSource.setConfigMapKeyRef(configMapKeySelector);
-            envVar.setValueFrom(envVarSource);
-            envVarList.add(envVar);
-        });
-        return envVarList;
+        String configMapName = ManifestResource.CONFIG_MAP.getName(appMetaData);
+        return PodSpecEnvUtil.getPropEnv(props,configMapName);
     }
 }

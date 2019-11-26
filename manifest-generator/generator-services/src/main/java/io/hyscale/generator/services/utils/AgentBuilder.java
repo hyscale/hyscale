@@ -13,38 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.servicespec.commons.model.service;
+package io.hyscale.generator.services.utils;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import io.hyscale.plugin.framework.models.ManifestSnippet;
+import io.hyscale.servicespec.commons.model.service.Agent;
+import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class AgentVolume {
+import java.util.List;
 
-	private String path;
-	private String name;
-	private boolean readOnly;
+public interface AgentBuilder {
 
-	public String getPath() {
-		return path;
-	}
+    public List<ManifestSnippet> build(List<Agent> agents, ServiceSpec serviceSpec) throws JsonProcessingException;
 
-	public void setPath(String path) {
-		this.path = path;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public boolean isReadOnly() {
-		return readOnly;
-	}
-
-	public void setReadOnly(boolean readOnly) {
-		this.readOnly = readOnly;
-	}
 }

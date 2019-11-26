@@ -15,36 +15,7 @@
  */
 package io.hyscale.servicespec.commons.model.service;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+public enum SecretType {
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class AgentVolume {
-
-	private String path;
-	private String name;
-	private boolean readOnly;
-
-	public String getPath() {
-		return path;
-	}
-
-	public void setPath(String path) {
-		this.path = path;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public boolean isReadOnly() {
-		return readOnly;
-	}
-
-	public void setReadOnly(boolean readOnly) {
-		this.readOnly = readOnly;
-	}
+    MAP, SET
 }
