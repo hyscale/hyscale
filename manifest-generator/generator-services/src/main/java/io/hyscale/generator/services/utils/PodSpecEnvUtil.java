@@ -16,6 +16,7 @@
 package io.hyscale.generator.services.utils;
 
 import io.hyscale.commons.models.DecoratedArrayList;
+import io.hyscale.servicespec.commons.model.PropType;
 import io.hyscale.servicespec.commons.model.service.Props;
 import io.hyscale.servicespec.commons.model.service.Secrets;
 import io.hyscale.servicespec.commons.model.service.*;
@@ -36,7 +37,9 @@ public class PodSpecEnvUtil {
             return null;
         }
         List<V1EnvVar> envVarList = new DecoratedArrayList<V1EnvVar>();
-        props.getProps().entrySet().stream().forEach(each -> {
+        props.getProps().entrySet().stream().filter(each -> {
+            return each != null && !PropType.FILE.getPatternMatcher().matcher(each.getValue()).matches();
+        }).forEach(each -> {
             V1EnvVar envVar = new V1EnvVar();
             envVar.setName(each.getKey());
 
