@@ -41,15 +41,18 @@ import java.util.List;
  *
  */
 @Component
-public class AgentVolumeMountBuilder implements AgentBuilder {
+public class AgentVolumeMountBuilder extends AgentHelper implements AgentBuilder {
     @Autowired
     AgentManifestNameGenerator agentManifestNameGenerator;
     @Override
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ?
                 ManifestResource.STATEFUL_SET.getKind() : ManifestResource.DEPLOYMENT.getKind();
-        List<Agent> agents = getAgents(serviceSpec);
         List<ManifestSnippet> volumeMountSnippets = new ArrayList<ManifestSnippet>();
+        List<Agent> agents = getAgents(serviceSpec);
+        if(agents == null){
+            return volumeMountSnippets;
+        }
         int agentCount = 1;
         for (Agent agent : agents) {
             String propsVolumePath = agent.getPropsVolumePath();

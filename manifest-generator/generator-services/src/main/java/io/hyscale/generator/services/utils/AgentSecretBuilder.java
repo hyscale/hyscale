@@ -47,7 +47,7 @@ import java.util.List;
  *
  */
 @Component
-public class AgentSecretBuilder implements AgentBuilder {
+public class AgentSecretBuilder extends AgentHelper implements AgentBuilder {
 
     @Autowired
     AgentManifestNameGenerator agentManifestNameGenerator;
@@ -56,7 +56,9 @@ public class AgentSecretBuilder implements AgentBuilder {
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
         List<ManifestSnippet> secretSnippets = new ArrayList<ManifestSnippet>();
         List<Agent> agents = getAgents(serviceSpec);
-
+        if(agents == null){
+            return secretSnippets;
+        }
         for (Agent agent : agents) {
             Secrets secrets = agent.getSecrets();
             if (secrets == null) {

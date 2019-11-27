@@ -63,6 +63,7 @@ public class AgentHandler implements ManifestHandler {
         List<ManifestSnippet> manifestSnippetList = new ArrayList<ManifestSnippet>();
         try {
             for (AgentBuilder agentBuilder : agentBuilders) {
+                agentBuilder.
                 manifestSnippetList.addAll(agentBuilder.build(manifestContext, serviceSpec));
             }
         } catch (JsonProcessingException e) {

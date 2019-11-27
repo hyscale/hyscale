@@ -39,7 +39,7 @@ import java.util.List;
  *
  */
 @Component
-public class AgentImageBuilder implements AgentBuilder {
+public class AgentImageBuilder extends AgentHelper implements AgentBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(AgentImageBuilder.class);
 
@@ -47,8 +47,11 @@ public class AgentImageBuilder implements AgentBuilder {
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ? ManifestResource.STATEFUL_SET.getKind() :
                 ManifestResource.DEPLOYMENT.getKind();
-        List<Agent> agents = getAgents(serviceSpec);
         List<ManifestSnippet> podSnippets = new ArrayList<ManifestSnippet>();
+        List<Agent> agents = getAgents(serviceSpec);
+        if(agents == null){
+            return podSnippets;
+        }
         int agentCount = 1;
         for (Agent agent : agents) {
             String pathPrefix = "spec.template.spec.containers[" + agentCount+"].";
