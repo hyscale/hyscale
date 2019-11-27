@@ -25,13 +25,12 @@ import java.io.IOException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.controller.ControllerTestInitializer;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
-@SpringJUnitConfig(classes = ControllerTestInitializer.class)
+@SpringBootTest
 public class ServiceSpecMapperTest {
     
     @Autowired

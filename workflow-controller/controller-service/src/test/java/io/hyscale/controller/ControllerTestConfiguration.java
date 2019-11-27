@@ -15,9 +15,17 @@
  */
 package io.hyscale.controller;
 
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.FilterType;
 
-@SpringBootTest(classes = ControllerTestConfiguration.class)
-public class ControllerTestInitializer {
+@SpringBootConfiguration
+@ComponentScan(basePackages = "io.hyscale", 
+excludeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, classes = CommandLineRunner.class))
+@EnableAutoConfiguration
+public class ControllerTestConfiguration {
 
 }

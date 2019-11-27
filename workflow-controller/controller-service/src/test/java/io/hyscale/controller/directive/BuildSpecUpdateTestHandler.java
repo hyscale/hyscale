@@ -18,26 +18,23 @@ package io.hyscale.controller.directive;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
-
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.WindowsUtil;
-import io.hyscale.controller.ControllerTestInitializer;
 import io.hyscale.controller.directive.impl.BuildSpecJsonHandler;
-import io.hyscale.controller.util.ServiceSpecTestUtil;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Artifact;
 import io.hyscale.servicespec.commons.model.service.BuildSpec;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
-@SpringJUnitConfig(classes = ControllerTestInitializer.class)
-public class BuildSpecJsonHandlerTest {
+@Component
+public class BuildSpecUpdateTestHandler implements ServiceSpecUpdateTestHandler {
+
+    private static final String buildSpecUpdateSpec = "/servicespecs/buildSpec_update.hspec.yaml";
 
     private static final String JSON_PATH = HyscaleSpecFields.getPath(HyscaleSpecFields.image,
             HyscaleSpecFields.buildSpec);
@@ -45,23 +42,13 @@ public class BuildSpecJsonHandlerTest {
     @Autowired
     private BuildSpecJsonHandler buildSpecHandler;
 
-    private static ObjectNode serviceSpecNode = null;
+    @Override
+    public String getServiceSpec() {
+        return buildSpecUpdateSpec;
+    }
 
-    private static ServiceSpec oldServiceSpec = null;
-
-    private static ServiceSpec updatedServiceSpec = null;
-
-    @Test
-    public void updateBuildSpec() {
-        try {
-            oldServiceSpec = ServiceSpecTestUtil.getServiceSpec("/servicespecs/buildSpec_update.hspec.yaml");
-            serviceSpecNode = (ObjectNode) ServiceSpecTestUtil
-                    .getServiceSpecJsonNode("/servicespecs/buildSpec_update.hspec.yaml");
-            buildSpecHandler.update(serviceSpecNode);
-            updatedServiceSpec = new ServiceSpec(serviceSpecNode);
-        } catch (IOException | HyscaleException e) {
-            fail();
-        }
+    @Override
+    public boolean performValidation(ServiceSpec oldServiceSpec, ServiceSpec updatedServiceSpec) {
         BuildSpec oldBuildSpec = null;
         BuildSpec updatedBuildSpec = null;
         try {
@@ -89,6 +76,18 @@ public class BuildSpecJsonHandlerTest {
                 }
             }
         }
+        return true;
+    }
+
+    @Override
+    public ServiceSpec getUpdatedServiceSpec(ObjectNode serviceSpecNode) {
+        try {
+            buildSpecHandler.update(serviceSpecNode);
+            return new ServiceSpec(serviceSpecNode);
+        } catch (HyscaleException e) {
+            fail();
+        }
+        return null;
     }
 
 }

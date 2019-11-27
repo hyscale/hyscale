@@ -13,11 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller;
+package io.hyscale.controller.directive;
 
-import org.springframework.boot.test.context.SpringBootTest;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
-@SpringBootTest(classes = ControllerTestConfiguration.class)
-public class ControllerTestInitializer {
+import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
+public interface ServiceSpecUpdateTestHandler {
+
+    public String getServiceSpec();
+    
+    public boolean performValidation(ServiceSpec oldServiceSpec, ServiceSpec updatedServiceSpec);
+    
+    public ServiceSpec getUpdatedServiceSpec(ObjectNode serviceSpecNode);
+    
 }

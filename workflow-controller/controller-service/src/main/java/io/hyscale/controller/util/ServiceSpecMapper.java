@@ -67,7 +67,7 @@ public class ServiceSpecMapper {
 
     public ServiceSpec from(String filepath) throws HyscaleException {
         if (StringUtils.isBlank(filepath)) {
-            throw getException(filepath);
+            throw buildException(filepath);
         }
         File serviceSpecFile = new File(filepath);
         checkForFile(serviceSpecFile);
@@ -76,12 +76,12 @@ public class ServiceSpecMapper {
 
     private boolean checkForFile(File serviceSpecFile) throws HyscaleException {
         if (serviceSpecFile == null || !serviceSpecFile.exists()) {
-            throw getException(serviceSpecFile != null ? serviceSpecFile.getName() : ToolConstants.EMPTY_STRING);
+            throw buildException(serviceSpecFile != null ? serviceSpecFile.getName() : ToolConstants.EMPTY_STRING);
         }
         return true;
     }
 
-    private HyscaleException getException(String serviceSpec) {
+    private HyscaleException buildException(String serviceSpec) {
         return new HyscaleException(ControllerErrorCodes.CANNOT_FIND_SERVICE_SPEC,
                 serviceSpec != null ? serviceSpec : ToolConstants.EMPTY_STRING);
     }
