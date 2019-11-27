@@ -208,14 +208,15 @@ public class CommandExecutor {
      * @throws HyscaleException
      */
     private static void handleStandardInput(Process process, String command, String stdInput) throws HyscaleException {
-        if (StringUtils.isNotBlank(stdInput)) {
-            try (OutputStream processStdin = process.getOutputStream()) {
-                processStdin.write(stdInput.getBytes(StandardCharsets.UTF_8));
-            } catch (IOException e) {
-                HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_WRITE_STDIN, command);
-                logger.error("Error while writing std input to the process, error {}", ex.toString());
-                throw ex;
-            }
+        if (StringUtils.isBlank(stdInput)){
+            return;
+        }
+        try (OutputStream processStdin = process.getOutputStream()) {
+            processStdin.write(stdInput.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_WRITE_STDIN, command);
+            logger.error("Error while writing std input to the process, error {}", ex.toString());
+            throw ex;
         }
     }
 }
