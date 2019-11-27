@@ -16,10 +16,14 @@
 package io.hyscale.generator.services.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.generator.services.builder.DefaultLabelBuilder;
 import io.hyscale.generator.services.generator.MetadataManifestSnippetGenerator;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
+import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Agent;
 import io.hyscale.servicespec.commons.model.service.Props;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
@@ -46,14 +50,15 @@ public class AgentConfigMapBuilder implements AgentBuilder {
     private static final Logger logger = LoggerFactory.getLogger(AgentConfigMapBuilder.class);
 
     @Override
-    public List<ManifestSnippet> build(List<Agent> agents, ServiceSpec serviceSpec) throws JsonProcessingException {
+    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
+        List<Agent> agents = getAgents(serviceSpec);
         List<ManifestSnippet> configMapSnippets = new ArrayList<ManifestSnippet>();
         for (Agent agent : agents) {
             if(agent.getProps() == null || agent.getProps().isEmpty()){
                 continue;
             }
             String configMapName = agentManifestNameGenerator.generateConfigMapName(agent.getName());
-            configMapSnippets.addAll(createConfigMapSnippet(configMapName));
+            configMapSnippets.addAll(createConfigMapSnippet(configMapName,manifestContext,serviceSpec));
             Props props = new Props();
             props.setProps(agent.getProps());
             String propsVolumePath = agent.getPropsVolumePath();
@@ -66,7 +71,15 @@ public class AgentConfigMapBuilder implements AgentBuilder {
         return configMapSnippets;
     }
 
-    private List<ManifestSnippet> createConfigMapSnippet(String configMapName) throws JsonProcessingException {
+    private List<ManifestSnippet> createConfigMapSnippet(String configMapName, ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
+        String appName = manifestContext.getAppName();
+        String envName = manifestContext.getEnvName();
+        String serviceName = null;
+        try{
+            serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
+        }catch (HyscaleException e){
+            logger.error("Error fetching service name from service spec",e);
+        }
         List<ManifestSnippet> configMapSnippets = new ArrayList<ManifestSnippet>();
         ManifestSnippet kindSnippet = MetadataManifestSnippetGenerator.getKind(ManifestResource.CONFIG_MAP);
         kindSnippet.setName(configMapName);
@@ -79,7 +92,7 @@ public class AgentConfigMapBuilder implements AgentBuilder {
         ManifestSnippet snippet = new ManifestSnippet();
         V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
         v1ObjectMeta.setName(configMapName);
-        // TODO Set labels
+        v1ObjectMeta.setLabels(DefaultLabelBuilder.build(appName,envName,serviceName));
         snippet.setSnippet(JsonSnippetConvertor.serialize(v1ObjectMeta));
         snippet.setPath("metadata");
         snippet.setKind(ManifestResource.CONFIG_MAP.getKind());

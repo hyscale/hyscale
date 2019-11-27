@@ -17,6 +17,7 @@ package io.hyscale.generator.services.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.hyscale.commons.models.DecoratedArrayList;
+import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
@@ -48,9 +49,10 @@ public class AgentEnvBuilder implements AgentBuilder {
     AgentManifestNameGenerator agentManifestNameGenerator;
 
     @Override
-    public List<ManifestSnippet> build(List<Agent> agents, ServiceSpec serviceSpec) throws JsonProcessingException {
+    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ? ManifestResource.STATEFUL_SET.getKind() :
                 ManifestResource.DEPLOYMENT.getKind();
+        List<Agent> agents = getAgents(serviceSpec);
         List<ManifestSnippet> envSnippets = new ArrayList<ManifestSnippet>();
         int agentCount = 1;
         for (Agent agent : agents) {
