@@ -44,7 +44,7 @@ import java.util.List;
  *
  */
 @Component
-public class AgentConfigMapBuilder implements AgentBuilder {
+public class AgentConfigMapBuilder extends AgentHelper implements AgentBuilder {
     @Autowired
     AgentManifestNameGenerator agentManifestNameGenerator;
     private static final Logger logger = LoggerFactory.getLogger(AgentConfigMapBuilder.class);
@@ -53,6 +53,9 @@ public class AgentConfigMapBuilder implements AgentBuilder {
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
         List<Agent> agents = getAgents(serviceSpec);
         List<ManifestSnippet> configMapSnippets = new ArrayList<ManifestSnippet>();
+        if(agents == null){
+            return configMapSnippets;
+        }
         for (Agent agent : agents) {
             if(agent.getProps() == null || agent.getProps().isEmpty()){
                 continue;

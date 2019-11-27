@@ -30,15 +30,4 @@ public interface AgentBuilder {
 
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException;
 
-    default List<Agent> getAgents(ServiceSpec serviceSpec){
-        TypeReference<List<Agent>> agentsList = new TypeReference<List<Agent>>() {
-        };
-        try {
-            List<Agent> agents = serviceSpec.get(HyscaleSpecFields.agents, agentsList);
-            return  agents;
-        } catch (HyscaleException e) {
-            return null;
-        }
-    }
-
 }
