@@ -31,7 +31,7 @@ import io.hyscale.servicespec.commons.model.service.Dockerfile;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @Component
-public class DockerfileUpdateTestHandler implements ServiceSpecUpdateTestHandler {
+public class DockerfileUpdateTestHandler implements IServiceSpecUpdateTestHandler<Dockerfile> {
 
     private static final String JSON_PATH = HyscaleSpecFields.getPath(HyscaleSpecFields.image,
             HyscaleSpecFields.dockerfile);
@@ -42,21 +42,12 @@ public class DockerfileUpdateTestHandler implements ServiceSpecUpdateTestHandler
     private DockerfileJsonHandler dockerfileHandler;
 
     @Override
-    public String getServiceSpec() {
+    public String getServiceSpecPath() {
         return dockerfileUpdateSpec;
     }
 
     @Override
-    public boolean performValidation(ServiceSpec oldServiceSpec, ServiceSpec updatedServiceSpec) {
-        Dockerfile oldDockerfile = null;
-        Dockerfile updatedDockerfile = null;
-        try {
-            oldDockerfile = oldServiceSpec.get(JSON_PATH, Dockerfile.class);
-            updatedDockerfile = updatedServiceSpec.get(JSON_PATH, Dockerfile.class);
-        } catch (HyscaleException e) {
-            fail();
-        }
-
+    public boolean validate(Dockerfile oldDockerfile, Dockerfile updatedDockerfile) {
         assertEquals(WindowsUtil.updateToUnixFileSeparator(oldDockerfile.getPath()), updatedDockerfile.getPath());
         assertEquals(WindowsUtil.updateToUnixFileSeparator(oldDockerfile.getDockerfilePath()),
                 updatedDockerfile.getDockerfilePath());
@@ -64,7 +55,7 @@ public class DockerfileUpdateTestHandler implements ServiceSpecUpdateTestHandler
     }
 
     @Override
-    public ServiceSpec getUpdatedServiceSpec(ObjectNode serviceSpecNode) {
+    public ServiceSpec updateServiceSpec(ObjectNode serviceSpecNode) {
         try {
             dockerfileHandler.update(serviceSpecNode);
             return new ServiceSpec(serviceSpecNode);
@@ -72,5 +63,15 @@ public class DockerfileUpdateTestHandler implements ServiceSpecUpdateTestHandler
             fail();
         }
         return null;
+    }
+
+    @Override
+    public String getJsonPath() {
+        return JSON_PATH;
+    }
+
+    @Override
+    public Class<Dockerfile> getType() {
+        return Dockerfile.class;
     }
 }

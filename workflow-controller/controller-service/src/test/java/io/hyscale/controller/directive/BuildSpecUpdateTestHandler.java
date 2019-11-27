@@ -32,7 +32,7 @@ import io.hyscale.servicespec.commons.model.service.BuildSpec;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @Component
-public class BuildSpecUpdateTestHandler implements ServiceSpecUpdateTestHandler {
+public class BuildSpecUpdateTestHandler implements IServiceSpecUpdateTestHandler<BuildSpec> {
 
     private static final String buildSpecUpdateSpec = "/servicespecs/buildSpec_update.hspec.yaml";
 
@@ -43,44 +43,40 @@ public class BuildSpecUpdateTestHandler implements ServiceSpecUpdateTestHandler 
     private BuildSpecJsonHandler buildSpecHandler;
 
     @Override
-    public String getServiceSpec() {
+    public String getServiceSpecPath() {
         return buildSpecUpdateSpec;
     }
-
+    
     @Override
-    public boolean performValidation(ServiceSpec oldServiceSpec, ServiceSpec updatedServiceSpec) {
-        BuildSpec oldBuildSpec = null;
-        BuildSpec updatedBuildSpec = null;
-        try {
-            oldBuildSpec = oldServiceSpec.get(JSON_PATH, BuildSpec.class);
-            updatedBuildSpec = updatedServiceSpec.get(JSON_PATH, BuildSpec.class);
-        } catch (HyscaleException e) {
-            fail();
-        }
-
+    public String getJsonPath() {
+        return JSON_PATH;
+    }
+    
+    @Override
+    public boolean validate(BuildSpec oldBuildSpec, BuildSpec updatedBuildSpec) {
         assertEquals(WindowsUtil.updateToUnixFileSeparator(oldBuildSpec.getConfigCommandsScript()),
-                updatedBuildSpec.getConfigCommandsScript());
-        assertEquals(WindowsUtil.updateToUnixFileSeparator(oldBuildSpec.getRunCommandsScript()),
-                updatedBuildSpec.getRunCommandsScript());
+              updatedBuildSpec.getConfigCommandsScript());
+      assertEquals(WindowsUtil.updateToUnixFileSeparator(oldBuildSpec.getRunCommandsScript()),
+              updatedBuildSpec.getRunCommandsScript());
 
-        for (Artifact updatedArtifact : updatedBuildSpec.getArtifacts()) {
-            for (Artifact oldArtifact : oldBuildSpec.getArtifacts()) {
-                if (updatedArtifact.getName().equals(oldArtifact.getName())) {
-                    assertEquals(oldArtifact.getDestination(), updatedArtifact.getDestination());
-                    if (oldArtifact.getSource().contains("\\")) {
-                        assertEquals(WindowsUtil.updateToUnixFileSeparator(oldArtifact.getSource()),
-                                updatedArtifact.getSource());
-                    } else {
-                        assertEquals(oldArtifact.getSource(), updatedArtifact.getSource());
-                    }
-                }
-            }
-        }
-        return true;
+      for (Artifact updatedArtifact : updatedBuildSpec.getArtifacts()) {
+          for (Artifact oldArtifact : oldBuildSpec.getArtifacts()) {
+              if (updatedArtifact.getName().equals(oldArtifact.getName())) {
+                  assertEquals(oldArtifact.getDestination(), updatedArtifact.getDestination());
+                  if (oldArtifact.getSource().contains("\\")) {
+                      assertEquals(WindowsUtil.updateToUnixFileSeparator(oldArtifact.getSource()),
+                              updatedArtifact.getSource());
+                  } else {
+                      assertEquals(oldArtifact.getSource(), updatedArtifact.getSource());
+                  }
+              }
+          }
+      }
+      return true;
     }
 
     @Override
-    public ServiceSpec getUpdatedServiceSpec(ObjectNode serviceSpecNode) {
+    public ServiceSpec updateServiceSpec(ObjectNode serviceSpecNode) {
         try {
             buildSpecHandler.update(serviceSpecNode);
             return new ServiceSpec(serviceSpecNode);
@@ -88,6 +84,11 @@ public class BuildSpecUpdateTestHandler implements ServiceSpecUpdateTestHandler 
             fail();
         }
         return null;
+    }
+
+    @Override
+    public Class getType() {
+        return BuildSpec.class;
     }
 
 }

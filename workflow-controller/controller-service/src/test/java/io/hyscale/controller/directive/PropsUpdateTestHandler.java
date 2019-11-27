@@ -24,7 +24,6 @@ import java.util.Map.Entry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.hyscale.commons.exception.HyscaleException;
@@ -35,7 +34,7 @@ import io.hyscale.servicespec.commons.model.PropType;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @Component
-public class PropsUpdateTestHandler implements ServiceSpecUpdateTestHandler {
+public class PropsUpdateTestHandler implements IServiceSpecUpdateTestHandler<Map<String, String>> {
 
     private static final String propsUpdateSpec = "/servicespecs/props_update.hspec.yaml";
     
@@ -44,11 +43,13 @@ public class PropsUpdateTestHandler implements ServiceSpecUpdateTestHandler {
     @Autowired
     private PropsJsonHandler propsHandler;
     
-    public String getServiceSpec() {
+    @Override
+    public String getServiceSpecPath() {
         return propsUpdateSpec;
     }
     
-    public ServiceSpec getUpdatedServiceSpec(ObjectNode serviceSpecNode) {
+    @Override
+    public ServiceSpec updateServiceSpec(ObjectNode serviceSpecNode) {
         try {
             propsHandler.update(serviceSpecNode);
             return new ServiceSpec(serviceSpecNode);
@@ -59,19 +60,8 @@ public class PropsUpdateTestHandler implements ServiceSpecUpdateTestHandler {
     }
     
     @Override
-    public boolean performValidation(ServiceSpec oldServiceSpec, ServiceSpec updatedServiceSpec) {
+    public boolean validate(Map<String, String> oldProps, Map<String, String> updatedProps) {
         
-        Map<String, String> oldProps = null;
-        Map<String, String> updatedProps = null;
-        try {
-            TypeReference<Map<String, String>> typeReference = new TypeReference<Map<String, String>>() {
-            };
-            oldProps = oldServiceSpec.get(JSON_PATH, typeReference);
-            updatedProps = updatedServiceSpec.get(JSON_PATH, typeReference);
-        } catch (HyscaleException e) {
-            fail();
-        }
-
         for (Entry<String, String> each : updatedProps.entrySet()) {
             String value = each.getValue();
             if (PropType.FILE.getPatternMatcher().matcher(value).matches()) {
@@ -82,6 +72,16 @@ public class PropsUpdateTestHandler implements ServiceSpecUpdateTestHandler {
         }
         return true;
 
+    }
+
+    @Override
+    public String getJsonPath() {
+        return JSON_PATH;
+    }
+
+    @Override
+    public Class<Map<String, String>> getType() {
+        return (Class<Map<String, String>>) (Class) Map.class;
     }
     
 }

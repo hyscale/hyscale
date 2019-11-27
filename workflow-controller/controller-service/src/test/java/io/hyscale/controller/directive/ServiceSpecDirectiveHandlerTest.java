@@ -15,9 +15,11 @@
  */
 package io.hyscale.controller.directive;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.TestInstance;
@@ -33,36 +35,30 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class ServiceSpecUpdateHandlerTest {
+public class ServiceSpecDirectiveHandlerTest {
 
     private static ObjectNode serviceSpecNode = null;
 
     private static ServiceSpec oldServiceSpec = null;
 
     private static ServiceSpec updatedServiceSpec = null;
-
+    
     @Autowired
-    private PropsUpdateTestHandler propsJsonHandlerTest;
+    private List<IServiceSpecUpdateTestHandler> serviceSpecUpdateHandler;
 
-    @Autowired
-    private DockerfileUpdateTestHandler dockerfileJsonHandlerTest;
-
-    @Autowired
-    private BuildSpecUpdateTestHandler buildSpecJsonHandlerTest;
-
-    public Stream<ServiceSpecUpdateTestHandler> input() {
-        return Stream.of(propsJsonHandlerTest, dockerfileJsonHandlerTest, buildSpecJsonHandlerTest);
+    public Stream<IServiceSpecUpdateTestHandler> input() {
+        return serviceSpecUpdateHandler.stream();
     }
 
     @ParameterizedTest
     @MethodSource(value = "input")
-    public void testServiceSpecUpdate(ServiceSpecUpdateTestHandler serviceSpecJsonHandlerTest) {
-        String serviceSpec = serviceSpecJsonHandlerTest.getServiceSpec();
+    public void testServiceSpecUpdate(IServiceSpecUpdateTestHandler serviceSpecJsonHandlerTest) {
+        String serviceSpec = serviceSpecJsonHandlerTest.getServiceSpecPath();
         try {
             oldServiceSpec = ServiceSpecTestUtil.getServiceSpec(serviceSpec);
             serviceSpecNode = (ObjectNode) ServiceSpecTestUtil.getServiceSpecJsonNode(serviceSpec);
-            updatedServiceSpec = serviceSpecJsonHandlerTest.getUpdatedServiceSpec(serviceSpecNode);
-            serviceSpecJsonHandlerTest.performValidation(oldServiceSpec, updatedServiceSpec);
+            updatedServiceSpec = serviceSpecJsonHandlerTest.updateServiceSpec(serviceSpecNode);
+            assertTrue(serviceSpecJsonHandlerTest.validate(oldServiceSpec, updatedServiceSpec));
         } catch (IOException e) {
             fail();
         }
