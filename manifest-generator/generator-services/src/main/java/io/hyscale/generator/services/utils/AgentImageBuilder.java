@@ -16,6 +16,7 @@
 package io.hyscale.generator.services.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
@@ -38,15 +39,19 @@ import java.util.List;
  *
  */
 @Component
-public class AgentImageBuilder implements AgentBuilder {
+public class AgentImageBuilder extends AgentHelper implements AgentBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(AgentImageBuilder.class);
 
     @Override
-    public List<ManifestSnippet> build(List<Agent> agents, ServiceSpec serviceSpec) throws JsonProcessingException {
+    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ? ManifestResource.STATEFUL_SET.getKind() :
                 ManifestResource.DEPLOYMENT.getKind();
         List<ManifestSnippet> podSnippets = new ArrayList<ManifestSnippet>();
+        List<Agent> agents = getAgents(serviceSpec);
+        if(agents == null){
+            return podSnippets;
+        }
         int agentCount = 1;
         for (Agent agent : agents) {
             String pathPrefix = "spec.template.spec.containers[" + agentCount+"].";

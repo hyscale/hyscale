@@ -60,20 +60,10 @@ public class AgentHandler implements ManifestHandler {
             logger.debug("Agents found to be empty while processing service spec data.");
             return null;
         }
-        TypeReference<List<Agent>> agentsList = new TypeReference<List<Agent>>() {
-        };
-        List<Agent> agents = null;
-        try {
-            agents = serviceSpec.get(HyscaleSpecFields.agents, agentsList);
-        } catch (HyscaleException e) {
-            logger.error("Couldn't fetch agents, returning null", e);
-            return null;
-        }
         List<ManifestSnippet> manifestSnippetList = new ArrayList<ManifestSnippet>();
-
         try {
             for (AgentBuilder agentBuilder : agentBuilders) {
-                manifestSnippetList.addAll(agentBuilder.build(agents, serviceSpec));
+                manifestSnippetList.addAll(agentBuilder.build(manifestContext, serviceSpec));
             }
         } catch (JsonProcessingException e) {
             logger.error("Json Processing Exception", e);

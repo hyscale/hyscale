@@ -16,17 +16,24 @@
 package io.hyscale.generator.services.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.generator.services.builder.DefaultLabelBuilder;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.generator.MetadataManifestSnippetGenerator;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
+import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Agent;
 import io.hyscale.servicespec.commons.model.service.Secrets;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.kubernetes.client.models.V1ObjectMeta;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.DefaultBindingErrorProcessor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,21 +47,25 @@ import java.util.List;
  *
  */
 @Component
-public class AgentSecretBuilder implements AgentBuilder {
+public class AgentSecretBuilder extends AgentHelper implements AgentBuilder {
 
     @Autowired
     AgentManifestNameGenerator agentManifestNameGenerator;
+    private static final Logger logger = LoggerFactory.getLogger(AgentSecretBuilder.class);
     @Override
-    public List<ManifestSnippet> build(List<Agent> agents, ServiceSpec serviceSpec) throws JsonProcessingException {
+    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
         List<ManifestSnippet> secretSnippets = new ArrayList<ManifestSnippet>();
+        List<Agent> agents = getAgents(serviceSpec);
+        if(agents == null){
+            return secretSnippets;
+        }
         for (Agent agent : agents) {
-            //   Secrets secrets = agent.getSecrets();
             Secrets secrets = agent.getSecrets();
             if (secrets == null) {
                 continue;
             }
             String secretName = agentManifestNameGenerator.generateSecretName(agent.getName());
-            secretSnippets.addAll(createSecretSnippet(secretName));
+            secretSnippets.addAll(createSecretSnippet(secretName,manifestContext,serviceSpec));
             String secretsVolumePath = agent.getSecretsVolumePath();
             ManifestSnippet secretSnippet = SecretsDataUtil.build(secrets, secretsVolumePath, ManifestGenConstants.DEFAULT_SECRETS_FILE);
             if (secretSnippet != null) {
@@ -65,7 +76,15 @@ public class AgentSecretBuilder implements AgentBuilder {
         return secretSnippets;
     }
 
-    private List<ManifestSnippet> createSecretSnippet(String secretName) throws JsonProcessingException {
+    private List<ManifestSnippet> createSecretSnippet(String secretName, ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
+        String appName = manifestContext.getAppName();
+        String envName = manifestContext.getEnvName();
+        String serviceName = null;
+        try{
+            serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
+        }catch (HyscaleException e){
+            logger.error("Error fetching service name from service spec",e);
+        }
         List<ManifestSnippet> secretSnippets = new ArrayList<ManifestSnippet>();
         ManifestSnippet kindSnippet = MetadataManifestSnippetGenerator.getKind(ManifestResource.SECRET);
         kindSnippet.setName(secretName);
@@ -78,7 +97,7 @@ public class AgentSecretBuilder implements AgentBuilder {
         ManifestSnippet snippet = new ManifestSnippet();
         V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
         v1ObjectMeta.setName(secretName);
-        // TODO   v1ObjectMeta.setLabels();
+        v1ObjectMeta.setLabels(DefaultLabelBuilder.build(appName,envName,serviceName));
         snippet.setSnippet(JsonSnippetConvertor.serialize(v1ObjectMeta));
         snippet.setPath("metadata");
         snippet.setKind(ManifestResource.SECRET.getKind());

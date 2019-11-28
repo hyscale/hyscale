@@ -16,7 +16,11 @@
 package io.hyscale.generator.services.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
+import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Agent;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
@@ -24,6 +28,6 @@ import java.util.List;
 
 public interface AgentBuilder {
 
-    public List<ManifestSnippet> build(List<Agent> agents, ServiceSpec serviceSpec) throws JsonProcessingException;
+    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException;
 
 }

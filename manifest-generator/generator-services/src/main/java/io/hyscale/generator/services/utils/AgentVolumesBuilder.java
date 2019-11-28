@@ -16,6 +16,7 @@
 package io.hyscale.generator.services.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.generator.K8sResourceNameGenerator;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
@@ -41,14 +42,19 @@ import java.util.List;
  *
  */
 @Component
-public class AgentVolumesBuilder implements AgentBuilder {
+public class AgentVolumesBuilder extends AgentHelper implements AgentBuilder {
     @Autowired
     AgentManifestNameGenerator agentManifestNameGenerator;
 
     @Override
-    public List<ManifestSnippet> build(List<Agent> agents, ServiceSpec serviceSpec) throws JsonProcessingException {
+    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ?
                 ManifestResource.STATEFUL_SET.getKind() : ManifestResource.DEPLOYMENT.getKind();
+        List<ManifestSnippet> volumeSnippets = new ArrayList<ManifestSnippet>();
+        List<Agent> agents = getAgents(serviceSpec);
+        if(agents == null){
+            return volumeSnippets;
+        }
         ManifestSnippet volumeSnippet = new ManifestSnippet();
         volumeSnippet.setKind(podSpecOwner);
         volumeSnippet.setPath("spec.template.spec.volumes");
@@ -74,7 +80,6 @@ public class AgentVolumesBuilder implements AgentBuilder {
             }
         }
         volumeSnippet.setSnippet(JsonSnippetConvertor.serialize(volumeList));
-        List<ManifestSnippet> volumeSnippets = new ArrayList<ManifestSnippet>();
         volumeSnippets.add(volumeSnippet);
         return volumeSnippets;
     }
