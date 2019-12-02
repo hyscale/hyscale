@@ -1,0 +1,20 @@
+name: hello
+image:
+   registry: registry.hub.docker.com  
+   name: {{username}}/hello # replace with your dockerhub username for {{username}}
+   tag: node-slim
+   buildSpec:
+     stackImage: node:slim
+     artifacts:
+       - name: hello
+         source: hello.js
+         destination: /app/
+         
+external: true
+
+startCommand: "nodejs,/app/hello.js"
+
+ports:
+  - port: 8080/tcp
+    healthCheck:
+       httpPath: /
