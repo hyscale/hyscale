@@ -24,8 +24,8 @@ public class NormalizationUtil {
         if (StringUtils.isBlank(name)) {
             return name;
         }
-        String normalized = name.toLowerCase().replaceAll("[\\.]+", "-").replaceAll("[ ]+", "-")
-                .replaceAll("[^a-zA-Z0-9-_]", "").replaceAll(" ", "");
+        String normalized = name.toLowerCase().trim().replaceAll("[\\.]+", "-").replaceAll("[ ]+", "-")
+                .replaceAll("[^a-zA-Z0-9-_]", "");
         int str_length = normalized.length();
         if (str_length > length) {
             str_length = length;

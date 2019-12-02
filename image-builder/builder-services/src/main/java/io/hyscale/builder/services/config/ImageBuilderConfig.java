@@ -18,6 +18,7 @@ package io.hyscale.builder.services.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+
 import io.hyscale.commons.config.SetupConfig;
 
 @Component

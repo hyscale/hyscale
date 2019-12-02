@@ -28,7 +28,11 @@ public enum CommonErrorCode implements HyscaleErrorCode {
     EMPTY_FILE_PATH("Empty file found"),
     FAILED_TO_CLEAN_DIRECTORY("Failed to clean directory {}"),
     FAILED_TO_DELETE_DIRECTORY("Failed to delete the directory {}"),
-    FOUND_DIRECTORY_INSTEAD_OF_FILE("Found directory {} instead of file");
+    FOUND_DIRECTORY_INSTEAD_OF_FILE("Found directory {} instead of file"),
+    TEMPLATE_CONTEXT_NOT_FOUND("Template Context not found for template {}"),
+    INVALID_INPUTSTREAM("Invalid input stream {}"),
+    INVALID_OUTPUTSTREAM("Invalid output stream {}"),
+    INVALID_HANDLER("Invalid handler {}");
 
     private String message;
 

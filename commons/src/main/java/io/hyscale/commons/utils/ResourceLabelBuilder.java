@@ -72,10 +72,10 @@ public class ResourceLabelBuilder {
 	}
 
 	public static String normalize(String name) {
-		if (name == null) {
-			return null;
+		if (StringUtils.isEmpty(name)) {
+			return name;
 		}
-		String normalized = name.replaceAll(" ", "").replaceAll("[\\.]+", "-").replaceAll("[ ]+", "-")
+		String normalized = name.trim().replaceAll("[\\.]+", "-").replaceAll("[ ]+", "-")
 				.replaceAll("[^a-zA-Z0-9-_]", "");
 		return normalized.substring(0, Integer.min(MAX_LABEL_VALUE_SIZE - 1, normalized.length()));
 	}
