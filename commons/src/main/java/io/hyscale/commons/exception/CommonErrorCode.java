@@ -31,8 +31,8 @@ public enum CommonErrorCode implements HyscaleErrorCode {
     FAILED_TO_DELETE_DIRECTORY("Failed to delete the directory {}"),
     FOUND_DIRECTORY_INSTEAD_OF_FILE("Found directory {} instead of file"),
     TEMPLATE_CONTEXT_NOT_FOUND("Template Context not found for template {}"),
-    INPUTSTREAM_NOT_FOUND("Cannot read from input stream."),
-    OUTPUTSTREAM_NOT_FOUND("Cannot write to output stream.");
+    INPUTSTREAM_NOT_FOUND("Cannot find inputstream and so cannot write to logfile"),
+    OUTPUTSTREAM_NOT_FOUND("Cannot find output stream and so cannot write to stream");
     private String message;
 
     CommonErrorCode(String message) {

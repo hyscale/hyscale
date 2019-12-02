@@ -94,7 +94,7 @@ public class LogProcessor {
 				lineRead++;
 			}
 		} catch (FileNotFoundException e) {
-			logger.error("Error occured while trying to read the log file.", e);
+			logger.error("Cannot find log file.", e);
 		} catch (IOException e) {
 			logger.error("Error while reading log file:{} ", logFile.getName(), e);
 		}
