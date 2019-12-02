@@ -66,7 +66,6 @@ public class PodSpecEnvHandler implements ManifestHandler {
             }
 
             // Preparing Pod Spec secrets from props
-         //   Secrets secrets = SecretsProvider.getSecrets(serviceSpec);
             Secrets secrets = serviceSpec.get(HyscaleSpecFields.secrets, Secrets.class);
             if (ManifestPredicates.getSecretsEnvPredicate().test(serviceSpec)) {
                 logger.debug("Preparing Pod Spec env's from secrets.");

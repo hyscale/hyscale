@@ -43,7 +43,6 @@ public class SecretsDataHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
-     //   Secrets secrets = SecretsProvider.getSecrets(serviceSpec);
         Secrets secrets = serviceSpec.get(HyscaleSpecFields.secrets, Secrets.class);
         if (!ManifestResource.SECRET.getPredicate().test(serviceSpec)) {
             return null;

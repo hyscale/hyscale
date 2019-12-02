@@ -99,7 +99,6 @@ public class ManifestPredicates {
 		//	Secrets secrets = null;
 			Secrets secrets = null;
 			try {
-		//		secrets = SecretsProvider.getSecrets(serviceSpec);
 				secrets = serviceSpec.get(HyscaleSpecFields.secrets, Secrets.class);
 			} catch (HyscaleException e) {
 				return false;
