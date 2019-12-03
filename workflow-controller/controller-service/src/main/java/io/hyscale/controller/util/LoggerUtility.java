@@ -95,7 +95,7 @@ public class LoggerUtility {
 	 * Image build and push logs
 	 * @param context
 	 */
-	public void imageBuilderLogs(WorkflowContext context) {
+	public void imageBuilderLogs(WorkflowContext context) throws HyscaleException{
 		BuildContext buildContext = new BuildContext();
 		buildContext.setAppName(context.getAppName());
 		buildContext.setServiceName(context.getServiceName());
