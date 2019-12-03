@@ -61,7 +61,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_CONFIGMAP);
         try {
             KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata);
-        } catch(HyscaleException e) {
+        } catch (HyscaleException e) {
             WorkflowLogger.endActivity(Status.FAILED);
             throw e;
         }
@@ -69,8 +69,8 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         String name = metadata.getName();
         V1ConfigMap configMap = null;
         try {
-            metadata.putAnnotationsItem(
-                    AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
+            metadata.putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
+                    gson.toJson(resource));
             configMap = coreV1Api.createNamespacedConfigMap(namespace, resource, null, TRUE, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
@@ -88,14 +88,14 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
      */
     @Override
     public boolean update(ApiClient apiClient, V1ConfigMap resource, String namespace) throws HyscaleException {
-        if(resource == null){
+        if (resource == null) {
             LOGGER.debug("Cannot update null ConfigMap");
             return false;
         }
         V1ObjectMeta metadata = resource.getMetadata();
         try {
             KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata);
-        } catch(HyscaleException e) {
+        } catch (HyscaleException e) {
             WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_CONFIGMAP);
             WorkflowLogger.endActivity(Status.FAILED);
             throw e;
@@ -179,7 +179,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         V1ObjectMeta metadata = target.getMetadata();
         try {
             KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata, name);
-        } catch(HyscaleException e) {
+        } catch (HyscaleException e) {
             WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_CONFIGMAP);
             WorkflowLogger.endActivity(Status.FAILED);
             throw e;
@@ -222,12 +222,12 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
 
     @Override
     public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-        
+
         ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_CONFIG_MAP);
         WorkflowLogger.startActivity(activityContext);
         try {
             KubernetesResourceUtil.isResourceValid(apiClient, getKind(), name);
-        } catch(HyscaleException e){
+        } catch (HyscaleException e) {
             WorkflowLogger.endActivity(activityContext, Status.FAILED);
             throw e;
         }
@@ -296,7 +296,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         return ResourceKind.CONFIG_MAP.getWeight();
     }
 
-	public ResourceStatus status(V1ConfigMap v1ConfigMap){
-		return ResourceStatus.STABLE;
-	}
+    public ResourceStatus status(V1ConfigMap v1ConfigMap) {
+        return ResourceStatus.STABLE;
+    }
 }

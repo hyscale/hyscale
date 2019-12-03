@@ -178,7 +178,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
         V1ObjectMeta metadata = target.getMetadata();
         try {
             KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata, name);
-        } catch(HyscaleException e) {
+        } catch (HyscaleException e) {
             WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_SERVICE);
             WorkflowLogger.endActivity(Status.FAILED);
             throw e;

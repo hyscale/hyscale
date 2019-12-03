@@ -20,6 +20,12 @@ import io.kubernetes.client.apis.AppsV1beta2Api;
 import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.apis.StorageV1Api;
 
+/**
+ * Helper Class to provide different kubernetes api
+ * such as CoreV1APi, AppsV1 among others
+ * @author tushart
+ *
+ */
 public class KubernetesApiProvider {
 
     public static AppsV1beta2Api getAppsV1beta2Api(ApiClient apiClient) {
