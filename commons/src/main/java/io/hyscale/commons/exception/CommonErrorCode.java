@@ -32,6 +32,7 @@ public enum CommonErrorCode implements HyscaleErrorCode {
     FOUND_DIRECTORY_INSTEAD_OF_FILE("Found directory {} instead of file"),
     TEMPLATE_CONTEXT_NOT_FOUND("Template Context not found for template {}"),
     INPUTSTREAM_NOT_FOUND("Cannot find inputstream and so cannot write to logfile"),
+    FAILED_TO_READ_LOGFILE("Failed to read logs at log file {}"),
     OUTPUTSTREAM_NOT_FOUND("Cannot find output stream and so cannot write to stream");
     private String message;
 
