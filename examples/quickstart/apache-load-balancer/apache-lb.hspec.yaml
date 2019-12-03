@@ -1,0 +1,13 @@
+name: apache-load-balancer
+
+image:
+   registry: registry.hub.docker.com
+   name: library/httpd
+   tag: 2.4
+
+external: true
+
+ports:
+  - port: 80/tcp
+    healthCheck: 
+       httpPath: /
