@@ -22,6 +22,9 @@ import io.hyscale.commons.exception.HyscaleErrorCode;
  */
 public enum DeployerErrorCodes implements HyscaleErrorCode {
     ERROR_WHILE_CREATING_PATCH("Error while creating patch "),
+    INVALID_RESOURCE_DATA("Resource {} data is not valid"),
+    INVALID_RESOURCE_NAME("{} resource name is required"),
+    API_CLIENT_REQUIRED("ApiClient is null"),
     KUBE_CONFIG_NOT_FOUND("Cannot find kubeconfig at {}"),
     INVALID_KUBE_CONFIG("Kubeconfig {} seems to be invalid "),
     UNABLE_TO_READ_KUBE_CONFIG("Unable to read kubeconfig "),

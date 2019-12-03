@@ -21,6 +21,9 @@ import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.util.ExceptionHelper;
+import io.hyscale.deployer.services.util.KubernetesApiProvider;
+import io.hyscale.deployer.services.util.KubernetesResourceUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +41,7 @@ import io.kubernetes.client.ApiException;
 import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.models.V1DeleteOptions;
 import io.kubernetes.client.models.V1Namespace;
+import io.kubernetes.client.models.V1ObjectMeta;
 
 /**
  * V1Namespace resource operations
@@ -52,8 +56,10 @@ public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
         if (resource == null) {
             return resource;
         }
-        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-        String name = resource.getMetadata().getName();
+        V1ObjectMeta metadata = resource.getMetadata();
+        KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata);
+        CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
+        String name = metadata.getName();
         V1Namespace createdNamespace = null;
         try {
             createdNamespace = coreV1Api.createNamespace(resource, null, TRUE, null);
@@ -70,7 +76,8 @@ public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
 
     @Override
     public V1Namespace get(ApiClient apiClient, String name, String namespace) throws HyscaleException {
-        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+        KubernetesResourceUtil.isResourceValid(apiClient, getKind(), name);
+        CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
         V1Namespace v1Namespace = null;
         try {
             v1Namespace = coreV1Api.readNamespace(name, TRUE, true, true);
@@ -91,11 +98,17 @@ public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
 
     @Override
     public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-        V1DeleteOptions deleteOptions = getDeleteOptions();
         ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_NAMESPACE);
+        WorkflowLogger.startActivity(activityContext);
         try {
-            WorkflowLogger.startActivity(activityContext);
+            KubernetesResourceUtil.isResourceValid(apiClient, getKind(), name);
+        } catch (HyscaleException e) {
+            WorkflowLogger.endActivity(activityContext, Status.FAILED);
+            throw e;
+        }
+        CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
+        V1DeleteOptions deleteOptions = getDeleteOptions();
+        try {
             try {
                 coreV1Api.deleteNamespace(name, deleteOptions, TRUE, null, null, null, null);
             } catch (JsonSyntaxException e) {

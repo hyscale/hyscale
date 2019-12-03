@@ -19,9 +19,14 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.apache.commons.lang3.StringUtils;
+
+import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.KubernetesResource;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.commons.models.YAMLManifest;
+import io.hyscale.deployer.services.exception.DeployerErrorCodes;
+import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.util.Yaml;
 
@@ -68,6 +73,40 @@ public class KubernetesResourceUtil {
         V1ObjectMeta v1ObjectMeta = (V1ObjectMeta) metadataMethod.invoke(object);
 
         return v1ObjectMeta;
+    }
+
+    public static boolean isResourceMetadataValid(V1ObjectMeta metadata) {
+        if (metadata == null || StringUtils.isBlank(metadata.getName())) {
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean isResourceValid(ApiClient apiClient, String kind, V1ObjectMeta metadata, String name)
+            throws HyscaleException {
+        return isResourceValid(apiClient, kind, metadata) && isResourceValid(apiClient, kind, name);
+    }
+
+    public static boolean isResourceValid(ApiClient apiClient, String kind, V1ObjectMeta metadata)
+            throws HyscaleException {
+        if (apiClient == null) {
+            throw new HyscaleException(DeployerErrorCodes.API_CLIENT_REQUIRED);
+        }
+        if (!isResourceMetadataValid(metadata)) {
+            throw new HyscaleException(DeployerErrorCodes.INVALID_RESOURCE_DATA, kind);
+        }
+        return true;
+    }
+
+    public static boolean isResourceValid(ApiClient apiClient, String kind, String name) throws HyscaleException {
+        if (StringUtils.isBlank(name)) {
+            throw new HyscaleException(DeployerErrorCodes.INVALID_RESOURCE_NAME, kind);
+        }
+
+        if (apiClient == null) {
+            throw new HyscaleException(DeployerErrorCodes.API_CLIENT_REQUIRED);
+        }
+        return true;
     }
 
 }

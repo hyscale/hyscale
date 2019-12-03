@@ -40,12 +40,15 @@ import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
+import io.hyscale.deployer.services.util.KubernetesApiProvider;
+import io.hyscale.deployer.services.util.KubernetesResourceUtil;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.PodLogs;
 import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.models.V1ContainerStatus;
 import io.kubernetes.client.models.V1DeleteOptions;
+import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1Pod;
 import io.kubernetes.client.models.V1PodList;
 
@@ -61,11 +64,13 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 			LOGGER.debug("Cannot create null Pod");
 			return resource;
 		}
-		CoreV1Api coreV1Api = new CoreV1Api();
-		String name = resource.getMetadata().getName();
+		V1ObjectMeta metadata = resource.getMetadata();
+		KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata);
+		CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
+        String name = metadata.getName();
 		V1Pod v1Pod = null;
 		try {
-			resource.getMetadata().putAnnotationsItem(
+			metadata.putAnnotationsItem(
 					AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
 			v1Pod = coreV1Api.createNamespacedPod(namespace, resource, null, TRUE, null);
 		} catch (ApiException e) {
@@ -84,8 +89,10 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 			LOGGER.debug("Cannot update null Pod");
 			return false;
 		}
-		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-		String name = resource.getMetadata().getName();
+		V1ObjectMeta metadata = resource.getMetadata();
+		KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata);
+		CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
+        String name = metadata.getName();
 		V1Pod existingPod = null;
 
 		try {
@@ -97,7 +104,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 		}
 		try {
 			String resourceVersion = existingPod.getMetadata().getResourceVersion();
-			resource.getMetadata().setResourceVersion(resourceVersion);
+			metadata.setResourceVersion(resourceVersion);
 			coreV1Api.replaceNamespacedPod(name, namespace, resource, TRUE, null);
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
@@ -111,7 +118,8 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 
 	@Override
 	public V1Pod get(ApiClient apiClient, String name, String namespace) throws HyscaleException {
-		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+	    KubernetesResourceUtil.isResourceValid(apiClient, getKind(), name);
+		CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
 		V1Pod v1Pod = null;
 		try {
 			v1Pod = coreV1Api.readNamespacedPod(name, namespace, TRUE, null, null);
@@ -126,7 +134,10 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 	@Override
 	public List<V1Pod> getBySelector(ApiClient apiClient, String selector, boolean label, String namespace)
 			throws HyscaleException {
-		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+	    if (apiClient == null) {
+	        throw new HyscaleException(DeployerErrorCodes.API_CLIENT_REQUIRED);
+	    }
+		CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
 		String labelSelector = label ? selector : null;
 		String fieldSelector = label ? null : selector;
 		List<V1Pod> v1Pods = null;
@@ -149,8 +160,10 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 			LOGGER.debug("Cannot patch null Pod");
 			return false;
 		}
-		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-		target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
+		V1ObjectMeta metadata = target.getMetadata();
+		KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata, name);
+		CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
+        metadata.putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
 				gson.toJson(target));
 		V1Pod sourcePod = null;
 		try {
@@ -181,8 +194,8 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 
 	@Override
 	public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-
+	    KubernetesResourceUtil.isResourceValid(apiClient, getKind(), name);
+		CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
 		V1DeleteOptions deleteOptions = getDeleteOptions();
 		deleteOptions.setApiVersion("apps/v1beta2");
 		try {
@@ -214,6 +227,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 		try {
 			List<V1Pod> V1PodList = getBySelector(apiClient, selector, label, namespace);
 			if (V1PodList == null || V1PodList.isEmpty()) {
+			    return false;
 			}
 			for (V1Pod V1Pod : V1PodList) {
 				delete(apiClient, V1Pod.getMetadata().getName(), namespace, wait);
@@ -239,15 +253,13 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 		return tailLogs(apiClient, name, namespace, null, name, readLines);
 	}
 	
-	public InputStream tailLogs(ApiClient apiClient, String name, String namespace, String podName, String containerName, Integer readLines)
+	public InputStream tailLogs(ApiClient apiClient, String serviceName, String namespace, String podName, String containerName, Integer readLines)
 			throws HyscaleException {
+	    if (apiClient == null) {
+	        throw new HyscaleException(DeployerErrorCodes.API_CLIENT_REQUIRED);
+	    }
 		if(podName == null) {
-			List<V1Pod> v1Pods = getBySelector(apiClient, ResourceLabelKey.SERVICE_NAME.getLabel() + "=" + name, true,
-					namespace);
-			if (v1Pods == null || v1Pods.isEmpty()) {
-				throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_POD, name, namespace);
-			}
-			podName = v1Pods.get(0).getMetadata().getName();
+			podName = getPodName(apiClient, serviceName, namespace);
 		}
 		try {
 			apiClient.getHttpClient().setReadTimeout(120, TimeUnit.MINUTES);
@@ -255,8 +267,8 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 			return logs.streamNamespacedPodLog(namespace, podName, containerName, null, readLines,
 					true);
 		} catch (IOException | ApiException e) {
-			LOGGER.error("Failed to tail Pod logs for service {} in namespace {} ", name, namespace);
-			throw new HyscaleException(DeployerErrorCodes.FAILED_TO_TAIL_POD, name, namespace);
+			LOGGER.error("Failed to tail Pod logs for service {} in namespace {} ", serviceName, namespace);
+			throw new HyscaleException(DeployerErrorCodes.FAILED_TO_TAIL_POD, serviceName, namespace);
 		}
 	}
 
@@ -265,65 +277,45 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 		return getLogs(apiClient, name, namespace, null, name, readLines);
 	}
 	
-	public InputStream getLogs(ApiClient apiClient, String name, String namespace, String podName, String containerName, Integer readLines)
+	public InputStream getLogs(ApiClient apiClient, String serviceName, String namespace, String podName, String containerName, Integer readLines)
 			throws HyscaleException {
+	    if (apiClient == null) {
+            throw new HyscaleException(DeployerErrorCodes.API_CLIENT_REQUIRED);
+        }
 		if(podName == null) {
-			List<V1Pod> v1Pods = getBySelector(apiClient, ResourceLabelKey.SERVICE_NAME.getLabel() + "=" + name, true,
-					namespace);
-			if (v1Pods == null || v1Pods.isEmpty()) {
-				throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_POD, name, namespace);
-			}
-			podName = v1Pods.get(0).getMetadata().getName();
+			podName = getPodName(apiClient, serviceName, namespace);
 		}
 		try {
-			CoreV1Api coreClient = new CoreV1Api(apiClient);
+			CoreV1Api coreClient = KubernetesApiProvider.getCoreV1Api(apiClient);
 			Call call = coreClient.readNamespacedPodLogCall(podName, namespace, containerName, false, null, TRUE, false, null,
 					readLines, true, null, null);
 			Response response = call.execute();
 			if (!response.isSuccessful()) {
-				LOGGER.error("Failed to get Pod logs for service {} in namespace {} : {}", name, namespace,
+				LOGGER.error("Failed to get Pod logs for service {} in namespace {} : {}", serviceName, namespace,
 						response.body().string());
-				throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_LOGS, name, namespace);
+				throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_LOGS, serviceName, namespace);
 			}
 			return response.body().byteStream();
 		} catch (IOException | ApiException e) {
-			LOGGER.error("Error while fetching Pod logs for service {} in namespace {} ", name, namespace,
+			LOGGER.error("Error while fetching Pod logs for service {} in namespace {} ", serviceName, namespace,
 					e.getMessage());
-			throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_LOGS, name, namespace);
+			throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_LOGS, serviceName, namespace);
 		}
 	}
 
-	// Integrate this check to K8sUtil
-	private void waitForContainerCreation(ApiClient apiClient, V1Pod v1Pod, String name, String namespace) {
-		long startTime = System.currentTimeMillis();
-		boolean containerReady = false;
-		WorkflowLogger.startActivity(DeployerActivity.WAITING_FOR_CONTAINER_CREATION);
-		while (!containerReady && System.currentTimeMillis() - startTime < MAX_TIME_TO_CONTAINER_READY) {
-			WorkflowLogger.continueActivity();
-			try {
-				v1Pod = get(apiClient, v1Pod.getMetadata().getName(), namespace);
-				List<V1ContainerStatus> containerStatuses = v1Pod.getStatus().getContainerStatuses();
-				if (containerStatuses != null && !containerStatuses.isEmpty()) {
-					V1ContainerStatus v1ContainerStatus = v1Pod.getStatus().getContainerStatuses().stream()
-							.filter(each -> {
-								return each.getName().equals(name);
-							}).findFirst().get();
-					containerReady = v1ContainerStatus.isReady();
-					// TODO Check if container is in error state and exit fast
-				}
-				Thread.sleep(5 * 1000);
-			} catch (InterruptedException e) {
-			} catch (HyscaleException ex) {
-
-			}
-		}
-
-		if (containerReady) {
-			WorkflowLogger.endActivity(Status.DONE);
-		} else {
-			WorkflowLogger.endActivity(Status.FAILED);
-		}
-	}
+    private String getPodName(ApiClient apiClient, String serviceName, String namespace) throws HyscaleException {
+        if (apiClient == null) {
+            throw new HyscaleException(DeployerErrorCodes.API_CLIENT_REQUIRED);
+        }
+        String podName;
+        List<V1Pod> v1Pods = getBySelector(apiClient, ResourceLabelKey.SERVICE_NAME.getLabel() + "=" + serviceName, true,
+        		namespace);
+        if (v1Pods == null || v1Pods.isEmpty()) {
+        	throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_POD, serviceName, namespace);
+        }
+        podName = v1Pods.get(0).getMetadata().getName();
+        return podName;
+    }
 
 	@Override
 	public boolean cleanUp() {

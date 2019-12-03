@@ -36,10 +36,13 @@ import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.model.ResourceStatus;
 import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
+import io.hyscale.deployer.services.util.KubernetesApiProvider;
+import io.hyscale.deployer.services.util.KubernetesResourceUtil;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.apis.AppsV1beta2Api;
 import io.kubernetes.client.models.V1DeleteOptions;
+import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1beta2Deployment;
 import io.kubernetes.client.models.V1beta2DeploymentList;
 import io.kubernetes.client.models.V1beta2DeploymentStatus;
@@ -56,7 +59,14 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 			return resource;
 		}
 		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_DEPLOYMENT);
-		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
+		V1ObjectMeta metadata = resource.getMetadata();
+		try {
+		    KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata);
+		} catch(HyscaleException e) {
+		    WorkflowLogger.endActivity(Status.FAILED);
+            throw e;
+		}
+		AppsV1beta2Api appsV1beta2Api = KubernetesApiProvider.getAppsV1beta2Api(apiClient);
 		V1beta2Deployment v1beta2Deployment = null;
 		try {
 			resource.getMetadata().putAnnotationsItem(
@@ -80,8 +90,16 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 			LOGGER.debug("Cannot update null Deployment");
 			return false;
 		}
-		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
-		String name = resource.getMetadata().getName();
+		V1ObjectMeta metadata = resource.getMetadata();
+		try {
+            KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata);
+        } catch(HyscaleException e) {
+            WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_DEPLOYMENT);
+            WorkflowLogger.endActivity(Status.FAILED);
+            throw e;
+        }
+		AppsV1beta2Api appsV1beta2Api = KubernetesApiProvider.getAppsV1beta2Api(apiClient);
+        String name = metadata.getName();
 		V1beta2Deployment existingDeployment = null;
 		try {
 			existingDeployment = get(apiClient, name, namespace);
@@ -93,7 +111,7 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_DEPLOYMENT);
 		try {
 			String resourceVersion = existingDeployment.getMetadata().getResourceVersion();
-			resource.getMetadata().setResourceVersion(resourceVersion);
+			metadata.setResourceVersion(resourceVersion);
 			appsV1beta2Api.replaceNamespacedDeployment(name, namespace, existingDeployment, TRUE, null);
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
@@ -109,7 +127,8 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 
 	@Override
 	public V1beta2Deployment get(ApiClient apiClient, String name, String namespace) throws HyscaleException {
-		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
+	    KubernetesResourceUtil.isResourceValid(apiClient, getKind(), name);
+		AppsV1beta2Api appsV1beta2Api = KubernetesApiProvider.getAppsV1beta2Api(apiClient);
 		V1beta2Deployment v1beta2Deployment = null;
 		try {
 			v1beta2Deployment = appsV1beta2Api.readNamespacedDeployment(name, namespace, TRUE, false, false);
@@ -125,7 +144,10 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 	@Override
 	public List<V1beta2Deployment> getBySelector(ApiClient apiClient, String selector, boolean label, String namespace)
 			throws HyscaleException {
-		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
+	    if (apiClient == null) {
+	        throw new HyscaleException(DeployerErrorCodes.API_CLIENT_REQUIRED);
+	    }
+		AppsV1beta2Api appsV1beta2Api = KubernetesApiProvider.getAppsV1beta2Api(apiClient);
 		List<V1beta2Deployment> v1beta2Deployments = null;
 		try {
 			String labelSelector = label ? selector : null;
@@ -151,8 +173,16 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 			LOGGER.debug("Cannot patch null Deployment");
 			return false;
 		}
-		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
-		target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
+		V1ObjectMeta metadata = target.getMetadata();
+		try {
+		    KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata, name);
+		} catch (HyscaleException e) {
+		    WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_DEPLOYMENT);
+		    WorkflowLogger.endActivity(Status.FAILED);
+		    throw e;
+		}
+		AppsV1beta2Api appsV1beta2Api = KubernetesApiProvider.getAppsV1beta2Api(apiClient);
+        metadata.putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
 				gson.toJson(target));
 		V1beta2Deployment sourceDeployment = null;
 		try {
@@ -189,11 +219,18 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 
 	@Override
 	public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
+	    ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_DEPLOYMENT);
+	    WorkflowLogger.startActivity(activityContext);
+	    try {
+	        KubernetesResourceUtil.isResourceValid(apiClient, getKind(), name);
+	    } catch (HyscaleException e) {
+	        WorkflowLogger.endActivity(activityContext, Status.FAILED);
+	        throw e;
+	    }
+	    
+		AppsV1beta2Api appsV1beta2Api = KubernetesApiProvider.getAppsV1beta2Api(apiClient);
 		V1DeleteOptions deleteOptions = getDeleteOptions();
 		deleteOptions.setApiVersion("apps/v1beta2");
-		ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_DEPLOYMENT);
-		WorkflowLogger.startActivity(activityContext);
 		try {
 			try {
 			    appsV1beta2Api.deleteNamespacedDeployment(name, namespace, deleteOptions, TRUE, null, null, null, null);
@@ -224,8 +261,6 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 	@Override
 	public boolean deleteBySelector(ApiClient apiClient, String selector, boolean label, String namespace, boolean wait)
 			throws HyscaleException {
-		V1DeleteOptions deleteOptions = getDeleteOptions();
-		deleteOptions.setApiVersion("apps/v1beta2");
 		try {
 			List<V1beta2Deployment> deploymentList = getBySelector(apiClient, selector, label, namespace);
 			if (deploymentList == null || deploymentList.isEmpty()) {
@@ -257,10 +292,10 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 
 	@Override
 	public ResourceStatus status(V1beta2Deployment deployment) {
+	    if (deployment == null || deployment.getStatus() == null) {
+	        return ResourceStatus.FAILED;
+	    }
 		V1beta2DeploymentStatus deploymentStatus = deployment.getStatus();
-		if (deploymentStatus == null) {
-			return ResourceStatus.FAILED;
-		}
 		Integer desiredReplicas = deployment.getSpec().getReplicas();
 		Integer statusReplicas = deploymentStatus.getReplicas();
 		Integer updatedReplicas = deploymentStatus.getUpdatedReplicas();

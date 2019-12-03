@@ -29,6 +29,9 @@ import io.hyscale.deployer.services.model.ResourceStatus;
 import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.hyscale.deployer.services.util.K8sPodUtil;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
+import io.hyscale.deployer.services.util.KubernetesApiProvider;
+import io.hyscale.deployer.services.util.KubernetesResourceUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +52,7 @@ import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.apis.AppsV1beta2Api;
 import io.kubernetes.client.models.V1DeleteOptions;
+import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1Pod;
 import io.kubernetes.client.models.V1beta2StatefulSet;
 import io.kubernetes.client.models.V1beta2StatefulSetList;
@@ -70,11 +74,18 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 			return resource;
 		}
 		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_STATEFULSET);
-		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
-		String name = resource.getMetadata().getName();
+		V1ObjectMeta metadata = resource.getMetadata();
+		try {
+		    KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata);
+		}catch (HyscaleException e) {
+		    WorkflowLogger.endActivity(Status.FAILED);
+            throw e;
+        }
+		AppsV1beta2Api appsV1beta2Api = KubernetesApiProvider.getAppsV1beta2Api(apiClient);
+        String name = metadata.getName();
 		V1beta2StatefulSet statefulSet = null;
 		try {
-			resource.getMetadata().putAnnotationsItem(
+			metadata.putAnnotationsItem(
 					AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
 			statefulSet = appsV1beta2Api.createNamespacedStatefulSet(namespace, resource, null, TRUE, null);
 		} catch (ApiException e) {
@@ -95,8 +106,16 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 			LOGGER.debug("Cannot update null StatefulSet");
 			return false;
 		}
-		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
-		String name = resource.getMetadata().getName();
+		V1ObjectMeta metadata = resource.getMetadata();
+		try {
+		    KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata);
+		} catch (HyscaleException e) {
+		    WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_STATEFULSET);
+		    WorkflowLogger.endActivity(Status.FAILED);
+		    throw e;
+        }
+		AppsV1beta2Api appsV1beta2Api = KubernetesApiProvider.getAppsV1beta2Api(apiClient);
+        String name = metadata.getName();
 		V1beta2StatefulSet existingStatefulSet = null;
 		try {
 			existingStatefulSet = get(apiClient, name, namespace);
@@ -106,11 +125,10 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 			V1beta2StatefulSet statefulSet = create(apiClient, resource, namespace);
 			return statefulSet != null ? true : false;
 		}
-
 		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_STATEFULSET);
 		try {
 			String resourceVersion = existingStatefulSet.getMetadata().getResourceVersion();
-			resource.getMetadata().setResourceVersion(resourceVersion);
+			metadata.setResourceVersion(resourceVersion);
 			appsV1beta2Api.replaceNamespacedStatefulSet(name, namespace, resource, TRUE, null);
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
@@ -126,7 +144,8 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 
 	@Override
 	public V1beta2StatefulSet get(ApiClient apiClient, String name, String namespace) throws HyscaleException {
-		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
+	    KubernetesResourceUtil.isResourceValid(apiClient, getKind(), name);
+		AppsV1beta2Api appsV1beta2Api = KubernetesApiProvider.getAppsV1beta2Api(apiClient);
 		V1beta2StatefulSet v1StatefulSet = null;
 		try {
 			v1StatefulSet = appsV1beta2Api.readNamespacedStatefulSet(name, namespace, TRUE, null, null);
@@ -142,7 +161,10 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 	@Override
 	public List<V1beta2StatefulSet> getBySelector(ApiClient apiClient, String selector, boolean label, String namespace)
 			throws HyscaleException {
-		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
+	    if (apiClient == null) {
+            throw new HyscaleException(DeployerErrorCodes.API_CLIENT_REQUIRED);
+        }
+		AppsV1beta2Api appsV1beta2Api = KubernetesApiProvider.getAppsV1beta2Api(apiClient);
 		String labelSelector = label ? selector : null;
 		String fieldSelector = label ? null : selector;
 		List<V1beta2StatefulSet> statefulSets = null;
@@ -169,8 +191,16 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 			LOGGER.debug("Cannot patch null StatefulSet");
 			return false;
 		}
-		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
-		target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
+		V1ObjectMeta metadata = target.getMetadata();
+		try {
+		    KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata, name);
+		} catch (HyscaleException e) {
+		    WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_STATEFULSET);
+		    WorkflowLogger.endActivity(Status.FAILED);
+            throw e;
+        }
+		AppsV1beta2Api appsV1beta2Api = KubernetesApiProvider.getAppsV1beta2Api(apiClient);
+        metadata.putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
 				gson.toJson(target));
 		V1beta2StatefulSet sourceStatefulSet = null;
 		try {
@@ -239,12 +269,18 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 
 	@Override
 	public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
+	    ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_STATEFULSET);
+	    WorkflowLogger.startActivity(activityContext);
+	    try {
+	        KubernetesResourceUtil.isResourceValid(apiClient, getKind(), name);
+	    } catch (HyscaleException e) {
+	        WorkflowLogger.endActivity(activityContext, Status.FAILED);
+	        throw e;
+        }
+	    AppsV1beta2Api appsV1beta2Api = KubernetesApiProvider.getAppsV1beta2Api(apiClient);
 
 		V1DeleteOptions deleteOptions = getDeleteOptions();
 		deleteOptions.setApiVersion("apps/v1beta2");
-		ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_STATEFULSET);
-		WorkflowLogger.startActivity(activityContext);
 		try {
 			try {
 			    appsV1beta2Api.deleteNamespacedStatefulSet(name, namespace, deleteOptions, TRUE, null, null, null, null);
@@ -276,7 +312,6 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 	@Override
 	public boolean deleteBySelector(ApiClient apiClient, String selector, boolean label, String namespace, boolean wait)
 			throws HyscaleException {
-
 		try {
 			List<V1beta2StatefulSet> statefulSets = getBySelector(apiClient, selector, label, namespace);
 
@@ -313,23 +348,22 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 
 	@Override
 	public ResourceStatus status(V1beta2StatefulSet statefulSet) {
-		if (statefulSet.getStatus() == null) {
+		if (statefulSet == null || statefulSet.getStatus() == null) {
 			return ResourceStatus.FAILED;
-		} else {
-			V1beta2StatefulSetStatus stsStatus = statefulSet.getStatus();
-			String currentRevision = stsStatus.getCurrentRevision();
-			String updateRevision = stsStatus.getUpdateRevision();
-			// stsStatus.getConditions()
-			Integer currentReplicas = stsStatus.getCurrentReplicas();
-			Integer readyReplicas = stsStatus.getReadyReplicas();
-			Integer intendedReplicas = statefulSet.getSpec().getReplicas();
-			// Success case update remaining pods status and return
-			if (updateRevision != null && updateRevision.equals(currentRevision) && intendedReplicas != null
-					&& intendedReplicas == currentReplicas && intendedReplicas == readyReplicas) {
-				return ResourceStatus.STABLE;
-			}
-			return ResourceStatus.PENDING;
 		}
+		V1beta2StatefulSetStatus stsStatus = statefulSet.getStatus();
+		String currentRevision = stsStatus.getCurrentRevision();
+		String updateRevision = stsStatus.getUpdateRevision();
+		// stsStatus.getConditions()
+		Integer currentReplicas = stsStatus.getCurrentReplicas();
+		Integer readyReplicas = stsStatus.getReadyReplicas();
+		Integer intendedReplicas = statefulSet.getSpec().getReplicas();
+		// Success case update remaining pods status and return
+		if (updateRevision != null && updateRevision.equals(currentRevision) && intendedReplicas != null
+		        && intendedReplicas == currentReplicas && intendedReplicas == readyReplicas) {
+		    return ResourceStatus.STABLE;
+		}
+		return ResourceStatus.PENDING;
 	}
 
 	@Override

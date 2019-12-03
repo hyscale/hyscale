@@ -21,6 +21,9 @@ import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.util.ExceptionHelper;
+import io.hyscale.deployer.services.util.KubernetesApiProvider;
+import io.hyscale.deployer.services.util.KubernetesResourceUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +67,8 @@ public class V1PersistentVolumeClaimHandler implements ResourceLifeCycleHandler<
 
 	@Override
 	public V1PersistentVolumeClaim get(ApiClient apiClient, String name, String namespace) throws HyscaleException {
-		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+	    KubernetesResourceUtil.isResourceValid(apiClient, getKind(), name);
+		CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
 		V1PersistentVolumeClaim v1PersistentVolumeClaim = null;
 		try {
 			v1PersistentVolumeClaim = coreV1Api.readNamespacedPersistentVolumeClaim(name, namespace, TRUE, null, null);
@@ -80,7 +84,10 @@ public class V1PersistentVolumeClaimHandler implements ResourceLifeCycleHandler<
 	@Override
 	public List<V1PersistentVolumeClaim> getBySelector(ApiClient apiClient, String selector, boolean label,
 			String namespace) throws HyscaleException {
-		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+	    if (apiClient == null) {
+	        throw new HyscaleException(DeployerErrorCodes.API_CLIENT_REQUIRED);
+	    }
+		CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
 		List<V1PersistentVolumeClaim> v1PersistentVolumeClaims = null;
 		try {
 			String labelSelector = label ? selector : null;
@@ -110,11 +117,16 @@ public class V1PersistentVolumeClaimHandler implements ResourceLifeCycleHandler<
 
 	@Override
 	public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-
+	    ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_PERSISTENT_VOLUME_CLAIMS);
+	    WorkflowLogger.startActivity(activityContext);
+	    try {
+	        KubernetesResourceUtil.isResourceValid(apiClient, getKind(), name);
+	    } catch(HyscaleException e) {
+	        WorkflowLogger.endActivity(activityContext, Status.FAILED);
+            throw e;
+	    }
+		CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
 		V1DeleteOptions deleteOptions = getDeleteOptions();
-		ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_PERSISTENT_VOLUME_CLAIMS);
-		WorkflowLogger.startActivity(activityContext);
 		try {
 		    try {
 			coreV1Api.deleteNamespacedPersistentVolumeClaim(name, namespace, deleteOptions, TRUE, null, null, null,

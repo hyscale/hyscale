@@ -23,6 +23,9 @@ import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
+import io.hyscale.deployer.services.util.KubernetesApiProvider;
+import io.hyscale.deployer.services.util.KubernetesResourceUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +45,7 @@ import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.models.V1ConfigMap;
 import io.kubernetes.client.models.V1ConfigMapList;
 import io.kubernetes.client.models.V1DeleteOptions;
+import io.kubernetes.client.models.V1ObjectMeta;
 
 public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap> {
 
@@ -53,12 +57,19 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
             LOGGER.debug("Cannot create null ConfigMap");
             return resource;
         }
+        V1ObjectMeta metadata = resource.getMetadata();
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_CONFIGMAP);
-        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-        String name = resource.getMetadata().getName();
+        try {
+            KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata);
+        } catch(HyscaleException e) {
+            WorkflowLogger.endActivity(Status.FAILED);
+            throw e;
+        }
+        CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
+        String name = metadata.getName();
         V1ConfigMap configMap = null;
         try {
-            resource.getMetadata().putAnnotationsItem(
+            metadata.putAnnotationsItem(
                     AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
             configMap = coreV1Api.createNamespacedConfigMap(namespace, resource, null, TRUE, null);
         } catch (ApiException e) {
@@ -77,12 +88,20 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
      */
     @Override
     public boolean update(ApiClient apiClient, V1ConfigMap resource, String namespace) throws HyscaleException {
-        if(resource==null){
+        if(resource == null){
             LOGGER.debug("Cannot update null ConfigMap");
             return false;
         }
-        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-        String name = resource.getMetadata().getName();
+        V1ObjectMeta metadata = resource.getMetadata();
+        try {
+            KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata);
+        } catch(HyscaleException e) {
+            WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_CONFIGMAP);
+            WorkflowLogger.endActivity(Status.FAILED);
+            throw e;
+        }
+        CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
+        String name = metadata.getName();
         V1ConfigMap existingConfigMap = null;
         try {
             existingConfigMap = get(apiClient, name, namespace);
@@ -94,7 +113,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_CONFIGMAP);
         try {
             String resourceVersion = existingConfigMap.getMetadata().getResourceVersion();
-            resource.getMetadata().setResourceVersion(resourceVersion);
+            metadata.setResourceVersion(resourceVersion);
             coreV1Api.replaceNamespacedConfigMap(name, namespace, resource, TRUE, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
@@ -110,7 +129,8 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
 
     @Override
     public V1ConfigMap get(ApiClient apiClient, String name, String namespace) throws HyscaleException {
-        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+        KubernetesResourceUtil.isResourceValid(apiClient, getKind(), name);
+        CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
         V1ConfigMap configMap = null;
         try {
             configMap = coreV1Api.readNamespacedConfigMap(name, namespace, TRUE, null, null);
@@ -125,7 +145,10 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
     @Override
     public List<V1ConfigMap> getBySelector(ApiClient apiClient, String selector, boolean label, String namespace)
             throws HyscaleException {
-        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+        if (apiClient == null) {
+            throw new HyscaleException(DeployerErrorCodes.API_CLIENT_REQUIRED);
+        }
+        CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
         List<V1ConfigMap> configMaps = null;
         try {
             String labelSelector = label ? selector : null;
@@ -153,8 +176,16 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
             LOGGER.debug("Cannot patch null configmap");
             return false;
         }
-        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-        target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
+        V1ObjectMeta metadata = target.getMetadata();
+        try {
+            KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata, name);
+        } catch(HyscaleException e) {
+            WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_CONFIGMAP);
+            WorkflowLogger.endActivity(Status.FAILED);
+            throw e;
+        }
+        CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
+        metadata.putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
                 gson.toJson(target));
         V1ConfigMap sourceConfigMap = null;
         try {
@@ -191,11 +222,17 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
 
     @Override
     public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-
-        V1DeleteOptions deleteOptions = getDeleteOptions();
+        
         ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_CONFIG_MAP);
         WorkflowLogger.startActivity(activityContext);
+        try {
+            KubernetesResourceUtil.isResourceValid(apiClient, getKind(), name);
+        } catch(HyscaleException e){
+            WorkflowLogger.endActivity(activityContext, Status.FAILED);
+            throw e;
+        }
+        CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
+        V1DeleteOptions deleteOptions = getDeleteOptions();
         try {
             try {
                 coreV1Api.deleteNamespacedConfigMap(name, namespace, deleteOptions, TRUE, null, null, null, null);

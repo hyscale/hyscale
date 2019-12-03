@@ -20,6 +20,8 @@ import java.util.List;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.util.ExceptionHelper;
+import io.hyscale.deployer.services.util.KubernetesApiProvider;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,7 +114,10 @@ public class V1StorageClassHandler implements ResourceLifeCycleHandler<V1Storage
 	}
 
 	public List<V1StorageClass> getAll(ApiClient apiClient) throws HyscaleException {
-		StorageV1Api storageV1Api = new StorageV1Api(apiClient);
+	    if (apiClient == null) {
+	        throw new HyscaleException(DeployerErrorCodes.API_CLIENT_REQUIRED);
+	    }
+		StorageV1Api storageV1Api = KubernetesApiProvider.getStorageV1Api(apiClient);
 		List<V1StorageClass> v1StorageList = null;
 		try {
 			V1StorageClassList v1StorageClassList = storageV1Api.listStorageClass(null, TRUE, null, null, null, null,

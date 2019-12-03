@@ -25,6 +25,9 @@ import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
+import io.hyscale.deployer.services.util.KubernetesApiProvider;
+import io.hyscale.deployer.services.util.KubernetesResourceUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +45,7 @@ import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.models.V1DeleteOptions;
+import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1Secret;
 import io.kubernetes.client.models.V1SecretList;
 
@@ -57,11 +61,18 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 			return resource;
 		}
 		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_SECRETS);
-		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-		String name = resource.getMetadata().getName();
+		V1ObjectMeta metadata = resource.getMetadata();
+		try {
+		    KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata);
+		} catch (HyscaleException e) {
+		    WorkflowLogger.endActivity(Status.FAILED);
+            throw e;
+        }
+		CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
+        String name = metadata.getName();
 		V1Secret v1Secret = null;
 		try {
-			resource.getMetadata().putAnnotationsItem(
+			metadata.putAnnotationsItem(
 					AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
 			v1Secret = coreV1Api.createNamespacedSecret(namespace, resource, null, TRUE, null);
 		} catch (ApiException e) {
@@ -81,8 +92,16 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 			LOGGER.debug("Cannot update null Secret");
 			return false;
 		}
-		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-		String name = resource.getMetadata().getName();
+		V1ObjectMeta metadata = resource.getMetadata();
+		try {
+            KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata);
+        } catch (HyscaleException e) {
+            WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_SECRETS);
+            WorkflowLogger.endActivity(Status.FAILED);
+            throw e;
+        }
+		CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
+        String name = metadata.getName();
 		V1Secret existingSecret = null;
 		try {
 			existingSecret = get(apiClient, name, namespace);
@@ -95,7 +114,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 		try {
 
 			String resourceVersion = existingSecret.getMetadata().getResourceVersion();
-			resource.getMetadata().setResourceVersion(resourceVersion);
+			metadata.setResourceVersion(resourceVersion);
 			coreV1Api.replaceNamespacedSecret(name, namespace, resource, TRUE, null);
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
@@ -110,8 +129,9 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 
 	@Override
 	public V1Secret get(ApiClient apiClient, String name, String namespace) throws HyscaleException {
+	    KubernetesResourceUtil.isResourceValid(apiClient, getKind(), name);
 		V1Secret v1Secret = null;
-		CoreV1Api apiInstance = new CoreV1Api(apiClient);
+		CoreV1Api apiInstance = KubernetesApiProvider.getCoreV1Api(apiClient);
 		try {
 			v1Secret = apiInstance.readNamespacedSecret(name, namespace, TRUE, null, null);
 		} catch (ApiException e) {
@@ -125,7 +145,10 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 	@Override
 	public List<V1Secret> getBySelector(ApiClient apiClient, String selector, boolean label, String namespace)
 			throws HyscaleException {
-		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+	    if (apiClient == null) {
+	        throw new HyscaleException(DeployerErrorCodes.API_CLIENT_REQUIRED);
+	    }
+		CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
 		List<V1Secret> v1Secrets = null;
 		try {
 			String labelSelector = label ? selector : null;
@@ -148,8 +171,16 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 			LOGGER.debug("Cannot patch null Secret");
 			return false;
 		}
-		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-		target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
+		V1ObjectMeta metadata = target.getMetadata();
+		try {
+		    KubernetesResourceUtil.isResourceValid(apiClient, getKind(), metadata, name);
+		} catch (HyscaleException e) {
+		    WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_SECRETS);
+		    WorkflowLogger.endActivity(Status.FAILED);
+            throw e;
+        }
+		CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
+        metadata.putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
 				gson.toJson(target));
 		V1Secret sourceSecret = null;
 		try {
@@ -185,10 +216,17 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 
 	@Override
 	public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+	    ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_SECRETS);
+	    WorkflowLogger.startActivity(activityContext);
+	    
+	    try {
+	        KubernetesResourceUtil.isResourceValid(apiClient, getKind(), name);
+	    } catch(HyscaleException e) {
+	        WorkflowLogger.endActivity(activityContext, Status.FAILED);
+            throw e;
+	    }
+		CoreV1Api coreV1Api = KubernetesApiProvider.getCoreV1Api(apiClient);
 		V1DeleteOptions deleteOptions = getDeleteOptions();
-		ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_SECRETS);
-		WorkflowLogger.startActivity(activityContext);
 		try {
 		    try {
 			coreV1Api.deleteNamespacedSecret(name, namespace, deleteOptions, TRUE, null, null, null, null);
