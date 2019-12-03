@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- *
- */
 package io.hyscale.deployer.services.handler.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
@@ -212,7 +210,15 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
         }
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_STATEFULSET);
         Object patchObject = null;
-        String lastAppliedConfig = sourceStatefulSet.getMetadata().getAnnotations()
+        Map<String, String> annotations = sourceStatefulSet.getMetadata().getAnnotations();
+        if (annotations == null || annotations.isEmpty()) {
+            HyscaleException ex = new HyscaleException(DeployerErrorCodes.FAILED_TO_PATCH_RESOURCE, getKind());
+            LOGGER.error("Error while patching StatefulSet {} in namespace {} , previous data not available, error {}",
+                    name, namespace, ex.toString());
+            WorkflowLogger.endActivity(Status.FAILED);
+            throw ex;
+        }
+        String lastAppliedConfig = annotations
                 .get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
         boolean deleteRequired = false;
         String serviceName = sourceStatefulSet.getMetadata().getLabels().get(ResourceLabelKey.SERVICE_NAME.getLabel());

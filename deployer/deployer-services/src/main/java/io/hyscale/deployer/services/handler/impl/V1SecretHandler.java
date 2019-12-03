@@ -19,6 +19,7 @@
 package io.hyscale.deployer.services.handler.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
@@ -191,9 +192,17 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
             return secret != null ? true : false;
         }
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_SECRETS);
-        Object patchObject = null;
-        String lastAppliedConfig = sourceSecret.getMetadata().getAnnotations()
+        Map<String, String> annotations = sourceSecret.getMetadata().getAnnotations();
+        if (annotations == null || annotations.isEmpty()) {
+            HyscaleException ex = new HyscaleException(DeployerErrorCodes.FAILED_TO_PATCH_RESOURCE, getKind());
+            LOGGER.error("Error while patching Secret {} in namespace {} , previous data not available, error {}", name,
+                    namespace, ex.toString());
+            WorkflowLogger.endActivity(Status.FAILED);
+            throw ex;
+        }
+        String lastAppliedConfig = annotations
                 .get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
+        Object patchObject = null;
         try {
             patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1Secret.class), target,
                     V1Secret.class);

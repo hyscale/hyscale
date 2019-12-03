@@ -18,6 +18,7 @@ package io.hyscale.deployer.services.handler.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -174,7 +175,14 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
             return pod != null ? true : false;
         }
         Object patchObject = null;
-        String lastAppliedConfig = sourcePod.getMetadata().getAnnotations()
+        Map<String, String> annotations = sourcePod.getMetadata().getAnnotations();
+        if (annotations == null || annotations.isEmpty()) {
+            HyscaleException ex = new HyscaleException(DeployerErrorCodes.FAILED_TO_PATCH_RESOURCE, getKind());
+            LOGGER.error("Error while patching Pod {} in namespace {} , previous data not available, error {}", name,
+                    namespace, ex.toString());
+            throw ex;
+        }
+        String lastAppliedConfig = annotations
                 .get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
         try {
             patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1Pod.class), target,

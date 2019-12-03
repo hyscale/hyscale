@@ -16,6 +16,7 @@
 package io.hyscale.deployer.services.handler.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,7 +197,15 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
         }
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_SERVICE);
         Object patchObject = null;
-        String lastAppliedConfig = sourceService.getMetadata().getAnnotations()
+        Map<String, String> annotations = sourceService.getMetadata().getAnnotations();
+        if (annotations == null || annotations.isEmpty()) {
+            HyscaleException ex = new HyscaleException(DeployerErrorCodes.FAILED_TO_PATCH_RESOURCE, getKind());
+            LOGGER.error("Error while patching Service {} in namespace {} , previous data not available, error {}",
+                    name, namespace, ex.toString());
+            WorkflowLogger.endActivity(Status.FAILED);
+            throw ex;
+        }
+        String lastAppliedConfig = annotations
                 .get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
         try {
             patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1Service.class), target,

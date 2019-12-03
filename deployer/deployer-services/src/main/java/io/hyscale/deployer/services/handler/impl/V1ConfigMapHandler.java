@@ -16,6 +16,7 @@
 package io.hyscale.deployer.services.handler.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.model.ResourceStatus;
@@ -196,7 +197,15 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
             return configMap != null ? true : false;
         }
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_CONFIGMAP);
-        String lastAppliedConfig = sourceConfigMap.getMetadata().getAnnotations()
+        Map<String, String> annotations = sourceConfigMap.getMetadata().getAnnotations();
+        if (annotations == null || annotations.isEmpty()) {
+            HyscaleException ex = new HyscaleException(DeployerErrorCodes.FAILED_TO_PATCH_RESOURCE, getKind());
+            LOGGER.error("Error while patching ConfigMap {} in namespace {} , previous data not available, error {}",
+                    name, namespace, ex.toString());
+            WorkflowLogger.endActivity(Status.FAILED);
+            throw ex;
+        }
+        String lastAppliedConfig = annotations
                 .get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
         Object patchObject = null;
         try {
