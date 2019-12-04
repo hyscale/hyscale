@@ -151,7 +151,9 @@ public class CommandExecutor {
             dir = SetupConfig.CURRENT_WORKING_DIR;
         }
         logger.debug("Executing command in dir {}", dir);
-        processBuilder.directory(new File(dir));
+        File directory = new File(dir);
+        directory.mkdirs();
+        processBuilder.directory(directory);
         processBuilder.command(command.split(" "));
         processBuilder.redirectErrorStream(true);
         if (file != null) {
