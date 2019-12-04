@@ -94,7 +94,7 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
         try {
             String resourceVersion = existingHorizontalPodAutoscaler.getMetadata().getResourceVersion();
             resource.getMetadata().setResourceVersion(resourceVersion);
-            autoscalingV1Api.replaceNamespacedHorizontalPodAutoscaler(name, namespace, existingHorizontalPodAutoscaler, TRUE, null);
+            autoscalingV1Api.replaceNamespacedHorizontalPodAutoscaler(name, namespace, resource, TRUE, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
                     ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.UPDATE));
