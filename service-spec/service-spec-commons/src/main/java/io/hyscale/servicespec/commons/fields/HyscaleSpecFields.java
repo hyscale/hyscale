@@ -86,6 +86,11 @@ public class HyscaleSpecFields {
 	public static final String secretsVolumePath = "secretsVolumePath";
 	public static final String storageClass = "storageClass";
 
+	//Replicas
+	public static final String min="min";
+	public static final String max="max";
+	public static final String cpuThreshold ="cpuThreshold";
+
 	// JSON fields helper
 	public static final String arrayLeftBrace = "[";
 	public static final String arrayRightBrace = "]";

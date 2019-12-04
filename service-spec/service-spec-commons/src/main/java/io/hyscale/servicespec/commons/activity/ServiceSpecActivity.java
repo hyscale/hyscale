@@ -13,15 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.generator.services.generator;
+package io.hyscale.servicespec.commons.activity;
 
-import io.hyscale.commons.utils.NormalizationUtil;
-import io.hyscale.generator.services.constants.ManifestGenConstants;
+import io.hyscale.commons.models.Activity;
 
-public class K8sResourceNameGenerator {
+public enum ServiceSpecActivity implements Activity {
+    FAILED_TO_DESERIALIZE_REPLICAS("Cannot process the field 'replicas' with error {} , deployment continued with min 1 replica");
 
-    public static String getResourceVolumeName(String prefix, String kind) {
-        return NormalizationUtil.normalize(prefix + ManifestGenConstants.NAME_DELIMITER + kind);
+    String message;
+
+    ServiceSpecActivity(String message) {
+        this.message = message;
     }
 
+    @Override
+    public String getActivityMessage() {
+        return this.message;
+    }
 }
