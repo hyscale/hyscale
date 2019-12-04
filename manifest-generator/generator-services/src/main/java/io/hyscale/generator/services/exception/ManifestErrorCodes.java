@@ -23,7 +23,8 @@ public enum ManifestErrorCodes implements HyscaleErrorCode {
     ERROR_WHILE_INJECTING_MANIFEST_SNIPPET("Error while injecting manifest snippets to manifest"),
     MISSING_STORAGE_CLASS_FOR_VOLUMES("Missing storage class for volumes {}"),
     INVALID_SIZE_FORMAT("Invalid size format {} "),
-    INSUFFICIENT_MEMORY("Insufficient memory {}");
+    INSUFFICIENT_MEMORY("Insufficient memory {}"),
+    INVALID_FORMAT_CPUTHRESHOLD("Invalid format for cpuThreshold , use : <number>% ");
 
     private String message;
 
