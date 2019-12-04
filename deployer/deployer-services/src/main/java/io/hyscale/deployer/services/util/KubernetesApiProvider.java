@@ -17,6 +17,7 @@ package io.hyscale.deployer.services.util;
 
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.apis.AppsV1beta2Api;
+import io.kubernetes.client.apis.AutoscalingV1Api;
 import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.apis.StorageV1Api;
 
@@ -47,6 +48,13 @@ public class KubernetesApiProvider {
             return new StorageV1Api();
         }
         return new StorageV1Api(apiClient);
+    }
+    
+    public static AutoscalingV1Api getAutoscalingV1Api(ApiClient apiClient) {
+        if (apiClient == null) {
+            return new AutoscalingV1Api();
+        }
+        return new AutoscalingV1Api(apiClient);
     }
 
 }
