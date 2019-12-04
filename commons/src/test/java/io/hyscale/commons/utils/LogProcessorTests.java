@@ -16,13 +16,12 @@
 package io.hyscale.commons.utils;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.handler.SampleLogHandler;
+import io.hyscale.commons.handler.TestTailLogHandler;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
+import org.junit.jupiter.params.provider.*;
+import org.junit.jupiter.api.Nested;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -30,17 +29,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class LogProcessorTests {
-    private static String logFileContent = "logger running" + "\n" + "logger Running";
-    private LogProcessor logProcessor = new LogProcessor();
-    private static String logFilePath = "/tmp/logs/logs.txt";
-    private static String encoding = "UTF-8";
+    private static final String LOG_FILE_PATH = "/tmp/logs/logs.txt";
+    private static final LogProcessor logProcessor = new LogProcessor();
+    private static final String ENCODING = "UTF-8";
+    private static String logFileContent = "logger running" + "\n" + "logger running";
     private static File file;
-    private SampleLogHandler sampleLogHandler = new SampleLogHandler();
-
+    private static ByteArrayOutputStream os = new ByteArrayOutputStream();
 
     @BeforeEach
     public void getLogFile() {
-        file = FileUtils.getFile(logFilePath);
+        file = FileUtils.getFile(LOG_FILE_PATH);
         try {
             file.createNewFile();
         } catch (IOException e) {
@@ -50,60 +48,67 @@ public class LogProcessorTests {
     public static Stream<Arguments> getNullInputsForWrite() {
         InputStream inputStream = getInputStream();
         return Stream.of(Arguments.of(inputStream, null),
-                Arguments.of(null, logFilePath),
+                Arguments.of(null, LOG_FILE_PATH),
                 Arguments.of(inputStream, ""));
     }
 
-    @ParameterizedTest
-    @MethodSource(value = "getNullInputsForWrite")
-    public void testNullConditionsForWrite(InputStream inputStream, String logFilePath) {
-        Assertions.assertThrows(HyscaleException.class, () -> {
-            logProcessor.writeLogFile(inputStream, logFilePath);
-        });
-    }
-
-    @Test
-    public void testWriteLogFile() {
-        String content = null;
-        InputStream inputStream = getInputStream();
-        try {
-            logProcessor.writeLogFile(inputStream, logFilePath);
-            content = FileUtils.readFileToString(file, encoding).trim();
-            inputStream.close();
-        } catch (IOException i) {
-            Assertions.fail();
-        } catch (HyscaleException e) {
-        }
-        Assertions.assertNotNull(content);
-        Assertions.assertEquals(content, logFileContent);
-    }
-
     public static Stream<Arguments> getNullInputsForRead() {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
         return Stream.of(Arguments.of(null, os, null),
-                Arguments.of(file, null, null),
-                Arguments.of(file, os, 1),
-                Arguments.of(file, os, null));
+                Arguments.of(file, null, null));
     }
 
-    @ParameterizedTest
-    @MethodSource(value = "getNullInputsForRead")
-    public void readLogFileTest(File readFile, OutputStream os, Integer lines) {
-        if (readFile == null || !readFile.isDirectory() || !readFile.exists()) {
-        } else if (os == null) {
+    @Nested
+    @DisplayName("Writing log file test cases.")
+    public class WriteLogFileTests {
+
+        @ParameterizedTest
+        @MethodSource("io.hyscale.commons.utils.LogProcessorTests#getNullInputsForWrite")
+        public void testNullConditionsForWrite(InputStream inputStream, String logFilePath) {
             Assertions.assertThrows(HyscaleException.class, () -> {
-                logProcessor.readLogFile(readFile, os, lines);
+                logProcessor.writeLogFile(inputStream, logFilePath);
             });
-        } else {
-            System.out.println("came " + readFile.getPath());
-            if (lines != null) {
-                String[] logLines = logFileContent.split("\\r?\\n");
-                logFileContent = logLines[0];
+        }
+
+        @Test
+        public void testWriteLogFile() {
+            String content = null;
+            try (InputStream inputStream = getInputStream()) {
+                logProcessor.writeLogFile(inputStream, LOG_FILE_PATH);
+                content = FileUtils.readFileToString(file, ENCODING).trim();
+                inputStream.close();
+            } catch (IOException i) {
+                Assertions.fail();
+            } catch (HyscaleException e) {
             }
+            Assertions.assertNotNull(content);
+            Assertions.assertEquals(content, logFileContent);
+        }
+    }
+
+    @Nested
+    @DisplayName("Reading log file test cases.")
+    public class ReadLogFileTests {
+
+        @ParameterizedTest
+        @MethodSource("io.hyscale.commons.utils.LogProcessorTests#getNullInputsForRead")
+        public void testNullConditionsForRead(File readFile, OutputStream os, Integer lines) {
+            if (readFile == null || !readFile.isDirectory() || !readFile.exists() || os ==null) {
+                Assertions.assertThrows(HyscaleException.class, () -> {
+                    logProcessor.readLogFile(readFile, os, lines);
+                });
+            } 
+        }
+
+        @ParameterizedTest
+        @NullSource
+        @CsvSource({"1"})
+        public void readLogFileTest(Integer lines) {
+            os.reset();
+            System.out.println(os.toString());
             try {
-                Assertions.assertTrue(readFile.exists());
-                FileUtils.writeStringToFile(readFile, logFileContent, encoding);
-                logProcessor.readLogFile(readFile, os, lines);
+                Assertions.assertTrue(file.exists());
+                FileUtils.writeStringToFile(file, logFileContent, ENCODING);
+                logProcessor.readLogFile(file, os, lines);
             } catch (IOException i) {
                 Assertions.fail(i.getMessage());
             } catch (HyscaleException e) {
@@ -113,62 +118,63 @@ public class LogProcessorTests {
         }
     }
 
+    @Nested
+    @DisplayName("Tailing log file test cases.")
+    public class TailLogFileTests {
+        private TestTailLogHandler testTailLogHandler = new TestTailLogHandler();
 
-    @Test
-    public void testTailLogFile() {
-        long currentTimeInMillis = System.currentTimeMillis();
-        long timeLimit = currentTimeInMillis + 2000;
-        List<String> lines = Stream.of("logger running", "logger running", "logger running", "logger running", "EXIT").collect(Collectors.toList());
-        TailLogFile tailLogFile = null;
-        try {
-            tailLogFile = logProcessor.tailLogFile(file, sampleLogHandler);
-        } catch (HyscaleException e) {
-        }
-
-        Thread fileWriterThread = new Thread(() -> {
-            for (String line : lines) {
-                try {
-                    FileUtils.writeStringToFile(file, line + "\n", encoding, true);
-                    Thread.sleep(100);
-                } catch (IOException | InterruptedException e) {
-                }
-
-            }
-        });
-        fileWriterThread.start();
-
-        while (tailLogFile.isRunning()) {
+        @Test
+        public void testTailLogFile() {
+            long currentTimeInMillis = System.currentTimeMillis();
+            long timeLimit = currentTimeInMillis + 2000;
+            List<String> lines = Stream.of("logger running", "logger running", "logger running", "logger running", "EXIT").collect(Collectors.toList());
+            TailLogFile tailLogFile = null;
             try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
+                tailLogFile = logProcessor.tailLogFile(file, testTailLogHandler);
+            } catch (HyscaleException e) {
             }
-            if (System.currentTimeMillis() >= timeLimit) {
-                tailLogFile.stopRunning();
-                Assertions.fail("Tail timed out ,End of file did not match.");
+
+            Thread fileWriterThread = new Thread(() -> {
+                for (String line : lines) {
+                    try {
+                        FileUtils.writeStringToFile(file, line + "\n", ENCODING, true);
+                        Thread.sleep(100);
+                    } catch (IOException | InterruptedException e) {
+                    }
+
+                }
+            });
+            fileWriterThread.start();
+
+            while (tailLogFile.isRunning()) {
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                }
+                if (System.currentTimeMillis() >= timeLimit) {
+                    tailLogFile.stopRunning();
+                    Assertions.fail("Tail timed out ,End of file did not match.");
+                }
             }
+
+            List<String> loggedLines = testTailLogHandler.getLines();
+            Assertions.assertNotNull(loggedLines);
+            Assertions.assertEquals(loggedLines, lines);
         }
 
-        List<String> loggedLines = sampleLogHandler.getLines();
-        Assertions.assertNotNull(loggedLines);
-        Assertions.assertEquals(loggedLines, lines);
-    }
+        @Test
+        public void testNullConditionsForTail() {
+            try {
+                Assertions.assertNull(logProcessor.tailLogFile(null, testTailLogHandler));
+            } catch (HyscaleException e) {
+                Assertions.fail(e.getMessage());
+            }
 
-    @Test
-    public void testNullConditionsForTail() {
-        Assertions.assertThrows(HyscaleException.class, () -> {
-            logProcessor.tailLogFile(file, null);
-        });
-
-        try {
-            Assertions.assertNull(logProcessor.tailLogFile(null, sampleLogHandler));
-        } catch (HyscaleException e) {
-            Assertions.fail(e.getMessage());
         }
-
     }
 
     private static InputStream getInputStream() {
-        InputStream inputStream = new ByteArrayInputStream(logFileContent.getBytes(Charset.forName(encoding)));
+        InputStream inputStream = new ByteArrayInputStream(logFileContent.getBytes(Charset.forName(ENCODING)));
         return inputStream;
     }
 
@@ -179,3 +185,4 @@ public class LogProcessorTests {
         }
     }
 }
+

@@ -29,18 +29,18 @@ import java.util.stream.Stream;
 
 public class MustacheTemplateResolverTests {
     private static URL sampleTemplateUrl;
-    private static String status;
+    private static String TEMPLATE_CONTENT = "ONLINE";
+    private static String TEMPLATE_KEY = "USER_STATUS";
     private static MustacheTemplateResolver mustacheTemplateResolver;
     private static String sampleTemplatePath;
     private static Map<String, Object> statusMap;
 
     @BeforeAll
     public static void input() {
-        status = "ONLINE";
         sampleTemplateUrl = MustacheTemplateResolverTests.class.getResource("/sampleConfig.tpl");
         sampleTemplatePath = sampleTemplateUrl.getPath();
         statusMap = new HashMap<>();
-        statusMap.put("USER_STATUS", status);
+        statusMap.put(TEMPLATE_KEY, TEMPLATE_CONTENT);
         mustacheTemplateResolver = new MustacheTemplateResolver();
     }
 
@@ -52,9 +52,9 @@ public class MustacheTemplateResolverTests {
 
     @ParameterizedTest
     @MethodSource(value = "getNullInputs")
-    public void testNullConditions(String sampleTemplatePath, Map<String, Object> statusMap) {
+    public void testNullConditions(String templatePath, Map<String, Object> statusMap) {
         Assertions.assertThrows(HyscaleException.class, () -> {
-            mustacheTemplateResolver.resolveTemplate(sampleTemplatePath, statusMap);
+            mustacheTemplateResolver.resolveTemplate(templatePath, statusMap);
         });
     }
 
@@ -67,6 +67,6 @@ public class MustacheTemplateResolverTests {
             Assertions.fail(e.getMessage());
         }
         Assertions.assertNotNull(template);
-        Assertions.assertEquals(template.trim(), status);
+        Assertions.assertEquals(template.trim(), TEMPLATE_CONTENT);
     }
 }

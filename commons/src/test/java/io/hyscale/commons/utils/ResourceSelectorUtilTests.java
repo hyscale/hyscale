@@ -16,7 +16,6 @@
 package io.hyscale.commons.utils;
 
 import io.hyscale.commons.models.ResourceLabelKey;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,16 +24,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ResourceSelectorUtilTests {
-    private static String appName;
-    private static String svcName;
-    private static String envName;
-
-    @BeforeAll
-    public static void init() {
-        appName = "myApp";
-        svcName = "mySvc";
-        envName = "myEnv";
-    }
+    private static final String APP_NAME = "myApp";
+    private static final String SVC_NAME ="mySvc";
+    private static final String ENV_NAME = "myEnv";
 
     @Test
     public void testGetSelectorFromLabelMap() {
@@ -43,32 +35,32 @@ public class ResourceSelectorUtilTests {
 
     @Test
     public void testGetSelectorApp() {
-        assertEquals(ResourceLabelKey.APP_NAME.getLabel() + "=" + appName, ResourceSelectorUtil.getSelector(appName));
+        assertEquals(ResourceLabelKey.APP_NAME.getLabel() + "=" + APP_NAME, ResourceSelectorUtil.getSelector(APP_NAME));
     }
 
     @Test
     public void testGetSelectorAppAndEnv() {
-        Map selector = getSelectorMap(ResourceSelectorUtil.getSelector(appName, envName));
+        Map selector = getSelectorMap(ResourceSelectorUtil.getSelector(APP_NAME, ENV_NAME));
         assertNotNull(selector);
-        assertEquals(envName, selector.get(ResourceLabelKey.ENV_NAME.getLabel()));
-        assertEquals(appName, selector.get(ResourceLabelKey.APP_NAME.getLabel()));
+        assertEquals(ENV_NAME, selector.get(ResourceLabelKey.ENV_NAME.getLabel()));
+        assertEquals(APP_NAME, selector.get(ResourceLabelKey.APP_NAME.getLabel()));
     }
 
     @Test
     public void testGetSelectorAppEnvSvc() {
-        Map selector = getSelectorMap(ResourceSelectorUtil.getSelector(appName, envName, svcName));
+        Map selector = getSelectorMap(ResourceSelectorUtil.getSelector(APP_NAME, ENV_NAME, SVC_NAME));
         assertNotNull(selector);
-        assertEquals(envName, selector.get(ResourceLabelKey.ENV_NAME.getLabel()));
-        assertEquals(appName, selector.get(ResourceLabelKey.APP_NAME.getLabel()));
-        assertEquals(svcName, selector.get(ResourceLabelKey.SERVICE_NAME.getLabel()));
+        assertEquals(ENV_NAME, selector.get(ResourceLabelKey.ENV_NAME.getLabel()));
+        assertEquals(APP_NAME, selector.get(ResourceLabelKey.APP_NAME.getLabel()));
+        assertEquals(SVC_NAME, selector.get(ResourceLabelKey.SERVICE_NAME.getLabel()));
     }
 
     @Test
     public void testGetServiceSelector() {
-        Map selector = getSelectorMap(ResourceSelectorUtil.getServiceSelector(appName, svcName));
+        Map selector = getSelectorMap(ResourceSelectorUtil.getServiceSelector(APP_NAME, SVC_NAME));
         assertNotNull(selector);
-        assertEquals(appName, selector.get(ResourceLabelKey.APP_NAME.getLabel()));
-        assertEquals(svcName, selector.get(ResourceLabelKey.SERVICE_NAME.getLabel()));
+        assertEquals(APP_NAME, selector.get(ResourceLabelKey.APP_NAME.getLabel()));
+        assertEquals(SVC_NAME, selector.get(ResourceLabelKey.SERVICE_NAME.getLabel()));
     }
 
     private Map<String, String> getSelectorMap(String selectorString) {

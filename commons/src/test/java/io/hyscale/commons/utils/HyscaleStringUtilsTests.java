@@ -15,39 +15,74 @@
  */
 package io.hyscale.commons.utils;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class HyscaleStringUtilsTests {
-    private String sampleString = "hyscaleUser";
-    private String suffixString = "User";
-    private String expectedString= "hyscale";
+    private static final String SAMPLE_STRING = "hyscaleUser";
+    private static final String SUFFIX_STRING = "User";
+    private static final String EXPECTED_STRING = "hyscale";
+    private static final char TAILING_CHAR = 'r';
+    private static final String EXPECTED_CHAR_STRING="hyscaleUse";
 
-    @Test
-    public void testRemoveSuffixStr() {
+    public static Stream<Arguments> getStrInputs() {
+        return Stream.of(Arguments.of(null, SUFFIX_STRING, null),
+                Arguments.of("", SUFFIX_STRING, ""),
+                Arguments.of(SAMPLE_STRING, null, SAMPLE_STRING),
+                Arguments.of("", SUFFIX_STRING, ""),
+                Arguments.of(SAMPLE_STRING, SUFFIX_STRING, EXPECTED_STRING));
+    }
+
+    @ParameterizedTest
+    @MethodSource(value = "getStrInputs")
+    public void testRemoveSuffixStr(String sampleString, String suffixString, String expected) {
         String actualString = HyscaleStringUtil.removeSuffixStr(sampleString, suffixString);
-        assertNotNull(actualString);
-        assertEquals(expectedString, actualString);
+            assertEquals(expected, actualString);
     }
 
-    @Test
-    public void testRemoveSuffixStrBuilder() {
+    public static Stream<Arguments> getStringBuilderInputs() {
+        return Stream.of(Arguments.of(null, SUFFIX_STRING, null),
+                Arguments.of(SAMPLE_STRING, null, SAMPLE_STRING),
+                Arguments.of(SAMPLE_STRING, " ", SAMPLE_STRING),
+                Arguments.of(SAMPLE_STRING, SUFFIX_STRING, EXPECTED_STRING));
+    }
+
+    @ParameterizedTest
+    @MethodSource(value = "getStringBuilderInputs")
+    public void testRemoveSuffixStrBuilder(String sampleString, String suffix, String expected) {
+        StringBuilder str = getStringBuilderFor(sampleString);
+        String actualString = HyscaleStringUtil.removeSuffixStr(str, suffix);
+        assertEquals(expected, actualString);
+    }
+
+    public static Stream<Arguments> getSuffixCharInputs() {
+        return Stream.of(Arguments.of(null, TAILING_CHAR, null),
+                Arguments.of("", TAILING_CHAR, ""),
+                Arguments.of(SAMPLE_STRING, TAILING_CHAR,EXPECTED_CHAR_STRING ));
+    }
+
+    @ParameterizedTest
+    @MethodSource(value = "getSuffixCharInputs")
+    public void testRemoveSuffixChar(String sampleString, char trailingChar, String expected) {
+        StringBuilder str = getStringBuilderFor(sampleString);
+        String actualString = HyscaleStringUtil.removeSuffixChar(str, trailingChar);
+        assertEquals(expected, actualString);
+    }
+
+
+    public StringBuilder getStringBuilderFor(String string) {
         StringBuilder str = new StringBuilder();
-        str.append(sampleString);
-        String actualString = HyscaleStringUtil.removeSuffixStr(str, suffixString);
-        assertNotNull(actualString);
-        assertEquals(expectedString, actualString);
+        if (string != null) {
+            str.append(string);
+        } else {
+            return null;
+        }
+        return str;
     }
-
-    @Test
-    public void testRemoveSuffixChar() {
-        StringBuilder str = new StringBuilder();
-        str.append(sampleString);
-        String actualString = HyscaleStringUtil.removeSuffixChar(str, 'r');
-        assertNotNull(actualString);
-        assertEquals("hyscaleUse", actualString);
-    }
-
 }

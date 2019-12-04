@@ -22,30 +22,24 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SetupConfigTests {
-    private static String appName;
-    private static String svcName;
+    private static final String APP_NAME = "myApp";
+    private static final String SVC_NAME = "mySvc";
+    private static final String HYSCALE = "hyscale";
+    private static final String GENERATED_FILES = "generated-files";
+    private static final String LOGS_DIRECTORY = "logs";
+    private static final String APPS_DIRECTORY = "apps";
     private static StringBuilder appsDir;
     private static StringBuilder serviceDir;
     private static SetupConfig setupConfig;
-    private static String hyscale;
-    private static String generatedFilesDir;
-    private static String logDir;
-    private static String appsDirectory;
     //TODO autowire setup config
     @BeforeAll
     public static void init() {
-        appName = "myApp";
-        svcName = "mySvc";
-        hyscale = "hyscale";
-        generatedFilesDir = "generated-files";
-        logDir = "logs";
-        appsDirectory = "apps";
         appsDir = new StringBuilder();
-        appsDir.append(SetupConfig.USER_HOME_DIR).append(ToolConstants.FILE_SEPARATOR).append(hyscale).
+        appsDir.append(SetupConfig.USER_HOME_DIR).append(ToolConstants.FILE_SEPARATOR).append(HYSCALE).
                 append(ToolConstants.
-                        FILE_SEPARATOR).append(appsDirectory).append(ToolConstants.FILE_SEPARATOR).toString();
+                        FILE_SEPARATOR).append(APPS_DIRECTORY).append(ToolConstants.FILE_SEPARATOR).toString();
         serviceDir = new StringBuilder();
-        serviceDir.append(appsDir).append(appName).append(ToolConstants.FILE_SEPARATOR).append(svcName).append(ToolConstants.FILE_SEPARATOR).toString();
+        serviceDir.append(appsDir).append(APP_NAME).append(ToolConstants.FILE_SEPARATOR).append(SVC_NAME).append(ToolConstants.FILE_SEPARATOR).toString();
         setupConfig = new SetupConfig();
     }
 
@@ -53,7 +47,7 @@ public class SetupConfigTests {
     @Test
     public void testGetToolLogDir() {
         StringBuilder expected = new StringBuilder();
-        expected.append(SetupConfig.USER_HOME_DIR).append(ToolConstants.FILE_SEPARATOR).append(hyscale).append(ToolConstants.FILE_SEPARATOR).append(logDir);
+        expected.append(SetupConfig.USER_HOME_DIR).append(ToolConstants.FILE_SEPARATOR).append(HYSCALE).append(ToolConstants.FILE_SEPARATOR).append(LOGS_DIRECTORY);
         assertEquals(expected.toString(), SetupConfig.getToolLogDir());
     }
 
@@ -71,35 +65,35 @@ public class SetupConfigTests {
 
     @Test
     public void testGetServiceDir() {
-        assertEquals(serviceDir.toString(), setupConfig.getServiceDir(appName, svcName));
+        assertEquals(serviceDir.toString(), setupConfig.getServiceDir(APP_NAME, SVC_NAME));
     }
 
     @Test
     public void testGetGeneratedFilesDir() {
         StringBuilder expected = new StringBuilder();
-        expected.append(serviceDir).append(generatedFilesDir).append(ToolConstants.FILE_SEPARATOR);
-        assertEquals(expected.toString(), setupConfig.getGeneratedFilesDir(appName, svcName));
+        expected.append(serviceDir).append(GENERATED_FILES).append(ToolConstants.FILE_SEPARATOR);
+        assertEquals(expected.toString(), setupConfig.getGeneratedFilesDir(APP_NAME, SVC_NAME));
     }
 
     @Test
     public void testGetServiceLogsDir() {
         StringBuilder expected = new StringBuilder();
-        expected.append(serviceDir).append(logDir).append(ToolConstants.FILE_SEPARATOR);
-        assertEquals(expected.toString(), setupConfig.getLogsDir(appName, svcName));
+        expected.append(serviceDir).append(LOGS_DIRECTORY).append(ToolConstants.FILE_SEPARATOR);
+        assertEquals(expected.toString(), setupConfig.getLogsDir(APP_NAME, SVC_NAME));
     }
 
     @Test
     public void testGetMountPathOf() {
-        assertEquals(hyscale, SetupConfig.getMountPathOf(hyscale));
+        assertEquals(HYSCALE, SetupConfig.getMountPathOf(HYSCALE));
     }
 
     @Test
     public void testGetMountPathOfKubeConf() {
-        assertEquals(hyscale, SetupConfig.getMountPathOfKubeConf(hyscale));
+        assertEquals(HYSCALE, SetupConfig.getMountPathOfKubeConf(HYSCALE));
     }
 
     @Test
     public void testGetMountOfDockerConf() {
-        assertEquals(hyscale, SetupConfig.getMountOfDockerConf(hyscale));
+        assertEquals(HYSCALE, SetupConfig.getMountOfDockerConf(HYSCALE));
     }
 }

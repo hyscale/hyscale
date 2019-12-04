@@ -30,56 +30,53 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 public class ResourceLabelBuilderTests {
-    private static String appName;
-    private static String svcName;
-    private static String envName;
+    private static final String APP_NAME = "myApp";
+    private static final String SVC_NAME ="mySvc";
+    private static final String ENV_NAME = "myEnv";
     private static Date date;
     private static Long longDate;
     @BeforeAll
     public static void init() {
-        appName = "myApp";
-        svcName = "mySvc";
-        envName = "myEnv";
         date = Calendar.getInstance().getTime();
         longDate = date.getTime();
     }
 
     @Test
     public void testBuildWithAppSvcEnv() {
-        Map<ResourceLabelKey, String> label = ResourceLabelBuilder.build(appName, envName, svcName);
-        assertEquals(envName, label.get(ResourceLabelKey.ENV_NAME));
-        assertEquals(appName, label.get(ResourceLabelKey.APP_NAME));
-        assertEquals(svcName, label.get(ResourceLabelKey.SERVICE_NAME));
+        Map<ResourceLabelKey, String> label = ResourceLabelBuilder.build(APP_NAME, ENV_NAME, SVC_NAME);
+        assertEquals(ENV_NAME, label.get(ResourceLabelKey.ENV_NAME));
+        assertEquals(APP_NAME, label.get(ResourceLabelKey.APP_NAME));
+        assertEquals(SVC_NAME, label.get(ResourceLabelKey.SERVICE_NAME));
     }
 
     @Test
     public void testBuildWithAppEnv() {
-        Map<ResourceLabelKey, String> label = ResourceLabelBuilder.build(appName, envName);
-        assertEquals(envName, label.get(ResourceLabelKey.ENV_NAME));
-        assertEquals(appName, label.get(ResourceLabelKey.APP_NAME));
+        Map<ResourceLabelKey, String> label = ResourceLabelBuilder.build(APP_NAME, ENV_NAME);
+        assertEquals(ENV_NAME, label.get(ResourceLabelKey.ENV_NAME));
+        assertEquals(APP_NAME, label.get(ResourceLabelKey.APP_NAME));
     }
 
     @Test
     public void testBuildWithApp() {
-        Map<ResourceLabelKey, String> label = ResourceLabelBuilder.build(appName);
-        assertEquals(appName, label.get(ResourceLabelKey.APP_NAME));
+        Map<ResourceLabelKey, String> label = ResourceLabelBuilder.build(APP_NAME);
+        assertEquals(APP_NAME, label.get(ResourceLabelKey.APP_NAME));
     }
 
     @Test
     public void testBuild() {
-        Map<ResourceLabelKey, String> label = ResourceLabelBuilder.build(appName, envName, svcName, "1", longDate);
-        assertEquals(envName, label.get(ResourceLabelKey.ENV_NAME));
-        assertEquals(appName, label.get(ResourceLabelKey.APP_NAME));
-        assertEquals(svcName, label.get(ResourceLabelKey.SERVICE_NAME));
+        Map<ResourceLabelKey, String> label = ResourceLabelBuilder.build(APP_NAME, ENV_NAME, SVC_NAME, "1", longDate);
+        assertEquals(ENV_NAME, label.get(ResourceLabelKey.ENV_NAME));
+        assertEquals(APP_NAME, label.get(ResourceLabelKey.APP_NAME));
+        assertEquals(SVC_NAME, label.get(ResourceLabelKey.SERVICE_NAME));
         assertEquals("1-" + longDate.toString(), label.get(ResourceLabelKey.RELEASE_VERSION));
 
     }
 
     @Test
     public void testBuildServiceLabel() {
-        Map<ResourceLabelKey, String> label = ResourceLabelBuilder.buildServiceLabel(appName, svcName);
-        assertEquals(appName, label.get(ResourceLabelKey.APP_NAME));
-        assertEquals(svcName, label.get(ResourceLabelKey.SERVICE_NAME));
+        Map<ResourceLabelKey, String> label = ResourceLabelBuilder.buildServiceLabel(APP_NAME, SVC_NAME);
+        assertEquals(APP_NAME, label.get(ResourceLabelKey.APP_NAME));
+        assertEquals(SVC_NAME, label.get(ResourceLabelKey.SERVICE_NAME));
     }
 
     @Test

@@ -23,27 +23,23 @@ import java.util.Map;
 
 public class ResourceLabelUtilTests {
     private static Map<String, String> labels = new HashMap<String, String>();
-    private static String svcName;
-    private static String appName;
-    private static String envName;
-
+    private static final String APP_NAME = "myApp";
+    private static final String SVC_NAME ="mySvc";
+    private static final String ENV_NAME = "myEnv";
 
     @BeforeAll
     public static void initLabels() {
-        svcName = "mySvc";
-        appName = "myApp";
-        envName = "myEnv";
-        labels.put("hyscale.io/service-name", svcName);
-        labels.put("hyscale.io/app-name", appName);
-        labels.put("hyscale.io/environment-name", envName);
+        labels.put("hyscale.io/service-name", SVC_NAME);
+        labels.put("hyscale.io/app-name", APP_NAME);
+        labels.put("hyscale.io/environment-name", ENV_NAME);
     }
 
     @Test
     public void testGetResourceUtils() {
-        Assertions.assertEquals(ResourceLabelUtil.getServiceName(labels), svcName);
+        Assertions.assertEquals(ResourceLabelUtil.getServiceName(labels), SVC_NAME);
         Assertions.assertNull(ResourceLabelUtil.getServiceName(null));
         Assertions.assertNull(ResourceLabelUtil.getServiceName(new HashMap<>()));
-        Assertions.assertEquals(ResourceLabelUtil.getAppName(labels), appName);
-        Assertions.assertEquals(ResourceLabelUtil.getEnvName(labels), envName);
+        Assertions.assertEquals(ResourceLabelUtil.getAppName(labels), APP_NAME);
+        Assertions.assertEquals(ResourceLabelUtil.getEnvName(labels), ENV_NAME);
     }
 }

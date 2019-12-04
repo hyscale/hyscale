@@ -20,7 +20,7 @@ import io.hyscale.commons.utils.TailHandler;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SampleLogHandler implements TailHandler {
+public class TestTailLogHandler implements TailHandler {
 
     private static String EOF_MARKER = "EXIT";
 

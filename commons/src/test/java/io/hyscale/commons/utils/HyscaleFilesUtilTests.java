@@ -36,17 +36,16 @@ public class HyscaleFilesUtilTests {
     private static String testDirPath;
     private static String testFilePath;
     private static File testDir;
-    private static String testFileName;
-    private static String sampleFileName;
+    private static final String SAMPLE_FILE_NAME = "sample.txt";
+    private static final String TEST_FILE_NAME = "testFile.txt";
+
 
     @BeforeAll
     public static void init() {
-        sampleFileName = "sample.txt";
-        sampleFileUrl = HyscaleFilesUtilTests.class.getClassLoader().getResource(sampleFileName);
+        sampleFileUrl = HyscaleFilesUtilTests.class.getClassLoader().getResource(SAMPLE_FILE_NAME);
         sampleFilePath = sampleFileUrl.getPath();
-        testFileName = "testFile.txt";
         testDirPath = TestConstants.TMP_DIR + ToolConstants.FILE_SEPARATOR + "testDir" + ToolConstants.FILE_SEPARATOR;
-        testFilePath = testDirPath + ToolConstants.FILE_SEPARATOR + testFileName;
+        testFilePath = testDirPath + ToolConstants.FILE_SEPARATOR + TEST_FILE_NAME;
         sampleFile = FileUtils.getFile(sampleFilePath);
         testDir = new File(testDirPath);
     }
@@ -105,7 +104,7 @@ public class HyscaleFilesUtilTests {
     @Test
     public void copyFileToDirTest() throws HyscaleException {
         HyscaleFilesUtil.copyFileToDir(sampleFile, testDir);
-        assertTrue(new File(testDirPath,sampleFileName).exists());
+        assertTrue(new File(testDirPath, SAMPLE_FILE_NAME).exists());
         assertTrue(testDir.isDirectory());
         assertTrue(testDir.exists());
         deleteDirectory(testDir);
@@ -121,7 +120,7 @@ public class HyscaleFilesUtilTests {
 
     @Test
     public void getFileNameTest() throws HyscaleException {
-        assertEquals(sampleFileName, HyscaleFilesUtil.getFileName(sampleFilePath));
+        assertEquals(SAMPLE_FILE_NAME, HyscaleFilesUtil.getFileName(sampleFilePath));
     }
 
     @Test
