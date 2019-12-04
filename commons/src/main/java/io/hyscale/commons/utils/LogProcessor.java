@@ -27,6 +27,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
+import io.hyscale.commons.exception.CommonErrorCode;
+import io.hyscale.commons.exception.HyscaleException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -37,7 +40,13 @@ public class LogProcessor {
 	private static final Logger logger = LoggerFactory.getLogger(LogProcessor.class);
 	private static final Integer DEFAULT_LINES = 100;
 
-	public void writeLogFile(InputStream is, String logFile) throws IOException {
+	public void writeLogFile(InputStream is, String logFile) throws IOException,HyscaleException{
+		if(is == null){
+			throw new HyscaleException(CommonErrorCode.INPUTSTREAM_NOT_FOUND);
+		}
+		if (StringUtils.isBlank(logFile)){
+			throw new HyscaleException(CommonErrorCode.LOGFILE_NOT_FOUND);
+		}
 		// Start copying to file
 		File targetFile = new File(logFile);
 		if (!targetFile.exists()) {
@@ -46,8 +55,9 @@ public class LogProcessor {
 		Files.copy(is, Paths.get(logFile), StandardCopyOption.REPLACE_EXISTING);
 	}
 
-	public TailLogFile tailLogFile(File logFile, TailHandler handler) {
-		if (!logFile.exists()) {
+	public TailLogFile tailLogFile(File logFile, TailHandler handler) throws HyscaleException {
+		if (logFile == null||!logFile.exists()) {
+			logger.debug("Invalid log file path found for tailing.");
 			return null;
 		}
 		// Process file
@@ -59,17 +69,20 @@ public class LogProcessor {
 		return tailLog;
 	}
 
-	public void readLogFile(File logFile, OutputStream os) {
+	public void readLogFile(File logFile, OutputStream os) throws HyscaleException{
 		readLogFile(logFile, os, DEFAULT_LINES);
 	}
 
 	/*
 	 * Filename, output stream, number of lines
 	 */
-	public void readLogFile(File logFile, OutputStream os, Integer lines) {
-		if (!logFile.exists() || logFile.isDirectory()) {
-			logger.error("File is requird for logs");
-			return;
+	public void readLogFile(File logFile, OutputStream os, Integer lines)throws HyscaleException {
+		if (logFile == null || !logFile.exists() || logFile.isDirectory()) {
+			logger.error("Invalid log file found. Cannot read logs.");
+			throw new HyscaleException(CommonErrorCode.FAILED_TO_READ_LOGFILE,logFile!=null?logFile.getPath():null);
+		}
+		if(os == null){
+			throw new HyscaleException(CommonErrorCode.OUTPUTSTREAM_NOT_FOUND);
 		}
 		lines = lines != null ? lines : DEFAULT_LINES;
 		int lineRead = 0;
@@ -81,11 +94,9 @@ public class LogProcessor {
 				lineRead++;
 			}
 		} catch (FileNotFoundException e) {
-			logger.error("File is required for logs");
+			logger.error("Cannot find log file.", e);
 		} catch (IOException e) {
-			logger.error("Error while reading log file:{} ", logFile.getName());
+			logger.error("Error while reading log file:{} ", logFile.getName(), e);
 		}
-
 	}
-
 }

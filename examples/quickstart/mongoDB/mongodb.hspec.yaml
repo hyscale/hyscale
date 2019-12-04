@@ -1,0 +1,17 @@
+name: mongodb
+
+image:
+     registry: registry.hub.docker.com  
+     name: library/mongo
+     tag: 4.0
+     
+volumes:
+   - name: mongodb-data-dir
+     path: /data/db/
+     size: 1Gi
+     
+ports:
+   - port: 27017/tcp
+     healthCheck: {}
+
+memory: 512Mi

@@ -8,3 +8,4 @@ io.hyscale.deployer.services.handler.impl.V1PodHandler
 io.hyscale.deployer.services.handler.impl.V1PersistentVolumeClaimHandler
 io.hyscale.deployer.services.handler.impl.V1ReplicaSetHandler
 io.hyscale.deployer.services.handler.impl.V1StorageClassHandler
+io.hyscale.deployer.services.handler.impl.V1HorizontalPodAutoScalerHandler

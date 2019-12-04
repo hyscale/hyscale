@@ -133,6 +133,26 @@ public enum ManifestResource {
             return ManifestPredicates.getPortsPredicate();
         }
 
+    },
+    HORIZONTAL_POD_AUTOSCALER("HorizontalPodAutoscaler", "autoscaling/v1") {
+        @Override
+        public String getName(AppMetaData appMetaData) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(NormalizationUtil.normalize(appMetaData.getAppName()));
+            sb.append(ManifestGenConstants.NAME_DELIMITER);
+            sb.append(NormalizationUtil.normalize(appMetaData.getServiceName()));
+            return sb.toString();
+        }
+
+        @Override
+        public Map<String, String> getLabels(AppMetaData appMetaData) {
+            return DefaultLabelBuilder.build(appMetaData);
+        }
+
+        @Override
+        public Predicate<ServiceSpec> getPredicate() {
+            return ManifestPredicates.isAutoScalingEnabled();
+        }
     };
 
     private String kind;

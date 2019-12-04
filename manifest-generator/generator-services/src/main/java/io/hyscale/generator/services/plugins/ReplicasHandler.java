@@ -23,6 +23,7 @@ import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.service.Replicas;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,19 +40,19 @@ public class ReplicasHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
-        Integer replicas = serviceSpec.get(HyscaleSpecFields.replicas, Integer.class);
-        // In user does not specify replicas field in hspec, by default we consider a single replica
-        if (replicas == null || replicas == 0 ) {
-            logger.debug("Cannot find replicas, setting default value to 1.");
-            replicas = 1;
+        Replicas replicas = serviceSpec.get(HyscaleSpecFields.replicas, Replicas.class);
+        if (replicas == null) {
+            logger.debug("Cannot handle replicas as the field is not declared");
+            return null;
         }
-
+        // If user does not specify replicas field in hspec, by default we consider a single replica
+        int replicaCount = replicas.getMin() > 0 ? replicas.getMin() : 1;
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ?
                 ManifestResource.STATEFUL_SET.getKind() : ManifestResource.DEPLOYMENT.getKind();
 
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         ManifestSnippet replicaSnippet = new ManifestSnippet();
-        replicaSnippet.setSnippet(String.valueOf(replicas));
+        replicaSnippet.setSnippet(String.valueOf(replicaCount));
         replicaSnippet.setPath("spec.replicas");
         replicaSnippet.setKind(podSpecOwner);
 

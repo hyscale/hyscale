@@ -25,6 +25,7 @@ import java.util.Map;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -45,6 +46,12 @@ public class MustacheTemplateResolver {
 	}
 
 	public String resolveTemplate(String templateFile, Map<String, Object> context) throws HyscaleException {
+		if(StringUtils.isBlank(templateFile)){
+			throw new HyscaleException(CommonErrorCode.FAILED_TO_RESOLVE_TEMPLATE,templateFile);
+		}
+		if(context == null || context.isEmpty()){
+			throw new HyscaleException(CommonErrorCode.TEMPLATE_CONTEXT_NOT_FOUND,templateFile);
+		}
 		try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 			Writer out = new OutputStreamWriter(outputStream,
 					Charset.forName(ToolConstants.CHARACTER_ENCODING).newEncoder());
