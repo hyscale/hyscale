@@ -62,6 +62,7 @@ public class AutoScalingPluginHandler implements ManifestHandler {
     private static final String MIN_REPLICAS = "MIN_REPLICAS";
     private static final String MAX_REPLICAS = "MAX_REPLICAS";
     private static final String AVERAGE_UTILIZATION = "AVERAGE_UTILIZATION";
+    private static final String CPU_THRESHOLD_REGEX = "[\\d\\.]+%";
 
     @Autowired
     private PluginTemplateProvider templateProvider;
@@ -96,18 +97,24 @@ public class AutoScalingPluginHandler implements ManifestHandler {
         return snippetList;
     }
 
-    //TODO min<max && min>0 check
-    // TODO read % sign and exclude it while populating mnifests
     private boolean validate(Replicas replicas) {
         if (replicas == null) {
             return false;
         }
         if (replicas.getMin() > 0 && replicas.getMax() < replicas.getMin()) {
+            WorkflowLogger.persist(ManifestGeneratorActivity.IGNORING_REPLICAS, "Min replicas should be less than max replicas");
             return false;
         }
         if (StringUtils.isBlank(replicas.getCpuThreshold())) {
+            WorkflowLogger.persist(ManifestGeneratorActivity.IGNORING_REPLICAS, "Missing field cpuThreshold");
             return false;
         }
+
+        if (!replicas.getCpuThreshold().matches(CPU_THRESHOLD_REGEX)) {
+            WorkflowLogger.persist(ManifestGeneratorActivity.IGNORING_REPLICAS, "The field cpuThreshold should match the regex " + CPU_THRESHOLD_REGEX);
+            return false;
+        }
+
         return true;
     }
 
