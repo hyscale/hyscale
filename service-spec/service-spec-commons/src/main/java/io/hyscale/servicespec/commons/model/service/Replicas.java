@@ -17,35 +17,34 @@ package io.hyscale.servicespec.commons.model.service;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-@JsonDeserialize
+@JsonDeserialize(using = ReplicasDeserializer.class)
 public class Replicas {
 
-    private int min;
-    private int max;
-    private String cpuThreshold;
+	private int min;
+	private int max;
+	private String cpuThreshold;
 
+	public int getMin() {
+		return min;
+	}
 
-    public int getMin() {
-        return min;
-    }
+	public void setMin(int min) {
+		this.min = min;
+	}
 
-    public void setMin(int min) {
-        this.min = min;
-    }
+	public int getMax() {
+		return max;
+	}
 
-    public int getMax() {
-        return max;
-    }
+	public void setMax(int max) {
+		this.max = max;
+	}
 
-    public void setMax(int max) {
-        this.max = max;
-    }
+	public String getCpuThreshold() {
+		return cpuThreshold;
+	}
 
-    public String getCpuThreshold() {
-        return cpuThreshold;
-    }
-
-    public void setCpuThreshold(String cpuThreshold) {
-        this.cpuThreshold = cpuThreshold;
-    }
+	public void setCpuThreshold(String cpuThreshold) {
+		this.cpuThreshold = cpuThreshold;
+	}
 }
