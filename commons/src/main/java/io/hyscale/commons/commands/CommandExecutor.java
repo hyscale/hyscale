@@ -156,6 +156,7 @@ public class CommandExecutor {
         processBuilder.directory(directory);
         processBuilder.command(command.split(" "));
         processBuilder.redirectErrorStream(true);
+        CopyOutput copyOutput = new CopyOutput();
         if (file != null) {
             HyscaleFilesUtil.createEmptyFile(file);
             processBuilder.redirectOutput(file);
@@ -166,7 +167,7 @@ public class CommandExecutor {
         boolean readOutput = false;
         StringWriter strWriter = new StringWriter();
         if (file == null) {
-            readOutput = copyOutput(process, strWriter);
+            readOutput = copyOutput.performOperation(process, strWriter);
         }
         try {
             exitCode = process.waitFor();
@@ -176,31 +177,43 @@ public class CommandExecutor {
             throw e;
         }
         if (readOutput) {
+            while(!copyOutput.isDone) {
+                // wait till copy is over
+            }
             cmdResult.setCommandOutput(strWriter.toString());
         }
         cmdResult.setExitCode(exitCode);
         return cmdResult;
     }
-
     /**
-     * Copy output from process input stream to string writer
-     *
-     * @param process
-     * @param strWriter
-     * @return is thread started
+     *  Copy output from process input stream to string writer
+     *  Wait till copying is done
      */
-    private static boolean copyOutput(Process process, StringWriter strWriter) {
-        return ThreadPoolUtil.getInstance().execute(() -> {
-            try {
-                do{
-                    IOUtils.copy(process.getInputStream(), strWriter, StandardCharsets.UTF_8);
-                } while (process.isAlive());
-            } catch (IOException e) {
-                logger.error("Error while reading command output", e);
-            }
-        });
+    static class CopyOutput{
+        
+        private boolean isDone = false;
+        
+        /**
+         * Copy output from process input stream to string writer
+         *
+         * @param process
+         * @param strWriter
+         * @return is thread started
+         */
+        public boolean performOperation(Process process, StringWriter strWriter) {
+            return ThreadPoolUtil.getInstance().execute(() -> {
+                try {
+                    do{
+                        IOUtils.copy(process.getInputStream(), strWriter, StandardCharsets.UTF_8);
+                    } while (process.isAlive());
+                } catch (IOException e) {
+                    logger.error("Error while reading command output", e);
+                } finally {
+                    isDone = true;
+                }
+            });
+        }
     }
-
 
     /**
      * Passes input to command.
