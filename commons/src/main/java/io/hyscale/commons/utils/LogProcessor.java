@@ -55,7 +55,7 @@ public class LogProcessor {
 		Files.copy(is, Paths.get(logFile), StandardCopyOption.REPLACE_EXISTING);
 	}
 
-	public TailLogFile tailLogFile(File logFile, TailHandler handler) throws HyscaleException {
+	public TailLogFile tailLogFile(File logFile, TailHandler handler){
 		if (logFile == null||!logFile.exists()) {
 			logger.debug("Invalid log file path found for tailing.");
 			return null;
