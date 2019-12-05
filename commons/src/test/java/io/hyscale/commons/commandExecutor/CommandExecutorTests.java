@@ -20,7 +20,6 @@ import io.hyscale.commons.constants.TestConstants;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.models.CommandResult;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -38,48 +37,36 @@ public class CommandExecutorTests {
        stringBuilder  = new StringBuilder();
     }
 
-//    @Test
-//    public void testExecuteAndGetResults() {
-//        //TODO support for echo command execution
-//        CommandResult result = CommandExecutor.executeAndGetResults(ECHO_COMMAND);
-//        assertNotNull(result);
-//        System.out.println("Assertion output"+result.getCommandOutput());
-//        assertEquals(0,result.getExitCode());
-//        assertEquals("HelloWorld",result.getCommandOutput());
-//    }
+    @Test
+    public void testExecuteAndGetResults() {
+        CommandResult result = CommandExecutor.executeAndGetResults(ECHO_COMMAND);
+        assertNotNull(result);
+        assertEquals(0,result.getExitCode());
+    }
 
-//    @Test
-//    public void testExecute() {
-//        boolean flag = CommandExecutor.execute(ECHO_COMMAND);
-//        assertTrue(flag);
-//    }
-//
-//    @Test
-//    public void testExecuteWithFile() throws IOException {
-//        File testFile = new File(stringBuilder.append(TestConstants.TMP_DIR).append(ToolConstants.FILE_SEPARATOR).append("testExecute").toString());
-//        testFile.createNewFile();
-//        boolean flag = CommandExecutor.execute(ECHO_COMMAND, testFile);
-//        assertTrue(testFile.exists());
-//        assertEquals(ECHO_COMMAND.split(" ")[1], FileUtils.readFileToString(testFile,"UTF-8").trim());
-//        assertTrue(flag);
-//        testFile.delete();
-//    }
-//
+    @Test
+    public void testExecute() {
+        boolean flag = CommandExecutor.execute(ECHO_COMMAND);
+        assertTrue(flag);
+    }
+
+    @Test
+    public void testExecuteWithFile() throws IOException {
+        File testFile = new File(stringBuilder.append(TestConstants.TMP_DIR).append(ToolConstants.FILE_SEPARATOR).append("testExecute").toString());
+        testFile.createNewFile();
+        boolean flag = CommandExecutor.execute(ECHO_COMMAND, testFile);
+        assertTrue(testFile.exists());
+        assertEquals(ECHO_COMMAND.split(" ")[1], FileUtils.readFileToString(testFile,"UTF-8").trim());
+        assertTrue(flag);
+        testFile.delete();
+    }
+
     @Test
     public void testExecuteInDir() {
-        StringBuilder command = new StringBuilder();
-        if (SystemUtils.IS_OS_WINDOWS) {
-            command.append("cmd.exe /c mkdir testDirectory");
-        } else {
-            command.append("mkdir testDirectory");
-        }
-        File testFile = new File(TestConstants.TMP_DIR+ToolConstants.FILE_SEPARATOR+"testFile");
-        boolean flag = CommandExecutor.executeInDir(command.toString(), testFile,TestConstants.TMP_DIR);
+        File testFile = new File(stringBuilder.append(TestConstants.TMP_DIR).append(ToolConstants.FILE_SEPARATOR).append("testExecuteInDir").toString());
+        boolean flag = CommandExecutor.executeInDir(ECHO_COMMAND, testFile, TestConstants.TMP_DIR);
         assertTrue(testFile.exists());
         assertTrue(flag);
-        File testDir = new File(System.getProperty("user.dir")+ToolConstants.FILE_SEPARATOR+"testDirectory");
-        assertTrue(testDir.isDirectory());
-        assertTrue(testDir.exists());
         testFile.delete();
     }
 }
