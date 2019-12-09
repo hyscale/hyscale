@@ -35,7 +35,7 @@ public class LogProcessorTests {
     private static String logFileContent = "logger running" + "\n" + "logger running";
     private static File file;
     private static ByteArrayOutputStream os = new ByteArrayOutputStream();
-
+    
     @BeforeEach
     public void getLogFile() {
         file = FileUtils.getFile(LOG_FILE_PATH);
@@ -75,7 +75,6 @@ public class LogProcessorTests {
             try (InputStream inputStream = getInputStream()) {
                 logProcessor.writeLogFile(inputStream, LOG_FILE_PATH);
                 content = FileUtils.readFileToString(file, ENCODING).trim();
-                inputStream.close();
             } catch (IOException i) {
                 Assertions.fail();
             } catch (HyscaleException e) {

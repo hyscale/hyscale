@@ -83,9 +83,9 @@ public class HyscaleFilesUtilTests {
     @Test
     public void createFileTest() throws HyscaleException {
         File file = HyscaleFilesUtil.createFile(testFilePath, "this is some file content");
-        assertTrue(file.exists());
         assertTrue(testDir.isDirectory());
         assertTrue(testDir.exists());
+        assertTrue(file.exists());
         deleteDirectory(testDir);
     }
 
@@ -104,9 +104,9 @@ public class HyscaleFilesUtilTests {
     @Test
     public void copyFileToDirTest() throws HyscaleException {
         HyscaleFilesUtil.copyFileToDir(sampleFile, testDir);
-        assertTrue(new File(testDirPath, SAMPLE_FILE_NAME).exists());
         assertTrue(testDir.isDirectory());
         assertTrue(testDir.exists());
+        assertTrue(new File(testDirPath, SAMPLE_FILE_NAME).exists());
         deleteDirectory(testDir);
     }
 
@@ -140,8 +140,8 @@ public class HyscaleFilesUtilTests {
     @Test
     public void deleteDirectoryTest() throws HyscaleException {
         testDir = createDirectory(testDirPath);
-        assertTrue(testDir.exists());
         assertTrue(testDir.isDirectory());
+        assertTrue(testDir.exists());
         HyscaleFilesUtil.deleteDirectory(testDirPath);
         assertFalse(testDir.exists());
 

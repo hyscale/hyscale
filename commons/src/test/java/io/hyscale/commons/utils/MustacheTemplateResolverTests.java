@@ -29,8 +29,8 @@ import java.util.stream.Stream;
 
 public class MustacheTemplateResolverTests {
     private static URL sampleTemplateUrl;
-    private static String TEMPLATE_CONTENT = "ONLINE";
-    private static String TEMPLATE_KEY = "USER_STATUS";
+    private static String TESTING_TEMPLATE_CONTENT = "ONLINE";
+    private static String TESTING_TEMPLATE_KEY = "USER_STATUS";
     private static MustacheTemplateResolver mustacheTemplateResolver;
     private static String sampleTemplatePath;
     private static Map<String, Object> statusMap;
@@ -40,7 +40,7 @@ public class MustacheTemplateResolverTests {
         sampleTemplateUrl = MustacheTemplateResolverTests.class.getResource("/sampleConfig.tpl");
         sampleTemplatePath = sampleTemplateUrl.getPath();
         statusMap = new HashMap<>();
-        statusMap.put(TEMPLATE_KEY, TEMPLATE_CONTENT);
+        statusMap.put(TESTING_TEMPLATE_KEY, TESTING_TEMPLATE_CONTENT);
         mustacheTemplateResolver = new MustacheTemplateResolver();
     }
 
@@ -67,6 +67,6 @@ public class MustacheTemplateResolverTests {
             Assertions.fail(e.getMessage());
         }
         Assertions.assertNotNull(template);
-        Assertions.assertEquals(template.trim(), TEMPLATE_CONTENT);
+        Assertions.assertEquals(template.trim(), TESTING_TEMPLATE_CONTENT);
     }
 }

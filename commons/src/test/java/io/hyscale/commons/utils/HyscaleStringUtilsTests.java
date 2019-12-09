@@ -31,30 +31,23 @@ public class HyscaleStringUtilsTests {
     private static final char TAILING_CHAR = 'r';
     private static final String EXPECTED_CHAR_STRING="hyscaleUse";
 
-    public static Stream<Arguments> getStrInputs() {
+    public static Stream<Arguments> getInputsForRemoveSuffixTest() {
         return Stream.of(Arguments.of(null, SUFFIX_STRING, null),
                 Arguments.of("", SUFFIX_STRING, ""),
                 Arguments.of(SAMPLE_STRING, null, SAMPLE_STRING),
-                Arguments.of("", SUFFIX_STRING, ""),
+                Arguments.of(SAMPLE_STRING, "", SAMPLE_STRING),
                 Arguments.of(SAMPLE_STRING, SUFFIX_STRING, EXPECTED_STRING));
     }
 
     @ParameterizedTest
-    @MethodSource(value = "getStrInputs")
+    @MethodSource(value = "getInputsForRemoveSuffixTest")
     public void testRemoveSuffixStr(String sampleString, String suffixString, String expected) {
         String actualString = HyscaleStringUtil.removeSuffixStr(sampleString, suffixString);
             assertEquals(expected, actualString);
     }
 
-    public static Stream<Arguments> getStringBuilderInputs() {
-        return Stream.of(Arguments.of(null, SUFFIX_STRING, null),
-                Arguments.of(SAMPLE_STRING, null, SAMPLE_STRING),
-                Arguments.of(SAMPLE_STRING, " ", SAMPLE_STRING),
-                Arguments.of(SAMPLE_STRING, SUFFIX_STRING, EXPECTED_STRING));
-    }
-
     @ParameterizedTest
-    @MethodSource(value = "getStringBuilderInputs")
+    @MethodSource(value = "getInputsForRemoveSuffixTest")
     public void testRemoveSuffixStrBuilder(String sampleString, String suffix, String expected) {
         StringBuilder str = getStringBuilderFor(sampleString);
         String actualString = HyscaleStringUtil.removeSuffixStr(str, suffix);
@@ -78,11 +71,10 @@ public class HyscaleStringUtilsTests {
 
     public StringBuilder getStringBuilderFor(String string) {
         StringBuilder str = new StringBuilder();
-        if (string != null) {
-            str.append(string);
-        } else {
+        if (string == null) {
             return null;
         }
+        str.append(string);
         return str;
     }
 }
