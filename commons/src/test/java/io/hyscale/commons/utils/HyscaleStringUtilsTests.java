@@ -49,8 +49,8 @@ public class HyscaleStringUtilsTests {
     @ParameterizedTest
     @MethodSource(value = "getInputsForRemoveSuffixTest")
     public void testRemoveSuffixStrBuilder(String sampleString, String suffix, String expected) {
-        StringBuilder str = getStringBuilderFor(sampleString);
-        String actualString = HyscaleStringUtil.removeSuffixStr(str, suffix);
+        StringBuilder stringBuilder = getStringBuilderFor(sampleString);
+        String actualString = HyscaleStringUtil.removeSuffixStr(stringBuilder, suffix);
         assertEquals(expected, actualString);
     }
 

@@ -20,6 +20,7 @@ import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -45,16 +46,18 @@ public class HyscaleFilesUtilTests {
         sampleFileUrl = HyscaleFilesUtilTests.class.getClassLoader().getResource(SAMPLE_FILE_NAME);
         sampleFilePath = sampleFileUrl.getPath();
         testDirPath = TestConstants.TMP_DIR + ToolConstants.FILE_SEPARATOR + "testDir" + ToolConstants.FILE_SEPARATOR;
-        testFilePath = testDirPath + ToolConstants.FILE_SEPARATOR + TEST_FILE_NAME;
+        testFilePath = testDirPath + TEST_FILE_NAME;
         sampleFile = FileUtils.getFile(sampleFilePath);
         testDir = new File(testDirPath);
     }
 
     private File createFile(String filePath) {
         File newFile = new File(filePath);
+        createDirectory(newFile.getParent());
         try {
             newFile.createNewFile();
         } catch (IOException e) {
+            Assertions.fail("Unable to create file:"+filePath+" for "+getClass().toString());
         }
         return newFile;
     }
