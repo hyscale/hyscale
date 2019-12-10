@@ -26,6 +26,7 @@ public enum DeployerActivity implements Activity {
 	DEPLOYING_DEPLOYMENT("Applying Deployment "),
 	DEPLOYING_SECRETS("Applying Secret "),
 	DEPLOYING_SERVICE("Applying Service "),
+    DEPLOYING_HORIZONTAL_AUTO_SCALER("Applying HorizontalPodAutoScaler "),
 	WAITING_FOR_CONTAINER_CREATION("Waiting for container creation"),
 	WAITING_FOR_DEPLOYMENT("Waiting for deployment completion "),
 	POD_INITIALIZED("Pod initialization "),
@@ -39,6 +40,7 @@ public enum DeployerActivity implements Activity {
 	DELETING_DEPLOYMENT("Deleting Deployment "),
 	DELETING_NAMESPACE("Deleting namespace "),
 	DELETING_PERSISTENT_VOLUME_CLAIMS("Deleting Persistent Volume Claims "),
+    DELETING_HORIZONTAL_POD_AUTOSCALER("Deleting HorizontalPodAutoScaler "),
 	NO_RESOURCES_TO_UNDEPLOY("No resources to undeploy "),
 	STALE_VOLUME_DELETION(
 			"Volumes {} seems to have been removed in your hspec. These volumes are retained in your namespace {} as pvc {} for review and manual deletion"),

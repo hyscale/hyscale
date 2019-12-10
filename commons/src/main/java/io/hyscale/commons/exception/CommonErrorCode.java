@@ -21,6 +21,7 @@ public enum CommonErrorCode implements HyscaleErrorCode {
     FAILED_TO_COPY_FILE("Failed to copy the file {}"),
     DIRECTORY_REQUIRED_TO_COPY_FILE("Directory required to copy file {}"),
     FILE_NOT_FOUND("File {} not found"),
+    LOGFILE_NOT_FOUND("Failed to log due to invalid file path."),
     FAILED_TO_RESOLVE_TEMPLATE("Failed to resolve {} template"),
     FAILED_TO_WRITE_FILE("Failed to write to file {}"),
     FAILED_TO_WRITE_FILE_DATA("Failed to write data into file {}"),
@@ -30,10 +31,10 @@ public enum CommonErrorCode implements HyscaleErrorCode {
     FAILED_TO_DELETE_DIRECTORY("Failed to delete the directory {}"),
     FOUND_DIRECTORY_INSTEAD_OF_FILE("Found directory {} instead of file"),
     TEMPLATE_CONTEXT_NOT_FOUND("Template Context not found for template {}"),
-    INVALID_INPUTSTREAM("Invalid input stream {}"),
-    INVALID_OUTPUTSTREAM("Invalid output stream {}"),
-    INVALID_HANDLER("Invalid handler {}");
-
+    INPUTSTREAM_NOT_FOUND("Cannot find inputstream and so cannot write to logfile"),
+    FAILED_TO_READ_LOGFILE("Failed to read logs at log file {}"),
+    OUTPUTSTREAM_NOT_FOUND("Cannot find output stream and so cannot write to stream");
+    
     private String message;
 
     CommonErrorCode(String message) {

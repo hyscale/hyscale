@@ -27,7 +27,9 @@ public enum ManifestGeneratorActivity implements Activity {
     INSUFFICIENT_MEMORY("Ignoring memory limits as 4Mi is minimum memory but declared is {}"),
     INSUFFICIENT_CPU("Ignoring CPU limits as 1m is minimum memory but declared is {}"),
     INVALID_RANGE("Invalid range {}"),
-    FAILED_TO_CREATE_IMAGE_PULL_SECRET("Missing credentials for the registry {}. Please perform 'docker login {} ' to continue with the deployment");
+    FAILED_TO_CREATE_IMAGE_PULL_SECRET("Missing credentials for the registry {}. Please perform 'docker login {} ' to continue with the deployment"),
+    FAILED_TO_PROCESS_REPLICAS("Unexpected error while processing replicas"),
+    IGNORING_REPLICAS("{} , so replicas has been ignored for this deployment");
 
     private String message;
 

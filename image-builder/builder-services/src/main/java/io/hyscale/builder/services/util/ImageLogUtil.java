@@ -17,7 +17,6 @@ package io.hyscale.builder.services.util;
 
 import java.io.File;
 
-import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +52,7 @@ public class ImageLogUtil {
 		}
 	}
 
-	public void tailLogs(BuildContext context) throws HyscaleException{
+	public void tailLogs(BuildContext context){
 		String appName = context.getAppName();
 		String serviceName = context.getServiceName();
 
@@ -114,7 +113,7 @@ public class ImageLogUtil {
 		}
 	}
 
-	public TailLogFile tailBuildLogs(String appName, String serviceName) throws HyscaleException{
+	public TailLogFile tailBuildLogs(String appName, String serviceName){
 		BuildLogHandler buildLogHandler = new BuildLogHandler();
 		File logFile = new File(imageBuilderConfig.getDockerBuildlog(appName, serviceName));
 		boolean fileExists = logFile.exists();
@@ -124,7 +123,7 @@ public class ImageLogUtil {
 			return processLogFile.tailLogFile(logFile, buildLogHandler);
 	}
 
-	public TailLogFile tailPushLogs(String appName, String serviceName) throws HyscaleException{
+	public TailLogFile tailPushLogs(String appName, String serviceName){
 		PushLogHandler pushLogHandler = new PushLogHandler();
 		File logFile = new File(imageBuilderConfig.getDockerPushLogDir(appName, serviceName));
 		boolean fileExists = logFile.exists();

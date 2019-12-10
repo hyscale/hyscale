@@ -13,15 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.generator.services.generator;
+package io.hyscale.servicespec.commons.model.service;
 
-import io.hyscale.commons.utils.NormalizationUtil;
-import io.hyscale.generator.services.constants.ManifestGenConstants;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-public class K8sResourceNameGenerator {
+@JsonDeserialize(using = ReplicasDeserializer.class)
+public class Replicas {
 
-    public static String getResourceVolumeName(String prefix, String kind) {
-        return NormalizationUtil.normalize(prefix + ManifestGenConstants.NAME_DELIMITER + kind);
-    }
+	private int min;
+	private int max;
+	private String cpuThreshold;
 
+	public int getMin() {
+		return min;
+	}
+
+	public void setMin(int min) {
+		this.min = min;
+	}
+
+	public int getMax() {
+		return max;
+	}
+
+	public void setMax(int max) {
+		this.max = max;
+	}
+
+	public String getCpuThreshold() {
+		return cpuThreshold;
+	}
+
+	public void setCpuThreshold(String cpuThreshold) {
+		this.cpuThreshold = cpuThreshold;
+	}
 }

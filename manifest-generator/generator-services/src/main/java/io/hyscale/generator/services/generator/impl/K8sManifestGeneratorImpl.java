@@ -35,7 +35,6 @@ public class K8sManifestGeneratorImpl implements ManifestGenerator {
 
 	@Override
 	public List<Manifest> generate(ServiceSpec serviceSpec, ManifestContext context) throws HyscaleException {
-
 		return pluginProcessor.getManifests(serviceSpec, context);
 	}
 }

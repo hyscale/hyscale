@@ -47,6 +47,7 @@ public class ManifestTreeUtils {
         this.objectMapper = ObjectMapperFactory.yamlMapper();
     }
 
+    //TODO regex for path validation
     public JsonNode injectSnippet(String snippet, String path, ObjectNode rootNode)
             throws IOException, HyscaleException {
         if (StringUtils.isBlank(snippet)) {

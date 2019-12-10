@@ -128,11 +128,7 @@ public class LogProcessorTests {
             long timeLimit = currentTimeInMillis + 2000;
             List<String> lines = Stream.of("logger running", "logger running", "logger running", "logger running", "EXIT").collect(Collectors.toList());
             TailLogFile tailLogFile = null;
-            try {
-                tailLogFile = logProcessor.tailLogFile(file, testTailLogHandler);
-            } catch (HyscaleException e) {
-            }
-
+            tailLogFile = logProcessor.tailLogFile(file, testTailLogHandler);
             Thread fileWriterThread = new Thread(() -> {
                 for (String line : lines) {
                     try {
@@ -163,12 +159,7 @@ public class LogProcessorTests {
 
         @Test
         public void testNullConditionsForTail() {
-            try {
-                Assertions.assertNull(logProcessor.tailLogFile(null, testTailLogHandler));
-            } catch (HyscaleException e) {
-                Assertions.fail(e.getMessage());
-            }
-
+            Assertions.assertNull(logProcessor.tailLogFile(null, testTailLogHandler));
         }
     }
 
