@@ -49,8 +49,8 @@ public class HyscaleStringUtilsTests {
     @ParameterizedTest
     @MethodSource(value = "getInputsForRemoveSuffixTest")
     public void testRemoveSuffixStrBuilder(String sampleString, String suffix, String expected) {
-        StringBuilder stringBuilder = getStringBuilderFor(sampleString);
-        String actualString = HyscaleStringUtil.removeSuffixStr(stringBuilder, suffix);
+        StringBuilder strBuilder = getStringBuilderFor(sampleString);
+        String actualString = HyscaleStringUtil.removeSuffixStr(strBuilder, suffix);
         assertEquals(expected, actualString);
     }
 
@@ -63,18 +63,16 @@ public class HyscaleStringUtilsTests {
     @ParameterizedTest
     @MethodSource(value = "getSuffixCharInputs")
     public void testRemoveSuffixChar(String sampleString, char trailingChar, String expected) {
-        StringBuilder str = getStringBuilderFor(sampleString);
-        String actualString = HyscaleStringUtil.removeSuffixChar(str, trailingChar);
+        StringBuilder stringBuilder = getStringBuilderFor(sampleString);
+        String actualString = HyscaleStringUtil.removeSuffixChar(stringBuilder, trailingChar);
         assertEquals(expected, actualString);
     }
 
 
     public StringBuilder getStringBuilderFor(String string) {
-        StringBuilder str = new StringBuilder();
         if (string == null) {
             return null;
         }
-        str.append(string);
-        return str;
+        return new StringBuilder(string);
     }
 }

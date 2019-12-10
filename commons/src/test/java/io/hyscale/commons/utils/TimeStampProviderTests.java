@@ -42,17 +42,14 @@ public class TimeStampProviderTests {
     @MethodSource(value = "getPattern")
     public void getTimeStampTest(String pattern) {
         String time = TimeStampProvider.get(pattern);
-        if (StringUtils.isNotEmpty(time)) {
-            if(pattern == null){
-                pattern= DEFAULT_DATE_PATTERN;
-            }
-            Assertions.assertTrue(matchPatter(time, pattern));
-        }else {
-            fail();
+        if(pattern == null){
+            pattern= DEFAULT_DATE_PATTERN;
         }
+        Assertions.assertTrue(StringUtils.isNotEmpty(time));
+        Assertions.assertTrue(matchPattern(time, pattern));
     }
 
-    public boolean matchPatter(String time, String pattern) {
+    public boolean matchPattern(String time, String pattern) {
         DateFormat formatter = new SimpleDateFormat(pattern);
         formatter.setLenient(false);
         try {

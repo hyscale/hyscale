@@ -24,6 +24,7 @@ import org.junit.jupiter.params.provider.*;
 import org.junit.jupiter.api.Nested;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,9 +40,11 @@ public class LogProcessorTests {
     @BeforeEach
     public void getLogFile() {
         file = FileUtils.getFile(LOG_FILE_PATH);
+        new File(file.getParent()).mkdirs();
         try {
             file.createNewFile();
         } catch (IOException e) {
+            Assertions.fail("unable to create log file:"+LOG_FILE_PATH+" in the class "+this.getClass().toString());
         }
     }
 
@@ -78,6 +81,7 @@ public class LogProcessorTests {
             } catch (IOException i) {
                 Assertions.fail();
             } catch (HyscaleException e) {
+                Assertions.fail();
             }
             Assertions.assertNotNull(content);
             Assertions.assertEquals(content, logFileContent);
