@@ -27,8 +27,9 @@ import java.io.IOException;
 
 /**
  * Provides credential from the docker-credential-helper.
- * Takes inputs @helperFuntion ie..credential helper name and registry name.
- * Generates the "docker-credential-helperFuntion get" command and gets credentials if exists.
+ * Takes inputs @helperFuntion i.e..credential helper name and registry name.
+ * Generates the "docker-credential-helperFuntion get" command 
+ * and gets credentials if exists.
  */
 public class DockerCredHelper {
     private static final Logger logger = LoggerFactory.getLogger(DockerCredHelper.class);
@@ -46,28 +47,34 @@ public class DockerCredHelper {
     }
 
     /**
-     * Fetches the credentials from credstore given registryUrl,Helper name.
+     * Fetches the credentials from credstore given registryUrl, Helper name.
      * <p>
-     * Takes image registry creates command "docker-credential-<helper> get"  executes with registry url as input and
-     * fetches credenials from  the credsStore entity pattern if found.
+     * Takes image registry creates command "docker-credential-<helper> get"
+     * executes with registry url as input and fetches credentials from the
+     * credsStore entity pattern if found.
      *
      * @param registryUrl the registry server url
-     * @return CredsStoreEntity object containing username and password if found ,else returns null.
+     * @return CredsStoreEntity object containing username and password if found,
+     *         else returns null.
      */
     public CredsStoreEntity get(String registryUrl) {
         StringBuilder stringBuilder = new StringBuilder();
-        String command = stringBuilder.append(DOCKER_CREDENTIAL).append(getHelperFunction()).append(ToolConstants.SPACE).append(GET).toString();
+        String command = stringBuilder.append(DOCKER_CREDENTIAL).append(getHelperFunction()).append(ToolConstants.SPACE)
+                .append(GET).toString();
         try {
             CommandResult result = CommandExecutor.executeAndGetResults(command, registryUrl);
             ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
-            if(result==null || StringUtils.isBlank(result.getCommandOutput()) || result.getExitCode()!=0) {
-                logger.debug("Could not fetch credentials for registry {} from helper function {}.",registryUrl,getHelperFunction());
+            if (result == null || StringUtils.isBlank(result.getCommandOutput()) || result.getExitCode() != 0) {
+                logger.debug("Could not fetch credentials for registry {} from helper function {}.", registryUrl,
+                        getHelperFunction());
                 return null;
             }
             CredsStoreEntity credsStore = mapper.readValue(result.getCommandOutput(), CredsStoreEntity.class);
-                if (StringUtils.isNotBlank(credsStore.getServerURL()) && StringUtils.isNotBlank(credsStore.getUsername()) && StringUtils.isNotBlank(credsStore.getSecret())) {
-                    logger.debug("Found credentials for registry {} from helper function {}.",registryUrl,getHelperFunction());
-                    return credsStore;
+            if (StringUtils.isNotBlank(credsStore.getServerURL()) && StringUtils.isNotBlank(credsStore.getUsername())
+                    && StringUtils.isNotBlank(credsStore.getSecret())) {
+                logger.debug("Found credentials for registry {} from helper function {}.", registryUrl,
+                        getHelperFunction());
+                return credsStore;
             }
         } catch (IOException e) {
             logger.error("Error while fetching credentials from {}", helperFunction, e);
