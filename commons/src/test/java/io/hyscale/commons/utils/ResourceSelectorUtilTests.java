@@ -25,7 +25,7 @@ import java.util.Map;
 
 public class ResourceSelectorUtilTests {
     private static final String APP_NAME = "myApp";
-    private static final String SVC_NAME ="mySvc";
+    private static final String SVC_NAME = "mySvc";
     private static final String ENV_NAME = "myEnv";
 
     @Test
@@ -66,10 +66,9 @@ public class ResourceSelectorUtilTests {
     private Map<String, String> getSelectorMap(String selectorString) {
         String[] values = selectorString.split(",");
         Map selector = new HashMap();
-        for (String each : values
-        ) {
+        for (String each : values) {
             String[] keyValue = each.split("=");
-            selector.put(keyValue[0].trim(), keyValue[1].trim());
+            selector.put(keyValue[0], keyValue[1]);
         }
         return selector;
     }

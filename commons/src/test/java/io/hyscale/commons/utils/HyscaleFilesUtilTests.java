@@ -57,7 +57,7 @@ public class HyscaleFilesUtilTests {
         try {
             newFile.createNewFile();
         } catch (IOException e) {
-            Assertions.fail("Unable to create file:"+filePath+" for "+getClass().toString());
+            Assertions.fail("Unable to create file:" + filePath + " for " + getClass().toString());
         }
         return newFile;
     }
@@ -116,7 +116,7 @@ public class HyscaleFilesUtilTests {
         File testFile = createFile(testFilePath);
         HyscaleFilesUtil.copyFile(sampleFile, testFile);
         assertTrue(testFile.length() == sampleFile.length() ? true : false);
-       deleteDirectory(testDir);
+        deleteDirectory(testDir);
     }
 
     @Test
@@ -147,7 +147,7 @@ public class HyscaleFilesUtilTests {
     }
 
     @AfterEach
-    public void cleanUp(){
-            deleteDirectory(testDir);
+    public void cleanUp() {
+        deleteDirectory(testDir);
     }
 }

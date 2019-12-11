@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.builder.services;
+package io.hyscale.builder.services.command;
 
 import java.util.Map;
 

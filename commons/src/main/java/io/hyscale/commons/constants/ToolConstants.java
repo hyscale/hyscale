@@ -54,9 +54,7 @@ public class ToolConstants {
     public static final String HYSCALE_RELEASE_NAME = "hyscale.release.name";
 
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
-
-    public static final String TMP_DIR = System.getProperty("java.io.tmpdir");
-
+    
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
 }

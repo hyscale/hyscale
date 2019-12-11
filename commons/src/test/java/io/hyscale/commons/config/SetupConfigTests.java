@@ -31,6 +31,7 @@ public class SetupConfigTests {
     private static StringBuilder appsDir;
     private static StringBuilder serviceDir;
     private static SetupConfig setupConfig;
+
     //TODO autowire setup config
     @BeforeAll
     public static void init() {

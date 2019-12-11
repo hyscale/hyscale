@@ -20,9 +20,9 @@ import io.hyscale.commons.utils.TailHandler;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TestTailLogHandler implements TailHandler {
+public class TailLogTestHandler implements TailHandler {
 
-    private static String EOF_MARKER = "EXIT";
+    private static final String EOF_MARKER = "EXIT";
 
     public List<String> getLines() {
         return lines;

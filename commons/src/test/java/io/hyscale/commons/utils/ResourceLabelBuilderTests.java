@@ -31,10 +31,11 @@ import java.util.stream.Stream;
 
 public class ResourceLabelBuilderTests {
     private static final String APP_NAME = "myApp";
-    private static final String SVC_NAME ="mySvc";
+    private static final String SVC_NAME = "mySvc";
     private static final String ENV_NAME = "myEnv";
     private static Date date;
     private static Long longDate;
+
     @BeforeAll
     public static void init() {
         date = Calendar.getInstance().getTime();
@@ -81,20 +82,20 @@ public class ResourceLabelBuilderTests {
 
     @Test
     public static Stream<Arguments> input() {
-        return Stream.of(Arguments.of("normaLize","normaLize"),
-                Arguments.of("normalize@1","normalize1"),
-                Arguments.of(null,null),
-                Arguments.arguments(" ",""),
-                Arguments.arguments("normalize@ 1","normalize-1"),
-                Arguments.arguments("normalize@1 ","normalize1"),
-                Arguments.arguments("normalize@1$","normalize1"),
-                Arguments.arguments("norm@3alize ","norm3alize"),
-                Arguments.arguments(" %norm@ ","norm"));
+        return Stream.of(Arguments.of("normaLize", "normaLize"),
+                Arguments.of("normalize@1", "normalize1"),
+                Arguments.of(null, null),
+                Arguments.arguments(" ", ""),
+                Arguments.arguments("normalize@ 1", "normalize-1"),
+                Arguments.arguments("normalize@1 ", "normalize1"),
+                Arguments.arguments("normalize@1$", "normalize1"),
+                Arguments.arguments("norm@3alize ", "norm3alize"),
+                Arguments.arguments(" %norm@ ", "norm"));
     }
 
     @ParameterizedTest
     @MethodSource(value = "input")
-    public void testNormalize(String input,String expected) {
+    public void testNormalize(String input, String expected) {
         assertEquals(expected, ResourceLabelBuilder.normalize(input));
     }
 }

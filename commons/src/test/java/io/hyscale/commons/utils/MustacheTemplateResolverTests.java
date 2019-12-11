@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package io.hyscale.commons.utils;
+
 import io.hyscale.commons.exception.HyscaleException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -29,8 +30,8 @@ import java.util.stream.Stream;
 
 public class MustacheTemplateResolverTests {
     private static URL sampleTemplateUrl;
-    private static String TESTING_TEMPLATE_CONTENT = "ONLINE";
-    private static String TESTING_TEMPLATE_KEY = "USER_STATUS";
+    private static final String TESTING_TEMPLATE_CONTENT = "ONLINE";
+    private static final String TESTING_TEMPLATE_KEY = "USER_STATUS";
     private static MustacheTemplateResolver mustacheTemplateResolver;
     private static String sampleTemplatePath;
     private static Map<String, Object> statusMap;
@@ -44,7 +45,7 @@ public class MustacheTemplateResolverTests {
         mustacheTemplateResolver = new MustacheTemplateResolver();
     }
 
-    public static Stream<Arguments> getNullInputs(){
+    public static Stream<Arguments> getNullInputs() {
         return Stream.of(Arguments.of(null, statusMap),
                 Arguments.of("", statusMap),
                 Arguments.of(sampleTemplatePath, null));

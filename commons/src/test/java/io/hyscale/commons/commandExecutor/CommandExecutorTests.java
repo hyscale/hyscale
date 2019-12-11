@@ -29,19 +29,19 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CommandExecutorTests {
-    private String ECHO_COMMAND = "echo HelloWorld";
+    private static final String ECHO_COMMAND = "echo HelloWorld";
     private StringBuilder stringBuilder;
 
     @BeforeEach
     public void init() {
-       stringBuilder  = new StringBuilder();
+        stringBuilder = new StringBuilder();
     }
 
     @Test
     public void testExecuteAndGetResults() {
         CommandResult result = CommandExecutor.executeAndGetResults(ECHO_COMMAND);
         assertNotNull(result);
-        assertEquals(0,result.getExitCode());
+        assertEquals(0, result.getExitCode());
     }
 
     @Test
@@ -56,7 +56,7 @@ public class CommandExecutorTests {
         testFile.createNewFile();
         boolean flag = CommandExecutor.execute(ECHO_COMMAND, testFile);
         assertTrue(testFile.exists());
-        assertEquals(ECHO_COMMAND.split(" ")[1], FileUtils.readFileToString(testFile,"UTF-8").trim());
+        assertEquals(ECHO_COMMAND.split(" ")[1], FileUtils.readFileToString(testFile, "UTF-8").trim());
         assertTrue(flag);
         testFile.delete();
     }

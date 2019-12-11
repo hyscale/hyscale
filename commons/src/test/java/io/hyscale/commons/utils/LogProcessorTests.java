@@ -16,15 +16,15 @@
 package io.hyscale.commons.utils;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.handler.TestTailLogHandler;
+import io.hyscale.commons.handler.TailLogTestHandler;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
 import org.junit.jupiter.api.Nested;
+
 import java.io.*;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,10 +33,10 @@ public class LogProcessorTests {
     private static final String LOG_FILE_PATH = "/tmp/logs/logs.txt";
     private static final LogProcessor logProcessor = new LogProcessor();
     private static final String ENCODING = "UTF-8";
-    private static String logFileContent = "logger running" + "\n" + "logger running";
+    private static final String logFileContent = "logger running" + "\n" + "logger running";
     private static File file;
     private static ByteArrayOutputStream os = new ByteArrayOutputStream();
-    
+
     @BeforeEach
     public void getLogFile() {
         file = FileUtils.getFile(LOG_FILE_PATH);
@@ -44,7 +44,7 @@ public class LogProcessorTests {
         try {
             file.createNewFile();
         } catch (IOException e) {
-            Assertions.fail("unable to create log file:"+LOG_FILE_PATH+" in the class "+this.getClass().toString());
+            Assertions.fail("unable to create log file:" + LOG_FILE_PATH + " in the class " + this.getClass().toString());
         }
     }
 
@@ -95,11 +95,11 @@ public class LogProcessorTests {
         @ParameterizedTest
         @MethodSource("io.hyscale.commons.utils.LogProcessorTests#getNullInputsForRead")
         public void testNullConditionsForRead(File readFile, OutputStream os, Integer lines) {
-            if (readFile == null || !readFile.isDirectory() || !readFile.exists() || os ==null) {
+            if (readFile == null || !readFile.isDirectory() || !readFile.exists() || os == null) {
                 Assertions.assertThrows(HyscaleException.class, () -> {
                     logProcessor.readLogFile(readFile, os, lines);
                 });
-            } 
+            }
         }
 
         @ParameterizedTest
@@ -124,7 +124,7 @@ public class LogProcessorTests {
     @Nested
     @DisplayName("Tailing log file test cases.")
     public class TailLogFileTests {
-        private TestTailLogHandler testTailLogHandler = new TestTailLogHandler();
+        private TailLogTestHandler tailLogTestHandler = new TailLogTestHandler();
 
         @Test
         public void testTailLogFile() {
@@ -132,7 +132,7 @@ public class LogProcessorTests {
             long timeLimit = currentTimeInMillis + 2000;
             List<String> lines = Stream.of("logger running", "logger running", "logger running", "logger running", "EXIT").collect(Collectors.toList());
             TailLogFile tailLogFile = null;
-            tailLogFile = logProcessor.tailLogFile(file, testTailLogHandler);
+            tailLogFile = logProcessor.tailLogFile(file, tailLogTestHandler);
             Thread fileWriterThread = new Thread(() -> {
                 for (String line : lines) {
                     try {
@@ -156,14 +156,14 @@ public class LogProcessorTests {
                 }
             }
 
-            List<String> loggedLines = testTailLogHandler.getLines();
+            List<String> loggedLines = tailLogTestHandler.getLines();
             Assertions.assertNotNull(loggedLines);
             Assertions.assertEquals(loggedLines, lines);
         }
 
         @Test
         public void testNullConditionsForTail() {
-            Assertions.assertNull(logProcessor.tailLogFile(null, testTailLogHandler));
+            Assertions.assertNull(logProcessor.tailLogFile(null, tailLogTestHandler));
         }
     }
 

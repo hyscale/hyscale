@@ -22,14 +22,13 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class HyscaleStringUtilsTests {
     private static final String SAMPLE_STRING = "hyscaleUser";
     private static final String SUFFIX_STRING = "User";
     private static final String EXPECTED_STRING = "hyscale";
     private static final char TAILING_CHAR = 'r';
-    private static final String EXPECTED_CHAR_STRING="hyscaleUse";
+    private static final String EXPECTED_CHAR_STRING = "hyscaleUse";
 
     public static Stream<Arguments> getInputsForRemoveSuffixTest() {
         return Stream.of(Arguments.of(null, SUFFIX_STRING, null),
@@ -43,7 +42,7 @@ public class HyscaleStringUtilsTests {
     @MethodSource(value = "getInputsForRemoveSuffixTest")
     public void testRemoveSuffixStr(String sampleString, String suffixString, String expected) {
         String actualString = HyscaleStringUtil.removeSuffixStr(sampleString, suffixString);
-            assertEquals(expected, actualString);
+        assertEquals(expected, actualString);
     }
 
     @ParameterizedTest
@@ -57,7 +56,7 @@ public class HyscaleStringUtilsTests {
     public static Stream<Arguments> getSuffixCharInputs() {
         return Stream.of(Arguments.of(null, TAILING_CHAR, null),
                 Arguments.of("", TAILING_CHAR, ""),
-                Arguments.of(SAMPLE_STRING, TAILING_CHAR,EXPECTED_CHAR_STRING ));
+                Arguments.of(SAMPLE_STRING, TAILING_CHAR, EXPECTED_CHAR_STRING));
     }
 
     @ParameterizedTest

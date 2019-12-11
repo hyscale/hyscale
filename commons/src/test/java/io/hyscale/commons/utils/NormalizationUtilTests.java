@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package io.hyscale.commons.utils;
+
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -25,27 +26,27 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class NormalizationUtilTests {
     public static Stream<Arguments> input() {
-        return Stream.of(Arguments.of("normaLize","normalize"),
-                Arguments.of("normalize@1","normalize1"),
-                Arguments.of(null,null),
-                Arguments.arguments(" ",""),
-                Arguments.arguments("normalize@ 1","normalize-1"),
-                Arguments.arguments("normalize@1 ","normalize1"),
-                Arguments.arguments("normalize@1$","normalize1"),
-                Arguments.arguments("norm@3alize ","norm3alize"),
-                Arguments.arguments("norm@ alize ","norm-alize"));
+        return Stream.of(Arguments.of("normaLize", "normalize"),
+                Arguments.of("normalize@1", "normalize1"),
+                Arguments.of(null, null),
+                Arguments.arguments(" ", ""),
+                Arguments.arguments("normalize@ 1", "normalize-1"),
+                Arguments.arguments("normalize@1 ", "normalize1"),
+                Arguments.arguments("normalize@1$", "normalize1"),
+                Arguments.arguments("norm@3alize ", "norm3alize"),
+                Arguments.arguments("norm@ alize ", "norm-alize"));
     }
 
     @ParameterizedTest
     @MethodSource(value = "input")
-    public void testNormalizeWithLenth(String input,String expected) {
-        String actualString = NormalizationUtil.normalize(input,7);
-        assertEquals(StringUtils.isEmpty(expected)?expected:expected.substring(0,7), actualString);
+    public void testNormalizeWithLength(String input, String expected) {
+        String actualString = NormalizationUtil.normalize(input, 7);
+        assertEquals(StringUtils.isEmpty(expected) ? expected : expected.substring(0, 7), actualString);
     }
 
     @ParameterizedTest
     @MethodSource(value = "input")
-    public void testNormalize(String input,String expected) {
+    public void testNormalize(String input, String expected) {
         String actualString = NormalizationUtil.normalize(input);
         assertEquals(expected, actualString);
     }

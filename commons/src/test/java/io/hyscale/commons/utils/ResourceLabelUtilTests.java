@@ -24,7 +24,7 @@ import java.util.Map;
 public class ResourceLabelUtilTests {
     private static Map<String, String> labels = new HashMap<String, String>();
     private static final String APP_NAME = "myApp";
-    private static final String SVC_NAME ="mySvc";
+    private static final String SVC_NAME = "mySvc";
     private static final String ENV_NAME = "myEnv";
 
     @BeforeAll

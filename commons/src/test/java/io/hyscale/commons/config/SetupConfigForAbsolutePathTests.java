@@ -33,7 +33,7 @@ public class SetupConfigForAbsolutePathTests {
 
     @BeforeAll
     public static void setAbsolutePath() {
-        absolutePath = ToolConstants.FILE_SEPARATOR+"absolute"+ToolConstants.FILE_SEPARATOR+"path"+ToolConstants.FILE_SEPARATOR+"test";
+        absolutePath = ToolConstants.FILE_SEPARATOR + "absolute" + ToolConstants.FILE_SEPARATOR + "path" + ToolConstants.FILE_SEPARATOR + "test";
         SetupConfig.setAbsolutePath(absolutePath);
     }
 

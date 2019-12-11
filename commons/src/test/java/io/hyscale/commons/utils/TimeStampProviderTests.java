@@ -27,8 +27,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.fail;
-
 public class TimeStampProviderTests {
     private static final String DEFAULT_DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
     private static final String TEST_PATTERN = "dd MMMM yyyy";
@@ -42,8 +40,8 @@ public class TimeStampProviderTests {
     @MethodSource(value = "getPattern")
     public void getTimeStampTest(String pattern) {
         String time = TimeStampProvider.get(pattern);
-        if(pattern == null){
-            pattern= DEFAULT_DATE_PATTERN;
+        if (pattern == null) {
+            pattern = DEFAULT_DATE_PATTERN;
         }
         Assertions.assertTrue(StringUtils.isNotEmpty(time));
         Assertions.assertTrue(matchPattern(time, pattern));

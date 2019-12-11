@@ -17,7 +17,7 @@ package io.hyscale.builder.services.impl;
 
 import java.io.File;
 
-import io.hyscale.builder.services.ImageCommandGenerator;
+import io.hyscale.builder.services.command.ImageCommandGenerator;
 import io.hyscale.builder.services.config.LocalImageBuildCondition;
 import io.hyscale.builder.services.util.DockerImageUtil;
 import io.hyscale.builder.services.util.ImageLogUtil;
