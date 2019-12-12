@@ -44,8 +44,8 @@ Here is a basic service spec for deploying tomcat (without any application). To 
 ```yaml
 name: myservice
 image:
-    registry: registry.hub.docker.com/library
-    name: tomcat
+    registry: registry.hub.docker.com
+    name: library/tomcat
     tag: 8.5.0-jre8
  
 volumes:
