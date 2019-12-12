@@ -50,7 +50,9 @@ public class ImageRegistryBuilder {
         if (credsStoreEntity == null) {
             return null;
         }
-        return new ImageRegistry(credsStoreEntity.getUsername(), credsStoreEntity.getSecret(), credsStoreEntity.getServerURL());
+        String tokenString = credsStoreEntity.getUsername() + ToolConstants.COLON + credsStoreEntity.getSecret();
+        String encodedToken = Base64.getEncoder().encodeToString(tokenString.getBytes());
+        return new ImageRegistry(credsStoreEntity.getServerURL(), encodedToken);
     }
 
     /**
@@ -58,12 +60,11 @@ public class ImageRegistryBuilder {
      * <p> Example of Auths:
      * "auths": {
      * 		"registry": {
-     * 			"auth": "Base64Encoded(username:password)"
+     * 			"auth": "token"
      *                },
-     * 		"another reistry"....
+     * 		"another registry"....
      *        }
-     * if auth exists with matching registry returns credentials by base64 decoding auth and spliting them by colon
-     * and creates ImageRegistry object.
+     * if auth exists with matching registry returns credentials as is in ImageRegistry as token
      * @param auths
      * @return ImageRegistry
      */
@@ -76,13 +77,10 @@ public class ImageRegistryBuilder {
         if (StringUtils.isBlank(encodedAuth)) {
             return null;
         }
-
-        String decodedAuth = new String(Base64.getDecoder().decode(encodedAuth));
-        String[] authArray = decodedAuth.split(ToolConstants.COLON);
         ImageRegistry imageRegistry = new ImageRegistry();
         imageRegistry.setUrl(registry);
-        imageRegistry.setUserName(authArray[0]);
-        imageRegistry.setPassword(authArray[1]);
+        imageRegistry.setToken(encodedAuth);
+
         return imageRegistry;
     }
 
