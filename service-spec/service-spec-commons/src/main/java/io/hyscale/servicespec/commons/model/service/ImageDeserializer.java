@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,12 +34,29 @@ public class ImageDeserializer extends JsonDeserializer {
 
     @Override
     public Object deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-        JsonNode specNode = jsonParser.readValueAsTree();
-        BuildSpecImage buildSpecImage = new BuildSpecImage();
-        if(specNode.has(HyscaleSpecFields.buildSpec)){
-            ObjectMapper objectMapper = new ObjectMapper();
-            buildSpecImage = objectMapper.readValue(specNode.toString(), BuildSpecImage.class);
+        JsonNode imageNode = jsonParser.readValueAsTree();
+        if(imageNode==null){
+            return null;
         }
-        return buildSpecImage;
+        ObjectMapper objectMapper = ObjectMapperFactory.jsonMapper();
+        if(imageNode.has(HyscaleSpecFields.buildSpec)){
+            return objectMapper.readValue(imageNode.toString(), BuildSpecImage.class);
+        } else if (imageNode.has(HyscaleSpecFields.dockerfile)){
+            return objectMapper.readValue(imageNode.toString(), DockerBuildImage.class);
+        }
+        Image image = new Image();
+        JsonNode registryNode = imageNode.get(HyscaleSpecFields.registry);
+        if(registryNode != null) {
+            image.setRegistry(registryNode.textValue());
+        }
+        JsonNode nameNode = imageNode.get(HyscaleSpecFields.name);
+        if(nameNode != null) {
+            image.setName(nameNode.textValue());
+        }
+        JsonNode tagNode = imageNode.get(HyscaleSpecFields.tag);
+        if(tagNode != null) {
+            image.setTag(tagNode.textValue());
+        }
+        return image;
     }
 }

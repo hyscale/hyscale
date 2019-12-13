@@ -19,6 +19,8 @@ public class ToolConstants {
 
     public static final String CHARACTER_ENCODING = "UTF-8";
 
+    public static final String AT_SIGN = "@";
+
     public static final String COLON = ":";
 
     public static final String DOUBLE_COLON = "::";

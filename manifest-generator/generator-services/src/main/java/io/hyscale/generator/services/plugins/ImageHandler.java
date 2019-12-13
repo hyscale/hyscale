@@ -38,7 +38,6 @@ import java.util.List;
 @ManifestPlugin(name = "ImageHandler")
 public class ImageHandler implements ManifestHandler {
 
-    private static final String DELIMITER = "/";
     private static final Logger logger = LoggerFactory.getLogger(ImageHandler.class);
 
     @Override
@@ -71,11 +70,11 @@ public class ImageHandler implements ManifestHandler {
         String imageShaId = (String) manifestContext.getGenerationAttribute(ManifestGenConstants.IMAGE_SHA_SUM);
         String image = null;
         if (StringUtils.isNotBlank(imageShaId)) {
-            logger.debug("Image built from platform, preparing image with its digest.");
-            image = imageShaId;
+            logger.debug("Preparing image with its digest.");
+            image = ImageUtil.getImageWithDigest(serviceSpec,imageShaId);
         } else {
-            image = ImageUtil.getImage(serviceSpec);
             logger.debug("Preparing image directly from given tag.");
+            image = ImageUtil.getImage(serviceSpec);
         }
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec)
                 ? ManifestResource.STATEFUL_SET.getKind()
@@ -86,5 +85,4 @@ public class ImageHandler implements ManifestHandler {
         imageSnippet.setKind(podSpecOwner);
         return imageSnippet;
     }
-
 }
