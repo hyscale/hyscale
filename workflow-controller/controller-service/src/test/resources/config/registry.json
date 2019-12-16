@@ -1,7 +1,7 @@
 {
 	"auths": {
-		"test.registry.com": {
-			"auth": "YWRtaW46YWRtaW4="
+		"test.my-test-registry.com": {
+			"auth": "dGVzdFVzZXI6dGVzdFBhc3N3b3Jk"
 		}
 	}
 }

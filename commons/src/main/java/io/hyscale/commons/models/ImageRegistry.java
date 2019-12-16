@@ -74,10 +74,8 @@ public class ImageRegistry implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + ((password == null) ? 0 : password.hashCode());
         result = prime * result + ((sslCertificate == null) ? 0 : sslCertificate.hashCode());
         result = prime * result + ((url == null) ? 0 : url.hashCode());
-        result = prime * result + ((userName == null) ? 0 : userName.hashCode());
         return result;
     }
 
@@ -95,11 +93,6 @@ public class ImageRegistry implements Serializable {
                 return false;
         } else if (!name.equals(other.name))
             return false;
-        if (password == null) {
-            if (other.password != null)
-                return false;
-        } else if (!password.equals(other.password))
-            return false;
         if (sslCertificate == null) {
             if (other.sslCertificate != null)
                 return false;
@@ -110,13 +103,6 @@ public class ImageRegistry implements Serializable {
                 return false;
         } else if (!url.equals(other.url))
             return false;
-        if (userName == null) {
-            if (other.userName != null)
-                return false;
-        } else if (!userName.equals(other.userName))
-            return false;
         return true;
     }
-    
-    
 }

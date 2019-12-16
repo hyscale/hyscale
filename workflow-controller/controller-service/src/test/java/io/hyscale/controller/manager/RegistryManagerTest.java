@@ -60,11 +60,10 @@ public class RegistryManagerTest {
 
     public static Stream<Arguments> input() {
         ImageRegistry registry = new ImageRegistry();
-        registry.setUrl("test.registry.com");
-        registry.setUserName("admin");
-        registry.setPassword("admin");
+        registry.setUrl("test.my-test-registry.com");
+        registry.setToken("dGVzdFVzZXI6dGVzdFBhc3N3b3Jk");
         return Stream.of(Arguments.of(null, null), Arguments.of("doesNotExist", null),
-                Arguments.of("test.registry.com", registry));
+                Arguments.of("test.my-test-registry.com", registry));
     }
 
     @ParameterizedTest
