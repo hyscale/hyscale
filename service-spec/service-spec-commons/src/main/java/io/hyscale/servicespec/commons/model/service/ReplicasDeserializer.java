@@ -44,22 +44,22 @@ public class ReplicasDeserializer extends JsonDeserializer {
 
     @Override
     public Object deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-        JsonNode specNode = jsonParser.readValueAsTree();
-        if (specNode == null) {
-            return null;
-        }
-        Replicas replicas = new Replicas();
-        JsonNode rootNode = specNode.get(HyscaleSpecFields.replicas);
-        if (rootNode == null) {
+        JsonNode replicasNode = jsonParser.readValueAsTree();
+        // specNode refers to replicas
+        if (replicasNode == null) {
             return defaultReplicas();
         }
+        Replicas replicas = new Replicas();
         try {
-            if (rootNode.get(HyscaleSpecFields.min) != null) {
-                replicas.setMin(Integer.valueOf(rootNode.get(HyscaleSpecFields.min).toString()));
-                replicas.setMax(Integer.valueOf(rootNode.get(HyscaleSpecFields.max).toString()));
-                replicas.setCpuThreshold(rootNode.get(HyscaleSpecFields.cpuThreshold).toString());
+            if (replicasNode.get(HyscaleSpecFields.min) != null) {
+                replicas.setMin(Integer.valueOf(replicasNode.get(HyscaleSpecFields.min).toString()));
+                replicas.setMax(Integer.valueOf(replicasNode.get(HyscaleSpecFields.max).toString()));
+                JsonNode cpuThreshold = replicasNode.get(HyscaleSpecFields.cpuThreshold);
+                if (cpuThreshold != null && !cpuThreshold.isNull()) {
+                    replicas.setCpuThreshold(cpuThreshold.textValue());
+                }
             } else {
-                replicas.setMin(Integer.valueOf(specNode.toString()));
+                replicas.setMin(Integer.valueOf(replicasNode.toString()));
             }
         } catch (NumberFormatException e) {
             WorkflowLogger.persist(ServiceSpecActivity.FAILED_TO_DESERIALIZE_REPLICAS);
