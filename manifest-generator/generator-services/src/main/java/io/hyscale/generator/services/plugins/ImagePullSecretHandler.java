@@ -158,12 +158,9 @@ public class ImagePullSecretHandler implements ManifestHandler {
         Map<String, String> dockerAuthConfigMap = new HashMap<>();
         ObjectMapper objectMapper = ObjectMapperFactory.jsonMapper();
         DockerConfig dockerAuthConfig = new DockerConfig();
+
         Auth auth = new Auth();
-
-        String pair = imageRegistry.getUserName() + ":" + imageRegistry.getPassword();
-        String encodedBytes = Base64.encodeBase64String(pair.getBytes());
-
-        auth.setAuth(encodedBytes);
+        auth.setAuth(imageRegistry.getToken());
         Map<String, Auth> auths = new HashMap<>();
         auths.put(imageRegistry.getUrl(), auth);
         dockerAuthConfig.setAuths(auths);

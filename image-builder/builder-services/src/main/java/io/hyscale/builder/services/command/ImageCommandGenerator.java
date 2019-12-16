@@ -22,7 +22,6 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
-import io.hyscale.commons.models.ImageRegistry;
 
 @Component
 public class ImageCommandGenerator {
@@ -38,11 +37,8 @@ public class ImageCommandGenerator {
 	private static final String INSPECT_COMMAND = "inspect";
 	private static final String TAG_COMMAND = "tag";
 	private static final String SPACE = " ";
-	private static final String LOGIN_COMMAND = "login";
 	private static final String DOCKER_BUILD = "docker build";
 	private static final String TAG_ARG = " -t ";
-	private static final String USER_ARG = " -u ";
-	private static final String PASSWORD_ARG = " -p ";
 	private static final String BUILD_ARGS = " --build-arg ";
 	private static final String REMOVE_IMAGE = "rmi";
 	private static final String PULL_COMMAND = "pull";
@@ -98,13 +94,6 @@ public class ImageCommandGenerator {
 	public String getDockerDaemonRunningCommand() {
 		String command = getDockerCommand() + IMAGES;
 		return command;
-	}
-
-	public String getLoginCommand(ImageRegistry imageRegistry) {
-		StringBuilder loginCommand = new StringBuilder(getDockerCommand());
-		loginCommand.append(LOGIN_COMMAND).append(SPACE).append(imageRegistry.getUrl()).append(USER_ARG)
-				.append(imageRegistry.getUserName()).append(PASSWORD_ARG).append(imageRegistry.getPassword());
-		return loginCommand.toString();
 	}
 
 	public String getImagePushCommand(String imageFullPath) {
