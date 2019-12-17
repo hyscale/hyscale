@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,18 +46,22 @@ public class ImageDeserializer extends JsonDeserializer {
             return objectMapper.readValue(imageNode.toString(), DockerBuildImage.class);
         }
         Image image = new Image();
-        JsonNode registryNode = imageNode.get(HyscaleSpecFields.registry);
-        if(registryNode != null) {
-            image.setRegistry(registryNode.textValue());
-        }
-        JsonNode nameNode = imageNode.get(HyscaleSpecFields.name);
-        if(nameNode != null) {
-            image.setName(nameNode.textValue());
-        }
-        JsonNode tagNode = imageNode.get(HyscaleSpecFields.tag);
-        if(tagNode != null) {
-            image.setTag(tagNode.textValue());
-        }
+        image.setRegistry(deserializeString(imageNode, HyscaleSpecFields.registry));
+        image.setName(deserializeString(imageNode, HyscaleSpecFields.name));
+        image.setTag(deserializeString(imageNode, HyscaleSpecFields.tag));
         return image;
     }
+
+    private String deserializeString(JsonNode imageNode, String path) {
+        if (imageNode == null || StringUtils.isBlank(path)){
+            return null;
+        }
+        JsonNode registryNode = imageNode.get(path);
+        if(registryNode != null) {
+            return registryNode.textValue();
+        }
+        return null;
+    }
+
 }
+
