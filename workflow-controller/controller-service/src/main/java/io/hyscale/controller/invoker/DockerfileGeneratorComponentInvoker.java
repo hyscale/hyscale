@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.component.ComponentInvoker;
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DockerfileEntity;
@@ -72,9 +73,15 @@ public class DockerfileGeneratorComponentInvoker extends ComponentInvoker<Workfl
 
     @Override
     protected void doExecute(WorkflowContext context) throws HyscaleException {
+        if (context == null) {
+            throw new HyscaleException(ControllerErrorCodes.CONTEXT_REQUIRED);
+        }
+        if (context.isFailed()) {
+            return;
+        }
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
-            throw new HyscaleException(ControllerErrorCodes.SERVICE_SPEC_REQUIRED);
+            throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
         }
         WorkflowLogger.header(ControllerActivity.DOCKERFILE_GENERATION);
         DockerfileGenContext dockerfileContext = new DockerfileGenContext();
@@ -82,11 +89,6 @@ public class DockerfileGeneratorComponentInvoker extends ComponentInvoker<Workfl
         dockerfileContext.setAppName(context.getAppName());
         try {
             dockerfileContext.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
-        } catch (HyscaleException e) {
-            logger.error("Failed to get service name, error {}", e.toString());
-            return;
-        }
-        try {
             DockerfileEntity dockerfileEntity = dockerfileGenerator.generateDockerfile(serviceSpec, dockerfileContext);
             context.addAttribute(WorkflowConstants.DOCKERFILE_ENTITY, dockerfileEntity);
             context.addAttribute(WorkflowConstants.STACK_AS_SERVICE_IMAGE,

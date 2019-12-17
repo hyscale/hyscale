@@ -20,6 +20,7 @@ import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.HyscaleFilesUtil;
 import io.hyscale.controller.constants.WorkflowConstants;
+import io.hyscale.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.controller.model.WorkflowContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,10 @@ public class ServiceDirCleanUpHook implements InvokerHook<WorkflowContext> {
 
 	@Override
 	public void preHook(WorkflowContext context) throws HyscaleException {
+	    if (context == null) {
+            logger.debug("WorkflowContext not available");
+            throw new HyscaleException(ControllerErrorCodes.CONTEXT_REQUIRED);
+        }
 		if (context.getServiceName() != null && context.getAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR) != null
 				&& context.getAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR).equals(true)) {
 			String serviceDir = setupConfig.getServiceDir(context.getAppName(), context.getServiceName());

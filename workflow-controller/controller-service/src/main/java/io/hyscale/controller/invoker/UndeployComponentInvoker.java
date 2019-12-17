@@ -69,6 +69,9 @@ public class UndeployComponentInvoker extends ComponentInvoker<WorkflowContext> 
     @Override
     protected void doExecute(WorkflowContext context) throws HyscaleException {
         if (context == null) {
+            throw new HyscaleException(ControllerErrorCodes.CONTEXT_REQUIRED);
+        }
+        if (context.isFailed()) {
             return;
         }
         WorkflowLogger.header(ControllerActivity.STARTING_UNDEPLOYMENT);

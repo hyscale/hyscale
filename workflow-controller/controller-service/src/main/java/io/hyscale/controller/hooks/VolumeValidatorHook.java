@@ -41,6 +41,7 @@ import io.hyscale.commons.models.StorageClassAnnotation;
 import io.hyscale.commons.utils.HyscaleStringUtil;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
+import io.hyscale.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
@@ -92,7 +93,11 @@ public class VolumeValidatorHook implements InvokerHook<WorkflowContext> {
 
 	@Override
 	public void preHook(WorkflowContext context) throws HyscaleException {
-		logger.debug("Validating volumes from the service spec");
+	    logger.debug("Validating volumes from the service spec");
+	    if (context == null) {
+            logger.debug("WorkflowContext not available");
+            throw new HyscaleException(ControllerErrorCodes.CONTEXT_REQUIRED);
+        }
 		ServiceSpec serviceSpec = context.getServiceSpec();
 		if (serviceSpec == null) {
 			logger.debug("Service spec not found");
@@ -154,17 +159,17 @@ public class VolumeValidatorHook implements InvokerHook<WorkflowContext> {
 		StringBuilder failMsgBuilder = new StringBuilder();
 		for (Volume volume : volumeList) {
 			String storageClass = volume.getStorageClass();
-			if (storageClass == null && StringUtils.isBlank(defaultStorageClass)) {
+			if (StringUtils.isBlank(storageClass) && StringUtils.isBlank(defaultStorageClass)) {
 				isFailed = true;
 				errorCode = DeployerErrorCodes.MISSING_DEFAULT_STORAGE_CLASS;
 				failMsgBuilder.append(volume.getName());
 				failMsgBuilder.append(ToolConstants.COMMA);
 			}
 			if (storageClass != null && !storageClassAllowed.contains(storageClass)) {
-				isFailed = true;
-				errorCode = DeployerErrorCodes.INVALID_STORAGE_CLASS_FOR_VOLUME;
-				failMsgBuilder.append(storageClass);
-				failMsgBuilder.append(ToolConstants.COMMA);
+			    isFailed = true;
+                errorCode = DeployerErrorCodes.INVALID_STORAGE_CLASS_FOR_VOLUME;
+                failMsgBuilder.append(storageClass);
+                failMsgBuilder.append(ToolConstants.COMMA);
 			}
 		}
 		if (isFailed) {
@@ -312,7 +317,7 @@ public class VolumeValidatorHook implements InvokerHook<WorkflowContext> {
 			storageClassList = storageClassHandler.getAll(apiClient);
 		} catch (HyscaleException ex) {
 			logger.error("Error while getting storage class list, error {}", ex.getMessage());
-			throw new HyscaleException(DeployerErrorCodes.NO_STORAGE_CLASS_IN_K8S);
+			throw ex;
 		}
 
 		if (storageClassList == null || storageClassList.isEmpty()) {

@@ -43,11 +43,17 @@ import io.hyscale.controller.manager.RegistryManager;
 /**
  * Provides registry credentials.
  * Reads local docker registry config.
- * Takes registry name as input,tries to find the matching registry in credential helpers if present and return credentials,else searches in
- * credStore if specified in config file,else tries to get from the auths.
+ * Using registry name as input, tries to find registry in following order
+ * 1. credential helpers if present 
+ * 2. credStore, if specified in config file
+ * 3. auths map in config file
  */
 @Component
 public class LocalRegistryManagerImpl implements RegistryManager {
+
+    private static final String SLASH = "/";
+
+    private static final String HTTPS = "https://";
 
     private static final Logger logger = LoggerFactory.getLogger(LocalRegistryManagerImpl.class);
 
@@ -56,7 +62,9 @@ public class LocalRegistryManagerImpl implements RegistryManager {
     @Autowired
     private ControllerConfig controllerConfig;
 
-    /**Reads local docker config*/
+    /**
+     * Reads local docker config
+     */
     @PostConstruct
     public void init() throws HyscaleException {
         ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
@@ -76,10 +84,12 @@ public class LocalRegistryManagerImpl implements RegistryManager {
         }
     }
 
-    /**returns image registry credentials if found in docker config in the credHelpers,credsStore or Auths else returns null.
-     *
+    /**
+     * Returns image credentials based on docker config in order
+     * credHelpers, credsStore, auth map
+     * if not found in any, returns null
      * @param registry
-     * @return ImageRegistry object if found in credHelpers,credsStore or Auths else returns null.
+     * @return {@link ImageRegistry}
      */
     @Override
     public ImageRegistry getImageRegistry(String registry) throws HyscaleException {
@@ -104,11 +114,11 @@ public class LocalRegistryManagerImpl implements RegistryManager {
     }
 
     /**
-     *Returns credential helper if resgistry pattern found  in credHelpers if specified
-     *  or directly credsStore if specified else returns null.
+     * Returns credential helper if it is available for registry,
+     * else credsStore if specified otherwise returns null.
      *
      * @param pattern
-     * @return docker credential helper else returns null
+     * @return docker credential helper if available else returns null
      */
     public DockerCredHelper getDockerCredHelper(String pattern) {
         String helperFunc = dockerConfig.getCredHelpers() != null ? getHelperFunction(pattern) : null;
@@ -126,9 +136,9 @@ public class LocalRegistryManagerImpl implements RegistryManager {
 
     private static List<String> getRegistryPatterns(String registry) {
         String exactMatch = registry;
-        String withHttps = "https://" + registry;
-        String withSuffix = registry + "/";
-        String withHttpsAndSuffix = "https://" + registry + "/";
+        String withHttps = HTTPS + registry;
+        String withSuffix = registry + SLASH;
+        String withHttpsAndSuffix = HTTPS + registry + SLASH;
         return Arrays.asList(exactMatch, withHttps, withSuffix, withHttpsAndSuffix);
     }
 

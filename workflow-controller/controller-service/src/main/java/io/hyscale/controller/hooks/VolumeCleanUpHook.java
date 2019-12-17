@@ -33,6 +33,7 @@ import io.hyscale.commons.models.Manifest;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
+import io.hyscale.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
@@ -69,7 +70,11 @@ public class VolumeCleanUpHook implements InvokerHook<WorkflowContext> {
 
 	@Override
 	public void postHook(WorkflowContext context) throws HyscaleException {
-		logger.debug("Cleaning up stale volumes ");
+	    logger.debug("Cleaning up stale volumes ");
+	    if (context == null) {
+            logger.debug("WorkflowContext not available");
+            throw new HyscaleException(ControllerErrorCodes.CONTEXT_REQUIRED);
+        }
 		ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfigBuilder.getAuthConfig());
 		String serviceName = context.getServiceName();
 		String appName = context.getAppName();

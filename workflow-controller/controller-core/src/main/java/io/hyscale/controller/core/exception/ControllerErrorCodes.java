@@ -22,6 +22,7 @@ import io.hyscale.commons.exception.HyscaleErrorCode;
  *
  */
 public enum ControllerErrorCodes implements HyscaleErrorCode {
+    CONTEXT_REQUIRED("Workflow Context required"),
     INVALID_COMMAND("Invalid command {}"),
     CANNOT_FIND_SERVICE_SPEC("Cannot find service spec {} "),
     SERVICE_SPEC_REQUIRED("Service spec required"),

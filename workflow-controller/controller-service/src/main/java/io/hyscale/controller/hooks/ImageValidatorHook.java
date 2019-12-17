@@ -38,6 +38,10 @@ public class ImageValidatorHook implements InvokerHook<WorkflowContext> {
 
     @Override
     public void preHook(WorkflowContext context) throws HyscaleException {
+        if (context == null) {
+            logger.debug("WorkflowContext not available");
+            throw new HyscaleException(ControllerErrorCodes.CONTEXT_REQUIRED);
+        }
         logger.debug("Executing {}", getClass());
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {

@@ -100,10 +100,12 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
      */
     @Override
     protected void doExecute(WorkflowContext context) throws HyscaleException {
-        if (context == null || context.isFailed()) {
+        if (context == null) {
+            throw new HyscaleException(ControllerErrorCodes.CONTEXT_REQUIRED);
+        }
+        if (context.isFailed()) {
             return;
         }
-
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
             context.setFailed(true);
@@ -139,9 +141,8 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
         context.setServiceName(serviceName);
         WorkflowLogger.header(ControllerActivity.STARTING_DEPLOYMENT);
         /*
-            Deploys and waits for the deployment completion
+         * Deploys and waits for the deployment completion
          */
-
         try {
             deployer.deploy(deploymentContext);
             deployer.waitForDeployment(deploymentContext);

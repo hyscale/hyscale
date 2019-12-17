@@ -24,6 +24,7 @@ import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Artifact;
 import io.hyscale.servicespec.commons.model.service.BuildSpec;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,10 @@ public class BuildSpecValidatorHook implements InvokerHook<WorkflowContext> {
     @Override
     public void preHook(WorkflowContext context) throws HyscaleException {
         logger.debug("Executing Build Spec Validator Hook");
+        if (context == null) {
+            logger.debug("WorkflowContext not available");
+            throw new HyscaleException(ControllerErrorCodes.CONTEXT_REQUIRED);
+        }
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
             logger.debug("Empty service spec found at BuildSpec validator hook ");
@@ -51,24 +56,25 @@ public class BuildSpecValidatorHook implements InvokerHook<WorkflowContext> {
 
         BuildSpec buildSpec = serviceSpec.get(
                 HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.buildSpec), BuildSpec.class);
-        if (buildSpec != null) {
-            String stackImageName = buildSpec.getStackImage();
-            if (StringUtils.isBlank(stackImageName)) {
-                throw new HyscaleException(DockerfileErrorCodes.CANNOT_RESOLVE_STACK_IMAGE);
-            }
-
-            List<Artifact> artifactList = buildSpec.getArtifacts();
-
-            boolean validate = true;
-            if (artifactList != null && !artifactList.isEmpty()) {
-                for (Artifact each : artifactList) {
-                    validate = validate &&
-                            StringUtils.isNotBlank(each.getName()) &&
-                            StringUtils.isNotBlank(each.getSource()) &&
-                            StringUtils.isNotBlank(each.getDestination());
-                    if (!validate) {
-                        throw new HyscaleException(DockerfileErrorCodes.ARTIFACTS_FOUND_INVALID_IN_SERVICE_SPEC, each.getName());
-                    }
+        if (buildSpec == null) {
+            return;
+        }
+        String stackImageName = buildSpec.getStackImage();
+        if (StringUtils.isBlank(stackImageName)) {
+            throw new HyscaleException(DockerfileErrorCodes.CANNOT_RESOLVE_STACK_IMAGE);
+        }
+        
+        List<Artifact> artifactList = buildSpec.getArtifacts();
+        
+        boolean validate = true;
+        if (artifactList != null && !artifactList.isEmpty()) {
+            for (Artifact each : artifactList) {
+                validate = validate &&
+                        StringUtils.isNotBlank(each.getName()) &&
+                        StringUtils.isNotBlank(each.getSource()) &&
+                        StringUtils.isNotBlank(each.getDestination());
+                if (!validate) {
+                    throw new HyscaleException(DockerfileErrorCodes.ARTIFACTS_FOUND_INVALID_IN_SERVICE_SPEC);
                 }
             }
         }

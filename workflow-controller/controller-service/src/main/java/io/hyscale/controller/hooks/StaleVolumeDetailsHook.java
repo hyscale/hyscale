@@ -30,6 +30,7 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
+import io.hyscale.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
@@ -68,6 +69,10 @@ public class StaleVolumeDetailsHook implements InvokerHook<WorkflowContext> {
 	 */
 	@Override
 	public void postHook(WorkflowContext context) throws HyscaleException {
+	    if (context == null) {
+            logger.debug("WorkflowContext not available");
+            throw new HyscaleException(ControllerErrorCodes.CONTEXT_REQUIRED);
+        }
 		String serviceName = context.getServiceName();
 		String appName = context.getAppName();
 		String namespace = context.getNamespace();

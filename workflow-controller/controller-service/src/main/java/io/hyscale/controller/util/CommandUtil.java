@@ -25,7 +25,6 @@ import javax.validation.ValidatorFactory;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.utils.WindowsUtil;
 import io.hyscale.controller.activity.ControllerActivity;

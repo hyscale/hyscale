@@ -38,6 +38,7 @@ import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
+import io.hyscale.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
@@ -72,6 +73,10 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 	 */
 	@Override
 	public void preHook(WorkflowContext context) throws HyscaleException {
+	    if (context == null) {
+            logger.debug("WorkflowContext not available");
+            throw new HyscaleException(ControllerErrorCodes.CONTEXT_REQUIRED);
+        }
 		logger.debug("Starting stale kubernetes resource cleanup");
 		ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfigBuilder.getAuthConfig());
 		String serviceName = context.getServiceName();

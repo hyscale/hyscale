@@ -73,7 +73,10 @@ public class ManifestGeneratorComponentInvoker extends ComponentInvoker<Workflow
     }
 
     protected void doExecute(WorkflowContext context) throws HyscaleException {
-        if (context == null || context.isFailed()) {
+        if (context == null) {
+            throw new HyscaleException(ControllerErrorCodes.CONTEXT_REQUIRED);
+        }
+        if (context.isFailed()) {
             return;
         }
         ServiceSpec serviceSpec = context.getServiceSpec();

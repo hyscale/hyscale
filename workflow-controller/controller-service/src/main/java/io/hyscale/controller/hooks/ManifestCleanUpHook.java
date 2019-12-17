@@ -18,6 +18,7 @@ package io.hyscale.controller.hooks;
 import io.hyscale.commons.component.InvokerHook;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.HyscaleFilesUtil;
+import io.hyscale.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.generator.services.config.ManifestConfig;
 import org.slf4j.Logger;
@@ -39,6 +40,10 @@ public class ManifestCleanUpHook implements InvokerHook<WorkflowContext> {
 
 	@Override
 	public void preHook(WorkflowContext context) throws HyscaleException {
+	    if (context == null) {
+            logger.debug("WorkflowContext not available");
+            throw new HyscaleException(ControllerErrorCodes.CONTEXT_REQUIRED);
+        }
 		String manifestDir = manifestConfig.getManifestDir(context.getAppName(), context.getServiceName());
 		logger.debug("Cleaning up manifests directory {}", manifestDir);
 		HyscaleFilesUtil.clearDirectory(manifestDir);

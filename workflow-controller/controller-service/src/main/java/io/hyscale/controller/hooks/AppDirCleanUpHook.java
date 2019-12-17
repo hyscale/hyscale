@@ -39,6 +39,9 @@ public class AppDirCleanUpHook implements InvokerHook<WorkflowContext> {
 
 	@Override
 	public void preHook(WorkflowContext context) throws HyscaleException {
+	    if (context == null) {
+	        return;
+	    }
 		if (context.getAppName() != null && context.getAttribute(WorkflowConstants.CLEAN_UP_APP_DIR) != null
 				&& context.getAttribute(WorkflowConstants.CLEAN_UP_APP_DIR).equals(true)) {
 			String appDir = setupConfig.getAppsDir() + context.getAppName();

@@ -49,6 +49,10 @@ public class ImageCleanUpHook implements InvokerHook<WorkflowContext> {
 
 	@Override
 	public void postHook(WorkflowContext context) throws HyscaleException {
+	    if (context == null) {
+            logger.debug("WorkflowContext not available");
+            throw new HyscaleException(ControllerErrorCodes.CONTEXT_REQUIRED);
+        }
 		ServiceSpec serviceSpec = context.getServiceSpec();
 		if (serviceSpec == null) {
 			logger.error(" Cannot clean up image without service specs ");

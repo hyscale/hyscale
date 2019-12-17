@@ -42,6 +42,10 @@ public class ManifestValidatorHook implements InvokerHook<WorkflowContext> {
 
     @Override
     public void preHook(WorkflowContext context) throws HyscaleException {
+        if (context == null) {
+            logger.debug("WorkflowContext not available");
+            throw new HyscaleException(ControllerErrorCodes.CONTEXT_REQUIRED);
+        }
         logger.debug("Executing Manifest Validator Hook");
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
