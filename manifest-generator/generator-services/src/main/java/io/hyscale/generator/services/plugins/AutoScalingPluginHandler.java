@@ -78,7 +78,7 @@ public class AutoScalingPluginHandler implements ManifestHandler {
         }
         Replicas replicas = serviceSpec.get(HyscaleSpecFields.replicas, Replicas.class);
 
-        if (replicas == null && !validate(replicas)) {
+        if (replicas == null || !validate(replicas)) {
             logger.debug("Cannot handle replicas as the field is not declared");
             return null;
         }
