@@ -15,17 +15,37 @@
  */
 package io.hyscale.controller;
 
+import java.net.URL;
+
+import javax.annotation.PostConstruct;
+
+import org.mockito.Mockito;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
+
+import io.hyscale.controller.config.ControllerConfig;
 
 @SpringBootConfiguration
 @ComponentScan(basePackages = "io.hyscale", 
 excludeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, classes = CommandLineRunner.class))
 @EnableAutoConfiguration
 public class ControllerTestConfiguration {
+    
+    private static final String TEST_DOCKER_CONFIG = "/config/registry.json";
 
+    @MockBean
+    public ControllerConfig controllerConfig;
+    
+    @PostConstruct
+    public void init() {
+        Mockito.when(controllerConfig.getDefaultKubeConf()).thenReturn(null);
+        URL resourceAsUrl = ControllerTestConfiguration.class.getResource(TEST_DOCKER_CONFIG);
+        Mockito.when(controllerConfig.getDefaultRegistryConf()).thenReturn(resourceAsUrl.getPath());
+        
+    }
 }
