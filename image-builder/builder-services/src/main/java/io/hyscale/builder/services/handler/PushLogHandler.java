@@ -20,7 +20,7 @@ import io.hyscale.commons.utils.TailHandler;
 
 public class PushLogHandler implements TailHandler {
 
-	private static String EOF_MARKER = "(.*)digest(.*)size(.*)";
+	private static final String EOF_MARKER = "(.*)digest(.*)size(.*)";
 
 	@Override
 	public void handleLine(String line) {

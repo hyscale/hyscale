@@ -20,7 +20,7 @@ import io.hyscale.commons.utils.TailHandler;
 
 public class BuildLogHandler implements TailHandler {
 
-	private static String EOF_MARKER = "(.*)Successfully tagged(.*)";
+	private static final String EOF_MARKER = "(.*)Successfully tagged(.*)";
 
 	@Override
 	public void handleLine(String line) {

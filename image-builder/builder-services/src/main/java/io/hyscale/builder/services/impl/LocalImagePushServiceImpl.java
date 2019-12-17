@@ -17,13 +17,13 @@ package io.hyscale.builder.services.impl;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.hyscale.builder.services.util.ImageLogUtil;
+import io.hyscale.builder.services.util.InputValidator;
 import io.hyscale.commons.models.CommandResult;
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.servicespec.commons.util.ImageUtil;
@@ -106,22 +106,22 @@ public class LocalImagePushServiceImpl implements ImagePushService {
         File logFile = new File(logFilePath);
         buildContext.setPushLogs(logFilePath);
         // TODO keep continuation activity for user , launch a new thread & waitFor
-        boolean status = CommandExecutor.execute(pushImageCommand, logFile);
-        if (!status) {
-            WorkflowLogger.endActivity(Status.FAILED);
-            logger.error("Failed to push docker image");
-        } else {
+        boolean isSuccess = CommandExecutor.execute(pushImageCommand, logFile);
+        if (isSuccess) {
             String inspectCommand = commandGenerator.getImageInspectCommand(ImageUtil.getImage(serviceSpec));
             CommandResult result = CommandExecutor.executeAndGetResults(inspectCommand);
             buildContext.setImageShaSum(getImageDigest(result));
             WorkflowLogger.endActivity(Status.DONE);
+        } else {
+            WorkflowLogger.endActivity(Status.FAILED);
+            logger.error("Failed to push docker image");
         }
 
         if (verbose) {
             imageLogUtil.readPushLogs(appName, serviceName);
         }
 
-        if (!status) {
+        if (!isSuccess) {
             throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_PUSH_IMAGE);
         }
 
@@ -146,20 +146,7 @@ public class LocalImagePushServiceImpl implements ImagePushService {
     }
 
     private void validate(ServiceSpec serviceSpec, BuildContext buildContext) throws HyscaleException {
-        ArrayList<String> missingFields = new ArrayList<String>();
-
-        if (serviceSpec == null) {
-            missingFields.add("ServiceSpec");
-        }
-        if (buildContext == null) {
-            missingFields.add("BuildContext");
-        }
-
-        if (!missingFields.isEmpty()) {
-            String[] missingFieldsArr = new String[missingFields.size()];
-            missingFieldsArr = missingFields.toArray(missingFieldsArr);
-            throw new HyscaleException(ImageBuilderErrorCodes.FIELDS_MISSING, missingFieldsArr);
-        }
+        InputValidator.validateNotNull(serviceSpec, buildContext);
 
         String registryUrl = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.registry), String.class);
         if (buildContext.getImageRegistry() == null && registryUrl != null) {
@@ -182,7 +169,6 @@ public class LocalImagePushServiceImpl implements ImagePushService {
             throw e;
         }
         WorkflowLogger.endActivity(Status.DONE);
-
     }
 
     /*

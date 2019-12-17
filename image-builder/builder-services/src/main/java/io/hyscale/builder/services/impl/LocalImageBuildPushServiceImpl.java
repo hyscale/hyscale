@@ -17,6 +17,8 @@ package io.hyscale.builder.services.impl;
 
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
 import io.hyscale.builder.services.service.ImageBuildPushService;
+import io.hyscale.builder.services.util.InputValidator;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +48,7 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
     @Override
     public void buildAndPush(ServiceSpec serviceSpec, BuildContext context) throws HyscaleException {
 
-        if (validate(serviceSpec) && isImageBuildPushRequired(serviceSpec, context)) {
+        if (validate(serviceSpec, context) && isImageBuildPushRequired(serviceSpec, context)) {
             context = buildService.build(serviceSpec, context);
             pushService.pushImage(serviceSpec, context);
         } else {
@@ -79,7 +81,10 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
         return true;
     }
 
-    private boolean validate(ServiceSpec serviceSpec) throws HyscaleException {
+    private boolean validate(ServiceSpec serviceSpec, BuildContext context) throws HyscaleException {
+        
+        InputValidator.validateNotNull(serviceSpec, context);
+        
         String imageName = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.name), String.class);
         if (StringUtils.isBlank(imageName)) {
             throw new HyscaleException(ImageBuilderErrorCodes.CANNOT_RESOLVE_IMAGE_NAME);

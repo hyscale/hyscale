@@ -18,6 +18,7 @@ package io.hyscale.builder.services.exception;
 import io.hyscale.commons.exception.HyscaleErrorCode;
 
 public enum ImageBuilderErrorCodes implements HyscaleErrorCode {
+    CONTEXT_REQUIRED("Image build context required"),
     DOCKER_NOT_INSTALLED("Docker is not installed"),
     FAILED_TO_TAG_IMAGE("Failed to tag image "),
     FAILED_TO_BUILD_IMAGE("Failed to build image"),

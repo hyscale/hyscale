@@ -21,6 +21,7 @@ import io.hyscale.builder.services.command.ImageCommandGenerator;
 import io.hyscale.builder.services.config.LocalImageBuildCondition;
 import io.hyscale.builder.services.util.DockerImageUtil;
 import io.hyscale.builder.services.util.ImageLogUtil;
+import io.hyscale.builder.services.util.InputValidator;
 import io.hyscale.builder.services.service.ImageBuildService;
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
@@ -65,7 +66,7 @@ public class LocalImageBuildServiceImpl implements ImageBuildService {
     @Override
     public BuildContext build(ServiceSpec serviceSpec, BuildContext context) throws HyscaleException {
 
-        validate(serviceSpec, context);
+        InputValidator.validateNotNull(serviceSpec, context);
 
         WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_BUILD_STARTED);
         // If dockerfile or dockerSpec is not present ignore
@@ -99,20 +100,20 @@ public class LocalImageBuildServiceImpl implements ImageBuildService {
         context.setBuildLogs(logFilePath);
 
         // TODO keep continuation activity for user
-        boolean status = CommandExecutor.executeInDir(dockerBuildCommand, logFile,
+        boolean isSuccess = CommandExecutor.executeInDir(dockerBuildCommand, logFile,
                 userDockerfile != null ? SetupConfig.getAbsolutePath(userDockerfile.getPath()) : null);
-        if (!status) {
+        if (isSuccess) {
+            WorkflowLogger.endActivity(Status.DONE);
+        } else {
             WorkflowLogger.endActivity(Status.FAILED);
             logger.error("Failed to build docker image");
-        } else {
-            WorkflowLogger.endActivity(Status.DONE);
         }
 
         if (verbose) {
             imageLogUtil.readBuildLogs(appName, serviceName);
         }
 
-        if (!status) {
+        if (!isSuccess) {
 			throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_BUILD_IMAGE);
 		}
         
@@ -152,12 +153,6 @@ public class LocalImageBuildServiceImpl implements ImageBuildService {
         }
 
         return dockerfilePath;
-    }
-
-    private void validate(ServiceSpec serviceSpec, BuildContext context) throws HyscaleException {
-        if (context == null) {
-            throw new HyscaleException(ImageBuilderErrorCodes.FIELDS_MISSING, "Build Context");
-        }
     }
 
 }
