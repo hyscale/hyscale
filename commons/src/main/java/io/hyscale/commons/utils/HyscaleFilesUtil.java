@@ -33,7 +33,7 @@ import io.hyscale.commons.exception.HyscaleException;
  * Utility class to handle file operation
  */
 public class HyscaleFilesUtil {
-
+    
 	private static final Logger logger = LoggerFactory.getLogger(HyscaleFilesUtil.class);
 
 	private static final String NULL_STRING = "null";
@@ -47,7 +47,7 @@ public class HyscaleFilesUtil {
 	 */
 	public static File createFile(String filename, String fileData) throws HyscaleException {
 		if (StringUtils.isBlank(filename)) {
-			throw new HyscaleException(CommonErrorCode.FAILED_TO_WRITE_FILE_DATA);
+			throw new HyscaleException(CommonErrorCode.EMPTY_FILE_PATH);
 		}
 		File file = createEmptyFile(filename);
 		if (StringUtils.isBlank(fileData)) {
@@ -107,8 +107,11 @@ public class HyscaleFilesUtil {
 	 * @throws HyscaleException
 	 */
 	public static File updateFile(String filename, String fileData) throws HyscaleException {
-		if (StringUtils.isBlank(filename) || StringUtils.isBlank(fileData)) {
-			throw new HyscaleException(CommonErrorCode.FAILED_TO_WRITE_FILE_DATA);
+		if (StringUtils.isBlank(filename)) {
+			throw new HyscaleException(CommonErrorCode.EMPTY_FILE_PATH);
+		}
+		if (StringUtils.isBlank(fileData)) {
+		    throw new HyscaleException(CommonErrorCode.EMPTY_FILE_DATA, filename);
 		}
 		File file = new File(filename);
 		// create parent dir if missing

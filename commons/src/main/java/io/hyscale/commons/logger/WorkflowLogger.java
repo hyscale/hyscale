@@ -78,6 +78,9 @@ public class WorkflowLogger {
     }
 
     public static void endActivity(Status status, String... args) {
+        if (status == null) {
+            return;
+        }
         StringBuilder sb = new StringBuilder();
         sb.append(ALIGNEMENT_SPACES).append(START_BRACES);
         sb.append(String.format(status.getMessage(), args));
@@ -86,14 +89,23 @@ public class WorkflowLogger {
     }
 
     public static void logTable(TableFormatter tableFormatter) {
+        if (tableFormatter == null) {
+            return;
+        }
         System.out.println(tableFormatter.toString());
     }
 
     public static void logTableRow(TableFormatter tableFormatter, String[] row) {
+        if (tableFormatter == null) {
+            return;
+        }
         System.out.println(tableFormatter.getFormattedRow(row));
     }
 
     public static void logTableFields(TableFormatter tableFormatter) {
+        if (tableFormatter == null) {
+            return;
+        }
         System.out.println(tableFormatter.getFormattedFields());
     }
 
@@ -155,13 +167,14 @@ public class WorkflowLogger {
     }
 
     public static void startActivity(ActivityContext context, String... args) {
-        if (context != null) {
-            context.setStartTime(System.currentTimeMillis());
-            StringBuilder sb = new StringBuilder();
-            sb.append(LoggerTags.ACTION.getTag()).append(ALIGNEMENT_SPACES);
-            sb.append(getFormattedMessage(context.getStartActivity(), args));
-            System.out.print(sb.toString());
+        if (context == null) {
+            return;
         }
+        context.setStartTime(System.currentTimeMillis());
+        StringBuilder sb = new StringBuilder();
+        sb.append(LoggerTags.ACTION.getTag()).append(ALIGNEMENT_SPACES);
+        sb.append(getFormattedMessage(context.getStartActivity(), args));
+        System.out.print(sb.toString());
     }
 
     public static void continueActivity(ActivityContext context) {
@@ -203,7 +216,10 @@ public class WorkflowLogger {
     }
 
     public static void logPersistedActivities() {
-        if (persistedActivities != null && !persistedActivities.isEmpty()) {
+        if (persistedActivities == null) {
+            return;
+        }
+        if (!persistedActivities.isEmpty()) {
             persistedActivities.stream().filter(each -> {
                 return each != null && StringUtils.isNotBlank(each);
             }).forEach(each -> {

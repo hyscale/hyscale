@@ -47,10 +47,10 @@ public class MustacheTemplateResolver {
 
 	public String resolveTemplate(String templateFile, Map<String, Object> context) throws HyscaleException {
 		if(StringUtils.isBlank(templateFile)){
-			throw new HyscaleException(CommonErrorCode.FAILED_TO_RESOLVE_TEMPLATE,templateFile);
+			throw new HyscaleException(CommonErrorCode.FAILED_TO_RESOLVE_TEMPLATE, templateFile);
 		}
 		if(context == null || context.isEmpty()){
-			throw new HyscaleException(CommonErrorCode.TEMPLATE_CONTEXT_NOT_FOUND,templateFile);
+			throw new HyscaleException(CommonErrorCode.TEMPLATE_CONTEXT_NOT_FOUND, templateFile);
 		}
 		try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 			Writer out = new OutputStreamWriter(outputStream,
@@ -62,7 +62,7 @@ public class MustacheTemplateResolver {
 					out.flush();
 					out.close();
 				} catch (IOException e) {
-					HyscaleException ex = new HyscaleException(CommonErrorCode.FAILED_TO_RESOLVE_TEMPLATE, templateFile);
+					HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_RESOLVE_TEMPLATE, templateFile);
 					logger.error("Error while closing the output stream {}", ex);
 				}
 			}
@@ -70,7 +70,7 @@ public class MustacheTemplateResolver {
 					Charset.forName(ToolConstants.CHARACTER_ENCODING));
 			return populatedTemplate;
 		} catch (IOException e) {
-			HyscaleException ex = new HyscaleException(CommonErrorCode.FAILED_TO_RESOLVE_TEMPLATE, templateFile);
+			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_RESOLVE_TEMPLATE, templateFile);
 			logger.error("Error while resolving template {}", templateFile, ex);
 			throw ex;
 		}

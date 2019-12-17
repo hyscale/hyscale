@@ -42,7 +42,7 @@ public class LogProcessor {
 
 	public void writeLogFile(InputStream is, String logFile) throws IOException,HyscaleException{
 		if(is == null){
-			throw new HyscaleException(CommonErrorCode.INPUTSTREAM_NOT_FOUND);
+			throw new HyscaleException(CommonErrorCode.INPUT_STREAM_NOT_FOUND);
 		}
 		if (StringUtils.isBlank(logFile)){
 			throw new HyscaleException(CommonErrorCode.LOGFILE_NOT_FOUND);
@@ -76,14 +76,14 @@ public class LogProcessor {
 	/*
 	 * Filename, output stream, number of lines
 	 */
-	public void readLogFile(File logFile, OutputStream os, Integer lines)throws HyscaleException {
+	public void readLogFile(File logFile, OutputStream os, Integer lines) throws HyscaleException {
 		if (logFile == null || !logFile.exists() || logFile.isDirectory()) {
 			logger.error("Invalid log file found. Cannot read logs.");
 			throw new HyscaleException(CommonErrorCode.FAILED_TO_READ_LOGFILE,
 			        logFile != null ? logFile.getPath() : null);
 		}
 		if(os == null){
-			throw new HyscaleException(CommonErrorCode.OUTPUTSTREAM_NOT_FOUND);
+			throw new HyscaleException(CommonErrorCode.OUTPUT_STREAM_NOT_FOUND);
 		}
 		lines = lines != null ? lines : DEFAULT_LINES;
 		int lineRead = 0;
@@ -96,8 +96,12 @@ public class LogProcessor {
 			}
 		} catch (FileNotFoundException e) {
 			logger.error("Cannot find log file.", e);
+			throw new HyscaleException(e, CommonErrorCode.FAILED_TO_READ_LOGFILE,
+                    logFile != null ? logFile.getPath() : null);
 		} catch (IOException e) {
 			logger.error("Error while reading log file:{} ", logFile.getName(), e);
+			throw new HyscaleException(e, CommonErrorCode.FAILED_TO_READ_LOGFILE,
+                    logFile != null ? logFile.getPath() : null);
 		}
 	}
 }
