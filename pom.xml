@@ -47,6 +47,7 @@
 		<ocpsoft.prettytime.version>4.0.2.Final</ocpsoft.prettytime.version>
 		<json-path-version>2.4.0</json-path-version>
 		<junit.version>5.4.2</junit.version>
+		<junit.platform.version>1.4.0</junit.platform.version>
 		<spring.core.version>5.1.9.RELEASE</spring.core.version>
 		<json.schema.validator.version>2.2.11</json.schema.validator.version>
 		<main.basedir>.</main.basedir>
@@ -58,6 +59,7 @@
 	</properties>
 
 	<dependencies>
+		<!-- Test dependencies start -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
@@ -76,6 +78,30 @@
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<version>${spring-boot.version}</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>junit</groupId>
+					<artifactId>junit</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-commons</artifactId>
+			<version>${junit.platform.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-launcher</artifactId>
+			<version>${junit.platform.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- Test dependencies end -->
 		<dependency>
 			<groupId>javax.annotation</groupId>
 			<artifactId>javax.annotation-api</artifactId>

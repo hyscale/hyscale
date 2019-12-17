@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.models.*;
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -38,7 +37,7 @@ public class PodHandlerTest {
 
     @BeforeAll
     public static void createPod() throws IOException {
-        InputStream resourceAsStream = JsonPatchTest.class.getResourceAsStream("/test-data/test-pod.yaml");
+        InputStream resourceAsStream = PodHandlerTest.class.getResourceAsStream("/test-data/test-pod.yaml");
         ObjectMapper mapper = ObjectMapperFactory.yamlMapper();
         pod = mapper.readValue(resourceAsStream, V1Pod.class);
         resourceAsStream.close();

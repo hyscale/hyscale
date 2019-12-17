@@ -1,0 +1,20 @@
+name: myservice
+image:
+  registry: x.y.z
+  name: myServiceImage
+  tag: 1.2.3
+  dockerfile:
+    path: /abc
+    dockerfilePath: /Dockerfile
+    args:
+       key1: value1
+
+startCommand: "a,bc,def"
+replicas: 2
+memory: 123Mi-456Mi
+cpu: 123m-456m
+
+volumes:
+  - name: vol-name
+    size: 1Gi
+    storageClass: storageClass

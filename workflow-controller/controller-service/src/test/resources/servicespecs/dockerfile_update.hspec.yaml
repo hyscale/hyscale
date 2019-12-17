@@ -1,0 +1,10 @@
+name: myservice
+image:
+  registry: x.y.z
+  name: myServiceImage
+  tag: 1.2.3
+  dockerfile:
+    path: abc\tmp
+    dockerfilePath: \Dockerfile
+    args:
+       key1: value1

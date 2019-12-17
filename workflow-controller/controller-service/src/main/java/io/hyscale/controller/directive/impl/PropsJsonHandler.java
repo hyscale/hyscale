@@ -38,7 +38,7 @@ import io.hyscale.servicespec.commons.model.PropType;
 @Component
 public class PropsJsonHandler extends ServiceSpecDirectiveUpdateHandler<Map<String, Object>> {
 
-	private static final Logger logger = LoggerFactory.getLogger(BuildSpecJsonHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger(PropsJsonHandler.class);
 
 	@Override
 	public Map<String, Object> updateObject(Map<String, Object> props) throws HyscaleException {

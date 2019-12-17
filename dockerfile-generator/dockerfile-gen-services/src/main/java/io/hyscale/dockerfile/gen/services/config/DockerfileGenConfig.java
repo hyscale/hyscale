@@ -15,6 +15,7 @@
  */
 package io.hyscale.dockerfile.gen.services.config;
 
+import io.hyscale.commons.constants.ToolConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -44,32 +45,32 @@ public class DockerfileGenConfig {
 
 	public String getDockerFileParentDir(String appName, String serviceName) {
 		StringBuilder dir = new StringBuilder(setupConfig.getGeneratedFilesDir(appName, serviceName));
-		dir.append(DOCKERFILE_DIR).append(SetupConfig.FILE_SEPARATOR);
+		dir.append(DOCKERFILE_DIR).append(ToolConstants.FILE_SEPARATOR);
 		return dir.toString();
 	}
 
 	public String getRelativeArtifactDir(String artifactName) {
 		StringBuilder dir = new StringBuilder(ARTIFACT_DIR);
-		dir.append(SetupConfig.FILE_SEPARATOR).append(artifactName).append(SetupConfig.FILE_SEPARATOR);
+		dir.append(ToolConstants.FILE_SEPARATOR).append(artifactName).append(ToolConstants.FILE_SEPARATOR);
 		return dir.toString();
 	}
 
 	public String getScriptDestinationDir() {
 		StringBuilder dir = new StringBuilder();
-		dir.append(SetupConfig.FILE_SEPARATOR);
-		dir.append(HYSCALE).append(SetupConfig.FILE_SEPARATOR).append(SCRIPTS_DIR).append(SetupConfig.FILE_SEPARATOR);
+		dir.append(ToolConstants.FILE_SEPARATOR);
+		dir.append(HYSCALE).append(ToolConstants.FILE_SEPARATOR).append(SCRIPTS_DIR).append(ToolConstants.FILE_SEPARATOR);
 		return dir.toString();
 	}
 
 	public String getRunScriptAbsoluteDir(String appName, String serviceName) {
 		StringBuilder dir = new StringBuilder(setupConfig.getServiceDir(appName, serviceName));
-		dir.append(DOCKERFILE_DIR).append(SetupConfig.FILE_SEPARATOR).append(RUN_SCRIPT);
+		dir.append(DOCKERFILE_DIR).append(ToolConstants.FILE_SEPARATOR).append(RUN_SCRIPT);
 		return dir.toString();
 	}
 
 	public String getConfigureScriptAbsoluteDir(String appName, String serviceName) {
 		StringBuilder dir = new StringBuilder(setupConfig.getServiceDir(appName, serviceName));
-		dir.append(DOCKERFILE_DIR).append(SetupConfig.FILE_SEPARATOR).append(CONFIGURE_SCRIPT);
+		dir.append(DOCKERFILE_DIR).append(ToolConstants.FILE_SEPARATOR).append(CONFIGURE_SCRIPT);
 		return dir.toString();
 	}
 

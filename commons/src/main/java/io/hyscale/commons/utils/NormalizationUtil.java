@@ -21,7 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 public class NormalizationUtil {
 
     public static String normalize(String name, int length) {
-        if (StringUtils.isBlank(name)) {
+        if (StringUtils.isEmpty(name)) {
             return name;
         }
         String normalized = name.toLowerCase().trim().replaceAll("[\\.]+", "-").replaceAll("[ ]+", "-")
@@ -34,7 +34,7 @@ public class NormalizationUtil {
     }
 
     public static String normalize(String name) {
-        if (StringUtils.isBlank(name)) {
+        if (StringUtils.isEmpty(name)) {
             return name;
         }
         int length = name.length();
