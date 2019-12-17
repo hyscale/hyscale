@@ -28,6 +28,6 @@ import java.util.List;
 
 public interface AgentBuilder {
 
-    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException;
+    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException, HyscaleException;
 
 }

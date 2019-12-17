@@ -1,0 +1,17 @@
+name: redis
+
+image:
+     registry: registry.hub.docker.com  
+     name: {{username}}/redis # replace with your dockerhub username for {{username}}
+     tag: 1.0
+     buildSpec:
+       stackImage: redis:4.0.7
+
+props:
+    NO_OF_CONNECTIONS: 10
+
+ports:
+   - port: 6379/tcp
+     healthCheck: {}
+
+memory: 512Mi

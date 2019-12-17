@@ -20,12 +20,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class AgentManifestNameGenerator {
 
-    public String generateConfigMapName(String agentName) {
-        return "agent-" + agentName;
+    public String generateConfigMapName(String agentName, String serviceName) {
+        return "service-"+serviceName+"-agent-" + agentName;
     }
 
-    public String generateSecretName(String agentName) {
-        return "agent-" + agentName;
+    public String generateSecretName(String agentName, String serviceName) {
+        return "service-"+serviceName+"-agent-" + agentName;
     }
 
 }

@@ -1,0 +1,29 @@
+name: payments
+
+image:
+   registry: registry.hub.docker.com  
+   name: {{username}}/payments # replace with your dockerhub username for {{username}}
+   tag: 1.0
+   buildSpec:
+     stackImage: python:3.6
+     artifacts:
+      - name: payments_source
+        source: payments_source.tar
+        destination: /tmp/
+    
+     configCommands: |-
+       mkdir /tmp/payments_source 
+       tar -xvf /tmp/payments_source.tar -C /tmp/payments_source
+       mkdir -p /app
+       cd /app
+       cp -r /tmp/payments_source/requirements.txt /app/
+       pip install -r /app/requirements.txt
+       cp -r /tmp/payments_source/*.py /app/
+
+startCommand: "python,/app/payment.py"
+
+props:
+   AUTOWRAPT_BOOTSTRAP: flask
+
+ports:
+  - port: 8080/tcp

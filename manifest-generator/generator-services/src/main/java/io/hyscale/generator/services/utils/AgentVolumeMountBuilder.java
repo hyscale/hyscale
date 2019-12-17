@@ -16,12 +16,14 @@
 package io.hyscale.generator.services.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.generator.K8sResourceNameGenerator;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
+import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Agent;
 import io.hyscale.servicespec.commons.model.service.AgentVolume;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
@@ -45,11 +47,12 @@ public class AgentVolumeMountBuilder extends AgentHelper implements AgentBuilder
     @Autowired
     AgentManifestNameGenerator agentManifestNameGenerator;
     @Override
-    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
+    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException, HyscaleException {
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ?
                 ManifestResource.STATEFUL_SET.getKind() : ManifestResource.DEPLOYMENT.getKind();
         List<ManifestSnippet> volumeMountSnippets = new ArrayList<ManifestSnippet>();
         List<Agent> agents = getAgents(serviceSpec);
+        String serviceName = serviceSpec.get(HyscaleSpecFields.name,String.class);
         if(agents == null){
             return volumeMountSnippets;
         }
@@ -73,12 +76,12 @@ public class AgentVolumeMountBuilder extends AgentHelper implements AgentBuilder
                 });
             }
             if (agent.getProps() != null && !agent.getProps().isEmpty()) {
-                String configMapName = agentManifestNameGenerator.generateConfigMapName(agent.getName());
+                String configMapName = agentManifestNameGenerator.generateConfigMapName(agent.getName(),serviceName);
                 volumeMounts.add(VolumeMountsUtil.buildForProps(propsVolumePath,
                         K8sResourceNameGenerator.getResourceVolumeName(configMapName, ManifestResource.CONFIG_MAP.getKind())));
             }
             if (agent.getSecrets() != null) {
-                String secretName = agentManifestNameGenerator.generateSecretName(agent.getName());
+                String secretName = agentManifestNameGenerator.generateSecretName(agent.getName(),serviceName);
                 volumeMounts.add(VolumeMountsUtil.buildForSecrets(secretsVolumePath,
                         K8sResourceNameGenerator.getResourceVolumeName(secretName, ManifestResource.SECRET.getKind())));
             }

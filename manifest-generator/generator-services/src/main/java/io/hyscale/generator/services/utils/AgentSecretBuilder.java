@@ -53,9 +53,10 @@ public class AgentSecretBuilder extends AgentHelper implements AgentBuilder {
     AgentManifestNameGenerator agentManifestNameGenerator;
     private static final Logger logger = LoggerFactory.getLogger(AgentSecretBuilder.class);
     @Override
-    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
+    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException, HyscaleException {
         List<ManifestSnippet> secretSnippets = new ArrayList<ManifestSnippet>();
         List<Agent> agents = getAgents(serviceSpec);
+        String serviceName = serviceSpec.get(HyscaleSpecFields.name,String.class);
         if(agents == null){
             return secretSnippets;
         }
@@ -64,7 +65,7 @@ public class AgentSecretBuilder extends AgentHelper implements AgentBuilder {
             if (secrets == null) {
                 continue;
             }
-            String secretName = agentManifestNameGenerator.generateSecretName(agent.getName());
+            String secretName = agentManifestNameGenerator.generateSecretName(agent.getName(),serviceName);
             secretSnippets.addAll(createSecretSnippet(secretName,manifestContext,serviceSpec));
             String secretsVolumePath = agent.getSecretsVolumePath();
             ManifestSnippet secretSnippet = SecretsDataUtil.build(secrets, secretsVolumePath, ManifestGenConstants.DEFAULT_SECRETS_FILE);

@@ -50,8 +50,9 @@ public class AgentConfigMapBuilder extends AgentHelper implements AgentBuilder {
     private static final Logger logger = LoggerFactory.getLogger(AgentConfigMapBuilder.class);
 
     @Override
-    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
+    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException, HyscaleException {
         List<Agent> agents = getAgents(serviceSpec);
+        String serviceName = serviceSpec.get(HyscaleSpecFields.name,String.class);
         List<ManifestSnippet> configMapSnippets = new ArrayList<ManifestSnippet>();
         if(agents == null){
             return configMapSnippets;
@@ -60,7 +61,7 @@ public class AgentConfigMapBuilder extends AgentHelper implements AgentBuilder {
             if(agent.getProps() == null || agent.getProps().isEmpty()){
                 continue;
             }
-            String configMapName = agentManifestNameGenerator.generateConfigMapName(agent.getName());
+            String configMapName = agentManifestNameGenerator.generateConfigMapName(agent.getName(),serviceName);
             configMapSnippets.addAll(createConfigMapSnippet(configMapName,manifestContext,serviceSpec));
             Props props = new Props();
             props.setProps(agent.getProps());

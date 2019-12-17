@@ -1,0 +1,27 @@
+name: loadgen
+
+image:
+   registry: registry.hub.docker.com  
+   name: {{username}}/loadgen # replace with your dockerhub username for {{username}}
+   tag: 1.0
+   buildSpec:
+     stackImage: python:3.6
+     artifacts:
+      - name: loadgen_source
+        source: loadgen_source.tar
+        destination: /tmp/
+    
+     configCommands: |-
+       mkdir /tmp/loadgen_source 
+       tar -xvf /tmp/loadgen_source.tar -C /tmp/loadgen_source
+       mkdir -p /load
+       cd /load
+       cp -r /tmp/loadgen_source/requirements.txt /load/
+       pip install -r requirements.txt
+       cp -r /tmp/loadgen_source/entrypoint.sh /load/
+       cp -r /tmp/loadgen_source/robot-shop.py /load/ 
+
+startCommand: "bash,-c,pushd /load; bash /load/entrypoint.sh"
+
+props:
+   HOST: http://web:9080
