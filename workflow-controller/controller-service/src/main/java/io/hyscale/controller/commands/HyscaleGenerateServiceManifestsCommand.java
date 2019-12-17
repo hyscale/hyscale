@@ -103,6 +103,7 @@ public class HyscaleGenerateServiceManifestsCommand implements Runnable {
                 manifestGeneratorComponentInvoker.execute(workflowContext);
             }
             WorkflowLogger.footer();
+            WorkflowLogger.logPersistedActivities();
             CommandUtil.logMetaInfo(SetupConfig.getMountPathOf((String) workflowContext.getAttribute(WorkflowConstants.MANIFESTS_PATH)),
                     ControllerActivity.MANIFESTS_GENERATION_PATH);
         }
