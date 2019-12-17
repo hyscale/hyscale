@@ -15,6 +15,8 @@
  */
 package io.hyscale.deployer.services.builder;
 
+import org.apache.commons.lang3.StringUtils;
+
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.kubernetes.client.models.V1Namespace;
 import io.kubernetes.client.models.V1ObjectMeta;
@@ -26,6 +28,9 @@ import io.kubernetes.client.models.V1ObjectMeta;
 public class NamespaceBuilder {
 
 	public static V1Namespace build(String namespace) {
+	    if (StringUtils.isBlank(namespace)) {
+	        return null;
+	    }
 		V1Namespace v1Namespace = new V1Namespace();
 		v1Namespace.setApiVersion("v1");
 		v1Namespace.setKind(ResourceKind.NAMESPACE.getKind());

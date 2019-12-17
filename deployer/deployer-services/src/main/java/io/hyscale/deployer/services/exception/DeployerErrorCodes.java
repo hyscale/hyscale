@@ -21,6 +21,7 @@ import io.hyscale.commons.exception.HyscaleErrorCode;
  *
  */
 public enum DeployerErrorCodes implements HyscaleErrorCode {
+    CONTEXT_REQUIRED("Deployment Context is required"),
     ERROR_WHILE_CREATING_PATCH("Error while creating patch "),
     KUBE_CONFIG_NOT_FOUND("Cannot find kubeconfig at {}"),
     INVALID_KUBE_CONFIG("Kubeconfig {} seems to be invalid "),

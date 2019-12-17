@@ -38,6 +38,9 @@ public final class ResourceHandlers {
 	 * @return ResourceLifeCycleHandler for the kind, null if not found
 	 */
 	public static ResourceLifeCycleHandler getHandlerOf(String kind) {
+	    if (kindVsHandler == null) {
+	        return null;
+	    }
 		return kindVsHandler.get(kind);
 	}
 	
@@ -47,7 +50,7 @@ public final class ResourceHandlers {
 	 */
 	public static List<ResourceLifeCycleHandler> getHandlersList(){
 	    if (kindVsHandler == null) {
-		return null;
+	        return null;
 	    }
 	    return Collections.unmodifiableList(kindVsHandler.values().stream().collect(Collectors.toList()));
 	}

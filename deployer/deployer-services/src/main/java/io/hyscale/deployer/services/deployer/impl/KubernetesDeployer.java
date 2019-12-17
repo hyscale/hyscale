@@ -87,7 +87,9 @@ public class KubernetesDeployer implements Deployer {
 
     @Override
     public void deploy(DeploymentContext context) throws HyscaleException {
-
+        if (context == null) {
+            throw new HyscaleException(DeployerErrorCodes.CONTEXT_REQUIRED);
+        }
         K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(clientProvider.get((K8sAuthorisation) context.getAuthConfig()));
         try {
             resourceDispatcher.waitForReadiness(context.isWaitForReadiness());
@@ -106,7 +108,9 @@ public class KubernetesDeployer implements Deployer {
      */
     @Override
     public void waitForDeployment(DeploymentContext context) throws HyscaleException {
-
+        if (context == null) {
+            throw new HyscaleException(DeployerErrorCodes.CONTEXT_REQUIRED);
+        }
         ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
         V1PodHandler podHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
         String serviceName = context.getServiceName();
@@ -115,7 +119,7 @@ public class KubernetesDeployer implements Deployer {
         WorkflowLogger.header(DeployerActivity.WAITING_FOR_DEPLOYMENT);
 
         String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
-        deltaWait(DELTA_WAIT_MILLIS);
+        ThreadPoolUtil.sleepSilently(DELTA_WAIT_MILLIS);
         // Pod Scheduling
         ActivityContext podInitContext = new ActivityContext(DeployerActivity.POD_INITIALIZED);
         waitForPodActivity(apiClient, podHandler, namespace, selector, PodPredicates.isPodschedulingCondition(),
@@ -132,27 +136,46 @@ public class KubernetesDeployer implements Deployer {
 
     @Override
     public ResourceStatus status(String namespace, Manifest manifest, AuthConfig authConfig) throws Exception {
+        if (StringUtils.isBlank(namespace)) {
+            logger.debug("Resource status, namespace is reauired");
+            return null;
+        }
+        if (manifest == null) {
+            logger.debug("Resource status, no manifest found");
+            return null;
+        }
+        if (authConfig == null) {
+            logger.debug("Resource status, auth config is required");
+            return null;
+        }
         /*
-         * For each resource kind and name, using resource handler Get resource from
-         * cluster Get status of the fetched resource
+         * For each resource kind and name,
+         * using resource handler Get resource from cluster
+         * Get status of the fetched resource
          */
         ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
         YAMLManifest yamlManifest = (YAMLManifest) manifest;
         try {
             KubernetesResource resource = KubernetesResourceUtil.getKubernetesResource(yamlManifest, namespace);
+            if (resource == null) {
+                logger.debug("Resource status, resource not found");
+            }
             String kind = resource.getKind();
-            ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(kind);
             String resourceName = resource.getV1ObjectMeta().getName();
+            ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(kind);
 
             return lifeCycleHandler.status(lifeCycleHandler.get(apiClient, resourceName, namespace));
         } catch (Exception e) {
-            logger.error("Error while preparing client, error {} ", e.toString());
+            logger.error("Error while getting resource status, error {} ", e.toString());
             throw e;
         }
     }
 
     @Override
     public void unDeploy(DeploymentContext context) throws HyscaleException {
+        if (context == null) {
+            throw new HyscaleException(DeployerErrorCodes.CONTEXT_REQUIRED);
+        }
         K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(clientProvider.get((K8sAuthorisation) context.getAuthConfig()));
         try {
             resourceDispatcher.withNamespace(context.getNamespace()).undeploy(context.getAppName(),
@@ -172,6 +195,9 @@ public class KubernetesDeployer implements Deployer {
 
     @Override
     public InputStream logs(DeploymentContext deploymentContext) throws HyscaleException {
+        if (deploymentContext == null) {
+            throw new HyscaleException(DeployerErrorCodes.CONTEXT_REQUIRED);
+        }
         String serviceName = deploymentContext.getServiceName();
         String namespace = deploymentContext.getNamespace();
         Integer readLines = deploymentContext.getReadLines();
@@ -194,13 +220,16 @@ public class KubernetesDeployer implements Deployer {
                 return podHandler.getLogs(apiClient, serviceName, namespace, podName, containerName, readLines);
             }
         } catch (HyscaleException e) {
-            logger.error("Error while tailing logs, error {} ", e.toString());
+            logger.error("Error while getting logs, error {} ", e.toString());
             throw e;
         }
     }
 
     @Override
     public ServiceAddress getServiceAddress(DeploymentContext context) throws HyscaleException {
+        if (context == null) {
+            throw new HyscaleException(DeployerErrorCodes.CONTEXT_REQUIRED);
+        }
         ServiceAddress serviceAddress = null;
         try {
             ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
@@ -209,7 +238,7 @@ public class KubernetesDeployer implements Deployer {
             serviceAddress = v1ServiceHandler.getServiceAddress(apiClient, context.getServiceName(),
                     context.getNamespace(), context.isWaitForReadiness());
         } catch (HyscaleException e) {
-            logger.error("Error while preparing client, error {} ", e.toString());
+            logger.error("Error while getting service address for service {}, error {} ", context.getServiceName(), e.toString());
             throw e;
         }
         return serviceAddress;
@@ -218,10 +247,9 @@ public class KubernetesDeployer implements Deployer {
     @Override
     public DeploymentStatus getServiceDeploymentStatus(DeploymentContext context) throws HyscaleException {
         if (context == null) {
-            throw new HyscaleException(DeployerErrorCodes.APPLICATION_REQUIRED);
+            throw new HyscaleException(DeployerErrorCodes.CONTEXT_REQUIRED);
         }
-
-        if (context != null && StringUtils.isBlank(context.getServiceName())) {
+        if (StringUtils.isBlank(context.getServiceName())) {
             throw new HyscaleException(DeployerErrorCodes.SERVICE_REQUIRED);
         }
 
@@ -235,6 +263,7 @@ public class KubernetesDeployer implements Deployer {
             v1PodList = v1PodHandler.getBySelector(apiClient, selector, true, context.getNamespace());
             deploymentStatus = getPodDeploymentStatus(context, v1PodList);
         } catch (HyscaleException e) {
+            logger.debug("Error {} while getting service deployment status, returning not deployed status", e.getMessage());
             return DeploymentStatusUtil.getNotDeployedStatus(context.getServiceName());
         }
         return deploymentStatus;
@@ -245,6 +274,9 @@ public class KubernetesDeployer implements Deployer {
      */
     @Override
     public List<DeploymentStatus> getDeploymentStatus(DeploymentContext context) throws HyscaleException {
+        if (context == null) {
+            throw new HyscaleException(DeployerErrorCodes.CONTEXT_REQUIRED);
+        }
         List<DeploymentStatus> deploymentStatusList = new ArrayList<>();
         List<V1Pod> v1PodList = null;
         try {
@@ -271,7 +303,7 @@ public class KubernetesDeployer implements Deployer {
                 deploymentStatusList.add(getPodDeploymentStatus(context, each.getValue()));
             });
         } catch (HyscaleException e) {
-            logger.error("Error while fetching status {} ", e);
+            logger.error("Error while fetching deployment status {} ", e);
             throw e;
 
         }
@@ -303,6 +335,10 @@ public class KubernetesDeployer implements Deployer {
 
     public static void waitForPodActivity(ApiClient apiClient, V1PodHandler podHandler, String namespace,
                                           String selector, Predicate predicate, ActivityContext activityContext) throws HyscaleException {
+        if (podHandler == null || predicate == null) {
+            logger.debug("Pod handler and predicate are required for pod activity");
+            return;
+        }
         boolean podCondition = false;
         long startTime = System.currentTimeMillis();
         WorkflowLogger.startActivity(activityContext);
@@ -333,85 +369,101 @@ public class KubernetesDeployer implements Deployer {
     @Override
     public List<Pod> getPods(String namespace, String appName, String serviceName, K8sAuthorisation k8sAuthorisation)
             throws Exception {
-
         List<Pod> podList = new ArrayList<Pod>();
         List<V1Pod> v1PodList = null;
         try {
             ApiClient apiClient = clientProvider.get(k8sAuthorisation);
             V1PodHandler v1PodHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
-            V1PersistentVolumeClaimHandler v1PersistentVolumeClaimHandler = (V1PersistentVolumeClaimHandler) ResourceHandlers
-                    .getHandlerOf(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind());
-
+            
             String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
-
+            
             v1PodList = v1PodHandler.getBySelector(apiClient, selector, true, namespace);
             if (v1PodList == null || v1PodList.isEmpty()) {
                 return null;
             }
-
+            
             for (V1Pod v1Pod : v1PodList) {
-                List<V1Volume> v1VolumeList = v1Pod.getSpec().getVolumes();
-                List<Volume> podVolumeList = new ArrayList<Volume>();
-                Set<String> volumeNames = new HashSet<>();
-                if (v1VolumeList != null) {
-                    for (V1Volume v1Volume : v1VolumeList) {
-                        if (v1Volume.getPersistentVolumeClaim() != null) {
-                            String claimName = v1Volume.getPersistentVolumeClaim().getClaimName();
-                            if (claimName != null) {
-                                Volume volume = new Volume();
-                                volume.setName(v1Volume.getName());
-                                volume.setClaimName(claimName);
-
-                                V1PersistentVolumeClaim pvc = v1PersistentVolumeClaimHandler.get(apiClient, claimName,
-                                        namespace);
-                                if (pvc.getStatus() != null && pvc.getStatus().getCapacity() != null
-                                        && pvc.getStatus().getCapacity().get(STORAGE) != null) {
-                                    volume.setSize(pvc.getStatus().getCapacity().get(STORAGE).toSuffixedString());
-                                }
-                                volumeNames.add(volume.getName());
-                                podVolumeList.add(volume);
-                            }
-                        }
-                    }
+                Pod pod = getPod(v1Pod, apiClient, namespace);
+                if (pod != null) {
+                    podList.add(pod );
                 }
-                // get all status
-                Map<String, String> containerVsStatus = new HashMap<>();
-                if (v1Pod.getStatus() != null && v1Pod.getStatus().getContainerStatuses() != null) {
-                    v1Pod.getStatus().getContainerStatuses().forEach((containerStatus) -> {
-                        String status = K8sPodUtil.getContainerStatus(containerStatus);
-                        if (status != null) {
-                            containerVsStatus.put(containerStatus.getName(), status);
-                        }
-                    });
-                }
-
-                Pod pod = new Pod();
-                pod.setName(v1Pod.getMetadata().getName());
-                logger.debug("Pod Name: " + v1Pod.getMetadata().getName());
-                pod.setStatus(K8sPodUtil.getAggregatedStatusOfContainersForPod(v1Pod));
-                logger.debug("Pod " + pod.getName() + ", status: " + pod.getStatus());
-                List<Container> containers = new ArrayList<Container>();
-                v1Pod.getSpec().getContainers().forEach((v1Container) -> {
-                    Container container = new Container();
-                    container.setName(v1Container.getName());
-                    container.setStatus(containerVsStatus.get(v1Container.getName()));
-                    if (v1Container.getVolumeMounts() != null) {
-                        List<VolumeMount> volumeMounts = v1Container.getVolumeMounts().stream()
-                                .filter(v1VolumeMount -> volumeNames.contains(v1VolumeMount.getName()))
-                                .map(this::getVolumeMount).collect(Collectors.toList());
-                        container.setVolumeMounts(volumeMounts);
-                    }
-                    containers.add(container);
-                });
-
-                pod.setContainers(containers);
-                pod.setVolumes(podVolumeList);
-                podList.add(pod);
             }
             return podList;
         } catch (HyscaleException e) {
             throw e;
         }
+    }
+    
+    private Pod getPod(V1Pod v1Pod, ApiClient apiClient, String namespace) throws HyscaleException {
+        List<V1Volume> v1VolumeList = v1Pod.getSpec().getVolumes();
+        List<Volume> podVolumeList = new ArrayList<Volume>();
+        Set<String> volumeNames = new HashSet<>();
+        if (v1VolumeList != null) {
+            for (V1Volume v1Volume : v1VolumeList) {
+                Volume volume = getVolume(v1Volume, apiClient, namespace);
+                if (volume != null) {
+                    volumeNames.add(volume.getName());
+                    podVolumeList.add(volume);
+                }
+            }
+        }
+        // get all status
+        Map<String, String> containerVsStatus = new HashMap<>();
+        if (v1Pod.getStatus() != null && v1Pod.getStatus().getContainerStatuses() != null) {
+            v1Pod.getStatus().getContainerStatuses().forEach((containerStatus) -> {
+                String status = K8sPodUtil.getContainerStatus(containerStatus);
+                if (StringUtils.isNotBlank(status)) {
+                    containerVsStatus.put(containerStatus.getName(), status);
+                }
+            });
+        }
+
+        Pod pod = new Pod();
+        pod.setName(v1Pod.getMetadata().getName());
+        pod.setStatus(K8sPodUtil.getAggregatedStatusOfContainersForPod(v1Pod));
+        logger.debug("Pod name: {}, status: {}", pod.getName(), pod.getStatus());
+        List<Container> containers = new ArrayList<Container>();
+        v1Pod.getSpec().getContainers().forEach((v1Container) -> {
+            Container container = new Container();
+            container.setName(v1Container.getName());
+            container.setStatus(containerVsStatus.get(v1Container.getName()));
+            if (v1Container.getVolumeMounts() != null) {
+                List<VolumeMount> volumeMounts = v1Container.getVolumeMounts().stream()
+                        .filter(v1VolumeMount -> volumeNames.contains(v1VolumeMount.getName()))
+                        .map(this::getVolumeMount).collect(Collectors.toList());
+                container.setVolumeMounts(volumeMounts);
+            }
+            containers.add(container);
+        });
+
+        pod.setContainers(containers);
+        pod.setVolumes(podVolumeList);
+        
+        return pod;
+    }
+    
+    private Volume getVolume(V1Volume v1Volume, ApiClient apiClient, String namespace) throws HyscaleException {
+        if (v1Volume.getPersistentVolumeClaim() == null) {
+            return null;
+        }
+        String claimName = v1Volume.getPersistentVolumeClaim().getClaimName();
+        if (StringUtils.isBlank(claimName)) {
+            return null;
+        }
+        V1PersistentVolumeClaimHandler v1PersistentVolumeClaimHandler = (V1PersistentVolumeClaimHandler) ResourceHandlers
+                .getHandlerOf(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind());
+
+        Volume volume = new Volume();
+        volume.setName(v1Volume.getName());
+        volume.setClaimName(claimName);
+        
+        V1PersistentVolumeClaim pvc = v1PersistentVolumeClaimHandler.get(apiClient, claimName,
+                namespace);
+        if (pvc.getStatus() != null && pvc.getStatus().getCapacity() != null
+                && pvc.getStatus().getCapacity().get(STORAGE) != null) {
+            volume.setSize(pvc.getStatus().getCapacity().get(STORAGE).toSuffixedString());
+        }
+        return volume;
     }
 
     private VolumeMount getVolumeMount(V1VolumeMount v1VolumeMount) {
@@ -424,10 +476,4 @@ public class KubernetesDeployer implements Deployer {
         return volumeMount;
     }
 
-    private void deltaWait(long milliSeconds) {
-        try {
-            Thread.sleep(milliSeconds);
-        } catch (InterruptedException e) {
-        }
-    }
 }

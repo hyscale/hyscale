@@ -30,7 +30,6 @@ import io.hyscale.deployer.services.manager.AnnotationsUpdateManager;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.model.ResourceUpdatePolicy;
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,10 +104,11 @@ public class K8sResourceDispatcher {
         for (Manifest manifest : manifests) {
             try {
                 KubernetesResource k8sResource = KubernetesResourceUtil.getKubernetesResource(manifest, namespace);
-                AnnotationsUpdateManager.update(k8sResource, AnnotationKey.LAST_UPDATED_AT.LAST_UPDATED_AT,
-                        DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+                AnnotationsUpdateManager.update(k8sResource, AnnotationKey.LAST_UPDATED_AT,
+                        TimeStampProvider.get("yyyy-MM-dd HH:mm:ss"));
                 ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(k8sResource.getKind());
-                if (lifeCycleHandler != null && k8sResource != null && k8sResource.getResource() != null && k8sResource.getV1ObjectMeta() != null) {
+                if (lifeCycleHandler != null && k8sResource != null && k8sResource.getResource() != null
+                        && k8sResource.getV1ObjectMeta() != null) {
                     try {
                         String name = k8sResource.getV1ObjectMeta().getName();
                         if (resourceBroker.get(lifeCycleHandler, name) != null) {
@@ -117,7 +117,8 @@ public class K8sResourceDispatcher {
                             resourceBroker.create(lifeCycleHandler, k8sResource.getResource());
                         }
                     } catch (HyscaleException ex) {
-                        logger.error("Failed to apply resource :{} Reason :: {}", k8sResource.getKind(), ex.getMessage(), ex);
+                        logger.error("Failed to apply resource :{} Reason :: {}", k8sResource.getKind(),
+                                ex.getMessage(), ex);
                     }
                 }
             } catch (Exception e) {
@@ -151,7 +152,6 @@ public class K8sResourceDispatcher {
         }
     }
 
-
     /**
      * Undeploy resources from cluster
      * Deletes all resources for which clean up is enabled based on appName and serviceName
@@ -173,9 +173,10 @@ public class K8sResourceDispatcher {
             return;
         }
         // Sort handlers based on weight
-        List<ResourceLifeCycleHandler> sortedHandlersList = handlersList.stream().sorted((ResourceLifeCycleHandler handler1, ResourceLifeCycleHandler handler2) -> {
-            return handler1.getWeight() - handler2.getWeight();
-        }).collect(Collectors.toList());
+        List<ResourceLifeCycleHandler> sortedHandlersList = handlersList.stream()
+                .sorted((ResourceLifeCycleHandler handler1, ResourceLifeCycleHandler handler2) -> {
+                    return handler1.getWeight() - handler2.getWeight();
+                }).collect(Collectors.toList());
         boolean resourceDeleted = false;
         for (ResourceLifeCycleHandler lifeCycleHandler : sortedHandlersList) {
             if (lifeCycleHandler == null) {

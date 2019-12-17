@@ -51,7 +51,9 @@ public class DeployerLogUtil {
 	private LogProcessor logProcessor;
 
 	public void processLogs(DeploymentContext context) throws HyscaleException {
-
+	    if (context == null) {
+	        throw new HyscaleException(DeployerErrorCodes.CONTEXT_REQUIRED);
+	    }
 		if (context.isTailLogs()) {
 			tailLogs(context);
 		} else {

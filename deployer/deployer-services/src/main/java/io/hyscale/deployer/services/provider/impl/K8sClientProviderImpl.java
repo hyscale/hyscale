@@ -85,7 +85,7 @@ public class K8sClientProviderImpl implements K8sClientProvider {
     /*
      * Get client from K8s {@link K8sBasicAuth} object
      */
-    private ApiClient from(K8sBasicAuth authConfig) throws HyscaleException {
+    private ApiClient from(K8sBasicAuth authConfig){
         if (authConfig.getToken() == null) {
             return Config.fromUserPassword(authConfig.getMasterURL(), authConfig.getUserName(),
                     authConfig.getPassword(), authConfig.getCaCert() != null ? true : false);
@@ -107,6 +107,9 @@ public class K8sClientProviderImpl implements K8sClientProvider {
 
 	@Override
 	public ApiClient get(K8sAuthorisation authConfig) throws HyscaleException {
+	    if (authConfig == null) {
+	        return null;
+	    }
 		ApiClient apiClient = null;
 		switch (authConfig.getK8sAuthType()) {
 		case KUBE_CONFIG_FILE:
