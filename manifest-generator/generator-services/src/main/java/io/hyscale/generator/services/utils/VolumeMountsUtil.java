@@ -15,13 +15,8 @@
  */
 package io.hyscale.generator.services.utils;
 
-import io.hyscale.generator.services.generator.K8sResourceNameGenerator;
-import io.hyscale.generator.services.model.ManifestResource;
 import io.kubernetes.client.models.V1VolumeMount;
-import org.springframework.stereotype.Component;
 
-
-@Component
 public class VolumeMountsUtil {
 
     public static V1VolumeMount buildForProps(String propsVolumePath, String name){

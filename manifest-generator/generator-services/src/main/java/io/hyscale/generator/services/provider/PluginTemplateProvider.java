@@ -19,13 +19,8 @@ import io.hyscale.commons.models.ConfigTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
-import java.net.URL;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 public class PluginTemplateProvider {
@@ -49,7 +44,7 @@ public class PluginTemplateProvider {
         if (type == null) {
             return null;
         }
-        return templateMap != null && templateMap.containsKey(type.getTemplateFile()) ? templateMap.get(type.getTemplateFile()) : null;
+        return templateMap != null ? templateMap.get(type.getTemplateFile()) : null;
     }
 
 

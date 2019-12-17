@@ -17,7 +17,9 @@ package io.hyscale.generator.services.plugins;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.hyscale.generator.services.builder.DefaultLabelBuilder;
+import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
@@ -44,6 +46,12 @@ public class SelectorLabelsHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
+        if (serviceSpec == null) {
+            throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
+        }
+        if (manifestContext == null) {
+            throw new HyscaleException(ManifestErrorCodes.CONTEXT_REQUIRED);
+        }
         AppMetaData appMetaData = new AppMetaData();
         appMetaData.setAppName(manifestContext.getAppName());
         appMetaData.setEnvName(manifestContext.getEnvName());

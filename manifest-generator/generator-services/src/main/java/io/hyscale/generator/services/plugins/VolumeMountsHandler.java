@@ -19,11 +19,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.generator.services.utils.VolumeMountsUtil;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.model.AppMetaData;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
+import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.generator.services.generator.K8sResourceNameGenerator;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
@@ -47,6 +49,12 @@ public class VolumeMountsHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
+        if (serviceSpec == null) {
+            throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
+        }
+        if (manifestContext == null) {
+            throw new HyscaleException(ManifestErrorCodes.CONTEXT_REQUIRED);
+        }
         AppMetaData appMetaData = new AppMetaData();
         appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
         appMetaData.setEnvName(manifestContext.getEnvName());

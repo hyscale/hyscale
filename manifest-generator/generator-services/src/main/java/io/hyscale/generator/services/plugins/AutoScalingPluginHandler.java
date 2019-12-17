@@ -15,6 +15,7 @@
  */
 package io.hyscale.generator.services.plugins;
 
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.ConfigTemplate;
@@ -72,6 +73,12 @@ public class AutoScalingPluginHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
+        if (serviceSpec == null) {
+            throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
+        }
+        if (manifestContext == null) {
+            throw new HyscaleException(ManifestErrorCodes.CONTEXT_REQUIRED);
+        }
         if (!ManifestPredicates.isAutoScalingEnabled().test(serviceSpec)) {
             logger.debug("Skipping AutoScaling handler");
             return null;

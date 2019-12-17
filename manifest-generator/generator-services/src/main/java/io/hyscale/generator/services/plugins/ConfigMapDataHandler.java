@@ -18,8 +18,10 @@ package io.hyscale.generator.services.plugins;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.hyscale.generator.services.utils.ConfigMapDataUtil;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.generator.services.model.AppMetaData;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.generator.services.provider.PropsProvider;
@@ -42,6 +44,12 @@ public class ConfigMapDataHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
+        if (serviceSpec == null) {
+            throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
+        }
+        if (manifestContext == null) {
+            throw new HyscaleException(ManifestErrorCodes.CONTEXT_REQUIRED);
+        }
         Props props = PropsProvider.getProps(serviceSpec);
         if (!ManifestPredicates.getPropsPredicate().test(serviceSpec)) {
             logger.debug("Props found to be empty while processing ConfigMap data.");

@@ -47,24 +47,26 @@ public class PluginHandlers {
 	private static final String PLUGINS_LIST = "config/plugins.txt";
 
 	public void registerHandlers() throws HyscaleException {
-		if (manifestHandlerBeans != null) {
-			manifestHandlers = new ArrayList<>();
-			InputStream is = PluginHandlers.class.getClassLoader().getResourceAsStream(PLUGINS_LIST);
-			try {
-				List<String> pluginsList = IOUtils.readLines(is, ToolConstants.CHARACTER_ENCODING);
-
-				Map<String, ManifestHandler> classVsHandlerMap = manifestHandlerBeans.stream()
-						.collect(Collectors.toMap(key -> key.getClass().getName(), value -> value));
-
-				pluginsList.stream().forEach(each -> {
-					manifestHandlers.add(classVsHandlerMap.get(each));
-				});
-
-			} catch (IOException e) {
-				HyscaleException ex = new HyscaleException(ManifestErrorCodes.ERROR_WHILE_CREATING_MANIFEST);
-				throw ex;
-			}
-		}
+	    if (manifestHandlerBeans == null) {
+	        return;
+	    }
+	    manifestHandlers = new ArrayList<>();
+	    InputStream is = PluginHandlers.class.getClassLoader().getResourceAsStream(PLUGINS_LIST);
+	    try {
+	        List<String> pluginsList = IOUtils.readLines(is, ToolConstants.CHARACTER_ENCODING);
+	        
+	        Map<String, ManifestHandler> classVsHandlerMap = manifestHandlerBeans.stream()
+	                .collect(Collectors.toMap(key -> key.getClass().getName(), value -> value));
+	        
+	        pluginsList.stream().forEach(each -> {
+	            manifestHandlers.add(classVsHandlerMap.get(each));
+	        });
+	        
+	    } catch (IOException e) {
+	        logger.error("Error while registering manifest handlers", e);
+	        HyscaleException ex = new HyscaleException(ManifestErrorCodes.ERROR_WHILE_REGISTERING_HANDLERS);
+	        throw ex;
+	    }
 	}
 
 	public List<ManifestHandler> getAllPlugins() {

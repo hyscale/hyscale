@@ -18,6 +18,7 @@ package io.hyscale.generator.services.plugins;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
@@ -44,6 +45,9 @@ public class StartCommandHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
+        if (serviceSpec == null) {
+            throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
+        }
         String startCommand = serviceSpec.get(HyscaleSpecFields.startCommand, String.class);
         if (StringUtils.isBlank(startCommand)) {
             logger.debug("Found empty start command.");
@@ -76,7 +80,6 @@ public class StartCommandHandler implements ManifestHandler {
             commandSnippet.setSnippet(JsonSnippetConvertor.serialize(command));
             snippetList.add(commandSnippet);
             logger.debug("Prepared command snippet {}",commandSnippet.getSnippet());
-
 
             // Args snippet
             ManifestSnippet argsSnippet = new ManifestSnippet();

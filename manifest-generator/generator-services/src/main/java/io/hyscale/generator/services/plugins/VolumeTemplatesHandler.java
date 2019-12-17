@@ -35,6 +35,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.constants.K8SRuntimeConstants;
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.ManifestContext;
@@ -60,12 +61,15 @@ public class VolumeTemplatesHandler implements ManifestHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(VolumeTemplatesHandler.class);
 
-    private static final String PVC_DEFAULT_STORAGE_UNIT = "Gi";
-
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext)
             throws HyscaleException {
-
+        if (serviceSpec == null) {
+            throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
+        }
+        if (manifestContext == null) {
+            throw new HyscaleException(ManifestErrorCodes.CONTEXT_REQUIRED);
+        }
         TypeReference<List<Volume>> volumesList = new TypeReference<List<Volume>>() {
         };
         List<Volume> volumes = serviceSpec.get(HyscaleSpecFields.volumes, volumesList);

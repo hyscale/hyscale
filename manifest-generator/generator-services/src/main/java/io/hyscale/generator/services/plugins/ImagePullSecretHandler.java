@@ -24,7 +24,7 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DockerConfig;
 import io.hyscale.generator.services.model.ManifestGeneratorActivity;
 import io.hyscale.generator.services.builder.DefaultLabelBuilder;
-import io.hyscale.generator.services.model.ManifestGeneratorActivity;
+import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.model.AppMetaData;
 import io.hyscale.generator.services.model.ResourceName;
@@ -40,6 +40,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.Auth;
 import io.hyscale.commons.models.ManifestContext;
@@ -61,6 +62,12 @@ public class ImagePullSecretHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
+        if (serviceSpec == null) {
+            throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
+        }
+        if (manifestContext == null) {
+            throw new HyscaleException(ManifestErrorCodes.CONTEXT_REQUIRED);
+        }
         ImageRegistry imageRegistry = manifestContext.getImageRegistry();
         if (imageRegistry == null) {
             logger.debug("ImageRegistry is found to be null, skipping image pull secret creation ");

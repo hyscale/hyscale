@@ -27,6 +27,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.ManifestContext;
@@ -59,6 +60,9 @@ public class ResourceLimitsHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
+        if (serviceSpec == null) {
+            throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
+        }
         String memory = serviceSpec.get(HyscaleSpecFields.memory, String.class);
         String cpu = serviceSpec.get(HyscaleSpecFields.cpu, String.class);
         ValueRange memoryRange = null;
@@ -124,6 +128,29 @@ public class ResourceLimitsHandler implements ManifestHandler {
             throw new HyscaleException(ManifestErrorCodes.INVALID_SIZE_FORMAT, e.getMessage());
         }
         return range;
+    }
+    
+    public void validateAndInsert(ValueRange valueRange, V1ResourceRequirements resourceRequirements, ResourceRequirementType requirementType) {
+        if (valueRange == null || !getRangePredicate().test(valueRange) || requirementType == null) {
+            return;
+        }
+        if (requirementType.getValidationPredicate().test(valueRange)) {
+            addResourceAttribute(resourceRequirements, requirementType.getKey(), valueRange.getMin(), false);
+            addResourceAttribute(resourceRequirements, requirementType.getKey(), valueRange.getMax(), true);
+        } else {
+            WorkflowLogger.warn(requirementType.getActivityMessageForValidation(), valueRange.getMax().toSuffixedString());
+        }
+    }
+
+    private void addResourceAttribute(V1ResourceRequirements resourceRequirements, String key, Quantity value, boolean limits) {
+        if (value == null) {
+            return;
+        }
+        if (limits) {
+            resourceRequirements.putLimitsItem(key, value);
+        } else {
+            resourceRequirements.putRequestsItem(key, value);
+        }
     }
 
 
@@ -202,25 +229,4 @@ public class ResourceLimitsHandler implements ManifestHandler {
         }
     }
 
-    public void validateAndInsert(ValueRange valueRange, V1ResourceRequirements resourceRequirements, ResourceRequirementType requirementType) {
-        if (valueRange != null && getRangePredicate().test(valueRange)) {
-            if (requirementType.getValidationPredicate().test(valueRange)) {
-                addResourceAttribute(resourceRequirements, requirementType.getKey(), valueRange.getMin(), false);
-                addResourceAttribute(resourceRequirements, requirementType.getKey(), valueRange.getMax(), true);
-            } else {
-                WorkflowLogger.warn(requirementType.getActivityMessageForValidation(), valueRange.getMax().toSuffixedString());
-            }
-        }
-    }
-
-    private void addResourceAttribute(V1ResourceRequirements resourceRequirements, String key, Quantity value, boolean limits) {
-        if (value == null) {
-            return;
-        }
-        if (limits) {
-            resourceRequirements.putLimitsItem(key, value);
-        } else {
-            resourceRequirements.putRequestsItem(key, value);
-        }
-    }
 }

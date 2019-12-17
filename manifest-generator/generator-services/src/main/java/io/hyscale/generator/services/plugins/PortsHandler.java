@@ -19,8 +19,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Streams;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
@@ -53,6 +53,9 @@ public class PortsHandler implements ManifestHandler {
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext)
             throws HyscaleException {
+        if (serviceSpec == null) {
+            throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
+        }
         TypeReference<List<Port>> listTypeReference = new TypeReference<List<Port>>() {
         };
         List<Port> portList = serviceSpec.get(HyscaleSpecFields.ports, listTypeReference);
@@ -60,51 +63,53 @@ public class PortsHandler implements ManifestHandler {
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec)
                 ? ManifestResource.STATEFUL_SET.getKind()
                 : ManifestResource.DEPLOYMENT.getKind();
-        if (portList != null && !portList.isEmpty()) {
-            logger.debug("Processing container and service ports");
-            manifestSnippetList = Lists.newArrayList();
-            Set<V1ContainerPort> v1ContainerPorts = Sets.newHashSet();
-            Set<V1ServicePort> v1ServicePorts = Sets.newHashSet();
-
-            Streams.stream(portList).filter(port -> {
-                return port != null && StringUtils.isNotBlank(port.getPort());
-            }).forEach(each -> {
-                /**
-                 * Building podSpec's container ports
-                 */
-                V1ContainerPort v1ContainerPort = new V1ContainerPort();
-                V1ServicePort v1ServicePort = new V1ServicePort();
-                String[] portAndProtocol = each.getPort().split("/");
-                String protocol = ServiceProtocol.TCP.name();
-                if (portAndProtocol.length > 1) {
-                    protocol = ServiceProtocol.fromString(portAndProtocol[1]).name();
-                }
-                String portName = NormalizationUtil.normalize(portAndProtocol[0] + ManifestGenConstants.NAME_DELIMITER + protocol);
-                v1ContainerPort.setProtocol(protocol);
-                v1ServicePort.setProtocol(protocol);
-                int portValue = Integer.valueOf(portAndProtocol[0]);
-                v1ContainerPort.setContainerPort(portValue);
-                v1ContainerPort.setName(portName);
-                logger.debug("Processing container ports {}.",v1ContainerPort.getName());
-                v1ContainerPorts.add(v1ContainerPort);
-
-                /**
-                 * Building Service ports
-                 */
-                v1ServicePort.setName(portName);
-                logger.debug("Processing service ports {}.",v1ServicePort.getName());
-                v1ServicePort.setPort(portValue);
-                v1ServicePort.setTargetPort(new IntOrString(portValue));
-                v1ServicePorts.add(v1ServicePort);
-                logger.debug("Fetched container and service port.");
-            });
-
-            try {
-                manifestSnippetList.add(buildServicePortsSnippet(v1ServicePorts, podSpecOwner));
-                manifestSnippetList.add(buildContainerPortsSnippet(v1ContainerPorts, podSpecOwner));
-            } catch (JsonProcessingException e) {
-                logger.error("Error while building ports snippet {}", e);
+                
+        if (portList == null || portList.isEmpty()) {
+            return manifestSnippetList;
+        }
+        logger.debug("Processing container and service ports");
+        manifestSnippetList = Lists.newArrayList();
+        Set<V1ContainerPort> v1ContainerPorts = Sets.newHashSet();
+        Set<V1ServicePort> v1ServicePorts = Sets.newHashSet();
+        
+        portList.stream().filter(port -> {
+            return port != null && StringUtils.isNotBlank(port.getPort());
+        }).forEach(each -> {
+            /**
+             * Building podSpec's container ports
+             */
+            V1ContainerPort v1ContainerPort = new V1ContainerPort();
+            V1ServicePort v1ServicePort = new V1ServicePort();
+            String[] portAndProtocol = each.getPort().split("/");
+            String protocol = ServiceProtocol.TCP.name();
+            if (portAndProtocol.length > 1) {
+                protocol = ServiceProtocol.fromString(portAndProtocol[1]).name();
             }
+            String portName = NormalizationUtil.normalize(portAndProtocol[0] + ManifestGenConstants.NAME_DELIMITER + protocol);
+            v1ContainerPort.setProtocol(protocol);
+            v1ServicePort.setProtocol(protocol);
+            int portValue = Integer.valueOf(portAndProtocol[0]);
+            v1ContainerPort.setContainerPort(portValue);
+            v1ContainerPort.setName(portName);
+            logger.debug("Processing container ports {}.",v1ContainerPort.getName());
+            v1ContainerPorts.add(v1ContainerPort);
+            
+            /**
+             * Building Service ports
+             */
+            v1ServicePort.setName(portName);
+            logger.debug("Processing service ports {}.",v1ServicePort.getName());
+            v1ServicePort.setPort(portValue);
+            v1ServicePort.setTargetPort(new IntOrString(portValue));
+            v1ServicePorts.add(v1ServicePort);
+            logger.debug("Fetched container and service port.");
+        });
+        
+        try {
+            manifestSnippetList.add(buildServicePortsSnippet(v1ServicePorts, podSpecOwner));
+            manifestSnippetList.add(buildContainerPortsSnippet(v1ContainerPorts, podSpecOwner));
+        } catch (JsonProcessingException e) {
+            logger.error("Error while building ports snippet {}", e);
         }
         return manifestSnippetList;
     }

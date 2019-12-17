@@ -51,9 +51,15 @@ public class AgentConfigMapBuilder extends AgentHelper implements AgentBuilder {
 
     @Override
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
-        List<Agent> agents = getAgents(serviceSpec);
         List<ManifestSnippet> configMapSnippets = new ArrayList<ManifestSnippet>();
-        if(agents == null){
+        if (serviceSpec == null) {
+            return configMapSnippets;
+        }
+        if (manifestContext == null) {
+            return configMapSnippets;
+        }
+        List<Agent> agents = getAgents(serviceSpec);
+        if(agents == null || agents.isEmpty()){
             return configMapSnippets;
         }
         for (Agent agent : agents) {

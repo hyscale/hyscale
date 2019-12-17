@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.DefaultBindingErrorProcessor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,14 +48,22 @@ import java.util.List;
 @Component
 public class AgentSecretBuilder extends AgentHelper implements AgentBuilder {
 
+    private static final Logger logger = LoggerFactory.getLogger(AgentSecretBuilder.class);
+
     @Autowired
     AgentManifestNameGenerator agentManifestNameGenerator;
-    private static final Logger logger = LoggerFactory.getLogger(AgentSecretBuilder.class);
+    
     @Override
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
         List<ManifestSnippet> secretSnippets = new ArrayList<ManifestSnippet>();
+        if (serviceSpec == null) {
+            return secretSnippets;
+        }
+        if (manifestContext == null) {
+            return secretSnippets;
+        }
         List<Agent> agents = getAgents(serviceSpec);
-        if(agents == null){
+        if(agents == null || agents.isEmpty()){
             return secretSnippets;
         }
         for (Agent agent : agents) {

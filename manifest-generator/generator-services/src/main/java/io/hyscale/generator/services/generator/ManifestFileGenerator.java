@@ -52,7 +52,7 @@ public class ManifestFileGenerator {
 
 	private String getManifestFileName(ManifestMeta manifestMeta) {
 		StringBuilder sb = new StringBuilder();
-		if (!StringUtils.isBlank(manifestMeta.getIdentifier())) {
+		if (StringUtils.isNotBlank(manifestMeta.getIdentifier())) {
 			sb.append(NormalizationUtil.normalize(manifestMeta.getIdentifier()));
 			sb.append(ManifestGenConstants.NAME_DELIMITER);
 		}

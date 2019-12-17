@@ -30,6 +30,9 @@ public abstract class AgentHelper {
     private static final Logger logger = LoggerFactory.getLogger(AgentHelper.class);
 
     public List<Agent> getAgents(ServiceSpec serviceSpec){
+        if (serviceSpec == null) {
+            return null;
+        }
         TypeReference<List<Agent>> agentsList = new TypeReference<List<Agent>>() {
         };
         try {

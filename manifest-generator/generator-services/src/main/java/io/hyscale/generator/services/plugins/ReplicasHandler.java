@@ -16,6 +16,7 @@
 package io.hyscale.generator.services.plugins;
 
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
@@ -36,10 +37,12 @@ import java.util.List;
 @ManifestPlugin(name = "ReplicasHandler")
 public class ReplicasHandler implements ManifestHandler {
     private static final Logger logger = LoggerFactory.getLogger(ReplicasHandler.class);
-    private static final String DEFAULT_UPDATE_STRATEGY = "RollingUpdate";
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
+        if (serviceSpec == null) {
+            throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
+        }
         Replicas replicas = serviceSpec.get(HyscaleSpecFields.replicas, Replicas.class);
         if (replicas == null) {
             logger.debug("Cannot handle replicas as the field is not declared");

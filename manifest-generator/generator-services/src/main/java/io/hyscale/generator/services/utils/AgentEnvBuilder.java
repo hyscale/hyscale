@@ -44,17 +44,26 @@ import java.util.List;
  */
 @Component
 public class AgentEnvBuilder extends AgentHelper implements AgentBuilder {
+    
     private static final Logger logger = LoggerFactory.getLogger(AgentEnvBuilder.class);
+    
     @Autowired
     AgentManifestNameGenerator agentManifestNameGenerator;
 
     @Override
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
+        List<ManifestSnippet> envSnippets = new ArrayList<ManifestSnippet>();
+        if (serviceSpec == null) {
+            return envSnippets;
+        }
+        if (manifestContext == null) {
+            return envSnippets;
+        }
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ? ManifestResource.STATEFUL_SET.getKind() :
                 ManifestResource.DEPLOYMENT.getKind();
-        List<ManifestSnippet> envSnippets = new ArrayList<ManifestSnippet>();
+        
         List<Agent> agents = getAgents(serviceSpec);
-        if(agents == null){
+        if(agents == null || agents.isEmpty()){
             return  envSnippets;
         }
         int agentCount = 1;

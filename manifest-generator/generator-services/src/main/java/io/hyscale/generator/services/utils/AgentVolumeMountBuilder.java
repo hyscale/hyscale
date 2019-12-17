@@ -42,15 +42,25 @@ import java.util.List;
  */
 @Component
 public class AgentVolumeMountBuilder extends AgentHelper implements AgentBuilder {
+
     @Autowired
     AgentManifestNameGenerator agentManifestNameGenerator;
+
     @Override
-    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
-        String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ?
-                ManifestResource.STATEFUL_SET.getKind() : ManifestResource.DEPLOYMENT.getKind();
+    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec)
+            throws JsonProcessingException {
         List<ManifestSnippet> volumeMountSnippets = new ArrayList<ManifestSnippet>();
+        if (serviceSpec == null) {
+            return volumeMountSnippets;
+        }
+        if (manifestContext == null) {
+            return volumeMountSnippets;
+        }
+        String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec)
+                ? ManifestResource.STATEFUL_SET.getKind()
+                : ManifestResource.DEPLOYMENT.getKind();
         List<Agent> agents = getAgents(serviceSpec);
-        if(agents == null){
+        if (agents == null || agents.isEmpty()) {
             return volumeMountSnippets;
         }
         int agentCount = 1;
@@ -74,8 +84,8 @@ public class AgentVolumeMountBuilder extends AgentHelper implements AgentBuilder
             }
             if (agent.getProps() != null && !agent.getProps().isEmpty()) {
                 String configMapName = agentManifestNameGenerator.generateConfigMapName(agent.getName());
-                volumeMounts.add(VolumeMountsUtil.buildForProps(propsVolumePath,
-                        K8sResourceNameGenerator.getResourceVolumeName(configMapName, ManifestResource.CONFIG_MAP.getKind())));
+                volumeMounts.add(VolumeMountsUtil.buildForProps(propsVolumePath, K8sResourceNameGenerator
+                        .getResourceVolumeName(configMapName, ManifestResource.CONFIG_MAP.getKind())));
             }
             if (agent.getSecrets() != null) {
                 String secretName = agentManifestNameGenerator.generateSecretName(agent.getName());

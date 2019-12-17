@@ -45,7 +45,9 @@ public class ConfigMapDataUtil {
     private static final Logger logger = LoggerFactory.getLogger(ConfigMapDataUtil.class);
 
     public static List<ManifestSnippet> build(Props props, String propsVolumePath) throws JsonProcessingException {
-
+        if (props == null) {
+            return null;
+        }
         Map<String, String> configProps = new HashMap<>();
         Map<String, String> fileProps = new HashMap<>();
         StringBuilder sb = new StringBuilder();
@@ -75,7 +77,8 @@ public class ConfigMapDataUtil {
         });
         String fileData = sb.toString();
         /**
-         *  Consolidating all the props (string & endpoint) when propsVolumePath is defined as @see ManifestGenConstants.DEFAULT_CONFIG_PROPS_FILE
+         *  Consolidating all the props (string & endpoint) 
+         *  when propsVolumePath is defined as @see ManifestGenConstants.DEFAULT_CONFIG_PROPS_FILE
          */
         if (StringUtils.isNotBlank(fileData) && StringUtils.isNotBlank(propsVolumePath)) {
             logger.debug("Consolidating config props to file {}", ManifestGenConstants.DEFAULT_CONFIG_PROPS_FILE);

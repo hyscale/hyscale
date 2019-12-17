@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
@@ -51,10 +52,12 @@ public class HealthChecksHandler implements ManifestHandler {
     private static final int DEFAULT_PERIOD_IN_SECONDS = 30;
     private static final int DEFAULT_TIMEOUT_IN_SECONDS = 30;
     private static final int DEFAULT_FAILURE_THRESHOLD_IN_SECONDS = 10;
-    private static final int DEFAULT_SUCESS_THRESHOLD_IN_SECONDS = 1;
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext context) throws HyscaleException {
+        if (serviceSpec == null) {
+            throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
+        }
         TypeReference<List<Port>> listTypeReference = new TypeReference<List<Port>>() {
         };
         List<Port> portsList = serviceSpec.get(HyscaleSpecFields.ports, listTypeReference);

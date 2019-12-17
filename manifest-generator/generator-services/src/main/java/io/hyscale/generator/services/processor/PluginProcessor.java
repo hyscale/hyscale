@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -32,6 +33,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Manifest;
@@ -39,6 +41,7 @@ import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.commons.models.Status;
 import io.hyscale.commons.models.YAMLManifest;
 import io.hyscale.generator.services.config.ManifestConfig;
+import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.generator.services.generator.ManifestFileGenerator;
 import io.hyscale.generator.services.model.ManifestGeneratorActivity;
 import io.hyscale.generator.services.model.ManifestNode;
@@ -69,6 +72,12 @@ public class PluginProcessor {
 
     public List<Manifest> getManifests(ServiceSpec serviceSpec, ManifestContext manifestContext)
             throws HyscaleException {
+        if (serviceSpec == null) {
+            throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
+        }
+        if (manifestContext == null) {
+            throw new HyscaleException(ManifestErrorCodes.CONTEXT_REQUIRED);
+        }
         YAMLMapper yamlMapper = new YAMLMapper();
         String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
         List<Manifest> manifestList = new ArrayList<>();
@@ -108,9 +117,7 @@ public class PluginProcessor {
             return null;
         }
         Map<ManifestMeta, ManifestNode> manifestMetavsNodeMap = new HashMap<>();
-        manifestHandlerList.stream().filter(each -> {
-            return each != null;
-        }).forEach(each -> {
+        manifestHandlerList.stream().filter(Objects::nonNull).forEach(each -> {
             List<ManifestSnippet> manifestSnippetList = null;
             try {
                 logger.debug("Executing plugin handler of : {}", each.getClass().getCanonicalName());

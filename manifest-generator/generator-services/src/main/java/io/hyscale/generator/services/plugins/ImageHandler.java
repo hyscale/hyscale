@@ -16,10 +16,12 @@
 package io.hyscale.generator.services.plugins;
 
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
+import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
@@ -43,6 +45,12 @@ public class ImageHandler implements ManifestHandler {
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext)
             throws HyscaleException {
+        if (serviceSpec == null) {
+            throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
+        }
+        if (manifestContext == null) {
+            throw new HyscaleException(ManifestErrorCodes.CONTEXT_REQUIRED);
+        }
         String image = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.name), String.class);
         if (StringUtils.isBlank(image)) {
             logger.debug("Found empty image in the service spec, cannot process ImageHandler");

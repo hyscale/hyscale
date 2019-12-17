@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.ManifestContext;
@@ -49,6 +50,9 @@ public class ServiceSpecAnnotationHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
+        if (serviceSpec == null) {
+            throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
+        }
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec)
                 ? ManifestResource.STATEFUL_SET.getKind()

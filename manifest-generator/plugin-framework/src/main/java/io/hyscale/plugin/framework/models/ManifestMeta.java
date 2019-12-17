@@ -40,7 +40,7 @@ public class ManifestMeta {
 
 	@Override
 	public String toString() {
-		return !StringUtils.isBlank(identifier) ? identifier + "_" + kind : kind;
+		return StringUtils.isNotBlank(identifier) ? identifier + "_" + kind : kind;
 	}
 
 	@Override

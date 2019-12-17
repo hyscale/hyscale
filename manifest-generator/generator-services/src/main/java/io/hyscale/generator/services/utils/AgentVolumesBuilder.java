@@ -47,12 +47,20 @@ public class AgentVolumesBuilder extends AgentHelper implements AgentBuilder {
     AgentManifestNameGenerator agentManifestNameGenerator;
 
     @Override
-    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
-        String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ?
-                ManifestResource.STATEFUL_SET.getKind() : ManifestResource.DEPLOYMENT.getKind();
+    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec)
+            throws JsonProcessingException {
         List<ManifestSnippet> volumeSnippets = new ArrayList<ManifestSnippet>();
+        if (serviceSpec == null) {
+            return volumeSnippets;
+        }
+        if (manifestContext == null) {
+            return volumeSnippets;
+        }
+        String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec)
+                ? ManifestResource.STATEFUL_SET.getKind()
+                : ManifestResource.DEPLOYMENT.getKind();
         List<Agent> agents = getAgents(serviceSpec);
-        if(agents == null){
+        if (agents == null || agents.isEmpty()) {
             return volumeSnippets;
         }
         ManifestSnippet volumeSnippet = new ManifestSnippet();
@@ -63,7 +71,8 @@ public class AgentVolumesBuilder extends AgentHelper implements AgentBuilder {
             if (agent.getProps() != null && !agent.getProps().isEmpty()) {
                 V1Volume volume = new V1Volume();
                 String configMapName = agentManifestNameGenerator.generateConfigMapName(agent.getName());
-                volume.setName(K8sResourceNameGenerator.getResourceVolumeName(configMapName, ManifestResource.CONFIG_MAP.getKind()));
+                volume.setName(K8sResourceNameGenerator.getResourceVolumeName(configMapName,
+                        ManifestResource.CONFIG_MAP.getKind()));
                 V1ConfigMapVolumeSource v1ConfigMapVolumeSource = new V1ConfigMapVolumeSource();
                 v1ConfigMapVolumeSource.setName(configMapName);
                 volume.setConfigMap(v1ConfigMapVolumeSource);
@@ -72,7 +81,8 @@ public class AgentVolumesBuilder extends AgentHelper implements AgentBuilder {
             if (agent.getSecrets() != null) {
                 V1Volume volume = new V1Volume();
                 String secretName = agentManifestNameGenerator.generateSecretName(agent.getName());
-                volume.setName(K8sResourceNameGenerator.getResourceVolumeName(secretName, ManifestResource.SECRET.getKind()));
+                volume.setName(
+                        K8sResourceNameGenerator.getResourceVolumeName(secretName, ManifestResource.SECRET.getKind()));
                 V1SecretVolumeSource v1SecretVolumeSource = new V1SecretVolumeSource();
                 v1SecretVolumeSource.secretName(secretName);
                 volume.setSecret(v1SecretVolumeSource);

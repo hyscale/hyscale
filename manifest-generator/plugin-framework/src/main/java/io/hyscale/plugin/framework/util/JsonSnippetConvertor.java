@@ -22,9 +22,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.hyscale.commons.utils.ObjectMapperFactory;
+
 public class JsonSnippetConvertor {
 
-	private static final ObjectMapper objectMapper = new ObjectMapper();
+	private static final ObjectMapper objectMapper = ObjectMapperFactory.jsonMapper();
 
 	static {
 		objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);

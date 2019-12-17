@@ -16,6 +16,7 @@
 package io.hyscale.generator.services.plugins;
 
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.K8sServiceType;
 import io.hyscale.commons.models.ManifestContext;
@@ -39,6 +40,9 @@ public class ServiceTypeHandler implements ManifestHandler {
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext)
             throws HyscaleException {
+        if (serviceSpec == null) {
+            throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
+        }
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         if (ManifestResource.SERVICE.getPredicate().test(serviceSpec)) {
             ManifestSnippet serviceTypeSnippet = new ManifestSnippet();

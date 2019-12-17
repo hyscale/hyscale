@@ -17,16 +17,17 @@ package io.hyscale.generator.services.plugins;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.model.AppMetaData;
+import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.generator.services.generator.MetadataManifestSnippetGenerator;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
-import io.kubernetes.client.models.V1ObjectMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -42,6 +43,12 @@ public class MetaDataHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext context) throws HyscaleException {
+        if (serviceSpec == null) {
+            throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
+        }
+        if (context == null) {
+            throw new HyscaleException(ManifestErrorCodes.CONTEXT_REQUIRED);
+        }
         AppMetaData appMetaData = new AppMetaData();
         appMetaData.setAppName(context.getAppName());
         appMetaData.setEnvName(context.getEnvName());

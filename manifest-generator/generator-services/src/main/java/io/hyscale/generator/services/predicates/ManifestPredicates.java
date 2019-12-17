@@ -156,7 +156,7 @@ public class ManifestPredicates {
             } catch (HyscaleException e) {
                 return false;
             }
-            if (!StringUtils.isBlank(propsVolumePath)) {
+            if (StringUtils.isNotBlank(propsVolumePath)) {
                 return true;
             }
             return false;
@@ -171,7 +171,7 @@ public class ManifestPredicates {
             } catch (HyscaleException e) {
                 return false;
             }
-            if (!StringUtils.isBlank(secretsVolumePath)) {
+            if (StringUtils.isNotBlank(secretsVolumePath)) {
                 return true;
             }
             return false;

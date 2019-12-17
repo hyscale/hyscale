@@ -31,6 +31,9 @@ public class PropsProvider {
 
 	public static Props getProps(ServiceSpec serviceSpec) throws HyscaleException {
 		Props props = new Props();
+		if (serviceSpec == null) {
+		    return props;
+		}
 		try {
 			TypeReference<Map<String, String>> mapTypeReference = new TypeReference<Map<String, String>>() {
 			};
