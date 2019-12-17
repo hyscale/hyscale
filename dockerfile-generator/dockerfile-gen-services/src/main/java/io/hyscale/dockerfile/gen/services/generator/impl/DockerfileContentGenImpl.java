@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ConfigTemplate;
 import io.hyscale.commons.models.DecoratedArrayList;
@@ -58,6 +59,12 @@ public class DockerfileContentGenImpl implements DockerfileContentGenerator {
 
 	@Override
 	public DockerfileContent generate(ServiceSpec serviceSpec, DockerfileGenContext context) throws HyscaleException {
+	    if (serviceSpec == null) {
+	        throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
+	    }
+	    if (context == null) {
+	        throw new HyscaleException(DockerfileErrorCodes.CONTEXT_REQUIRED);
+	    }
 		BuildSpec buildSpec = serviceSpec
 				.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.buildSpec), BuildSpec.class);
 		if (buildSpec == null) {

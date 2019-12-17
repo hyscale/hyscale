@@ -105,7 +105,7 @@ public class DockerfileGenPredicates {
             if (buildSpec == null) {
                 return false;
             }
-            return !StringUtils.isBlank(buildSpec.getConfigCommands());
+            return StringUtils.isNotBlank(buildSpec.getConfigCommands());
         };
     }
 
@@ -114,7 +114,7 @@ public class DockerfileGenPredicates {
             if (buildSpec == null) {
                 return false;
             }
-            return !StringUtils.isBlank(buildSpec.getRunCommands());
+            return StringUtils.isNotBlank(buildSpec.getRunCommands());
         };
     }
 
@@ -123,7 +123,7 @@ public class DockerfileGenPredicates {
             if (buildSpec == null) {
                 return false;
             }
-            return !StringUtils.isBlank(buildSpec.getConfigCommandsScript());
+            return StringUtils.isNotBlank(buildSpec.getConfigCommandsScript());
         };
     }
 
@@ -132,7 +132,7 @@ public class DockerfileGenPredicates {
             if (buildSpec == null) {
                 return false;
             }
-            return !StringUtils.isBlank(buildSpec.getRunCommandsScript());
+            return StringUtils.isNotBlank(buildSpec.getRunCommandsScript());
         };
     }
 }

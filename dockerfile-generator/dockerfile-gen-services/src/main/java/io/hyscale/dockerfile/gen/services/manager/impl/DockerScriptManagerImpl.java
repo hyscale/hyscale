@@ -65,7 +65,9 @@ public class DockerScriptManagerImpl implements DockerfileEntityManager {
 
 		BuildSpec buildSpec = serviceSpec
 				.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.buildSpec), BuildSpec.class);
-
+		if (buildSpec == null) {
+		    return supportingFiles;
+		}
 		boolean configCmdAvailable = scriptAvailable(buildSpec.getConfigCommands(), buildSpec.getConfigCommandsScript());
 		SupportingFile configFile = null;
 		if (configCmdAvailable) {

@@ -18,6 +18,7 @@ package io.hyscale.dockerfile.gen.services.exception;
 import io.hyscale.commons.exception.HyscaleErrorCode;
 
 public enum DockerfileErrorCodes implements HyscaleErrorCode {
+    CONTEXT_REQUIRED("Dockerfile Generation Context required"),
     FAILED_TO_GENERATE_DOCKERFILE("Failed to generate Dockerfile"),
     FAILED_TO_COPY_ARTIFACT("Failed to copy artifacts"),
     FAILED_TO_CREATE_SCRIPT("Failed to create script"),

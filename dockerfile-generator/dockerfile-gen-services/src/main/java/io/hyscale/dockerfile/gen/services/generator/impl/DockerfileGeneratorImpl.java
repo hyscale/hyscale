@@ -151,7 +151,7 @@ public class DockerfileGeneratorImpl implements DockerfileGenerator {
             throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
         }
         if (context == null) {
-            throw new HyscaleException(DockerfileErrorCodes.FAILED_TO_PROCESS_DOCKERFILE_GENERATION);
+            throw new HyscaleException(DockerfileErrorCodes.CONTEXT_REQUIRED);
         }
     }
 
