@@ -20,23 +20,23 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 @JsonDeserialize(using = ReplicasDeserializer.class)
 public class Replicas {
 
-	private int min;
-	private int max;
+	private Integer min;
+	private Integer max;
 	private String cpuThreshold;
 
-	public int getMin() {
+	public Integer getMin() {
 		return min;
 	}
 
-	public void setMin(int min) {
+	public void setMin(Integer min) {
 		this.min = min;
 	}
 
-	public int getMax() {
+	public Integer getMax() {
 		return max;
 	}
 
-	public void setMax(int max) {
+	public void setMax(Integer max) {
 		this.max = max;
 	}
 
