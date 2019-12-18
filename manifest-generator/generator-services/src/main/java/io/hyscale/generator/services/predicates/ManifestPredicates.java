@@ -18,11 +18,13 @@ package io.hyscale.generator.services.predicates;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.generator.services.provider.PropsProvider;
+import io.hyscale.generator.services.utils.ReplicasUtil;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.*;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 public class ManifestPredicates {
@@ -180,13 +182,20 @@ public class ManifestPredicates {
 
     public static Predicate<ServiceSpec> isAutoScalingEnabled() {
         return serviceSpec -> {
+            return ManifestPredicates.isAutoScalingEnabledWithPrint().test(serviceSpec, false);
+        };
+    }
+    
+    public static BiPredicate<ServiceSpec, Boolean> isAutoScalingEnabledWithPrint() {
+        return (serviceSpec, print)-> {
             Replicas replicas = null;
             try {
                 replicas = serviceSpec.get(HyscaleSpecFields.replicas, Replicas.class);
             } catch (HyscaleException e) {
                 return false;
             }
-            if (replicas != null && replicas.getMax() > 0 && StringUtils.isNotBlank(replicas.getCpuThreshold())) {
+            
+            if (ReplicasUtil.isAutoScalingEnabled(replicas, print)) {
                 return true;
             }
             return false;
