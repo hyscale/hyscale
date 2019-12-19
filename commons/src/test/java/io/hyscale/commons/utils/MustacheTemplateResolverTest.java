@@ -22,14 +22,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-public class MustacheTemplateResolverTests {
-    private static URL sampleTemplateUrl;
+public class MustacheTemplateResolverTest {
     private static final String TESTING_TEMPLATE_CONTENT = "ONLINE";
     private static final String TESTING_TEMPLATE_KEY = "USER_STATUS";
     private static MustacheTemplateResolver mustacheTemplateResolver;
@@ -37,8 +35,9 @@ public class MustacheTemplateResolverTests {
     private static Map<String, Object> statusMap;
 
     @BeforeAll
-    public static void input() {
-        sampleTemplateUrl = MustacheTemplateResolverTests.class.getResource("/sampleConfig.tpl");
+    public static void init() {
+        URL sampleTemplateUrl;
+        sampleTemplateUrl = MustacheTemplateResolverTest.class.getResource("/sampleConfig.tpl");
         sampleTemplatePath = sampleTemplateUrl.getPath();
         statusMap = new HashMap<>();
         statusMap.put(TESTING_TEMPLATE_KEY, TESTING_TEMPLATE_CONTENT);

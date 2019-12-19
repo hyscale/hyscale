@@ -22,13 +22,12 @@ import io.hyscale.commons.models.CommandResult;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import java.io.File;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CommandExecutorTests {
+public class CommandExecutorTest {
     private static final String ECHO_COMMAND = "echo HelloWorld";
     private StringBuilder stringBuilder;
 

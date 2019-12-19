@@ -1,0 +1,8 @@
+Inputs(app),Expected(app)
+,
+" ",
+myApp,myApp
+myApp ,myApp
+myApp myApp,myApp-myApp
+myApp.,myApp-
+myApp @,myApp-

@@ -21,14 +21,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
 import java.io.File;
 import java.net.URL;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SetupConfigForAbsolutePathTests {
+public class SetupConfigForAbsolutePathTest {
     private static String absolutePath;
 
     @BeforeAll
@@ -39,7 +38,7 @@ public class SetupConfigForAbsolutePathTests {
 
 
     public static Stream<Arguments> input() {
-        URL resourceAsUrl = SetupConfigForAbsolutePathTests.class.getResource("/sample.txt");
+        URL resourceAsUrl = SetupConfigForAbsolutePathTest.class.getResource("/sample.txt");
         String sample_path = resourceAsUrl.getPath();
         File f = new File(sample_path);
         return Stream.of(Arguments.of("notBlank", absolutePath + ToolConstants.FILE_SEPARATOR + "notBlank"),

@@ -18,29 +18,25 @@ package io.hyscale.commons.config;
 import io.hyscale.commons.constants.ToolConstants;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SetupConfigTests {
+public class SetupConfigTest {
     private static final String APP_NAME = "myApp";
     private static final String SVC_NAME = "mySvc";
     private static final String HYSCALE = "hyscale";
     private static final String GENERATED_FILES = "generated-files";
     private static final String LOGS_DIRECTORY = "logs";
     private static final String APPS_DIRECTORY = "apps";
-    private static StringBuilder appsDir;
-    private static StringBuilder serviceDir;
+    private static String appsDir;
+    private static String serviceDir;
     private static SetupConfig setupConfig;
 
     //TODO autowire setup config
     @BeforeAll
     public static void init() {
-        appsDir = new StringBuilder();
-        appsDir.append(SetupConfig.USER_HOME_DIR).append(ToolConstants.FILE_SEPARATOR).append(HYSCALE).
-                append(ToolConstants.
-                        FILE_SEPARATOR).append(APPS_DIRECTORY).append(ToolConstants.FILE_SEPARATOR).toString();
-        serviceDir = new StringBuilder();
-        serviceDir.append(appsDir).append(APP_NAME).append(ToolConstants.FILE_SEPARATOR).append(SVC_NAME).append(ToolConstants.FILE_SEPARATOR).toString();
+        appsDir = new StringBuilder(SetupConfig.USER_HOME_DIR).append(ToolConstants.FILE_SEPARATOR).append(HYSCALE).
+                append(ToolConstants.FILE_SEPARATOR).append(APPS_DIRECTORY).append(ToolConstants.FILE_SEPARATOR).toString();
+        serviceDir = new StringBuilder(appsDir).append(APP_NAME).append(ToolConstants.FILE_SEPARATOR).append(SVC_NAME).append(ToolConstants.FILE_SEPARATOR).toString();
         setupConfig = new SetupConfig();
     }
 
@@ -61,12 +57,12 @@ public class SetupConfigTests {
 
     @Test
     public void testGetAppsDir() {
-        assertEquals(appsDir.toString(), setupConfig.getAppsDir());
+        assertEquals(appsDir, setupConfig.getAppsDir());
     }
 
     @Test
     public void testGetServiceDir() {
-        assertEquals(serviceDir.toString(), setupConfig.getServiceDir(APP_NAME, SVC_NAME));
+        assertEquals(serviceDir, setupConfig.getServiceDir(APP_NAME, SVC_NAME));
     }
 
     @Test

@@ -20,17 +20,17 @@ import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import static org.junit.jupiter.api.Assertions.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-public class HyscaleFilesUtilTests {
+public class HyscaleFilesUtilTest {
+    private static final Logger logger = LoggerFactory.getLogger(HyscaleFilesUtilTest.class);
     private static URL sampleFileUrl;
     private static String sampleFilePath;
     private static File sampleFile;
@@ -43,7 +43,7 @@ public class HyscaleFilesUtilTests {
 
     @BeforeAll
     public static void init() {
-        sampleFileUrl = HyscaleFilesUtilTests.class.getClassLoader().getResource(SAMPLE_FILE_NAME);
+        sampleFileUrl = HyscaleFilesUtilTest.class.getClassLoader().getResource(SAMPLE_FILE_NAME);
         sampleFilePath = sampleFileUrl.getPath();
         testDirPath = TestConstants.TMP_DIR + ToolConstants.FILE_SEPARATOR + "testDir" + ToolConstants.FILE_SEPARATOR;
         testFilePath = testDirPath + TEST_FILE_NAME;
@@ -57,16 +57,9 @@ public class HyscaleFilesUtilTests {
         try {
             newFile.createNewFile();
         } catch (IOException e) {
-            Assertions.fail("Unable to create file:" + filePath + " for " + getClass().toString());
+            logger.error("Unable to create file:" + filePath + " for " + getClass().toString());
         }
         return newFile;
-    }
-
-    private boolean deleteFile(File file) {
-        if (file.exists()) {
-            return file.delete();
-        }
-        return false;
     }
 
     private File createDirectory(String path) {
@@ -79,6 +72,7 @@ public class HyscaleFilesUtilTests {
             try {
                 FileUtils.deleteDirectory(file);
             } catch (IOException e) {
+                logger.error("Unable to delete directory for " + getClass().toString());
             }
         }
     }

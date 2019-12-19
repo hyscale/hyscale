@@ -18,26 +18,19 @@ package io.hyscale.commons.utils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.stream.Stream;
 
-public class TimeStampProviderTests {
+public class TimeStampProviderTest {
     private static final String DEFAULT_DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
-    private static final String TEST_PATTERN = "dd MMMM yyyy";
-
-    public static Stream<Arguments> getPattern() {
-        return Stream.of(null,
-                Arguments.of(TEST_PATTERN));
-    }
 
     @ParameterizedTest
-    @MethodSource(value = "getPattern")
+    @NullSource
+    @ValueSource(strings = "dd MMMM yyyy")
     public void getTimeStampTest(String pattern) {
         String time = TimeStampProvider.get(pattern);
         if (pattern == null) {
@@ -47,7 +40,7 @@ public class TimeStampProviderTests {
         Assertions.assertTrue(matchPattern(time, pattern));
     }
 
-    public boolean matchPattern(String time, String pattern) {
+    private boolean matchPattern(String time, String pattern) {
         DateFormat formatter = new SimpleDateFormat(pattern);
         formatter.setLenient(false);
         try {

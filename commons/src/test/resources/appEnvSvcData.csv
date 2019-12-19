@@ -1,0 +1,9 @@
+Input(app,env,svc),Expected(app,env,svc)
+,,,,,
+,,mySvc,,,mySvc
+,myEnv,mySvc,,myEnv,mySvc
+myApp,myEnv, mySvc,myApp,myEnv,mySvc
+myApp , myEnv,mySvc,myApp,myEnv,mySvc
+myApp,myEnv myEnv,mySvc,myApp,myEnv-myEnv,mySvc
+myApp.,myEnv,mySvc,myApp-,myEnv,mySvc
+myApp,myEnv@,mySvc,myApp,myEnv,mySvc

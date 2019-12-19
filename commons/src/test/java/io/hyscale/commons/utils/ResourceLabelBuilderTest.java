@@ -16,62 +16,43 @@
 package io.hyscale.commons.utils;
 
 import io.hyscale.commons.models.ResourceLabelKey;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.MethodSource;
-
 import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Map;
 import java.util.stream.Stream;
 
-public class ResourceLabelBuilderTests {
+public class ResourceLabelBuilderTest {
     private static final String APP_NAME = "myApp";
     private static final String SVC_NAME = "mySvc";
-    private static final String ENV_NAME = "myEnv";
-    private static Date date;
-    private static Long longDate;
 
-    @BeforeAll
-    public static void init() {
-        date = Calendar.getInstance().getTime();
-        longDate = date.getTime();
+    @ParameterizedTest
+    @CsvFileSource(resources = "/appEnvSvcData.csv", numLinesToSkip = 1)
+    public void testBuildWithAppSvcEnv(String appName, String envName, String svcName, String expApp, String expEnv, String expSvc) {
+        Map<ResourceLabelKey, String> label = ResourceLabelBuilder.build(appName, envName, svcName);
+        assertEquals(expEnv, label.get(ResourceLabelKey.ENV_NAME));
+        assertEquals(expApp, label.get(ResourceLabelKey.APP_NAME));
+        assertEquals(expSvc, label.get(ResourceLabelKey.SERVICE_NAME));
     }
 
-    @Test
-    public void testBuildWithAppSvcEnv() {
-        Map<ResourceLabelKey, String> label = ResourceLabelBuilder.build(APP_NAME, ENV_NAME, SVC_NAME);
-        assertEquals(ENV_NAME, label.get(ResourceLabelKey.ENV_NAME));
-        assertEquals(APP_NAME, label.get(ResourceLabelKey.APP_NAME));
-        assertEquals(SVC_NAME, label.get(ResourceLabelKey.SERVICE_NAME));
+    @ParameterizedTest
+    @CsvFileSource(resources = "/appEnvData.csv", numLinesToSkip = 1)
+    public void testBuildWithAppEnv(String appName, String envName, String expApp, String expEnv) {
+        Map<ResourceLabelKey, String> label = ResourceLabelBuilder.build(appName, envName);
+        assertEquals(expApp, label.get(ResourceLabelKey.APP_NAME));
+        assertEquals(expEnv, label.get(ResourceLabelKey.ENV_NAME));
     }
 
-    @Test
-    public void testBuildWithAppEnv() {
-        Map<ResourceLabelKey, String> label = ResourceLabelBuilder.build(APP_NAME, ENV_NAME);
-        assertEquals(ENV_NAME, label.get(ResourceLabelKey.ENV_NAME));
-        assertEquals(APP_NAME, label.get(ResourceLabelKey.APP_NAME));
+    @ParameterizedTest
+    @CsvFileSource(resources = "/appData.csv", numLinesToSkip = 1)
+    public void testBuildWithApp(String appName, String expApp) {
+        Map<ResourceLabelKey, String> label = ResourceLabelBuilder.build(appName);
+        assertEquals(expApp, label.get(ResourceLabelKey.APP_NAME));
     }
 
-    @Test
-    public void testBuildWithApp() {
-        Map<ResourceLabelKey, String> label = ResourceLabelBuilder.build(APP_NAME);
-        assertEquals(APP_NAME, label.get(ResourceLabelKey.APP_NAME));
-    }
-
-    @Test
-    public void testBuild() {
-        Map<ResourceLabelKey, String> label = ResourceLabelBuilder.build(APP_NAME, ENV_NAME, SVC_NAME, "1", longDate);
-        assertEquals(ENV_NAME, label.get(ResourceLabelKey.ENV_NAME));
-        assertEquals(APP_NAME, label.get(ResourceLabelKey.APP_NAME));
-        assertEquals(SVC_NAME, label.get(ResourceLabelKey.SERVICE_NAME));
-        assertEquals("1-" + longDate.toString(), label.get(ResourceLabelKey.RELEASE_VERSION));
-
-    }
 
     @Test
     public void testBuildServiceLabel() {
@@ -80,8 +61,7 @@ public class ResourceLabelBuilderTests {
         assertEquals(SVC_NAME, label.get(ResourceLabelKey.SERVICE_NAME));
     }
 
-    @Test
-    public static Stream<Arguments> input() {
+    public static Stream<Arguments> getInputsForNormalizationTests() {
         return Stream.of(Arguments.of("normaLize", "normaLize"),
                 Arguments.of("normalize@1", "normalize1"),
                 Arguments.of(null, null),
@@ -94,7 +74,7 @@ public class ResourceLabelBuilderTests {
     }
 
     @ParameterizedTest
-    @MethodSource(value = "input")
+    @MethodSource(value = "getInputsForNormalizationTests")
     public void testNormalize(String input, String expected) {
         assertEquals(expected, ResourceLabelBuilder.normalize(input));
     }

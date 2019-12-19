@@ -1,0 +1,7 @@
+Inputs(app,env),Expected(app,env)
+,,,
+myApp,,myApp,
+myApp,myEnv,myApp,myEnv
+myApp ," ",myApp,
+myApp myApp,myEnv,myApp-myApp,myEnv
+myApp.,myEnv@,myApp-,myEnv

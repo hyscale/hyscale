@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ResourceLabelUtilTests {
+public class ResourceLabelUtilTest {
     private static Map<String, String> labels = new HashMap<String, String>();
     private static final String APP_NAME = "myApp";
     private static final String SVC_NAME = "mySvc";
