@@ -16,10 +16,12 @@
 package io.hyscale.servicespec.commons.model.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonDeserialize(using = ImageDeserializer.class)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Image {
 
     private String name;
