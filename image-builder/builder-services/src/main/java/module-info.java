@@ -19,7 +19,6 @@ module builderservices {
 	exports io.hyscale.builder.services.config;
 	exports io.hyscale.builder.services.exception;
 	exports io.hyscale.builder.services.impl;
-	exports io.hyscale.builder.services.command;
 
 	requires transitive commons;
 	requires transitive service_spec_commons;

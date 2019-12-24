@@ -20,11 +20,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
+
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 
 import java.io.IOException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *  Deserializer for replicas field in the service spec.
@@ -42,27 +44,34 @@ import java.io.IOException;
 
 public class ReplicasDeserializer extends JsonDeserializer {
 
+    private static final Logger logger = LoggerFactory.getLogger(ReplicasDeserializer.class);
+
     @Override
-    public Object deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-        JsonNode specNode = jsonParser.readValueAsTree();
-        if (specNode == null) {
-            return null;
-        }
-        Replicas replicas = new Replicas();
-        JsonNode rootNode = specNode.get(HyscaleSpecFields.replicas);
-        if (rootNode == null) {
+    public Object deserialize(JsonParser jsonParser, DeserializationContext ctxt)
+            throws IOException, JsonProcessingException {
+        JsonNode replicasNode = jsonParser.readValueAsTree();
+        // specNode refers to replicas
+        if (replicasNode == null) {
             return defaultReplicas();
         }
+        Replicas replicas = new Replicas();
         try {
-            if (rootNode.get(HyscaleSpecFields.min) != null) {
-                replicas.setMin(Integer.valueOf(rootNode.get(HyscaleSpecFields.min).toString()));
-                replicas.setMax(Integer.valueOf(rootNode.get(HyscaleSpecFields.max).toString()));
-                replicas.setCpuThreshold(rootNode.get(HyscaleSpecFields.cpuThreshold).toString());
+            JsonNode minNode = replicasNode.get(HyscaleSpecFields.min);
+            if (minNode != null) {
+                replicas.setMin(Integer.valueOf(minNode.toString()));
+                JsonNode maxNode = replicasNode.get(HyscaleSpecFields.max);
+                if (maxNode != null) {
+                    replicas.setMax(Integer.valueOf(maxNode.toString()));
+                }
+                JsonNode cpuThreshold = replicasNode.get(HyscaleSpecFields.cpuThreshold);
+                if (cpuThreshold != null && !cpuThreshold.isNull()) {
+                    replicas.setCpuThreshold(cpuThreshold.asText());
+                }
             } else {
-                replicas.setMin(Integer.valueOf(specNode.toString()));
+                replicas.setMin(Integer.valueOf(replicasNode.toString()));
             }
-        } catch (NumberFormatException e) {
-            WorkflowLogger.persist(ServiceSpecActivity.FAILED_TO_DESERIALIZE_REPLICAS);
+        } catch (Exception e) {
+            logger.debug("Returning default replicas from deserializer, Error {}", e);
             replicas = defaultReplicas();
         }
         return replicas;

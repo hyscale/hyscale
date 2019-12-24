@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import io.hyscale.commons.constants.ToolConstants;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -179,11 +180,11 @@ public class HyscaleFilesUtil {
 			throw new HyscaleException(CommonErrorCode.EMPTY_FILE_PATH);
 		}
 
-		if (filePath.substring(filePath.length() - 1, filePath.length()).equals(SetupConfig.FILE_SEPARATOR)) {
+		if (filePath.substring(filePath.length() - 1, filePath.length()).equals(ToolConstants.FILE_SEPARATOR)) {
 			throw new HyscaleException(CommonErrorCode.FOUND_DIRECTORY_INSTEAD_OF_FILE, filePath);
 		}
 
-		int lastDirIndex = filePath.lastIndexOf(SetupConfig.FILE_SEPARATOR);
+		int lastDirIndex = filePath.lastIndexOf(ToolConstants.FILE_SEPARATOR);
 		if (lastDirIndex >= 0) {
 			return filePath.substring(lastDirIndex + 1, filePath.length());
 		} else {

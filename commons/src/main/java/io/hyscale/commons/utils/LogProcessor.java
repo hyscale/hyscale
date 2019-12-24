@@ -56,7 +56,7 @@ public class LogProcessor {
 	}
 
 	public TailLogFile tailLogFile(File logFile, TailHandler handler){
-		if (logFile == null||!logFile.exists()) {
+		if (logFile == null || !logFile.exists()) {
 			logger.debug("Invalid log file path found for tailing.");
 			return null;
 		}
@@ -79,7 +79,8 @@ public class LogProcessor {
 	public void readLogFile(File logFile, OutputStream os, Integer lines)throws HyscaleException {
 		if (logFile == null || !logFile.exists() || logFile.isDirectory()) {
 			logger.error("Invalid log file found. Cannot read logs.");
-			throw new HyscaleException(CommonErrorCode.FAILED_TO_READ_LOGFILE,logFile!=null?logFile.getPath():null);
+			throw new HyscaleException(CommonErrorCode.FAILED_TO_READ_LOGFILE,
+			        logFile != null ? logFile.getPath() : null);
 		}
 		if(os == null){
 			throw new HyscaleException(CommonErrorCode.OUTPUTSTREAM_NOT_FOUND);

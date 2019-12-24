@@ -16,6 +16,7 @@
 package io.hyscale.commons.models;
 
 import io.hyscale.commons.config.SetupConfig;
+import io.hyscale.commons.constants.ToolConstants;
 
 public class ConfigTemplate {
 
@@ -39,7 +40,7 @@ public class ConfigTemplate {
 	}
 
 	public String getTemplatePath() {
-		return rootPath + SetupConfig.FILE_SEPARATOR + templateName;
+		return rootPath + "/" + templateName;
 	}
 
 }

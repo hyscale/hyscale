@@ -18,6 +18,7 @@ package io.hyscale.controller.util;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +42,9 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 @Component
 public class ServiceSpecMapper {
 
-	private static final Logger logger = LoggerFactory.getLogger(ServiceSpecMapper.class);
-	
-	@Autowired
+    private static final Logger logger = LoggerFactory.getLogger(ServiceSpecMapper.class);
+
+    @Autowired
     private EffectiveServiceSpecUtil effectiveServiceSpecUtil;
 
     public ServiceSpec from(File serviceSpecFile) throws HyscaleException {
@@ -51,11 +52,11 @@ public class ServiceSpecMapper {
         ObjectMapper mapper = ObjectMapperFactory.yamlMapper();
         try {
             JsonNode rootNode = mapper.readTree(serviceSpecFile);
-            
-            if(WindowsUtil.isHostWindows()) {
-    			logger.debug("Updating service spec as host system is windows");
-    			rootNode = effectiveServiceSpecUtil.updateFilePath((ObjectNode)rootNode);
-    		}
+
+            if (WindowsUtil.isHostWindows()) {
+                logger.debug("Updating service spec as host system is windows");
+                rootNode = effectiveServiceSpecUtil.updateFilePath((ObjectNode) rootNode);
+            }
             ServiceSpec serviceSpec = new ServiceSpec(rootNode);
             return serviceSpec;
         } catch (IOException e) {
@@ -65,6 +66,9 @@ public class ServiceSpecMapper {
     }
 
     public ServiceSpec from(String filepath) throws HyscaleException {
+        if (StringUtils.isBlank(filepath)) {
+            throw buildException(filepath);
+        }
         File serviceSpecFile = new File(filepath);
         checkForFile(serviceSpecFile);
         return from(serviceSpecFile);
@@ -72,9 +76,13 @@ public class ServiceSpecMapper {
 
     private boolean checkForFile(File serviceSpecFile) throws HyscaleException {
         if (serviceSpecFile == null || !serviceSpecFile.exists()) {
-            throw new HyscaleException(ControllerErrorCodes.CANNOT_FIND_SERVICE_SPEC,
-                    serviceSpecFile != null ? serviceSpecFile.getName() : ToolConstants.EMPTY_STRING);
+            throw buildException(serviceSpecFile != null ? serviceSpecFile.getName() : ToolConstants.EMPTY_STRING);
         }
         return true;
+    }
+
+    private HyscaleException buildException(String serviceSpec) {
+        return new HyscaleException(ControllerErrorCodes.CANNOT_FIND_SERVICE_SPEC,
+                serviceSpec != null ? serviceSpec : ToolConstants.EMPTY_STRING);
     }
 }

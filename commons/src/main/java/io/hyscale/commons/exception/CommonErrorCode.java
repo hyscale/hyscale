@@ -34,6 +34,7 @@ public enum CommonErrorCode implements HyscaleErrorCode {
     INPUTSTREAM_NOT_FOUND("Cannot find inputstream and so cannot write to logfile"),
     FAILED_TO_READ_LOGFILE("Failed to read logs at log file {}"),
     OUTPUTSTREAM_NOT_FOUND("Cannot find output stream and so cannot write to stream");
+    
     private String message;
 
     CommonErrorCode(String message) {

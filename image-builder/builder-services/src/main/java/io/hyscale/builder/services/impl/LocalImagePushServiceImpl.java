@@ -97,8 +97,6 @@ public class LocalImagePushServiceImpl implements ImagePushService {
             WorkflowLogger.endActivity(Status.SKIPPING);
             return;
         }
-        // Ignore login - updates the docker config file
-//        dockerLogin(buildContext);
         WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_PUSH);
         String appName = buildContext.getAppName();
         String serviceName = buildContext.getServiceName();
@@ -115,7 +113,7 @@ public class LocalImagePushServiceImpl implements ImagePushService {
         } else {
             String inspectCommand = commandGenerator.getImageInspectCommand(ImageUtil.getImage(serviceSpec));
             CommandResult result = CommandExecutor.executeAndGetResults(inspectCommand);
-            buildContext.setImageShaSum(getShaSum(result));
+            buildContext.setImageShaSum(getImageDigest(result));
             WorkflowLogger.endActivity(Status.DONE);
         }
 
@@ -203,20 +201,16 @@ public class LocalImagePushServiceImpl implements ImagePushService {
                 : dockerImage.getName();
     }
 
-//    private void dockerLogin(BuildContext buildContext) throws HyscaleException {
-//        WorkflowLogger.startActivity(ImageBuilderActivity.LOGIN);
-//        ImageRegistry imageRegistry = buildContext.getImageRegistry();
-//        try {
-//            dockerImageUtil.loginToRegistry(imageRegistry);
-//        } catch (HyscaleException e) {
-//            WorkflowLogger.endActivity(Status.FAILED);
-//            logger.error(e.toString());
-//            throw e;
-//        }
-//        WorkflowLogger.endActivity(Status.DONE);
-//    }
-
-    private String getShaSum(CommandResult result) {
+    /**
+     * Gets latest digest from inspect image command result.
+     *
+     * @param result CommandResult obtained after executing docker inspect command.
+     *  1.result is null  - null
+     *  2.result not null - null if no digests
+     *                    - last digest if digests exist
+     * @return digest latest digest from image command result.
+     */
+    private String getImageDigest(CommandResult result) {
         if (result == null || result.getExitCode() > 0 || StringUtils.isBlank(result.getCommandOutput())) {
             return null;
         }
@@ -234,7 +228,10 @@ public class LocalImagePushServiceImpl implements ImagePushService {
             }
             List<String> digestList = mapper.convertValue(digestNode, new TypeReference<List<String>>() {
             });
-            return digestList.get(digestList.size() - 1);
+            String latestRepoDigest =  digestList.get(digestList.size() - 1);
+            if (StringUtils.isNotBlank(latestRepoDigest) && latestRepoDigest.contains(ToolConstants.AT_SIGN)) {
+                 return latestRepoDigest.split(ToolConstants.AT_SIGN)[1];
+            }
         } catch (IOException e) {
             logger.debug("Error while processing image inspect results ", e);
         }

@@ -74,7 +74,7 @@ public class ImageCommandGenerator {
 		buildCommand.append(TAG_ARG);
 		buildCommand.append(getBuildImageNameWithTag(appName, serviceName, tag));
 		dockerFilePath = StringUtils.isNotBlank(dockerFilePath) ? dockerFilePath : SetupConfig.getAbsolutePath(".");
-		buildCommand.append(SPACE).append(dockerFilePath).append(SetupConfig.FILE_SEPARATOR);
+		buildCommand.append(SPACE).append(dockerFilePath).append(ToolConstants.FILE_SEPARATOR);
 		return buildCommand.toString();
 	}
 

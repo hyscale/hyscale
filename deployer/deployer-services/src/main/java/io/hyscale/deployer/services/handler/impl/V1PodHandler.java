@@ -61,7 +61,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 			LOGGER.debug("Cannot create null Pod");
 			return resource;
 		}
-		CoreV1Api coreV1Api = new CoreV1Api();
+		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
 		String name = resource.getMetadata().getName();
 		V1Pod v1Pod = null;
 		try {

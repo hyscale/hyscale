@@ -32,7 +32,6 @@ import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Replicas;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +61,6 @@ public class AutoScalingPluginHandler implements ManifestHandler {
     private static final String MIN_REPLICAS = "MIN_REPLICAS";
     private static final String MAX_REPLICAS = "MAX_REPLICAS";
     private static final String AVERAGE_UTILIZATION = "AVERAGE_UTILIZATION";
-    private static final String CPU_THRESHOLD_REGEX = "[\\d\\.]+%";
 
     @Autowired
     private PluginTemplateProvider templateProvider;
@@ -72,13 +70,13 @@ public class AutoScalingPluginHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
-        if (!ManifestPredicates.isAutoScalingEnabled().test(serviceSpec)) {
+        if (!ManifestPredicates.isAutoScalingEnabledWithPrint().test(serviceSpec, true)) {
             logger.debug("Skipping AutoScaling handler");
             return null;
         }
-        Replicas replicas = serviceSpec.get(HyscaleSpecFields.replicas, Replicas.class);
 
-        if (replicas == null && !validate(replicas)) {
+        Replicas replicas = serviceSpec.get(HyscaleSpecFields.replicas, Replicas.class);
+        if (replicas == null) {
             logger.debug("Cannot handle replicas as the field is not declared");
             return null;
         }
@@ -95,27 +93,6 @@ public class AutoScalingPluginHandler implements ManifestHandler {
         List<ManifestSnippet> snippetList = new LinkedList<>();
         snippetList.add(snippet);
         return snippetList;
-    }
-
-    private boolean validate(Replicas replicas) {
-        if (replicas == null) {
-            return false;
-        }
-        if (replicas.getMin() > 0 && replicas.getMax() < replicas.getMin()) {
-            WorkflowLogger.persist(ManifestGeneratorActivity.IGNORING_REPLICAS, "Min replicas should be less than max replicas");
-            return false;
-        }
-        if (StringUtils.isBlank(replicas.getCpuThreshold())) {
-            WorkflowLogger.persist(ManifestGeneratorActivity.IGNORING_REPLICAS, "Missing field cpuThreshold");
-            return false;
-        }
-
-        if (!replicas.getCpuThreshold().matches(CPU_THRESHOLD_REGEX)) {
-            WorkflowLogger.persist(ManifestGeneratorActivity.IGNORING_REPLICAS, "The field cpuThreshold should match the regex " + CPU_THRESHOLD_REGEX);
-            return false;
-        }
-
-        return true;
     }
 
     private Map<String, Object> getContext(Replicas replicas, ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {

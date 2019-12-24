@@ -19,6 +19,7 @@ import java.io.File;
 
 import javax.annotation.PostConstruct;
 
+import io.hyscale.commons.constants.ToolConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,8 +54,8 @@ public class ControllerConfig {
 
     @PostConstruct
     public void init() throws HyscaleException {
-        this.defaultKubeConf = SetupConfig.USER_HOME_DIR + SetupConfig.FILE_SEPARATOR + defaultKubeConfAsString;
-        this.defaultRegistryConf = SetupConfig.USER_HOME_DIR + SetupConfig.FILE_SEPARATOR + defaultRegistryConfAsString;
+        this.defaultKubeConf = SetupConfig.USER_HOME_DIR + ToolConstants.FILE_SEPARATOR + defaultKubeConfAsString;
+        this.defaultRegistryConf = SetupConfig.USER_HOME_DIR + ToolConstants.FILE_SEPARATOR + defaultRegistryConfAsString;
         validate(defaultRegistryConf, false, ControllerErrorCodes.DOCKER_CONFIG_NOT_FOUND);
         validate(defaultKubeConf, true, ControllerErrorCodes.KUBE_CONFIG_NOT_FOUND);
     }

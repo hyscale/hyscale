@@ -1,0 +1,5 @@
+name: myservice
+props:
+  update: file(\tmp\test.txt)
+  dont: "test/Value"
+  dont2: file(/tmp/test.txt)

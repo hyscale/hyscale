@@ -1,0 +1,7 @@
+{
+	"auths": {
+		"test.my-test-registry.com": {
+			"auth": "dGVzdFVzZXI6dGVzdFBhc3N3b3Jk"
+		}
+	}
+}
