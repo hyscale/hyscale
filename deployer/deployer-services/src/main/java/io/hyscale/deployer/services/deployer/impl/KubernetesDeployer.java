@@ -20,6 +20,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import io.hyscale.deployer.services.model.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,13 +50,6 @@ import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.handler.impl.V1PersistentVolumeClaimHandler;
 import io.hyscale.deployer.services.handler.impl.V1PodHandler;
 import io.hyscale.deployer.services.handler.impl.V1ServiceHandler;
-import io.hyscale.deployer.services.model.Container;
-import io.hyscale.deployer.services.model.DeployerActivity;
-import io.hyscale.deployer.services.model.Pod;
-import io.hyscale.deployer.services.model.ResourceStatus;
-import io.hyscale.deployer.services.model.ServiceAddress;
-import io.hyscale.deployer.services.model.Volume;
-import io.hyscale.deployer.services.model.VolumeMount;
 import io.hyscale.deployer.services.predicates.PodPredicates;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.hyscale.deployer.services.util.DeploymentStatusUtil;
@@ -375,6 +369,7 @@ public class KubernetesDeployer implements Deployer {
                     }
                 }
                 // get all status
+
                 Map<String, String> containerVsStatus = new HashMap<>();
                 if (v1Pod.getStatus() != null && v1Pod.getStatus().getContainerStatuses() != null) {
                     v1Pod.getStatus().getContainerStatuses().forEach((containerStatus) -> {
@@ -403,7 +398,9 @@ public class KubernetesDeployer implements Deployer {
                     }
                     containers.add(container);
                 });
-
+                boolean ready = true;
+                ready = ready && K8sPodUtil.checkForPodCondition(v1Pod, PodCondition.READY);
+                pod.setReady(ready);
                 pod.setContainers(containers);
                 pod.setVolumes(podVolumeList);
                 podList.add(pod);

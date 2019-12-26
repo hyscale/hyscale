@@ -16,12 +16,14 @@
 package io.hyscale.generator.services.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.DecoratedArrayList;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
+import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Agent;
 import io.hyscale.servicespec.commons.model.service.Props;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
@@ -49,9 +51,10 @@ public class AgentEnvBuilder extends AgentHelper implements AgentBuilder {
     AgentManifestNameGenerator agentManifestNameGenerator;
 
     @Override
-    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
+    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException, HyscaleException {
         String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ? ManifestResource.STATEFUL_SET.getKind() :
                 ManifestResource.DEPLOYMENT.getKind();
+        String serviceName = serviceSpec.get(HyscaleSpecFields.name,String.class);
         List<ManifestSnippet> envSnippets = new ArrayList<ManifestSnippet>();
         List<Agent> agents = getAgents(serviceSpec);
         if(agents == null){
@@ -65,13 +68,13 @@ public class AgentEnvBuilder extends AgentHelper implements AgentBuilder {
             agentCount++;
             List<V1EnvVar> envVarList = new DecoratedArrayList<V1EnvVar>();
             if (agent.getProps() != null && !agent.getProps().isEmpty()) {
-                String configMapName = agentManifestNameGenerator.generateConfigMapName(agent.getName());
+                String configMapName = agentManifestNameGenerator.generateConfigMapName(agent.getName(),serviceName);
                 Props props = new Props();
                 props.setProps(agent.getProps());
                 envVarList.addAll(PodSpecEnvUtil.getPropEnv(props, configMapName));
             }
             if (agent.getSecrets() != null) {
-                String secretName = agentManifestNameGenerator.generateSecretName(agent.getName());
+                String secretName = agentManifestNameGenerator.generateSecretName(agent.getName(),serviceName);
                 envVarList.addAll(PodSpecEnvUtil.getSecretEnv(agent.getSecrets(), secretName));
             }
             if (!envVarList.isEmpty()) {

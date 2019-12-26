@@ -1,0 +1,11 @@
+name: zipkin
+image:
+   registry: registry.hub.docker.com  
+   name: {{username}}/zipkin
+   tag: 1.0
+   buildSpec:
+     stackImage: openzipkin/zipkin
+ports:
+  - port: 9411/tcp
+    healthCheck: {}
+external: true

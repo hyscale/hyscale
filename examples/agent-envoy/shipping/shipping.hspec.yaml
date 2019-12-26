@@ -1,0 +1,41 @@
+name: shipping
+image:
+   registry: registry.hub.docker.com  
+   name: {{username}}/shipping # replace with your dockerhub username for {{username}}
+   tag: 1.0
+   buildSpec:
+     stackImage: openjdk:8-jdk
+     artifacts:
+      - name: shipping
+        source: shipping_source.tar
+        destination: /tmp/
+      
+     configCommands: |-
+      mkdir -p /tmp/shipping_source
+      tar -xvf /tmp/shipping_source.tar -C /tmp/shipping_source
+      apt-get update && apt-get -y install maven
+      mkdir -p /opt/shipping/
+      cp -r /tmp/shipping_source/pom.xml /opt/shipping/
+      cd /opt/shipping
+      mvn install
+      cp -r /tmp/shipping_source/src /opt/shipping/src/
+      mvn package
+      cp /opt/shipping/target/shipping-1.0-jar-with-dependencies.jar shipping.jar
+
+startCommand: "java,-Xmn256m,-Xmx768m,-jar,/opt/shipping/shipping.jar"
+
+ports:
+  - port: 8080/tcp
+    healthCheck: {}
+
+props:
+    CART_ENDPOINT: localhost:10000
+    DB_HOST: mysql
+   
+
+agents:
+- name: envoy
+  image: envoyproxy/envoy:latest
+  props:
+    envoy.yaml : file(envoy.yaml)
+  propsVolumePath: /etc/envoy/
