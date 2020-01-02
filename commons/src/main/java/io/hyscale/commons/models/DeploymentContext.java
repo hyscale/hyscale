@@ -18,14 +18,14 @@ package io.hyscale.commons.models;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DeploymentContext {
+import io.hyscale.commons.component.ComponentContext;
+
+public class DeploymentContext extends ComponentContext {
 	private List<Manifest> manifests;
-	private AuthConfig authConfig;
 	private String namespace;
-	private String serviceName;
+	private AuthConfig authConfig;
 	private boolean waitForReadiness = true;
 	private boolean tailLogs;
-	private String appName;
 	private Integer readLines;
 
 	public List<Manifest> getManifests() {
@@ -36,6 +36,14 @@ public class DeploymentContext {
 		this.manifests = manifests;
 	}
 
+	public String getNamespace() {
+	    return namespace;
+	}
+	
+	public void setNamespace(String namespace) {
+	    this.namespace = namespace;
+	}
+	
 	public AuthConfig getAuthConfig() {
 		return authConfig;
 	}
@@ -52,36 +60,12 @@ public class DeploymentContext {
 		manifests.add(manifest);
 	}
 
-	public String getNamespace() {
-		return namespace;
-	}
-
-	public void setNamespace(String namespace) {
-		this.namespace = namespace;
-	}
-
-	public String getServiceName() {
-		return serviceName;
-	}
-
-	public void setServiceName(String serviceName) {
-		this.serviceName = serviceName;
-	}
-
 	public boolean isWaitForReadiness() {
 		return waitForReadiness;
 	}
 
 	public void setWaitForReadiness(boolean waitForReadiness) {
 		this.waitForReadiness = waitForReadiness;
-	}
-
-	public String getAppName() {
-		return appName;
-	}
-
-	public void setAppName(String appName) {
-		this.appName = appName;
 	}
 
 	public boolean isTailLogs() {

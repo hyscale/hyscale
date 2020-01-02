@@ -15,7 +15,7 @@
  */
 package io.hyscale.controller.model;
 
-import io.hyscale.commons.component.ComponentInvokerContext;
+import io.hyscale.commons.component.ComponentContext;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 import java.util.HashMap;
@@ -25,13 +25,10 @@ import java.util.Map;
  * Context information for workflow controller
  *
  */
-public class WorkflowContext extends ComponentInvokerContext {
+public class WorkflowContext extends ComponentContext {
 
     private ServiceSpec serviceSpec;
     private String namespace;
-    private String appName;
-    private String serviceName;
-    private String envName;
 
     private Map<String, Object> attributes;
 
@@ -47,36 +44,12 @@ public class WorkflowContext extends ComponentInvokerContext {
         this.namespace = namespace;
     }
 
-    public String getAppName() {
-        return appName;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
-    }
-
     public Object getAttribute(String key) {
         return attributes.get(key);
     }
 
     public void addAttribute(String key, Object value) {
         attributes.put(key, value);
-    }
-
-    public String getServiceName() {
-        return serviceName;
-    }
-
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
-    }
-
-    public String getEnvName() {
-        return envName;
-    }
-
-    public void setEnvName(String envName) {
-        this.envName = envName;
     }
 
     public ServiceSpec getServiceSpec() {

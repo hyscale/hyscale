@@ -15,6 +15,7 @@
  */
 module commons {
 	exports io.hyscale.commons.constants;
+	exports io.hyscale.commons.annotations;
 	exports io.hyscale.commons.models;
 	exports io.hyscale.commons.utils;
 	exports io.hyscale.commons.logger;
@@ -40,4 +41,5 @@ module commons {
 	requires org.apache.commons.io;
 	requires com.github.mustachejava;
 	requires java.annotation;
+	requires org.aspectj.weaver;
 }

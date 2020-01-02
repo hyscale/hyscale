@@ -36,4 +36,5 @@ module dockerfilegenservices {
 	requires com.google.common;
 	requires org.apache.commons.lang3;
 	requires com.fasterxml.jackson.core;
+	requires org.aspectj.weaver;
 }

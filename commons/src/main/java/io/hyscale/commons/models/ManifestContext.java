@@ -18,32 +18,15 @@ package io.hyscale.commons.models;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ManifestContext {
+import io.hyscale.commons.component.ComponentContext;
 
-	private String appName;
-	private String envName;
-	private String namespace;
+public class ManifestContext extends ComponentContext{
+
 	private ImageRegistry imageRegistry;
 	private Map<String, Object> generationAttributes;
 
 	public ManifestContext() {
 		this.generationAttributes = new HashMap<>();
-	}
-
-	public String getAppName() {
-		return appName;
-	}
-
-	public void setAppName(String appName) {
-		this.appName = appName;
-	}
-
-	public String getNamespace() {
-		return namespace;
-	}
-
-	public void setNamespace(String namespace) {
-		this.namespace = namespace;
 	}
 
 	public ImageRegistry getImageRegistry() {
@@ -52,14 +35,6 @@ public class ManifestContext {
 
 	public void setImageRegistry(ImageRegistry imageRegistry) {
 		this.imageRegistry = imageRegistry;
-	}
-
-	public String getEnvName() {
-		return envName;
-	}
-
-	public void setEnvName(String envName) {
-		this.envName = envName;
 	}
 
 	public Object getGenerationAttribute(String key) {

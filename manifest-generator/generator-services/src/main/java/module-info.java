@@ -51,4 +51,5 @@ module manifestGenerator {
 	requires transitive service_spec_commons;
 	requires com.fasterxml.jackson.dataformat.yaml;
 	requires json.path;
+	requires org.aspectj.weaver;
 }

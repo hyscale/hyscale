@@ -90,7 +90,6 @@ public class ManifestGeneratorComponentInvoker extends ComponentInvoker<Workflow
         ManifestContext manifestContext = new ManifestContext();
         manifestContext.setAppName(context.getAppName());
         manifestContext.setEnvName(context.getEnvName());
-        manifestContext.setNamespace(context.getNamespace());
         manifestContext.setImageRegistry(registryManager.getImageRegistry(registryUrl));
         manifestContext.addGenerationAttribute(ManifestGenConstants.IMAGE_SHA_SUM, context.getAttribute(WorkflowConstants.IMAGE_SHA_SUM));
 
