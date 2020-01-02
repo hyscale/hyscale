@@ -33,4 +33,5 @@ module builderservices {
 	requires slf4j.api;
 	requires com.fasterxml.jackson.databind;
 	requires com.fasterxml.jackson.core;
+	requires org.aspectj.weaver;
 }

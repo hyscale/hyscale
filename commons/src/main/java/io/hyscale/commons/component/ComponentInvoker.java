@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * @see {@link #onError(ComponentInvokerContext, HyscaleException)} is invoked.
  */
 
-public abstract class ComponentInvoker<C extends ComponentInvokerContext> {
+public abstract class ComponentInvoker<C extends ComponentContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(ComponentInvoker.class);
 

@@ -36,7 +36,8 @@ public enum CommonErrorCode implements HyscaleErrorCode {
     FAILED_TO_READ_LOGFILE("Failed to read logs at log file {}"),
     OUTPUTSTREAM_NOT_FOUND("Cannot find output stream and so cannot write to stream"),
     STRATEGIC_MERGE_KEY_NOT_FOUND("Merge key not found while merging {}"),
-    INVALID_JSON_FORMAT("Json format is invalid");
+    INVALID_JSON_FORMAT("Json format is invalid"),
+    FAILED_TO_EXECUTE_PROCESSOR("Failed to execute interceptor processor for {}. Invalid Input");
     
     private String message;
 
