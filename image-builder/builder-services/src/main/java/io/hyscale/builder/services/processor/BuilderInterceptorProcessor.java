@@ -38,7 +38,7 @@ public abstract class BuilderInterceptorProcessor implements IInterceptorProcess
 
     @Override
     public void preProcess(Object... args) throws HyscaleException {
-        if (!isInputValid(args)) {
+        if (!validateInput(args)) {
             HyscaleException ex = new HyscaleException(CommonErrorCode.FAILED_TO_EXECUTE_PROCESSOR,
                     getFailureMsg(COMPONENT, "pre processing"));
             logger.error(ex.getMessage());
@@ -49,7 +49,7 @@ public abstract class BuilderInterceptorProcessor implements IInterceptorProcess
 
     @Override
     public void postProcess(Object... args) throws HyscaleException {
-        if (!isInputValid(args)) {
+        if (!validateInput(args)) {
             HyscaleException ex = new HyscaleException(CommonErrorCode.FAILED_TO_EXECUTE_PROCESSOR,
                     getFailureMsg(COMPONENT, "post processing"));
             logger.error(ex.getMessage());
@@ -60,7 +60,7 @@ public abstract class BuilderInterceptorProcessor implements IInterceptorProcess
 
     @Override
     public void onError(Object... args) throws HyscaleException {
-        if (!isInputValid(args)) {
+        if (!validateInput(args)) {
             HyscaleException ex = new HyscaleException(CommonErrorCode.FAILED_TO_EXECUTE_PROCESSOR,
                     getFailureMsg(COMPONENT, "error processing"));
             logger.error(ex.getMessage());
@@ -69,7 +69,7 @@ public abstract class BuilderInterceptorProcessor implements IInterceptorProcess
         _onError((ServiceSpec) args[0], (BuildContext) args[1]);
     }
 
-    private boolean isInputValid(Object... args) {
+    private boolean validateInput(Object... args) {
         if (args == null || args.length < 2) {
             return false;
         }

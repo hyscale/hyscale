@@ -55,7 +55,7 @@ public class DeployerAspect {
             throws HyscaleException {
         try {
             for (Class<? extends IInterceptorProcessor> processor : interceptor.processors()) {
-                DeployerInterceptorProcessor deployerProcessor = getProcessorBean(processor);
+                DeployerInterceptorProcessor deployerProcessor = validateAndGetProcessorBean(processor);
                 if (deployerProcessor != null) {
                     deployerProcessor.preProcess(context);
                 }
@@ -71,7 +71,7 @@ public class DeployerAspect {
             throws HyscaleException {
         try {
             for (Class<? extends IInterceptorProcessor> processor : interceptor.processors()) {
-                DeployerInterceptorProcessor deployerProcessor = getProcessorBean(processor);
+                DeployerInterceptorProcessor deployerProcessor = validateAndGetProcessorBean(processor);
                 if (deployerProcessor != null) {
                     deployerProcessor.postProcess(context);
                 }
@@ -87,7 +87,7 @@ public class DeployerAspect {
             throws HyscaleException {
         try {
             for (Class<? extends IInterceptorProcessor> processor : interceptor.processors()) {
-                DeployerInterceptorProcessor deployerProcessor = getProcessorBean(processor);
+                DeployerInterceptorProcessor deployerProcessor = validateAndGetProcessorBean(processor);
                 if (deployerProcessor != null) {
                     deployerProcessor.onError(context);
                 }
@@ -98,7 +98,7 @@ public class DeployerAspect {
         }
     }
 
-    private DeployerInterceptorProcessor getProcessorBean(Class<? extends IInterceptorProcessor> processor) {
+    private DeployerInterceptorProcessor validateAndGetProcessorBean(Class<? extends IInterceptorProcessor> processor) {
         IInterceptorProcessor processorBean = HyscaleContextUtil.getSpringBean(processor);
         if (processorBean == null) {
             logger.debug("Bean not found for Processor {}, ignoring processing", processor.getCanonicalName());

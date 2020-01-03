@@ -57,7 +57,7 @@ public class ManifestGeneratorAspect {
             ManifestContext context) throws HyscaleException {
         try {
             for (Class<? extends IInterceptorProcessor> processor : interceptor.processors()) {
-                ManifestInterceptorProcessor processorBean = getProcessorBean(processor);
+                ManifestInterceptorProcessor processorBean = validateAndGetProcessorBean(processor);
                 if (processorBean != null) {
                     processorBean.preProcess(serviceSpec, context);
                 }
@@ -73,7 +73,7 @@ public class ManifestGeneratorAspect {
             ManifestContext context) throws HyscaleException {
         try {
             for (Class<? extends IInterceptorProcessor> processor : interceptor.processors()) {
-                ManifestInterceptorProcessor processorBean = getProcessorBean(processor);
+                ManifestInterceptorProcessor processorBean = validateAndGetProcessorBean(processor);
                 if (processorBean != null) {
                     processorBean.postProcess(serviceSpec, context);
                 }
@@ -89,7 +89,7 @@ public class ManifestGeneratorAspect {
             ManifestContext context) throws HyscaleException {
         try {
             for (Class<? extends IInterceptorProcessor> processor : interceptor.processors()) {
-                ManifestInterceptorProcessor processorBean = getProcessorBean(processor);
+                ManifestInterceptorProcessor processorBean = validateAndGetProcessorBean(processor);
                 if (processorBean != null) {
                     processorBean.onError(serviceSpec, context);
                 }
@@ -100,7 +100,7 @@ public class ManifestGeneratorAspect {
         }
     }
 
-    private ManifestInterceptorProcessor getProcessorBean(Class<? extends IInterceptorProcessor> processor) {
+    private ManifestInterceptorProcessor validateAndGetProcessorBean(Class<? extends IInterceptorProcessor> processor) {
         IInterceptorProcessor processorBean = HyscaleContextUtil.getSpringBean(processor);
         if (processorBean == null) {
             logger.debug("Bean not found for Processor {}, ignoring processing", processor.getCanonicalName());
