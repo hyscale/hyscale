@@ -56,7 +56,7 @@ public class DockerfileGenAspect {
             DockerfileGenContext context) throws HyscaleException {
         try {
             for (Class<? extends IInterceptorProcessor> processor : interceptor.processors()) {
-                DockerfileGenInterceptorProcessor processorBean = getProcessorBean(processor);
+                DockerfileGenInterceptorProcessor processorBean = validateAndGetProcessorBean(processor);
                 if (processorBean != null) {
                     processorBean.preProcess(serviceSpec, context);
                 }
@@ -72,7 +72,7 @@ public class DockerfileGenAspect {
             DockerfileGenContext context) throws HyscaleException {
         try {
             for (Class<? extends IInterceptorProcessor> processor : interceptor.processors()) {
-                DockerfileGenInterceptorProcessor processorBean = getProcessorBean(processor);
+                DockerfileGenInterceptorProcessor processorBean = validateAndGetProcessorBean(processor);
                 if (processorBean != null) {
                     processorBean.postProcess(serviceSpec, context);
                 }
@@ -88,7 +88,7 @@ public class DockerfileGenAspect {
             DockerfileGenContext context) throws HyscaleException {
         try {
             for (Class<? extends IInterceptorProcessor> processor : interceptor.processors()) {
-                DockerfileGenInterceptorProcessor processorBean = getProcessorBean(processor);
+                DockerfileGenInterceptorProcessor processorBean = validateAndGetProcessorBean(processor);
                 if (processorBean != null) {
                     processorBean.onError(serviceSpec, context);
                 }
@@ -99,7 +99,7 @@ public class DockerfileGenAspect {
         }
     }
 
-    private DockerfileGenInterceptorProcessor getProcessorBean(Class<? extends IInterceptorProcessor> processor) {
+    private DockerfileGenInterceptorProcessor validateAndGetProcessorBean(Class<? extends IInterceptorProcessor> processor) {
         IInterceptorProcessor processorBean = HyscaleContextUtil.getSpringBean(processor);
         if (processorBean == null) {
             logger.debug("Bean not found for Processor {}, ignoring processing", processor.getCanonicalName());

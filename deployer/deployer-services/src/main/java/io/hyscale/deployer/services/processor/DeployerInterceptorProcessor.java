@@ -37,7 +37,7 @@ public abstract class DeployerInterceptorProcessor implements IInterceptorProces
 
     @Override
     public void preProcess(Object... args) throws HyscaleException {
-        if (!isInputValid(args)) {
+        if (!validateInput(args)) {
             HyscaleException ex = new HyscaleException(CommonErrorCode.FAILED_TO_EXECUTE_PROCESSOR,
                     getFailureMsg(COMPONENT, "pre processing"));
             logger.error(ex.getMessage());
@@ -48,7 +48,7 @@ public abstract class DeployerInterceptorProcessor implements IInterceptorProces
 
     @Override
     public void postProcess(Object... args) throws HyscaleException {
-        if (!isInputValid(args)) {
+        if (!validateInput(args)) {
             HyscaleException ex = new HyscaleException(CommonErrorCode.FAILED_TO_EXECUTE_PROCESSOR,
                     getFailureMsg(COMPONENT, "post processing"));
             logger.error(ex.getMessage());
@@ -59,7 +59,7 @@ public abstract class DeployerInterceptorProcessor implements IInterceptorProces
 
     @Override
     public void onError(Object... args) throws HyscaleException {
-        if (!isInputValid(args)) {
+        if (!validateInput(args)) {
             HyscaleException ex = new HyscaleException(CommonErrorCode.FAILED_TO_EXECUTE_PROCESSOR,
                     getFailureMsg(COMPONENT, "error processing"));
             logger.error(ex.getMessage());
@@ -68,7 +68,7 @@ public abstract class DeployerInterceptorProcessor implements IInterceptorProces
         _onError((DeploymentContext) args[0]);
     }
 
-    private boolean isInputValid(Object... args) {
+    private boolean validateInput(Object... args) {
         if (args == null || args.length < 1) {
             return false;
         }
