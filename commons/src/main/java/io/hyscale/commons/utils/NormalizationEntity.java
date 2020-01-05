@@ -45,8 +45,8 @@ public enum NormalizationEntity implements Normalizable {
     },
     NAMESPACE {
         @Override
-        public String normalize(String input){
-            return StringUtils.isNotBlank(input) ? input.trim().toLowerCase():input;
+        public String normalize(String input) {
+            return StringUtils.isNotBlank(input) ? input.trim().toLowerCase() : input;
         }
     },
     SIDECAR_NAME {
@@ -55,16 +55,16 @@ public enum NormalizationEntity implements Normalizable {
             return doNormalization(input);
         }
     },
-    LABEL_SELECTOR{
+    LABEL_SELECTOR {
         @Override
         public String normalize(String input) {
             Integer MAX_LABEL_VALUE_SIZE = 63;
             if (StringUtils.isEmpty(input)) {
-                    return input;
-                }
-                String normalized = input.trim().replaceAll("[\\.]+", "-").replaceAll("[ ]+", "-")
-                        .replaceAll("[^a-zA-Z0-9-_]", "");
-                return normalized.substring(0, Integer.min(MAX_LABEL_VALUE_SIZE - 1, normalized.length()));
+                return input;
+            }
+            String normalized = input.trim().replaceAll("[\\.]+", "-").replaceAll("[ ]+", "-")
+                    .replaceAll("[^a-zA-Z0-9-_]", "");
+            return normalized.substring(0, Integer.min(MAX_LABEL_VALUE_SIZE - 1, normalized.length()));
         }
     };
 

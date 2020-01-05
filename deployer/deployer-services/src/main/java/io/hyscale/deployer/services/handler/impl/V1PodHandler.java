@@ -20,6 +20,8 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import io.hyscale.commons.utils.ResourceLabelBuilder;
+import io.hyscale.commons.utils.ResourceSelectorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -242,7 +244,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 	public InputStream tailLogs(ApiClient apiClient, String name, String namespace, String podName, String containerName, Integer readLines)
 			throws HyscaleException {
 		if(podName == null) {
-			List<V1Pod> v1Pods = getBySelector(apiClient, ResourceLabelKey.SERVICE_NAME.getLabel() + "=" + name, true,
+			List<V1Pod> v1Pods = getBySelector(apiClient, ResourceSelectorUtil.getServiceSelector(null,name), true,
 					namespace);
 			if (v1Pods == null || v1Pods.isEmpty()) {
 				throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_POD, name, namespace);
@@ -268,7 +270,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 	public InputStream getLogs(ApiClient apiClient, String name, String namespace, String podName, String containerName, Integer readLines)
 			throws HyscaleException {
 		if(podName == null) {
-			List<V1Pod> v1Pods = getBySelector(apiClient, ResourceLabelKey.SERVICE_NAME.getLabel() + "=" + name, true,
+			List<V1Pod> v1Pods = getBySelector(apiClient, ResourceSelectorUtil.getServiceSelector(null,name), true,
 					namespace);
 			if (v1Pods == null || v1Pods.isEmpty()) {
 				throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_POD, name, namespace);

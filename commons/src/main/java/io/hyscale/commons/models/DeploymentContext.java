@@ -18,10 +18,13 @@ package io.hyscale.commons.models;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.hyscale.commons.annotations.Normalize;
 import io.hyscale.commons.component.ComponentContext;
+import io.hyscale.commons.utils.NormalizationEntity;
 
 public class DeploymentContext extends ComponentContext {
 	private List<Manifest> manifests;
+	@Normalize(entity = NormalizationEntity.NAMESPACE)
 	private String namespace;
 	private AuthConfig authConfig;
 	private boolean waitForReadiness = true;
@@ -83,4 +86,5 @@ public class DeploymentContext extends ComponentContext {
 	public void setReadLines(Integer readLines) {
 		this.readLines = readLines;
 	}
+
 }

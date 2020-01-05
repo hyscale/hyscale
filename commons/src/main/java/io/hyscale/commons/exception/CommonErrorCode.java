@@ -34,8 +34,9 @@ public enum CommonErrorCode implements HyscaleErrorCode {
     INPUTSTREAM_NOT_FOUND("Cannot find inputstream and so cannot write to logfile"),
     FAILED_TO_READ_LOGFILE("Failed to read logs at log file {}"),
     OUTPUTSTREAM_NOT_FOUND("Cannot find output stream and so cannot write to stream"),
-    FAILED_TO_EXECUTE_PROCESSOR("Failed to execute interceptor processor for {}. Invalid Input");;
-    
+    FAILED_TO_EXECUTE_PROCESSOR("Failed to execute interceptor processor for {}. Invalid Input"),
+    ILLEGAL_ACCESS("Unable to access {}");
+
     private String message;
 
     CommonErrorCode(String message) {

@@ -20,7 +20,10 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import io.hyscale.commons.annotations.ComponentInterceptor;
+import io.hyscale.commons.utils.NormalizationEntity;
 import io.hyscale.deployer.services.model.*;
+import io.hyscale.deployer.services.util.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,10 +55,6 @@ import io.hyscale.deployer.services.handler.impl.V1PodHandler;
 import io.hyscale.deployer.services.handler.impl.V1ServiceHandler;
 import io.hyscale.deployer.services.predicates.PodPredicates;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
-import io.hyscale.deployer.services.util.DeploymentStatusUtil;
-import io.hyscale.deployer.services.util.K8sPodUtil;
-import io.hyscale.deployer.services.util.K8sResourceDispatcher;
-import io.hyscale.deployer.services.util.KubernetesResourceUtil;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.models.V1PersistentVolumeClaim;
 import io.kubernetes.client.models.V1Pod;
@@ -80,8 +79,8 @@ public class KubernetesDeployer implements Deployer {
     private K8sClientProvider clientProvider;
 
     @Override
+    @ComponentInterceptor(processors= DeployNormalizeInterceptor.class)
     public void deploy(DeploymentContext context) throws HyscaleException {
-
         K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(clientProvider.get((K8sAuthorisation) context.getAuthConfig()));
         try {
             resourceDispatcher.waitForReadiness(context.isWaitForReadiness());
@@ -99,6 +98,7 @@ public class KubernetesDeployer implements Deployer {
      * Wait for Pod scheduled, creation and Readiness state
      */
     @Override
+    @ComponentInterceptor(processors= DeployNormalizeInterceptor.class)
     public void waitForDeployment(DeploymentContext context) throws HyscaleException {
 
         ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
@@ -133,12 +133,12 @@ public class KubernetesDeployer implements Deployer {
         ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
         YAMLManifest yamlManifest = (YAMLManifest) manifest;
         try {
-            KubernetesResource resource = KubernetesResourceUtil.getKubernetesResource(yamlManifest, namespace);
+            KubernetesResource resource = KubernetesResourceUtil.getKubernetesResource(yamlManifest, NormalizationEntity.NAMESPACE.normalize(namespace));
             String kind = resource.getKind();
             ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(kind);
             String resourceName = resource.getV1ObjectMeta().getName();
 
-            return lifeCycleHandler.status(lifeCycleHandler.get(apiClient, resourceName, namespace));
+            return lifeCycleHandler.status(lifeCycleHandler.get(apiClient, resourceName, NormalizationEntity.NAMESPACE.normalize(namespace)));
         } catch (Exception e) {
             logger.error("Error while preparing client, error {} ", e.toString());
             throw e;
@@ -146,6 +146,7 @@ public class KubernetesDeployer implements Deployer {
     }
 
     @Override
+    @ComponentInterceptor(processors= DeployNormalizeInterceptor.class)
     public void unDeploy(DeploymentContext context) throws HyscaleException {
         K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(clientProvider.get((K8sAuthorisation) context.getAuthConfig()));
         try {
@@ -165,6 +166,7 @@ public class KubernetesDeployer implements Deployer {
     }
 
     @Override
+    @ComponentInterceptor(processors= DeployNormalizeInterceptor.class)
     public InputStream logs(DeploymentContext deploymentContext) throws HyscaleException {
         String serviceName = deploymentContext.getServiceName();
         String namespace = deploymentContext.getNamespace();
@@ -174,6 +176,7 @@ public class KubernetesDeployer implements Deployer {
     }
 
     @Override
+    @ComponentInterceptor(processors= DeployNormalizeInterceptor.class)
     public InputStream logs(AuthConfig authConfig, String serviceName, String namespace, String podName,
                             String containerName, Integer readLines, boolean tail) throws HyscaleException {
         try {
@@ -194,13 +197,14 @@ public class KubernetesDeployer implements Deployer {
     }
 
     @Override
+    @ComponentInterceptor(processors= DeployNormalizeInterceptor.class)
     public ServiceAddress getServiceAddress(DeploymentContext context) throws HyscaleException {
         ServiceAddress serviceAddress = null;
         try {
             ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
             V1ServiceHandler v1ServiceHandler = (V1ServiceHandler) ResourceHandlers
                     .getHandlerOf(ResourceKind.SERVICE.getKind());
-            serviceAddress = v1ServiceHandler.getServiceAddress(apiClient, context.getServiceName(),
+            serviceAddress = v1ServiceHandler.getServiceAddress(apiClient,NormalizationEntity.SVC_NAME.normalize(context.getServiceName()),
                     context.getNamespace(), context.isWaitForReadiness());
         } catch (HyscaleException e) {
             logger.error("Error while preparing client, error {} ", e.toString());
@@ -210,6 +214,7 @@ public class KubernetesDeployer implements Deployer {
     }
 
     @Override
+    @ComponentInterceptor(processors= DeployNormalizeInterceptor.class)
     public DeploymentStatus getServiceDeploymentStatus(DeploymentContext context) throws HyscaleException {
         if (context == null) {
             throw new HyscaleException(DeployerErrorCodes.APPLICATION_REQUIRED);
@@ -238,6 +243,7 @@ public class KubernetesDeployer implements Deployer {
      * Get Status for services based on app label
      */
     @Override
+    @ComponentInterceptor(processors= DeployNormalizeInterceptor.class)
     public List<DeploymentStatus> getDeploymentStatus(DeploymentContext context) throws HyscaleException {
         List<DeploymentStatus> deploymentStatusList = new ArrayList<>();
         List<V1Pod> v1PodList = null;
@@ -295,6 +301,7 @@ public class KubernetesDeployer implements Deployer {
         return deploymentStatus;
     }
 
+    @ComponentInterceptor(processors= DeployNormalizeInterceptor.class)
     public static void waitForPodActivity(ApiClient apiClient, V1PodHandler podHandler, String namespace,
                                           String selector, Predicate predicate, ActivityContext activityContext) throws HyscaleException {
         boolean podCondition = false;
@@ -325,6 +332,7 @@ public class KubernetesDeployer implements Deployer {
     }
 
     @Override
+    @ComponentInterceptor(processors= DeployNormalizeInterceptor.class)
     public List<Pod> getPods(String namespace, String appName, String serviceName, K8sAuthorisation k8sAuthorisation)
             throws Exception {
 
