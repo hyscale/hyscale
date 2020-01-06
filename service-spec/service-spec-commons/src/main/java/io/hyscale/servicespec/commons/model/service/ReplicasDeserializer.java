@@ -60,7 +60,7 @@ public class ReplicasDeserializer extends JsonDeserializer {
             if (minNode != null) {
                 replicas.setMin(Integer.valueOf(minNode.toString()));
                 JsonNode maxNode = replicasNode.get(HyscaleSpecFields.max);
-                if (maxNode != null) {
+                if (maxNode != null && maxNode.isNumber()) {
                     replicas.setMax(Integer.valueOf(maxNode.toString()));
                 }
                 JsonNode cpuThreshold = replicasNode.get(HyscaleSpecFields.cpuThreshold);
