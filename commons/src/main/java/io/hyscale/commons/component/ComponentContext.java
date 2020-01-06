@@ -15,7 +15,9 @@
  */
 package io.hyscale.commons.component;
 
+import io.hyscale.commons.annotations.Normalize;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.utils.NormalizationEntity;
 
 /**
  *  This class provides the invocation context
@@ -25,7 +27,9 @@ import io.hyscale.commons.exception.HyscaleException;
 
 public class ComponentContext {
 
+    @Normalize(entity = NormalizationEntity.APP_NAME)
     private String appName;
+    @Normalize(entity = NormalizationEntity.ENV_NAME)
     private String envName;
     private String serviceName;
     

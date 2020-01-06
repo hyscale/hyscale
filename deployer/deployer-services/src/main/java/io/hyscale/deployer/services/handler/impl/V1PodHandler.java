@@ -241,13 +241,13 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 		return tailLogs(apiClient, name, namespace, null, name, readLines);
 	}
 	
-	public InputStream tailLogs(ApiClient apiClient, String name, String namespace, String podName, String containerName, Integer readLines)
+	public InputStream tailLogs(ApiClient apiClient, String serviceName, String namespace, String podName, String containerName, Integer readLines)
 			throws HyscaleException {
 		if(podName == null) {
-			List<V1Pod> v1Pods = getBySelector(apiClient, ResourceSelectorUtil.getServiceSelector(null,name), true,
+			List<V1Pod> v1Pods = getBySelector(apiClient, ResourceSelectorUtil.getServiceSelector(null,serviceName), true,
 					namespace);
 			if (v1Pods == null || v1Pods.isEmpty()) {
-				throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_POD, name, namespace);
+				throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_POD, serviceName, namespace);
 			}
 			podName = v1Pods.get(0).getMetadata().getName();
 		}
@@ -257,8 +257,8 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 			return logs.streamNamespacedPodLog(namespace, podName, containerName, null, readLines,
 					true);
 		} catch (IOException | ApiException e) {
-			LOGGER.error("Failed to tail Pod logs for service {} in namespace {} ", name, namespace);
-			throw new HyscaleException(DeployerErrorCodes.FAILED_TO_TAIL_POD, name, namespace);
+			LOGGER.error("Failed to tail Pod logs for service {} in namespace {} ", serviceName, namespace);
+			throw new HyscaleException(DeployerErrorCodes.FAILED_TO_TAIL_POD, serviceName, namespace);
 		}
 	}
 
@@ -267,13 +267,13 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 		return getLogs(apiClient, name, namespace, null, name, readLines);
 	}
 	
-	public InputStream getLogs(ApiClient apiClient, String name, String namespace, String podName, String containerName, Integer readLines)
+	public InputStream getLogs(ApiClient apiClient, String serviceName, String namespace, String podName, String containerName, Integer readLines)
 			throws HyscaleException {
 		if(podName == null) {
-			List<V1Pod> v1Pods = getBySelector(apiClient, ResourceSelectorUtil.getServiceSelector(null,name), true,
+			List<V1Pod> v1Pods = getBySelector(apiClient, ResourceSelectorUtil.getServiceSelector(null,serviceName), true,
 					namespace);
 			if (v1Pods == null || v1Pods.isEmpty()) {
-				throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_POD, name, namespace);
+				throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_POD, serviceName, namespace);
 			}
 			podName = v1Pods.get(0).getMetadata().getName();
 		}
@@ -283,15 +283,15 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 					readLines, true, null, null);
 			Response response = call.execute();
 			if (!response.isSuccessful()) {
-				LOGGER.error("Failed to get Pod logs for service {} in namespace {} : {}", name, namespace,
+				LOGGER.error("Failed to get Pod logs for service {} in namespace {} : {}", serviceName, namespace,
 						response.body().string());
-				throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_LOGS, name, namespace);
+				throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_LOGS, serviceName, namespace);
 			}
 			return response.body().byteStream();
 		} catch (IOException | ApiException e) {
-			LOGGER.error("Error while fetching Pod logs for service {} in namespace {} ", name, namespace,
+			LOGGER.error("Error while fetching Pod logs for service {} in namespace {} ", serviceName, namespace,
 					e.getMessage());
-			throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_LOGS, name, namespace);
+			throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_LOGS, serviceName, namespace);
 		}
 	}
 

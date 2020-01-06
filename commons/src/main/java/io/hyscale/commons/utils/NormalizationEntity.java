@@ -34,7 +34,7 @@ public enum NormalizationEntity implements Normalizable {
     ENV_NAME {
         @Override
         public String normalize(String input) {
-            return StringUtils.isNotBlank(input) ? input.trim() : input;
+            return doNormalization(input);
         }
     },
     VOLUME_NAME {
@@ -46,7 +46,7 @@ public enum NormalizationEntity implements Normalizable {
     NAMESPACE {
         @Override
         public String normalize(String input) {
-            return StringUtils.isNotBlank(input) ? input.trim().toLowerCase() : input;
+            return doNormalization(input);
         }
     },
     SIDECAR_NAME {
@@ -69,7 +69,7 @@ public enum NormalizationEntity implements Normalizable {
     };
 
     private static String doNormalization(String string) {
-        return StringUtils.isNotBlank(string) ? string.trim().toLowerCase().replaceAll("[^a-zA-Z0-9-]", "") : string;
+        return StringUtils.isNotBlank(string) ? string.trim().toLowerCase().replaceAll("[ ]+", "-").replaceAll("[^a-zA-Z0-9-]", "") : string;
     }
 }
 

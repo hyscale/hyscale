@@ -86,5 +86,4 @@ public class DeploymentContext extends ComponentContext {
 	public void setReadLines(Integer readLines) {
 		this.readLines = readLines;
 	}
-
 }
