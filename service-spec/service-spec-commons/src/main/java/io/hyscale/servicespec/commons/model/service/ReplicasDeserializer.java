@@ -57,18 +57,29 @@ public class ReplicasDeserializer extends JsonDeserializer {
         Replicas replicas = new Replicas();
         try {
             JsonNode minNode = replicasNode.get(HyscaleSpecFields.min);
-            if (minNode != null) {
-                replicas.setMin(Integer.valueOf(minNode.toString()));
-                JsonNode maxNode = replicasNode.get(HyscaleSpecFields.max);
+            JsonNode maxNode = replicasNode.get(HyscaleSpecFields.max);
+            JsonNode cpuThreshold = replicasNode.get(HyscaleSpecFields.cpuThreshold);
+            
+            if (maxNode != null || cpuThreshold != null) {
+                // Auto scaling format
+                if (minNode != null && minNode.isNumber()) {
+                    replicas.setMin(Integer.valueOf(minNode.toString()));
+                } else {
+                    // default min
+                    replicas.setMin(1);
+                }
                 if (maxNode != null && maxNode.isNumber()) {
                     replicas.setMax(Integer.valueOf(maxNode.toString()));
                 }
-                JsonNode cpuThreshold = replicasNode.get(HyscaleSpecFields.cpuThreshold);
                 if (cpuThreshold != null && !cpuThreshold.isNull()) {
                     replicas.setCpuThreshold(cpuThreshold.asText());
                 }
             } else {
-                replicas.setMin(Integer.valueOf(replicasNode.toString()));
+                if (minNode == null) {
+                    replicas.setMin(Integer.valueOf(replicasNode.toString()));
+                } else {
+                    replicas.setMin(Integer.valueOf(minNode.toString()));
+                }
             }
         } catch (Exception e) {
             logger.debug("Returning default replicas from deserializer, Error {}", e);
