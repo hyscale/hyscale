@@ -43,6 +43,9 @@ public class DeployerConfig {
 	@Value(("${hyscale.ctl.k8s.pod.log.tail.lines:100}"))
 	private int defaultTailLines;
 
+	@Value(("${hyscale.ctl.k8s.max.lb.ready.timeout.ms:90000}"))
+	private long lbMaxReadyTimeout;
+
 	@Autowired
 	private SetupConfig setupConfig;
 
@@ -82,6 +85,11 @@ public class DeployerConfig {
 		StringBuilder sb = new StringBuilder(setupConfig.getLogsDir(appName, serviceName));
 		sb.append(SERVICE_LOG);
 		return sb.toString();
+	}
+
+
+	public long getLbMaxReadyTimeout() {
+		return lbMaxReadyTimeout;
 	}
 
 }
