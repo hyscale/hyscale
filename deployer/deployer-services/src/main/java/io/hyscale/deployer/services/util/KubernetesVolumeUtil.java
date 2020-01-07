@@ -100,7 +100,13 @@ public class KubernetesVolumeUtil {
 
 		String suffix = appName + ToolConstants.DASH + serviceName;
 
-		return pvcName.substring(0, pvcName.indexOf(suffix) - 1);
+		int indexOfSuffix = pvcName.indexOf(suffix);
+		
+		if (indexOfSuffix > 0) {
+		    return pvcName.substring(0, indexOfSuffix - 1);
+		}
+		
+		return pvcName;
 	}
 
 	public static Set<String> getPodVolumes(ApiClient apiClient, String selector, String namespace)

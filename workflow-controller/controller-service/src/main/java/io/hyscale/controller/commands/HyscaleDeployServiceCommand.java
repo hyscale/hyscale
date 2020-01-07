@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.List;
 
 import io.hyscale.commons.config.SetupConfig;
+import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.invoker.DockerfileGeneratorComponentInvoker;
@@ -41,6 +42,7 @@ import io.hyscale.controller.invoker.ManifestGeneratorComponentInvoker;
 import picocli.CommandLine;
 
 import javax.annotation.PreDestroy;
+import javax.validation.constraints.Pattern;
 
 /**
  *  This class executes 'hyscale deploy service' command
@@ -74,9 +76,11 @@ public class HyscaleDeployServiceCommand implements Runnable {
     @CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "Displays the help information of the specified command")
     private boolean helpRequested = false;
 
+    @Pattern(regexp = ValidationConstants.NAMESPACE_REGEX, message = ValidationConstants.INVALID_NAMESPACE_MSG)
     @CommandLine.Option(names = {"-n", "--namespace", "-ns"}, required = true, description = "Namespace of the service ")
     private String namespace;
 
+    @Pattern(regexp = ValidationConstants.APP_NAME_REGEX, message = ValidationConstants.INVALID_APP_NAME_MSG)
     @CommandLine.Option(names = {"-a", "--app"}, required = true, description = "Application name")
     private String appName;
 
@@ -103,6 +107,10 @@ public class HyscaleDeployServiceCommand implements Runnable {
 
     @Override
     public void run() {
+        if (!CommandUtil.isInputValid(this)) {
+            System.exit(1);
+        }
+        
         for (int i = 0; i < serviceSpecs.length; i++) {
 
             WorkflowContext workflowContext = new WorkflowContext();

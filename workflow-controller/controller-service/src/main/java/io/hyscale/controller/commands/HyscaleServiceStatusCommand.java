@@ -21,12 +21,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.validation.constraints.Pattern;
+
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
+import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.StatusUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.TableFields;
 import io.hyscale.commons.logger.TableFormatter;
@@ -61,17 +65,23 @@ import picocli.CommandLine.Option;
 @Command(name = "status", description = "Get the status of the deployment")
 public class HyscaleServiceStatusCommand implements Runnable {
 
+    private static final Logger logger = LoggerFactory.getLogger(HyscaleServiceStatusCommand.class);
+    
     @Option(names = {"-h", "--help"}, usageHelp = true, description = "Displays the  help information of the specified command")
     private boolean helpRequested = false;
 
+    @Pattern(regexp = ValidationConstants.NAMESPACE_REGEX, message = ValidationConstants.INVALID_NAMESPACE_MSG)
     @Option(names = {"-n", "--namespace", "-ns"}, required = true, description = "Namespace of the service")
     private String namespace;
 
+    @Pattern(regexp = ValidationConstants.APP_NAME_REGEX, message = ValidationConstants.INVALID_APP_NAME_MSG)
     @Option(names = {"-a", "--app"}, required = true, description = "Application name")
     private String appName;
 
-    @Option(names = {"-s", "--service"}, required = true, description = "Service names.")
-    private String[] serviceList;
+    @Option(names = { "-s", "--service" }, required = true, description = "Service names")
+    private List<
+    @Pattern(regexp = ValidationConstants.SERVICE_NAME_REGEX, message = ValidationConstants.INVALID_SERVICE_NAME_MSG)
+    String> serviceList;
 
     @Autowired
     private Deployer deployer;
@@ -79,11 +89,13 @@ public class HyscaleServiceStatusCommand implements Runnable {
     @Autowired
     private K8sAuthConfigBuilder authConfigBuilder;
 
-    private static final Logger logger = LoggerFactory.getLogger(HyscaleServiceStatusCommand.class);
-
     @Override
     public void run() {
 
+        if (!CommandUtil.isInputValid(this)) {
+            System.exit(1);
+        }
+        
         WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
 
         TableFormatter table = new TableFormatter.Builder()
@@ -102,7 +114,7 @@ public class HyscaleServiceStatusCommand implements Runnable {
         List<DeploymentStatus> deploymentStatusList = new ArrayList<>();
 
         try {
-        	Set<String> services = new HashSet<String>(Arrays.asList(serviceList));
+        	Set<String> services = new HashSet<String>(serviceList);
         	WorkflowLogger.logTableFields(table);
         	for (String serviceName : services) {
         		deploymentContext.setServiceName(serviceName);
