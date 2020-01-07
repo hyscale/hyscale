@@ -17,10 +17,14 @@ package io.hyscale.controller.commands;
 
 import java.util.List;
 
+import javax.validation.constraints.Pattern;
+
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
+import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.StatusUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.TableFields;
 import io.hyscale.commons.logger.TableFormatter;
@@ -52,9 +56,11 @@ public class HyscaleAppStatusCommand implements Runnable {
     @Option(names = {"-h", "--help"}, usageHelp = true, description = "Display help message")
     private boolean helpRequested = false;
 
+    @Pattern(regexp = ValidationConstants.NAMESPACE_REGEX, message = ValidationConstants.INVALID_NAMESPACE_MSG)
     @Option(names = {"-n", "--namespace", "-ns"}, required = true, description = "Namespace")
     private String namespace;
 
+    @Pattern(regexp = ValidationConstants.APP_NAME_REGEX, message = ValidationConstants.INVALID_APP_NAME_MSG)
     @Option(names = {"-a", "--app"}, required = true, description = "Application name.")
     private String appName;
 
@@ -66,7 +72,10 @@ public class HyscaleAppStatusCommand implements Runnable {
 
     @Override
     public void run() {
-
+        if (!CommandUtil.isInputValid(this)) {
+            System.exit(1);
+        }
+        
         WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
 
         TableFormatter table = new TableFormatter.Builder()

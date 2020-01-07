@@ -17,11 +17,17 @@ package io.hyscale.controller.commands;
 
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.UndeployCommandUtil;
+
+import java.util.List;
+
+import javax.validation.constraints.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.invoker.UndeployComponentInvoker;
@@ -55,30 +61,37 @@ public class HyscaleUndeploySeviceCommand implements Runnable {
 	@Option(names = { "-h", "--help" }, usageHelp = true, description = "Displays the help information of the specified command")
 	private boolean helpRequested = false;
 
+	@Pattern(regexp = ValidationConstants.NAMESPACE_REGEX, message = ValidationConstants.INVALID_NAMESPACE_MSG)
 	@Option(names = { "-n", "--namespace", "-ns" }, required = true, description = "Namespace of the deployed service")
 	private String namespace;
 
+	@Pattern(regexp = ValidationConstants.APP_NAME_REGEX, message = ValidationConstants.INVALID_APP_NAME_MSG)
 	@Option(names = { "-a", "--app" }, required = true, description = "Application name")
 	private String appName;
 
-	@Option(names = { "-s", "--service" }, required = true, description = "Service name")
-	private String[] serviceList;
+	@Option(names = { "-s", "--service" }, required = true, description = "Service names")
+	private List<
+	@Pattern(regexp = ValidationConstants.SERVICE_NAME_REGEX, message = ValidationConstants.INVALID_SERVICE_NAME_MSG)
+	String> serviceList;
 
 	@Autowired
 	private UndeployComponentInvoker undeployComponentInvoker;
 
 	@Override
 	public void run() {
+	    if (!CommandUtil.isInputValid(this)) {
+            System.exit(1);
+        }
 		WorkflowContext workflowContext = new WorkflowContext();
 		workflowContext.addAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR, true);
 		workflowContext.setAppName(appName.trim());
 		workflowContext.setNamespace(namespace.trim());
 
-		for (int i = 0; i < serviceList.length; i++) {
-			String serviceName = serviceList[i];
-			WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
-			workflowContext.setServiceName(serviceName);
-			undeployComponentInvoker.execute(workflowContext);
+		for (String serviceName: serviceList) {
+		    WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
+		    workflowContext.setServiceName(serviceName);
+		    undeployComponentInvoker.execute(workflowContext);
+		    
 		}
 		UndeployCommandUtil.logUndeployInfo();
 	}

@@ -17,6 +17,7 @@ package io.hyscale.controller.commands;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Pattern;
 
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.constants.WorkflowConstants;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.logger.WorkflowLogger;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -61,20 +63,23 @@ public class HyscaleServiceLogsCommand implements Runnable {
 	@Option(names = { "-h", "--help" }, usageHelp = true, description = "Displays help information for the specified command")
 	private boolean helpRequested = false;
 
+	@Pattern(regexp = ValidationConstants.NAMESPACE_REGEX, message = ValidationConstants.INVALID_NAMESPACE_MSG)
 	@Option(names = { "-n", "--namespace", "-ns" }, required = true, description = "Namespace of the service")
 	private String namespace;
 
+	@Pattern(regexp = ValidationConstants.APP_NAME_REGEX, message = ValidationConstants.INVALID_APP_NAME_MSG)
 	@Option(names = { "-a", "--app" }, required = true, description = "Application name")
 	private String appName;
 
+	@Pattern(regexp = ValidationConstants.SERVICE_NAME_REGEX, message = ValidationConstants.INVALID_SERVICE_NAME_MSG)
 	@Option(names = { "-s", "--service" }, required = true, description = "Service name")
 	private String serviceName;
 
 	@Option(names = { "-t", "--tail" }, required = false, description = "Tail output of the service logs")
 	private boolean tail = false;
 
-	@Min(value = 1, message = "Logs Lines must not be less than 1")
-	@Max(value = 500, message = "Logs Lines must not be more than 500")
+	@Min(value = ValidationConstants.MIN_LOG_LINES, message = ValidationConstants.MIN_LOG_LINES_ERROR_MSG)
+	@Max(value = ValidationConstants.MAX_LOG_LINES, message = ValidationConstants.MAX_LOG_LINES_ERROR_MSG)
 	@Option(names = { "-l", "--line" }, required = false, description = "Number of lines of logs")
 	private Integer line = 100;
 

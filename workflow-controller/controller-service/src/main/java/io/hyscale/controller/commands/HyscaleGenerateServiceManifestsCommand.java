@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.config.SetupConfig;
+import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
@@ -34,6 +35,7 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import picocli.CommandLine;
 
 import javax.annotation.PreDestroy;
+import javax.validation.constraints.Pattern;
 
 /**
  * This class executes 'hyscale generate service manifests' command
@@ -62,6 +64,7 @@ public class HyscaleGenerateServiceManifestsCommand implements Runnable {
     @CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "Display help message about the specified command")
     private boolean helpRequested = false;
 
+    @Pattern(regexp = ValidationConstants.APP_NAME_REGEX, message = ValidationConstants.INVALID_APP_NAME_MSG)
     @CommandLine.Option(names = {"-a", "--app"}, required = true, description = "Application name")
     private String appName;
 
@@ -76,7 +79,9 @@ public class HyscaleGenerateServiceManifestsCommand implements Runnable {
 
     @Override
     public void run() {
-
+        if (!CommandUtil.isInputValid(this)) {
+            System.exit(1);
+        }
         for (int i = 0; i < serviceSpecs.length; i++) {
 
             WorkflowContext workflowContext = new WorkflowContext();

@@ -15,6 +15,8 @@
  */
 package io.hyscale.controller.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import javax.validation.ConstraintViolation;
@@ -25,7 +27,6 @@ import javax.validation.ValidatorFactory;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.utils.WindowsUtil;
 import io.hyscale.controller.activity.ControllerActivity;
@@ -69,13 +70,15 @@ public class CommandUtil {
 		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
         Set<ConstraintViolation<Object>> violations = validator.validate(object);
-
-        if (!violations.isEmpty()) {
-        	StringBuilder errorMsgBuilder = new StringBuilder();
+        List<String> errorMsgs = new ArrayList<String>();
+        if (violations != null && !violations.isEmpty()) {
             for (ConstraintViolation<Object> violation : violations) {
-            	errorMsgBuilder.append(violation.getMessage() + "\n");
+                String errMsg = violation.getMessage().replaceAll("\\{\\}", violation.getInvalidValue().toString());
+            	errorMsgs.add(errMsg);
             }
-            WorkflowLogger.error(ControllerActivity.INVALID_INPUT, errorMsgBuilder.toString());
+            errorMsgs.forEach( each -> {
+                WorkflowLogger.error(ControllerActivity.INVALID_INPUT, each);
+            });
             return false;
         }
         
