@@ -15,6 +15,9 @@
  */
 package io.hyscale.deployer.services.util;
 
+import org.apache.commons.lang3.StringUtils;
+
+import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.core.model.ResourceOperation;
@@ -34,18 +37,36 @@ public class ExceptionHelper {
      * @param resourceKind
      * @param ApiException
      * @param operation
-     * @return Array of String - resource kind, fail message, ApiException code, cause message
+     * @return String - resource kind, fail message, ApiException code, cause message
      */
-    public static String[] getExceptionArgs(String resourceKind, ApiException ex, ResourceOperation operation) {
-        String[] args = new String[]{resourceKind, FAILED_WITH_MESSAGE, getCode(ex),
-                CAUSE_MESSAGE, getResponseMessage(ex)};
-        return args;
+    public static String getExceptionMessage(String resourceKind, ApiException ex, ResourceOperation operation) {
+        StringBuilder exceptionMsg = new StringBuilder();
+        exceptionMsg.append(resourceKind).append(ToolConstants.SPACE);
+        exceptionMsg.append(FAILED_WITH_MESSAGE);
+        exceptionMsg.append(getCode(ex)).append(CAUSE_MESSAGE);
+        String responseMessage = getResponseMessage(ex);
+        if (StringUtils.isNotBlank(responseMessage)) {
+            exceptionMsg.append(responseMessage);
+        }
+        
+        return exceptionMsg.toString();
     }
 
-    public static String[] getResourceDetails(String resourceKind, String name, ResourceOperation operation) {
-        String[] args = new String[]{resourceKind, name, operation.getOperation()};
-
-        return args;
+    /**
+     * 
+     * @param resourceKind
+     * @param name
+     * @param operation
+     * @return String containing resource kind, resource name and operation 
+     */
+    public static String getResourceDetails(String resourceKind, String name, ResourceOperation operation) {
+        StringBuilder resourceDetails = new StringBuilder();
+        resourceDetails.append(resourceKind).append(ToolConstants.SPACE);
+        resourceDetails.append(name).append(ToolConstants.SPACE);
+        if (operation != null) {
+            resourceDetails.append(operation.getOperation());
+        }
+        return resourceDetails.toString();
     }
 
     /**
@@ -59,10 +80,10 @@ public class ExceptionHelper {
         HyscaleException ex = null;
         if (e.getCode() != 404) {
             ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_GET_RESOURCE,
-                    getExceptionArgs(resourceKind, e, operation));
+                    getExceptionMessage(resourceKind, e, operation));
         } else {
             ex = new HyscaleException(e, DeployerErrorCodes.RESOURCE_NOT_FOUND,
-                    getExceptionArgs(resourceKind, e, operation));
+                    getExceptionMessage(resourceKind, e, operation));
         }
         return ex;
     }

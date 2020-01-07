@@ -133,7 +133,7 @@ public class V1PersistentVolumeClaimHandler implements ResourceLifeCycleHandler<
 				return false;
 			}
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_DELETE_RESOURCE,
-					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.DELETE));
+					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.DELETE));
 			logger.error("Error while deleting persistent volume claims {} in namespace {}, error {}", name, namespace,
 					ex.toString());
 			WorkflowLogger.endActivity(activityContext, Status.FAILED);

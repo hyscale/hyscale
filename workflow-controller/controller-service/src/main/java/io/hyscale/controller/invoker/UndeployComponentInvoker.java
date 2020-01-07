@@ -81,6 +81,7 @@ public class UndeployComponentInvoker extends ComponentInvoker<WorkflowContext> 
         try {
             deployer.unDeploy(deploymentContext);
         } catch (HyscaleException ex) {
+            WorkflowLogger.footer();
             WorkflowLogger.error(ControllerActivity.UNDEPLOYMENT_FAILED, ex.getMessage());
             throw ex;
         } finally {

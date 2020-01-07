@@ -125,10 +125,11 @@ public class HyscaleServiceStatusCommand implements Runnable {
 					WorkflowLogger.logTableRow(table, tableRow);
         		}
 				deploymentStatusList.add(serviceStatus);
-        		
         	}
         } catch (HyscaleException e) {
             WorkflowLogger.error(ControllerActivity.ERROR_WHILE_FETCHING_STATUS, e.toString());
+        } finally {
+            WorkflowLogger.footer();
         }
 
     }

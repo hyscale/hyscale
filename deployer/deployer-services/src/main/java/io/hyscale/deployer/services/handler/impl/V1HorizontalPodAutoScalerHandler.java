@@ -64,7 +64,7 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
             v1HorizontalPodAutoscaler = autoscalingV1Api.createNamespacedHorizontalPodAutoscaler(namespace, resource, null, TRUE, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
-                    ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.CREATE));
+                    ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.CREATE));
             logger.error("Error while creating HorizontalPodAutoScaler {} in namespace {}, error {}", v1HorizontalPodAutoscaler, namespace,
                     ex.toString());
             WorkflowLogger.endActivity(Status.FAILED);
@@ -97,7 +97,7 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
             autoscalingV1Api.replaceNamespacedHorizontalPodAutoscaler(name, namespace, resource, TRUE, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
-                    ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.UPDATE));
+                    ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.UPDATE));
             logger.error("Error while updating HorizontalPodAutoScaler {} in namespace {}, error {}", name, namespace,
                     ex.toString());
             WorkflowLogger.endActivity(Status.FAILED);
@@ -175,7 +175,7 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
             throw e;
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_PATCH_RESOURCE,
-                    ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.PATCH));
+                    ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.PATCH));
             logger.error("Error while patching HorizontalPodAutoScaler {} in namespace {} , error {}", name, namespace,
                     ex.toString());
             WorkflowLogger.endActivity(Status.FAILED);
@@ -209,7 +209,7 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
                 return false;
             }
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_DELETE_RESOURCE,
-                    ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.DELETE));
+                    ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.DELETE));
             logger.error("Error while deleting HorizontalPodAutoScaler {} in namespace {}, error {} ", name, namespace,
                     ex.toString());
             WorkflowLogger.endActivity(activityContext, Status.FAILED);

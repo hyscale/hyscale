@@ -53,9 +53,8 @@ public class HyscaleException extends Exception {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("[");
-        if (args != null) {
-            sb.append(args.length != 0 ? String.format(hyscaleErrorCode.getErrorMessage().replaceAll("\\{\\}", "%s"), args)
-                    : hyscaleErrorCode.getErrorMessage());
+        if (args != null && args.length != 0 ) {
+            sb.append(String.format(hyscaleErrorCode.getErrorMessage().replaceAll("\\{\\}", "%s"), args));
         } else {
             sb.append(hyscaleErrorCode.getErrorMessage());
         }

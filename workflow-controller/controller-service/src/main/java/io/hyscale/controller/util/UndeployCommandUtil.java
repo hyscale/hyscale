@@ -27,5 +27,7 @@ public class UndeployCommandUtil {
 		WorkflowLogger.logPersistedActivities();
 
 		WorkflowLogger.info(ControllerActivity.UNDEPLOYMENT_DONE);
+		
+		WorkflowLogger.footer();
 	}
 }

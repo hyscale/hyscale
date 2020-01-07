@@ -66,7 +66,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 			v1Secret = coreV1Api.createNamespacedSecret(namespace, resource, null, TRUE, null);
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
-					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.CREATE));
+					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.CREATE));
 			LOGGER.error("Error while creating Secret {} in namespace {}, error {}", name, namespace, ex.toString());
 			WorkflowLogger.endActivity(Status.FAILED);
 			throw ex;
@@ -99,7 +99,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 			coreV1Api.replaceNamespacedSecret(name, namespace, resource, TRUE, null);
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
-					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.UPDATE));
+					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.UPDATE));
 			LOGGER.error("Error while updating Secret {} in namespace {}, error {}", name, namespace, ex.toString());
 			WorkflowLogger.endActivity(Status.FAILED);
 			throw ex;
@@ -174,7 +174,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 			throw ex;
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_PATCH_RESOURCE,
-					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.PATCH));
+					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.PATCH));
 			LOGGER.error("Error while patching Secret {} in namespace {} , error {}", name, namespace, ex.toString());
 			WorkflowLogger.endActivity(Status.FAILED);
 			throw ex;
@@ -206,7 +206,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 				return false;
 			}
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_DELETE_RESOURCE,
-					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.DELETE));
+					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.DELETE));
 			LOGGER.error("Error while deleting Secret {} in namespace {}, error {}", name, namespace, ex.toString());
 			WorkflowLogger.endActivity(activityContext, Status.FAILED);
 			throw ex;
