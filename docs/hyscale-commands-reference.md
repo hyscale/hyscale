@@ -133,14 +133,16 @@ HyScale Service Spec file where file name should be same as service name mention
 **_-n `<nameSpace>`_**
 
 Kubernetes namespace where service is deployed. `namespace` acts like an isolation for your application services. Generally namespace is used for describing application environments (like QA, STAGE, UAT etc..). If namespace is not present, hyscale will create one with the given name provided kubeconfig permissions.
-Namespace name should satisfy the regex *`([a-z0-9-]){2,30}`*
+Namespace must consist of lower case alphanumeric characters or '-', with length in the range of 2-30. Regex used for validation is *`([a-z0-9-]){2,30}`*
 
 **_-a `<applicationName>`_**    
 
-Logical grouping of services together with a given application name. The name for application is your choice following the regex.
+Logical grouping of services together with a given application name. 
+Application name must consist of lower case alphanumeric characters or '-' with length in the range of  2-30. Regex used for validation is
 *`([a-z0-9-]){2,30}`* 
 
 **_-s `<serviceName>`_**
 
-Basic unit of your application deployment. The name of your service should satisfy the regex
+Basic unit of your application deployment. 
+A service name must consist of lower case alphanumeric characters or '-', it should start with an alphabetic character, and can end with an alphanumeric character. Regex used for validation is
 *`[a-z]([-a-z0-9]*[a-z0-9])?`*   
