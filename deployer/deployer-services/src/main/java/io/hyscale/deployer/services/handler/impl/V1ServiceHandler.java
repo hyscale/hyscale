@@ -15,8 +15,13 @@
  */
 package io.hyscale.deployer.services.handler.impl;
 
+import java.net.URL;
 import java.util.List;
+import java.util.Properties;
 
+import com.google.common.io.Resources;
+import io.hyscale.deployer.services.config.DeployerConfig;
+import io.hyscale.deployer.services.config.NonBeanDeployerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +54,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(V1ServiceHandler.class);
 
-    private static final long MAX_LB_READY_STATE_TIME = 90000;
+    private static final long MAX_LB_READY_STATE_TIME = NonBeanDeployerConfig.getMaxLBReadyTimeout();
     private static final long MAX_LB_WAIT_TIME = 2000;
 
     @Override
