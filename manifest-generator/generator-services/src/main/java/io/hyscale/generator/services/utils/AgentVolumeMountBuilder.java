@@ -69,8 +69,8 @@ public class AgentVolumeMountBuilder extends AgentHelper implements AgentBuilder
             if (volumes != null && !volumes.isEmpty()) {
                 volumes.stream().forEach(volume -> {
                     V1VolumeMount volumeMount = new V1VolumeMount();
-                    volumeMount.setName(volume.getName());
-                    volumeMount.setMountPath(volume.getPath());
+                    volumeMount.setName(volume.getAttach());
+                    volumeMount.setMountPath(volume.getMountPath());
                     volumeMount.setReadOnly(volume.isReadOnly());
                     volumeMounts.add(volumeMount);
                 });

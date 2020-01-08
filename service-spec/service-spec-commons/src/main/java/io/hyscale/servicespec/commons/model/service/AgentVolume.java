@@ -20,24 +20,24 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AgentVolume {
 
-	private String path;
-	private String name;
+	private String mountPath;
+	private String attach;
 	private boolean readOnly;
 
-	public String getPath() {
-		return path;
+	public String getMountPath() {
+		return mountPath;
 	}
 
-	public void setPath(String path) {
-		this.path = path;
+	public void setMountPath(String mountPath) {
+		this.mountPath = mountPath;
 	}
 
-	public String getName() {
-		return name;
+	public String getAttach() {
+		return attach;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setAttach(String attach) {
+		this.attach = attach;
 	}
 
 	public boolean isReadOnly() {
