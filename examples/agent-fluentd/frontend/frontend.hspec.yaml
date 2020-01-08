@@ -41,6 +41,6 @@ agents:
     system.input.conf: file(system.input.conf)
     #SIDECARL_PASSWORD: pramati
   volumes:
-  - path: /mnt/log
-    name: tomcat-logs
+  - mountPath: /mnt/log
+    attach: tomcat-logs
   propsVolumePath: /usr/local/config
