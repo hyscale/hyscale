@@ -16,14 +16,19 @@
 package io.hyscale.controller.commands;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import javax.validation.constraints.Pattern;
 
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.StatusUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.TableFields;
@@ -40,8 +45,8 @@ import picocli.CommandLine.Option;
  *  This class executes the 'hyscale get app status' command
  *  It is a sub-command of the 'hyscale get app' command
  *  @see HyscaleGetAppCommand
- *  Every command/sub-command has to implement the Runnable so that
- *  whenever the command is executed the {@link #run()}
+ *  Every command/sub-command has to implement the {@link Callable} so that
+ *  whenever the command is executed the {@link #call()}
  *  method will be invoked
  *
  * @option namespace  namespace in which the app is deployed
@@ -51,7 +56,9 @@ import picocli.CommandLine.Option;
  * in a table format to the user.
  */
 @Command(name = "status", description = "Get App Deployment status")
-public class HyscaleAppStatusCommand implements Runnable {
+public class HyscaleAppStatusCommand implements Callable<Integer> {
+    
+    private final Logger logger = LoggerFactory.getLogger(HyscaleAppStatusCommand.class);
 
     @Option(names = {"-h", "--help"}, usageHelp = true, description = "Display help message")
     private boolean helpRequested = false;
@@ -71,9 +78,9 @@ public class HyscaleAppStatusCommand implements Runnable {
     private K8sAuthConfigBuilder authConfigBuilder;
 
     @Override
-    public void run() {
+    public Integer call() throws Exception{
         if (!CommandUtil.isInputValid(this)) {
-            System.exit(1);
+            return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
         
         WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
@@ -105,10 +112,13 @@ public class HyscaleAppStatusCommand implements Runnable {
             }
         } catch (HyscaleException e) {
             WorkflowLogger.error(ControllerActivity.ERROR_WHILE_FETCHING_STATUS, e.toString());
-        }finally {
+            logger.error("Error while getting app {} status in namespace {}", appName, namespace, e);
+            throw e;
+        } finally {
             WorkflowLogger.footer();
         }
 
+        return 0;
     }
 
 }

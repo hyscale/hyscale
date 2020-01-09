@@ -98,6 +98,7 @@ public class ManifestGeneratorComponentInvoker extends ComponentInvoker<Workflow
         try {
             manifestList = manifestGenerator.generate(serviceSpec, manifestContext);
         } catch (HyscaleException e) {
+            logger.error("Error while generating manifest for service: {}", serviceName, e);
             context.setFailed(true);
             WorkflowLogger.header(ControllerActivity.MANIFEST_GENERATION_FAILED, e.getMessage());
             throw e;
@@ -110,10 +111,13 @@ public class ManifestGeneratorComponentInvoker extends ComponentInvoker<Workflow
     }
 
     @Override
-    protected void onError(WorkflowContext context, HyscaleException he) {
+    protected void onError(WorkflowContext context, HyscaleException he) throws HyscaleException {
         WorkflowLogger.header(ControllerActivity.ERROR);
         WorkflowLogger.error(ControllerActivity.CAUSE, he != null ?
                 he.getMessage() : ManifestErrorCodes.ERROR_WHILE_CREATING_MANIFEST.getErrorMessage());
         context.setFailed(true);
+        if (he != null) {
+            throw he;
+        }
     }
 }

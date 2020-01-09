@@ -17,8 +17,11 @@ package io.hyscale.controller.commands;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.Callable;
 
+import io.hyscale.commons.component.ComponentInvoker;
 import io.hyscale.commons.config.SetupConfig;
+import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.constants.WorkflowConstants;
@@ -48,8 +51,8 @@ import javax.validation.constraints.Pattern;
  *  This class executes 'hyscale deploy service' command
  *  It is a sub-command of the 'hyscale deploy' command
  *  @see HyscaleDeployCommand
- *  Every command/sub-command has to implement the Runnable so that
- *  whenever the command is executed the {@link #run()}
+ *  Every command/sub-command has to implement the {@link Callable} so that
+ *  whenever the command is executed the {@link #call()}
  *  method will be invoked
  *
  * @option namespace  name of the namespace in which the service to be deployed
@@ -69,9 +72,9 @@ import javax.validation.constraints.Pattern;
 @CommandLine.Command(name = "service", aliases = {"services"},
         description = "Deploys the service to kubernetes cluster")
 @Component
-public class HyscaleDeployServiceCommand implements Runnable {
+public class HyscaleDeployServiceCommand implements Callable<Integer> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HyscaleDeployCommand.class);
+    private static final Logger logger = LoggerFactory.getLogger(HyscaleDeployServiceCommand.class);
 
     @CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "Displays the help information of the specified command")
     private boolean helpRequested = false;
@@ -106,12 +109,14 @@ public class HyscaleDeployServiceCommand implements Runnable {
     private ServiceSpecMapper serviceSpecMapper;
 
     @Override
-    public void run() {
+    public Integer call() throws Exception {
         if (!CommandUtil.isInputValid(this)) {
-            System.exit(1);
+            return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
+        boolean isCommandFailed = false;
         
         for (int i = 0; i < serviceSpecs.length; i++) {
+            boolean isServiceFailed = false;
 
             WorkflowContext workflowContext = new WorkflowContext();
             workflowContext.addAttribute(WorkflowConstants.DEPLOY_START_TIME, System.currentTimeMillis());
@@ -126,7 +131,7 @@ public class HyscaleDeployServiceCommand implements Runnable {
                 SetupConfig.setAbsolutePath(serviceSpecFile.getAbsoluteFile().getParent());
             } catch (HyscaleException e) {
                 WorkflowLogger.error(ControllerActivity.CANNOT_PROCESS_SERVICE_SPEC, e.getMessage());
-                return;
+                throw e;
             }
 
             WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
@@ -138,26 +143,33 @@ public class HyscaleDeployServiceCommand implements Runnable {
             // clean up service dir before dockerfileGen
             workflowContext.addAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR, true);
 
-            // Generate Docker file
-            dockerfileGeneratorComponentInvoker.execute(workflowContext);
-
-            if (!workflowContext.isFailed()) {
-                imageBuildComponentInvoker.execute(workflowContext);
-            }
-
-            if (!workflowContext.isFailed()) {
-                manifestGeneratorComponentInvoker.execute(workflowContext);
-            }
-
-            if (!workflowContext.isFailed()) {
+            // TODO Handle invoker delta processing through callback
+            isServiceFailed = isServiceFailed ? isServiceFailed : !executeInvoker(dockerfileGeneratorComponentInvoker, workflowContext);
+            
+            isServiceFailed = isServiceFailed ? isServiceFailed : !executeInvoker(imageBuildComponentInvoker, workflowContext);
+            
+            isServiceFailed = isServiceFailed ? isServiceFailed : !executeInvoker(manifestGeneratorComponentInvoker, workflowContext);
+            
+            if (!isServiceFailed) {
                 List<Manifest> manifestList = (List<Manifest>) workflowContext.getAttribute(WorkflowConstants.OUTPUT);
                 workflowContext.addAttribute(WorkflowConstants.GENERATED_MANIFESTS, manifestList);
-                deployComponentInvoker.execute(workflowContext);
+                isServiceFailed = isServiceFailed ? isServiceFailed : !executeInvoker(deployComponentInvoker, workflowContext);
             }
-
             logWorkflowInfo(workflowContext);
-
+            isCommandFailed = isCommandFailed ? isCommandFailed : isServiceFailed;
         }
+        return isCommandFailed ? ToolConstants.HYSCALE_ERROR_CODE : 0;
+    }
+    
+    private boolean executeInvoker(ComponentInvoker invoker, WorkflowContext context) {
+        try {
+            invoker.execute(context);
+        } catch (HyscaleException e) {
+            logger.error("Error while executing component invoker: {}, for app: {}, service: {}", 
+                    invoker.getClass(), appName, context.getServiceName(), e);
+            return false;
+        }
+        return context.isFailed() ? false : true;
     }
 
     private void logWorkflowInfo(WorkflowContext workflowContext) {

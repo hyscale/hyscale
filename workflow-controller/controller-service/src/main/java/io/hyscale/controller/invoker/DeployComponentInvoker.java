@@ -155,7 +155,6 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
             writeDeployLogs(context, deploymentContext);
         }
         context.addAttribute(WorkflowConstants.OUTPUT, true);
-
         if (verbose) {
             loggerUtility.deploymentLogs(context);
         }
@@ -197,9 +196,12 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
     }
 
     @Override
-    protected void onError(WorkflowContext context, HyscaleException he) {
+    protected void onError(WorkflowContext context, HyscaleException he) throws HyscaleException {
         WorkflowLogger.header(ControllerActivity.ERROR);
         WorkflowLogger.error(ControllerActivity.CAUSE, he != null ? he.getMessage() : DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST.getErrorMessage());
         context.setFailed(true);
+        if (he != null) {
+            throw he;
+        }
     }
 }

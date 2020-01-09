@@ -15,15 +15,19 @@
  */
 package io.hyscale.controller.commands;
 
+import java.util.concurrent.Callable;
+
 import org.springframework.stereotype.Component;
+
+import io.hyscale.commons.constants.ToolConstants;
 import picocli.CommandLine;
 
 /**
  * This class executes 'hyscale generate service' command
  * It is a sub-command of the 'hyscale generate' command
  * @see HyscaleGenerateCommand
- * Every command/sub-command has to implement the Runnable so that
- * whenever the command is executed the {@link #run()}
+ * Every command/sub-command has to implement the {@link Callable} so that
+ * whenever the command is executed the {@link #call()}
  * method will be invoked
  *
  * The sub-commands of are handled by @Command annotation
@@ -32,9 +36,11 @@ import picocli.CommandLine;
 @CommandLine.Command(name = "service", subcommands = { HyscaleGenerateServiceManifestsCommand.class} ,
         description = "Performs action on the service")
 @Component
-public class HyscaleGenerateServiceCommand implements Runnable {
+public class HyscaleGenerateServiceCommand implements Callable<Integer> {
+    
     @Override
-    public void run() {
+    public Integer call() throws Exception {
         new CommandLine(new HyscaleGenerateServiceCommand()).usage(System.out);
+        return ToolConstants.INVALID_INPUT_ERROR_CODE;
     }
 }
