@@ -128,7 +128,7 @@ To get the status of all the deployed services in an application , use the "get 
 
 **_-f `<serviceName>`.hspec_**
 
-HyScale Service Spec file where file name should be same as service name mentioned inside spec. This is the name with which service by default gets deployed. To know how to write service spec click [here](hyscale-spec-reference.md).
+HyScale Service Spec file where file name should be same as service name mentioned inside spec. This is the name with which service by default gets deployed. To know how to write service spec click [here](https://github.com/hyscale/hspec/blob/master/docs/hyscale-spec-reference.md).
 
 **_-n `<nameSpace>`_**
 

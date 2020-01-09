@@ -28,12 +28,31 @@ If you do not have access to a kubernetes cluster and wish to deploy your applic
 
 ## Installation
 
+#### Linux
+
 Open your terminal and enter the following:
 
 ```sh
 curl -sSL http://get.hyscale.io | bash
 ```
-Verified on CentOS, Ubuntu and Debian Linux. Mac and Windows installer coming soon!
+
+#### Mac 
+Usage Pre-Requisites:
+
+* JDK version 11 and above
+* Download the [hyscale jar](https://github.com/hyscale/hyscale/releases/download/v0.9.1/hyscale.jar) to your local machine
+
+Usage:
+
+`java -jar </path/to/hyscale.jar> <commands>` ,  
+
+For commands refer [here](https://github.com/hyscale/hyscale/blob/v0.9.1/docs/hyscale-commands-reference.md) by replacing `hyscale` with `java command`.  
+
+```
+Example :  java -jar </path/to/hyscale.jar> deploy service -f myservice.hspec.yaml -n my-namespace -a my-app
+```
+
+Verified on CentOS, Ubuntu and Debian Linux,Mac .  Windows installer coming soon!
 
 ## Deploying to k8s
 
