@@ -79,7 +79,7 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 			statefulSet = appsV1beta2Api.createNamespacedStatefulSet(namespace, resource, null, TRUE, null);
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
-					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.CREATE));
+					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.CREATE));
 			LOGGER.error("Error while creating statefulset {} in namespace {}, error {}", name, namespace,
 					ex.toString());
 			WorkflowLogger.endActivity(Status.FAILED);
@@ -114,7 +114,7 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 			appsV1beta2Api.replaceNamespacedStatefulSet(name, namespace, resource, TRUE, null);
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
-					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.UPDATE));
+					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.UPDATE));
 			LOGGER.error("Error while updating SatefulSet {} in namespace {}, error {}", name, namespace,
 					ex.toString());
 			WorkflowLogger.endActivity(Status.FAILED);
@@ -199,7 +199,7 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 			throw ex;
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_PATCH_RESOURCE,
-					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.PATCH));
+					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.PATCH));
 			LOGGER.error("Error while patching StatefulSet {} in namespace {} , error {}", name, namespace,
 					ex.toString());
 			WorkflowLogger.endActivity(Status.FAILED);
@@ -262,7 +262,7 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 				return false;
 			}
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_DELETE_RESOURCE,
-					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.DELETE));
+					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.DELETE));
 			LOGGER.error("Error while deleting StatefulSet {} in namespace {} , error {}", name, namespace,
 					ex.toString());
 			WorkflowLogger.endActivity(activityContext, Status.FAILED);

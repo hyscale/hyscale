@@ -86,7 +86,7 @@ public class WorkflowLogger {
     }
 
     public static void logTable(TableFormatter tableFormatter) {
-        System.out.println(tableFormatter.toString());
+        System.out.print(tableFormatter.toString());
     }
 
     public static void logTableRow(TableFormatter tableFormatter, String[] row) {

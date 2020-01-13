@@ -185,8 +185,10 @@ public class K8sResourceDispatcher {
             if (lifeCycleHandler.cleanUp()) {
                 try {
                     boolean result = lifeCycleHandler.deleteBySelector(apiClient, selector, true, namespace, true);
+                    logger.debug("Undeployment status for resource {} is {}", resourceKind, result);
                     resourceDeleted = resourceDeleted ? true : result;
                 } catch (HyscaleException ex) {
+                    logger.error("Failed to undeploy resource {}", resourceKind, ex);
                     failedResources.add(resourceKind);
                 }
 

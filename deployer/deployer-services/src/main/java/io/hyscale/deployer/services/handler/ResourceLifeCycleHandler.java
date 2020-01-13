@@ -18,11 +18,15 @@ package io.hyscale.deployer.services.handler;
 import java.util.Iterator;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.gson.Gson;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.ActivityContext;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.Status;
 import io.hyscale.commons.utils.ThreadPoolUtil;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.model.ResourceStatus;
@@ -37,6 +41,8 @@ import io.kubernetes.client.models.V1DeleteOptions;
  */
 public interface ResourceLifeCycleHandler<T> {
 
+    Logger logger = LoggerFactory.getLogger(ResourceLifeCycleHandler.class);
+    
     public static final String TRUE = "true";
     public static final long DELETE_SLEEP_INTERVAL_IN_MILLIS = 3000;
     public static final long MAX_WAIT_TIME_IN_MILLISECONDS = 120000;
@@ -181,9 +187,9 @@ public interface ResourceLifeCycleHandler<T> {
                 String pendingResource = deletePendingResourceIterator.next();
                 try {
                     get(apiClient, pendingResource, namespace);
+                    logger.debug("Resource {} found to be existing, waiting for resource deletion", pendingResource);
                 } catch (HyscaleException e) {
-                    if (e.getHyscaleErrorCode().getErrorMessage() == DeployerErrorCodes.RESOURCE_NOT_FOUND
-                            .getErrorMessage()) {
+                    if (e.getHyscaleErrorCode() == DeployerErrorCodes.RESOURCE_NOT_FOUND) {
                         deletePendingResourceIterator.remove();
                     }
                 }
@@ -192,6 +198,10 @@ public interface ResourceLifeCycleHandler<T> {
         }
         // Fail case
         if (!pendingResources.isEmpty()) {
+            if (activityContext != null) {
+                WorkflowLogger.endActivity(activityContext, Status.FAILED);
+            }
+            logger.error("Resource deletion failed for: {}", pendingResources.toString());
             throw new HyscaleException(DeployerErrorCodes.FAILED_TO_DELETE_RESOURCE, pendingResources.toString());
         }
 

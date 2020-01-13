@@ -60,7 +60,7 @@ public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
         } catch (ApiException e) {
             if (e.getCode() != 409) {
                 HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
-                        ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.CREATE));
+                        ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.CREATE));
                 LOGGER.error("Error while creating namespace {}, error {}", name, ex);
                 throw ex;
             }
@@ -78,10 +78,10 @@ public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
             HyscaleException ex = null;
             if (e.getCode() != 404) {
                 ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_GET_RESOURCE,
-                        ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.GET));
+                        ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.GET));
             } else {
                 ex = new HyscaleException(e, DeployerErrorCodes.RESOURCE_NOT_FOUND,
-                        ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.GET));
+                        ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.GET));
             }
             LOGGER.error("Error while fetching namespace {}, error {}", name, ex.toString());
             throw ex;
@@ -112,7 +112,7 @@ public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
                 return false;
             }
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_DELETE_RESOURCE,
-                    ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.DELETE));
+                    ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.DELETE));
             LOGGER.error("Error while deleting namespace {}, error {}", name, ex.toString());
             WorkflowLogger.endActivity(activityContext, Status.FAILED);
             throw ex;

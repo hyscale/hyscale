@@ -64,7 +64,7 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 			v1beta2Deployment = appsV1beta2Api.createNamespacedDeployment(namespace, resource, null, TRUE, null);
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
-					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.CREATE));
+					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.CREATE));
 			LOGGER.error("Error while creating Deployment {} in namespace {}, error {}", v1beta2Deployment, namespace,
 					ex.toString());
 			WorkflowLogger.endActivity(Status.FAILED);
@@ -97,7 +97,7 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 			appsV1beta2Api.replaceNamespacedDeployment(name, namespace, existingDeployment, TRUE, null);
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
-					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.UPDATE));
+					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.UPDATE));
 			LOGGER.error("Error while updating Deployment {} in namespace {}, error {}", name, namespace,
 					ex.toString());
 			WorkflowLogger.endActivity(Status.FAILED);
@@ -177,7 +177,7 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 			throw e;
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_PATCH_RESOURCE,
-					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.PATCH));
+					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.PATCH));
 			LOGGER.error("Error while patching Deployment {} in namespace {} , error {}", name, namespace,
 					ex.toString());
 			WorkflowLogger.endActivity(Status.FAILED);
@@ -211,7 +211,7 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 				return false;
 			}
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_DELETE_RESOURCE,
-					ExceptionHelper.getExceptionArgs(getKind(), e, ResourceOperation.DELETE));
+					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.DELETE));
 			LOGGER.error("Error while deleting Deployment {} in namespace {}, error {} ", name, namespace,
 					ex.toString());
 			WorkflowLogger.endActivity(activityContext, Status.FAILED);

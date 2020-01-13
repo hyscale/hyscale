@@ -105,6 +105,8 @@ public class HyscaleAppStatusCommand implements Runnable {
             }
         } catch (HyscaleException e) {
             WorkflowLogger.error(ControllerActivity.ERROR_WHILE_FETCHING_STATUS, e.toString());
+        }finally {
+            WorkflowLogger.footer();
         }
 
     }

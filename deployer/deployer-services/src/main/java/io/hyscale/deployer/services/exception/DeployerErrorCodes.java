@@ -27,7 +27,7 @@ public enum DeployerErrorCodes implements HyscaleErrorCode {
     UNABLE_TO_READ_KUBE_CONFIG("Unable to read kubeconfig "),
     FAILED_TO_RETRIEVE_POD("Failed to retrieve pods"),
     FAILED_TO_TAIL_POD("Failed to tail pod logs"),
-    RESOURCE_NOT_FOUND("Resource {} not found "),
+    RESOURCE_NOT_FOUND("Resource not found {} "),
     FAILED_TO_GET_RESOURCE("Failed to get resource {} "),
     FAILED_TO_CREATE_RESOURCE("Failed to create resource {}"),
     FAILED_TO_DELETE_RESOURCE("Failed to delete resource {}"),
