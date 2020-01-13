@@ -82,9 +82,11 @@ public class VolumeTemplatesHandler implements ManifestHandler {
 
         List<ManifestSnippet> snippetList = new ArrayList<>();
 
+
         try {
             // Creating a manifest snippet for volumeClaimTemplates
             snippetList.add(buildVolumeClaimSnippet(volumes, appMetaData));
+            snippetList.add(getServiceNameSnippet(appMetaData.getServiceName()));
             manifestContext.addGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER,
                     ManifestResource.STATEFUL_SET.getKind());
 
@@ -165,5 +167,13 @@ public class VolumeTemplatesHandler implements ManifestHandler {
             }
         }*/
         return true;
+    }
+
+    private ManifestSnippet getServiceNameSnippet(String serviceName){
+        ManifestSnippet snippet =new ManifestSnippet();
+        snippet.setSnippet(serviceName);
+        snippet.setKind(ManifestResource.STATEFUL_SET.getKind());
+        snippet.setPath("spec.serviceName");
+        return snippet;
     }
 }
