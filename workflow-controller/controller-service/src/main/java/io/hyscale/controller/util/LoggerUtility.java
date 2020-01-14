@@ -61,15 +61,16 @@ public class LoggerUtility {
 	 */
 	public void deploymentLogs(WorkflowContext context) {
 
+		String appName = context.getAppName();
 		String serviceName = context.getServiceName();
+		String namespace = context.getNamespace();
 
 		Boolean tail = (Boolean) context.getAttribute(WorkflowConstants.TAIL_LOGS);
 		tail = (tail == null) ? false : tail;
 		Integer lines = (Integer) context.getAttribute(WorkflowConstants.LINES);
-		String appName = context.getAppName();
 		DeploymentContext deploymentContext = new DeploymentContext();
 		deploymentContext.setAuthConfig(authConfigBuilder.getAuthConfig());
-		deploymentContext.setNamespace(context.getNamespace());
+        deploymentContext.setNamespace(namespace);
 		deploymentContext.setAppName(appName);
 		deploymentContext.setServiceName(serviceName);
 		deploymentContext.setTailLogs(tail);
@@ -79,16 +80,17 @@ public class LoggerUtility {
 			WorkflowLogger.header(ControllerActivity.SERVICE_LOGS);
 			deployerLogUtil.processLogs(deploymentContext);
 		} catch (HyscaleException ex) {
+		    logger.error("Error while getting deployment logs for service: {}, in namespace: {}", serviceName, namespace, ex);
 			if (ex.getHyscaleErrorCode() == DeployerErrorCodes.FAILED_TO_RETRIEVE_POD) {
 				WorkflowLogger.error(ControllerActivity.SERVICE_NOT_CREATED);
 			} else {
+			    context.setFailed(true);
 				WorkflowLogger.error(ControllerActivity.FAILED_TO_STREAM_SERVICE_LOGS, ex.getMessage());
 			}
 			WorkflowLogger.error(ControllerActivity.CHECK_SERVICE_STATUS);
 		} finally {
 			WorkflowLogger.footer();
 		}
-		return;
 	}
 
 	/**

@@ -15,6 +15,8 @@
  */
 package io.hyscale.controller.commands;
 
+import java.util.concurrent.Callable;
+
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
@@ -29,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.logger.WorkflowLogger;
 import picocli.CommandLine.Command;
@@ -38,8 +41,8 @@ import picocli.CommandLine.Option;
  *  This class executes the 'hyscale get service logs' command
  *  It is a sub-command of the 'hyscale get service' command
  *  @see HyscaleGetServiceCommand .
- *  Every command/sub-command has to implement the Runnable so that
- *  whenever the command is executed the {@link #run()}
+ *  Every command/sub-command has to implement the {@link Callable} so that
+ *  whenever the command is executed the {@link #call()}
  *  method will be invoked
  *
  * @option serviceName name of the service
@@ -56,9 +59,9 @@ import picocli.CommandLine.Option;
 
 @Command(name = "logs", aliases = { "log" }, description = "Displays the service logs")
 @Component
-public class HyscaleServiceLogsCommand implements Runnable {
+public class HyscaleServiceLogsCommand implements Callable<Integer> {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(HyscaleServiceLogsCommand.class);
+	private static final Logger logger = LoggerFactory.getLogger(HyscaleServiceLogsCommand.class);
 
 	@Option(names = { "-h", "--help" }, usageHelp = true, description = "Displays help information for the specified command")
 	private boolean helpRequested = false;
@@ -87,9 +90,9 @@ public class HyscaleServiceLogsCommand implements Runnable {
 	private LoggerUtility loggerUtility;
 
 	@Override
-	public void run() {
+	public Integer call() throws Exception{
 		if (!CommandUtil.isInputValid(this)) {
-			System.exit(1);
+			return ToolConstants.INVALID_INPUT_ERROR_CODE;
 		}
 		
 		WorkflowContext workflowContext = new WorkflowContext();
@@ -102,6 +105,7 @@ public class HyscaleServiceLogsCommand implements Runnable {
 
 		loggerUtility.getLogs(workflowContext);
 
+		return workflowContext.isFailed() ? ToolConstants.HYSCALE_ERROR_CODE : 0;
 	}
 
 }

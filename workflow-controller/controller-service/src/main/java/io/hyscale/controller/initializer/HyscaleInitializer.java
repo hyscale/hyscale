@@ -29,7 +29,7 @@ import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.controller.commands.HyscaleCommand;
 import io.hyscale.controller.core.exception.ControllerErrorCodes;
-import io.hyscale.controller.util.ExceptionHandler;
+import io.hyscale.controller.exception.ExceptionHandler;
 import io.hyscale.controller.util.ResourceCleanUpUtil;
 import io.hyscale.controller.util.ShutdownHook;
 import picocli.CommandLine;
@@ -56,7 +56,7 @@ public class HyscaleInitializer implements CommandLineRunner {
     
     @Autowired
     private ExceptionHandler exceptionHandler;
-
+    
     static {
         System.setProperty(ImageBuilderConfig.IMAGE_BUILDER_PROP, ImageBuilder.LOCAL.name());
         System.setProperty(ToolConstants.HYSCALECTL_LOGS_DIR_PROPERTY, SetupConfig.getToolLogDir());
@@ -68,19 +68,21 @@ public class HyscaleInitializer implements CommandLineRunner {
     }
 
     public void run(String... args) {
-
+        int exitCode = 1;
         try {
             Runtime.getRuntime().addShutdownHook(new ShutdownHook());
             CommandLine commandLine = new CommandLine(new HyscaleCommand(), factory);
             commandLine.setExecutionExceptionHandler(exceptionHandler);
-            commandLine.execute(args);
+            exitCode = commandLine.execute(args);
         } catch (ParameterException e) {
             logger.error("Error while processing command, error {}", ControllerErrorCodes.INVALID_COMMAND.getErrorMessage(), e);
         } catch (Throwable e) {
         	logger.error("Unexpected error in processing command, error {}", ControllerErrorCodes.UNEXPECTED_ERROR.getErrorMessage(), e);
 		} finally {
+		    logger.debug("HyscaleInitializer::exit code: {}", exitCode);
 			ResourceCleanUpUtil.performCleanUp();
 		}
+        System.exit(exitCode);
     }
 
 }

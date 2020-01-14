@@ -45,7 +45,7 @@ public abstract class ComponentInvoker<C extends ComponentInvokerContext> {
         this.hooks.add(hook);
     }
 
-    public void execute(C context) {
+    public void execute(C context) throws HyscaleException {
         try {
             if (hooks == null || hooks.isEmpty()) {
                 operate(context);
@@ -80,12 +80,14 @@ public abstract class ComponentInvoker<C extends ComponentInvokerContext> {
 
     protected abstract void doExecute(C context) throws HyscaleException;
 
-    protected abstract void onError(C context, HyscaleException th);
+    protected abstract void onError(C context, HyscaleException th) throws HyscaleException;
 
     private boolean operate(C context) throws HyscaleException {
         if (context == null || context.isFailed()) {
             logger.error("Cannot execute the component {}", getClass());
-            onError(context, context.getHyscaleException());
+            if (context.getHyscaleException() != null) {
+                throw context.getHyscaleException();
+            }
             return false;
         }
         doExecute(context);

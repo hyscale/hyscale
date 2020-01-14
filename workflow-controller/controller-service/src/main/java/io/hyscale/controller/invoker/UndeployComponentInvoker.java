@@ -71,18 +71,23 @@ public class UndeployComponentInvoker extends ComponentInvoker<WorkflowContext> 
         if (context == null) {
             return;
         }
+        String namespace = context.getNamespace();
+        String appName = context.getAppName();
+        String serviceName = context.getServiceName();
+        
         WorkflowLogger.header(ControllerActivity.STARTING_UNDEPLOYMENT);
         DeploymentContext deploymentContext = new DeploymentContext();
         deploymentContext.setAuthConfig(authConfigBuilder.getAuthConfig());
-        deploymentContext.setNamespace(context.getNamespace());
-        deploymentContext.setAppName(context.getAppName());
-        deploymentContext.setServiceName(context.getServiceName());
+        deploymentContext.setNamespace(namespace);
+        deploymentContext.setAppName(appName);
+        deploymentContext.setServiceName(serviceName);
 
         try {
             deployer.unDeploy(deploymentContext);
         } catch (HyscaleException ex) {
             WorkflowLogger.footer();
             WorkflowLogger.error(ControllerActivity.UNDEPLOYMENT_FAILED, ex.getMessage());
+            logger.error("Error while undeploying app: {}, service: {}, in namespace: {}", appName, serviceName, namespace, ex);
             throw ex;
         } finally {
             WorkflowLogger.footer();
@@ -90,11 +95,14 @@ public class UndeployComponentInvoker extends ComponentInvoker<WorkflowContext> 
     }
 
     @Override
-    protected void onError(WorkflowContext context, HyscaleException he) {
+    protected void onError(WorkflowContext context, HyscaleException he) throws HyscaleException {
         WorkflowLogger.header(ControllerActivity.ERROR);
         WorkflowLogger.error(ControllerActivity.CAUSE, he != null ?
                 he.getMessage() : ControllerErrorCodes.UNDEPLOYMENT_FAILED.getErrorMessage());
         context.setFailed(true);
+        if (he != null) {
+            throw he;
+        }
     }
 
 }

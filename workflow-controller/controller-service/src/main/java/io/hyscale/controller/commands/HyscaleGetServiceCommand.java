@@ -15,15 +15,19 @@
  */
 package io.hyscale.controller.commands;
 
+import java.util.concurrent.Callable;
+
 import org.springframework.stereotype.Component;
+
+import io.hyscale.commons.constants.ToolConstants;
 import picocli.CommandLine;
 
 /**
  *  This class executes  'hyscale get service' command
  *  It is a sub-command of the 'hyscale get ' command
  *  @see HyscaleGetCommand .
- *  Every command/sub-command has to implement the Runnable so that
- *  whenever the command is executed the {@link #run()}
+ *  Every command/sub-command has to implement the {@link Callable} so that
+ *  whenever the command is executed the {@link #call()}
  *  method will be invoked
  *
  * The sub-commands of are handled by @Command annotation
@@ -32,7 +36,7 @@ import picocli.CommandLine;
 @CommandLine.Command(name = "service", subcommands = { HyscaleServiceLogsCommand.class,
 		HyscaleServiceStatusCommand.class }, description = "Performs action on the service")
 @Component
-public class HyscaleGetServiceCommand implements Runnable {
+public class HyscaleGetServiceCommand implements Callable<Integer> {
 
 	@CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "Displays the help information of the specified command")
 	private boolean helpRequested = false;
@@ -42,7 +46,8 @@ public class HyscaleGetServiceCommand implements Runnable {
 	 * Provides usage of this command to the user
 	 */
 	@Override
-	public void run() {
-		new CommandLine(new HyscaleGetServiceCommand()).usage(System.out);
+    public Integer call() throws Exception {
+	    new CommandLine(new HyscaleGetServiceCommand()).usage(System.out);
+	    return ToolConstants.INVALID_INPUT_ERROR_CODE;
 	}
 }

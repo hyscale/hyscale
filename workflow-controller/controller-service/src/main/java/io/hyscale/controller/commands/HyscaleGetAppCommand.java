@@ -15,15 +15,19 @@
  */
 package io.hyscale.controller.commands;
 
+import java.util.concurrent.Callable;
+
 import org.springframework.stereotype.Component;
+
+import io.hyscale.commons.constants.ToolConstants;
 import picocli.CommandLine;
 
 /**
  *  This class executes 'hyscale get app' command
  *  It is a sub-command of the 'hyscale get ' command
  *  @see HyscaleGetCommand .
- *  Every command/sub-command has to implement the Runnable so tha
- *  whenever the command is executed the {@link #run()}
+ *  Every command/sub-command has to implement the {@link Callable} so tha
+ *  whenever the command is executed the {@link #call()}
  *  method will be invoked
 
  *
@@ -32,7 +36,7 @@ import picocli.CommandLine;
  */
 @CommandLine.Command(name = "app", subcommands = { HyscaleAppStatusCommand.class }, description = "Operates on the application specified.")
 @Component
-public class HyscaleGetAppCommand implements Runnable {
+public class HyscaleGetAppCommand implements Callable<Integer> {
 
 	@CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "Displays the help information of the specified command")
 	private boolean helpRequested = false;
@@ -42,7 +46,8 @@ public class HyscaleGetAppCommand implements Runnable {
 	 * Provides usage of this command to the user
 	 */
 	@Override
-	public void run() {
-		new CommandLine(new HyscaleGetAppCommand()).usage(System.out);
+    public Integer call() throws Exception {
+	    new CommandLine(new HyscaleGetAppCommand()).usage(System.out);
+	    return ToolConstants.INVALID_INPUT_ERROR_CODE;
 	}
 }
