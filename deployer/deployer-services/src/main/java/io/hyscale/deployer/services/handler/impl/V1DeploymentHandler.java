@@ -32,7 +32,6 @@ import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.ApiException;
 import io.kubernetes.client.apis.AppsV1Api;
-import io.kubernetes.client.apis.AppsV1beta2Api;
 import io.kubernetes.client.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -180,14 +179,14 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deploymen
 
     @Override
     public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-        AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
+        AppsV1Api appsV1Api = new AppsV1Api(apiClient);
         V1DeleteOptions deleteOptions = getDeleteOptions();
         deleteOptions.setApiVersion("apps/v1");
         ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_DEPLOYMENT);
         WorkflowLogger.startActivity(activityContext);
         try {
             try {
-                appsV1beta2Api.deleteNamespacedDeployment(name, namespace, deleteOptions, TRUE, null, null, null, null);
+                appsV1Api.deleteNamespacedDeployment(name, namespace, deleteOptions, TRUE, null, null, null, null);
             } catch (JsonSyntaxException e) {
                 // K8s end exception ignore
             }

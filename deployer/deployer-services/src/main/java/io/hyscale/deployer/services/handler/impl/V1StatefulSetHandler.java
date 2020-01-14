@@ -134,12 +134,12 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1Stateful
 
     @Override
     public List<V1StatefulSet> getBySelector(ApiClient apiClient, String selector, boolean label, String namespace) throws HyscaleException {
-        AppsV1Api appsV1beta2Api = new AppsV1Api(apiClient);
+        AppsV1Api appsV1Api = new AppsV1Api(apiClient);
         String labelSelector = label ? selector : null;
         String fieldSelector = label ? null : selector;
         List<V1StatefulSet> statefulSets = null;
         try {
-            V1StatefulSetList statefulSetList = appsV1beta2Api.listNamespacedStatefulSet(namespace, null, TRUE,
+            V1StatefulSetList statefulSetList = appsV1Api.listNamespacedStatefulSet(namespace, null, TRUE,
                     null, fieldSelector, labelSelector, null, null, null, null);
             statefulSets = statefulSetList != null ? statefulSetList.getItems() : null;
         } catch (ApiException e) {
