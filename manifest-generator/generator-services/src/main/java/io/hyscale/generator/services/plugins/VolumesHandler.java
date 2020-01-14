@@ -30,6 +30,7 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
 import io.kubernetes.client.models.V1ConfigMapVolumeSource;
 import io.kubernetes.client.models.V1SecretVolumeSource;
+import io.kubernetes.client.models.V1StatefulSet;
 import io.kubernetes.client.models.V1Volume;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,7 +89,6 @@ public class VolumesHandler implements ManifestHandler {
             volumes.add(v1Volume);
             logger.debug("Preparing  volumes for props.");
         }
-
         if (ManifestPredicates.haveSecretsVolume().test(serviceSpec)
                 && ManifestPredicates.getSecretsEnvPredicate().test(serviceSpec)) {
             V1Volume v1Volume = new V1Volume();

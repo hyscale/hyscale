@@ -31,7 +31,7 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 public enum ManifestResource {
 
-    STATEFUL_SET("StatefulSet", "apps/v1beta2") {
+    STATEFUL_SET("StatefulSet", "apps/v1") {
         @Override
         public String getName(AppMetaData appMetaData) {
             StringBuilder sb = new StringBuilder();
@@ -52,7 +52,7 @@ public enum ManifestResource {
             return ManifestPredicates.getVolumesPredicate();
         }
     },
-    DEPLOYMENT("Deployment", "apps/v1beta2") {
+    DEPLOYMENT("Deployment", "apps/v1") {
         @Override
         public String getName(AppMetaData appMetaData) {
             StringBuilder sb = new StringBuilder();
