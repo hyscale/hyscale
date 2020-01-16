@@ -97,7 +97,7 @@ public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
         try {
             WorkflowLogger.startActivity(activityContext);
             try {
-                coreV1Api.deleteNamespace(name, deleteOptions, TRUE, null, null, null, null);
+                coreV1Api.deleteNamespace(name,TRUE,deleteOptions,null,null,null,null);
             } catch (JsonSyntaxException e) {
                 // K8s end exception ignore
             }

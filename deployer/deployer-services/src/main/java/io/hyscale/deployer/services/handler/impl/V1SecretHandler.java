@@ -191,7 +191,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 		WorkflowLogger.startActivity(activityContext);
 		try {
 		    try {
-			coreV1Api.deleteNamespacedSecret(name, namespace, deleteOptions, TRUE, null, null, null, null);
+				coreV1Api.deleteNamespacedSecret(name, namespace, TRUE, deleteOptions, null, null, null, null);
 		    } catch (JsonSyntaxException e) {
 			// K8s end exception ignore
 		    }

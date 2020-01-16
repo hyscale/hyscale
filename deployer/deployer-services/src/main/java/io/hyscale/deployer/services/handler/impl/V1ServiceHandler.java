@@ -202,7 +202,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 	WorkflowLogger.startActivity(activityContext);
 	try {
 	    try {
-		coreV1Api.deleteNamespacedService(name, namespace, deleteOptions, TRUE, null, null, null, null);
+			coreV1Api.deleteNamespacedService(name, namespace, TRUE, deleteOptions, null, null, null, null);
 	    } catch (JsonSyntaxException e) {
 		// K8s end exception ignore
 	    }

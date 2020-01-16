@@ -187,7 +187,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 		deleteOptions.setApiVersion("apps/v1beta2");
 		try {
 		    try {
-			coreV1Api.deleteNamespacedPod(name, namespace, deleteOptions, TRUE, null, null, null, null);
+				coreV1Api.deleteNamespacedPod(name, namespace, TRUE,deleteOptions, null, null, null, null);
 		    } catch (JsonSyntaxException e) {
 			// K8s end exception ignore
 		    } 

@@ -247,7 +247,7 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2Sta
 		WorkflowLogger.startActivity(activityContext);
 		try {
 			try {
-			    appsV1beta2Api.deleteNamespacedStatefulSet(name, namespace, deleteOptions, TRUE, null, null, null, null);
+				appsV1beta2Api.deleteNamespacedStatefulSet(name, namespace, TRUE, deleteOptions, null, null, null, null);
 			} catch (JsonSyntaxException e) {
 			    // K8s end exception ignore
 			}

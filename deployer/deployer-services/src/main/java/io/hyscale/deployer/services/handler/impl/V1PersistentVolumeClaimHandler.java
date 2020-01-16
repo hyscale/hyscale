@@ -117,8 +117,7 @@ public class V1PersistentVolumeClaimHandler implements ResourceLifeCycleHandler<
 		WorkflowLogger.startActivity(activityContext);
 		try {
 		    try {
-			coreV1Api.deleteNamespacedPersistentVolumeClaim(name, namespace, deleteOptions, TRUE, null, null, null,
-				null);
+				coreV1Api.deleteNamespacedPersistentVolumeClaim(name, namespace, TRUE, deleteOptions, null, null, null, null);
 		    } catch (JsonSyntaxException e) {
 			// K8s Exception ignore
 		    }

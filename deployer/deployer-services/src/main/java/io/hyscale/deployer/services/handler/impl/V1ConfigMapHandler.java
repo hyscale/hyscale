@@ -198,7 +198,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         WorkflowLogger.startActivity(activityContext);
         try {
             try {
-                coreV1Api.deleteNamespacedConfigMap(name, namespace, deleteOptions, TRUE, null, null, null, null);
+                coreV1Api.deleteNamespacedConfigMap(name, namespace, TRUE,deleteOptions, null, null, null, null);
             } catch (JsonSyntaxException e) {
                 // K8s end exception ignore
             }

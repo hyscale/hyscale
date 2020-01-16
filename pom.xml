@@ -29,7 +29,7 @@
 		<hyscale.max.lb.ready.timeout>90000</hyscale.max.lb.ready.timeout>
 		<jdk.version>11</jdk.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<kubernetes.client.version>4.0.0</kubernetes.client.version>
+		<kubernetes.client.version>5.0.0</kubernetes.client.version>
 		<slfj.log.version>1.7.26</slfj.log.version>
 		<commons-io.version>2.6</commons-io.version>
 		<commons-cli.version>1.4</commons-cli.version>

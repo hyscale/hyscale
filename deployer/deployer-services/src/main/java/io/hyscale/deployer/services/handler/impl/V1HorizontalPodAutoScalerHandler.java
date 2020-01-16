@@ -194,7 +194,7 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
         WorkflowLogger.startActivity(activityContext);
         try {
             try {
-                autoscalingV1Api.deleteNamespacedHorizontalPodAutoscaler(name, namespace, deleteOptions, TRUE, null, null, null, null);
+                autoscalingV1Api.deleteNamespacedHorizontalPodAutoscaler(name, namespace, TRUE,deleteOptions, null, null, null, null);
             } catch (JsonSyntaxException e) {
                 logger.debug("Ignoring delete HorizontalPodAutoScaler exception");
             }

@@ -196,7 +196,7 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Depl
 		WorkflowLogger.startActivity(activityContext);
 		try {
 			try {
-			    appsV1beta2Api.deleteNamespacedDeployment(name, namespace, deleteOptions, TRUE, null, null, null, null);
+			    appsV1beta2Api.deleteNamespacedDeployment(name, namespace, TRUE, deleteOptions, null, null, null, null);
 			} catch (JsonSyntaxException e) {
 			    // K8s end exception ignore
 			}
