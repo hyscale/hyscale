@@ -20,6 +20,12 @@ public class ValidationConstants {
     public static final String APP_NAME_REGEX = "([a-z0-9-]){2,30}";
 
     public static final String SERVICE_NAME_REGEX = "[a-z]([-a-z0-9]*[a-z0-9])?";
+    
+    public static final String SERVICE_SPEC_NAME_REGEX = "(.*)" + SERVICE_NAME_REGEX + "(\\.hspec\\.yaml)$";
+    
+    public static final String PROFILE_NAME_REGEX = "([a-zA-Z0-9-]){2,30}";
+    
+    public static final String PROFILE_FILENAME_REGEX = "(.*)" + PROFILE_NAME_REGEX + ToolConstants.DASH + SERVICE_NAME_REGEX + "(\\.hprof\\.yaml)$";
 
     public static final String NAMESPACE_REGEX = "([a-z0-9-]){2,30}";
     
@@ -36,6 +42,10 @@ public class ValidationConstants {
             + " start with an alphabetic character, and end with an alphanumeric character (e.g. 'my-name',  or 'abc-123', "
             + "regex used for validation is '"
             + SERVICE_NAME_REGEX + "')";
+    
+    public static final String INVALID_SERVICE_SPEC_NAME_MSG = "Service spec name \"{}\" is invalid. It should follow the pattern <service-name>.hspec.yaml";
+    
+    public static final String INVALID_PROFILE_FILE_NAME_MSG = "Profile name \"{} \" is invalid. It should follow the pattern <profile-name>-<service-name>.hprof.yaml";
 
     public static final String INVALID_NAMESPACE_MSG = "Namespace \"{}\" is invalid. It must consist of lower case alphanumeric characters or '-', "
             + "its length should be between 2 and 30."
@@ -45,4 +55,5 @@ public class ValidationConstants {
     public static final String MAX_LOG_LINES_ERROR_MSG = "Logs lines must be less than " + MAX_LOG_LINES;
     
     public static final String MIN_LOG_LINES_ERROR_MSG = "Logs lines must be more than " + MIN_LOG_LINES;
+    
 }

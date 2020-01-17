@@ -1,0 +1,39 @@
+{
+  "patchTestModel": {
+    "key": "newKey",
+    "testVal1": "newVal1",
+    "testVal2": "newVal2"
+  },
+  "patchTestModelList": [
+    {
+      "key": "key2",
+      "testVal1": "newVal21",
+      "testVal2": "newVal22"
+    }
+  ],
+  "testBoolean": true,
+  "testInt": 5,
+  "testIntList": [
+    1,
+    2,
+    3
+  ],
+  "testList": [
+    "newtestVal1",
+    "testVal2"
+  ],
+  "testMap": {
+    "mapKey2": "newMapVal2"
+  },
+  "testModelUpdate": {
+    "testField": "testVal"
+  },
+  "testListToModel": {
+    "testField": "testVal"
+  },
+  "testModelToList":[
+  1,2,3
+  ],
+  "testNullField": null,
+  "testString": "newTestVal"
+}

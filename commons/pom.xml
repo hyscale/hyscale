@@ -12,6 +12,13 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.skyscreamer</groupId>
+			<artifactId>jsonassert</artifactId>
+			<version>${org.skyscreamer.jsonassert.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>javax.validation</groupId>
 			<artifactId>validation-api</artifactId>
 			<version>${javax.validation-api.version}</version>

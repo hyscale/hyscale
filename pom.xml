@@ -39,6 +39,8 @@
 		<javax.el-api.version>3.0.0</javax.el-api.version>
 		<glassfish.web.javax.el-api.version>2.2.6</glassfish.web.javax.el-api.version>
 		<javax.annotation-api.version>1.3.2</javax.annotation-api.version>
+		<org.skyscreamer.jsonassert.version>1.5.0</org.skyscreamer.jsonassert.version>
+		<javax.json-api.version>1.1.4</javax.json-api.version>
 		<google.gson.version>2.6.2</google.gson.version>
 		<flipkart.zjsonpatch.version>0.4.5</flipkart.zjsonpatch.version>
 		<picocli.spring-boot.version>4.0.1</picocli.spring-boot.version>
@@ -113,15 +115,20 @@
 			<artifactId>jackson-databind</artifactId>
 			<version>${jackson.version}</version>
 		</dependency>
-                <dependency>
-            		<groupId>com.fasterxml.jackson.core</groupId>
-           		<artifactId>jackson-core</artifactId>
-	            	<version>${jackson.version}</version>
-	        </dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-yaml</artifactId>
 			<version>${jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish</groupId>
+			<artifactId>javax.json</artifactId>
+			<version>${javax.json-api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -143,10 +150,10 @@
 	<build>
 		<resources>
 			<!-- Filter resource files -->
-		<resource>
-			<directory>src/main/resources</directory>
-			<filtering>true</filtering>
-		</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
 		</resources>
 		<pluginManagement>
 			<plugins>
@@ -212,7 +219,7 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
-		
+
 		<plugins>
 			<plugin>
 				<groupId>com.mycila.maven-license-plugin</groupId>

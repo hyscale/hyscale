@@ -32,7 +32,8 @@ public enum ControllerErrorCodes implements HyscaleErrorCode {
     INVALID_PORTS_FOUND("Ports found to be invalid in service spec"),
     INVALID_VOLUMES_FOUND("Volumes found to be invalid in service spec"),
     UNEXPECTED_ERROR("Unexpected error occurred"),
-    UNDEPLOYMENT_FAILED("Failed to Undeploy");
+    UNDEPLOYMENT_FAILED("Failed to Undeploy"),
+    UNIQUE_PROFILE_REQUIRED("Service {} cannot have multiple profiles");
 
     private String message;
 

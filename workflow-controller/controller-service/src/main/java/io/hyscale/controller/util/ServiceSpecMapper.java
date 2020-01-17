@@ -30,9 +30,15 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.utils.HyscaleFilesUtil;
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.commons.utils.WindowsUtil;
+import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.core.exception.ControllerErrorCodes;
+import io.hyscale.servicespec.commons.builder.EffectiveServiceSpecBuilder;
+import io.hyscale.servicespec.commons.builder.MapFieldDataProvider;
+import io.hyscale.servicespec.commons.builder.Type;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 /**
@@ -47,22 +53,56 @@ public class ServiceSpecMapper {
     @Autowired
     private EffectiveServiceSpecUtil effectiveServiceSpecUtil;
 
-    public ServiceSpec from(File serviceSpecFile) throws HyscaleException {
+    public ServiceSpec from(File serviceSpecFile, File profileFile) throws HyscaleException {
         checkForFile(serviceSpecFile);
+        String serviceSpecData = HyscaleFilesUtil.readFileData(serviceSpecFile);
+        String profileData = null;
         ObjectMapper mapper = ObjectMapperFactory.yamlMapper();
+        if (profileFile != null) {
+            profileData = HyscaleFilesUtil.readFileData(profileFile);
+            if (StringUtils.isNotBlank(profileData)) {
+                logger.debug("Merging profile {} for service {}", profileFile.getName(), serviceSpecFile.getName());
+                
+                MapFieldDataProvider mapFieldDataProvider = new MapFieldDataProvider();
+                
+                // Merge
+                serviceSpecData = new EffectiveServiceSpecBuilder().type(Type.YAML).withServiceSpec(serviceSpecData)
+                        .withProfile(profileData).withFieldMetaDataProvider(mapFieldDataProvider).build();
+                mapper = ObjectMapperFactory.jsonMapper();
+            } else {
+                // empty profile
+                WorkflowLogger.persist(ControllerActivity.PROFILE_NOT_FOUND, profileFile.getName(), serviceSpecFile.getName());
+            }
+        }
+        
         try {
-            JsonNode rootNode = mapper.readTree(serviceSpecFile);
-
+            JsonNode rootNode = mapper.readTree(serviceSpecData);
             if (WindowsUtil.isHostWindows()) {
                 logger.debug("Updating service spec as host system is windows");
                 rootNode = effectiveServiceSpecUtil.updateFilePath((ObjectNode) rootNode);
             }
-            ServiceSpec serviceSpec = new ServiceSpec(rootNode);
-            return serviceSpec;
+            return new ServiceSpec(rootNode);
         } catch (IOException e) {
             logger.error("Error while processing service spec ", e);
             throw new HyscaleException(ControllerErrorCodes.SERVICE_SPEC_PROCESSING_FAILED, e.getMessage());
         }
+    }
+
+    public ServiceSpec from(File serviceSpecFile) throws HyscaleException {
+        return from(serviceSpecFile, null);
+    }
+    
+    public ServiceSpec from(String serviceFilepath, String profileFilePath) throws HyscaleException {
+        if (StringUtils.isBlank(serviceFilepath)) {
+            throw buildException(serviceFilepath);
+        }
+        File serviceSpecFile = new File(serviceFilepath);
+        
+        File profileFile = null;
+        if (StringUtils.isNotBlank(profileFilePath)) {
+            profileFile = new File(profileFilePath);
+        }
+        return from(serviceSpecFile, profileFile);
     }
 
     public ServiceSpec from(String filepath) throws HyscaleException {
@@ -70,7 +110,6 @@ public class ServiceSpecMapper {
             throw buildException(filepath);
         }
         File serviceSpecFile = new File(filepath);
-        checkForFile(serviceSpecFile);
         return from(serviceSpecFile);
     }
 
