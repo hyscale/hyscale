@@ -1,0 +1,7 @@
+environment: dev
+overrides: hrdatabase
+
+secrets:
+    TEST_VAL: testVal  # add test secret
+    
+memory: 512Mi # update memory limit

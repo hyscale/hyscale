@@ -1,0 +1,17 @@
+environment: dev
+overrides: frontend
+
+replicas: 2 # update number of replicas
+
+volumes:
+  - name: tomcat-logs # change volume size
+    path: /usr/local/content/tomcat/current/logs
+    size: 2Gi
+  - name: tomcat-test # add temporary volume
+    path: /tmp/
+    size: 1Gi
+    
+props:
+    REGION: Delhi # update props value
+
+    
