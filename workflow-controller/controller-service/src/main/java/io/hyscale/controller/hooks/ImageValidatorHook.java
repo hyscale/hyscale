@@ -18,8 +18,8 @@ package io.hyscale.controller.hooks;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
 import io.hyscale.commons.component.InvokerHook;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.apache.commons.lang3.StringUtils;
@@ -41,7 +41,7 @@ public class ImageValidatorHook implements InvokerHook<WorkflowContext> {
         logger.debug("Executing {}", getClass());
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
-            throw new HyscaleException(ControllerErrorCodes.SERVICE_SPEC_REQUIRED);
+            throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_REQUIRED);
         }
         String imageName = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.name), String.class);
         if (StringUtils.isBlank(imageName)) {

@@ -49,14 +49,10 @@ public class StrategicPatchTest {
     private static String mergedData;
 
     @BeforeAll
-    public static void init() {
-        try {
-            sourceData = getData("/patch/source.json");
-            patchData = getData("/patch/patch.json");
-            mergedData = getData("/patch/merged.json");
-        } catch (HyscaleException e) {
-            fail();
-        }
+    public static void init() throws HyscaleException {
+        sourceData = getData("/patch/source.json");
+        patchData = getData("/patch/patch.json");
+        mergedData = getData("/patch/merged.json");
     }
 
     public static Stream<Arguments> getApplyInput() {

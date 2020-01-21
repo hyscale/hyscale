@@ -26,13 +26,13 @@ import org.slf4j.LoggerFactory;
 
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.core.exception.ControllerErrorCodes;
 
 public class ServiceProfileUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(ServiceProfileUtil.class);
-
-    private static final String DOT_REGEX = "\\.";
 
     public static Map<String, String> getServiceProfileMap(List<String> profiles) throws HyscaleException {
         Map<String, String> serviceProfileMap = new HashMap<String, String>();
@@ -52,19 +52,6 @@ public class ServiceProfileUtil {
             }
         }
         return serviceProfileMap;
-    }
-
-    /**
-     * 
-     * @param serviceSpecPath .../<service-name>.hspec.yaml
-     * @return
-     */
-    public static String getServiceName(String serviceSpecPath) {
-        if (StringUtils.isBlank(serviceSpecPath)) {
-            return null;
-        }
-        String serviceSpec = FilenameUtils.getBaseName(serviceSpecPath);
-        return serviceSpec.split(DOT_REGEX)[0];
     }
 
     /**
@@ -96,6 +83,15 @@ public class ServiceProfileUtil {
         String serviceAndProfile = FilenameUtils.getBaseName(profilePath);
 
         return serviceAndProfile.split(ToolConstants.DASH)[0];
-
+    }
+    
+    public static void printWarnMsg(Map<String, String> serviceProfileMap) {
+        if (serviceProfileMap == null || serviceProfileMap.isEmpty()) {
+            return;
+        }
+        String services = serviceProfileMap.keySet().toString();
+        WorkflowLogger.footer();
+        WorkflowLogger.warn(ControllerActivity.NO_SERVICE_FOUND_FOR_PROFILE, services);
+        WorkflowLogger.footer();
     }
 }

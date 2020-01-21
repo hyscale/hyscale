@@ -36,6 +36,7 @@ import io.hyscale.commons.models.DockerfileEntity;
 import io.hyscale.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.controller.hooks.ImageCleanUpHook;
 import io.hyscale.builder.services.service.ImageBuildPushService;
+import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
@@ -72,7 +73,7 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
         if (serviceSpec == null) {
             context.setFailed(true);
             logger.error(" Cannot build image for empty service spec");
-            throw new HyscaleException(ControllerErrorCodes.SERVICE_SPEC_REQUIRED);
+            throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_REQUIRED);
         }
         String serviceName;
         try {

@@ -18,7 +18,7 @@ package io.hyscale.servicespec.commons.builder;
 /**
  * Input type for service profile and spec
  */
-public enum Type {
+public enum ServiceInputType {
 	JSON,
 	YAML;
 }

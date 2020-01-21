@@ -44,7 +44,7 @@ public class MapFieldDataProvider implements FieldMetaDataProvider{
         try {
             properties.load(MapFieldDataProvider.class.getResourceAsStream("/properties/field-data.properties"));
         } catch (Exception e) {
-            logger.error("Error while loading field data properties");
+            logger.error("Error while loading field data properties", e);
         }
         if (properties != null) {
             for (Entry<Object, Object> entry : properties.entrySet()) {

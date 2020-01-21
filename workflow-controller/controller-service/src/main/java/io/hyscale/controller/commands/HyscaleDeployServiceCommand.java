@@ -32,9 +32,9 @@ import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.ServiceProfileUtil;
 import io.hyscale.controller.util.ServiceSpecMapper;
+import io.hyscale.controller.util.ServiceSpecUtil;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -140,24 +140,19 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
 
             WorkflowContext workflowContext = new WorkflowContext();
             workflowContext.addAttribute(WorkflowConstants.DEPLOY_START_TIME, System.currentTimeMillis());
-            String serviceName = ServiceProfileUtil.getServiceName(serviceSpecPath);
-            String profilePath = serviceProfileMap.remove(serviceName);
+            String serviceName = ServiceSpecUtil.getServiceNameFromPath(serviceSpecPath);
             File serviceSpecFile = new File(serviceSpecPath);
-            File profileFile = null;
-            if (StringUtils.isNotBlank(profilePath)) {
-                profileFile = new File(profilePath);
-            }
+            String profilePath = serviceProfileMap.remove(serviceName);
             try {
-                ServiceSpec serviceSpec = serviceSpecMapper.from(serviceSpecFile, profileFile);
+                ServiceSpec serviceSpec = serviceSpecMapper.from(serviceSpecPath, profilePath);
                 workflowContext.setServiceSpec(serviceSpec);
-                workflowContext.setServiceName(serviceName);
-                SetupConfig.clearAbsolutePath();
-                SetupConfig.setAbsolutePath(serviceSpecFile.getAbsoluteFile().getParent());
             } catch (HyscaleException e) {
                 WorkflowLogger.error(ControllerActivity.CANNOT_PROCESS_SERVICE_SPEC, e.getMessage());
                 throw e;
             }
-
+            workflowContext.setServiceName(serviceName);
+            SetupConfig.clearAbsolutePath();
+            SetupConfig.setAbsolutePath(serviceSpecFile.getAbsoluteFile().getParent());
             WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
             workflowContext.setAppName(appName.trim());
             workflowContext.setNamespace(namespace.trim());
@@ -182,13 +177,8 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
             logWorkflowInfo(workflowContext);
             isCommandFailed = isCommandFailed ? isCommandFailed : isServiceFailed;
         }
-        
         if (!serviceProfileMap.isEmpty()) {
-            // unused profiles
-            String services = serviceProfileMap.keySet().toString();
-            WorkflowLogger.footer();
-            WorkflowLogger.warn(ControllerActivity.NO_SERVICE_FOUND_FOR_PROFILE, services);
-            WorkflowLogger.footer();
+            ServiceProfileUtil.printWarnMsg(serviceProfileMap);
         }
         return isCommandFailed ? ToolConstants.HYSCALE_ERROR_CODE : 0;
     }

@@ -25,8 +25,8 @@ import io.hyscale.commons.component.InvokerHook;
 import io.hyscale.commons.commands.CommandExecutor;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.Status;
-import io.hyscale.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
@@ -52,7 +52,7 @@ public class ImageCleanUpHook implements InvokerHook<WorkflowContext> {
 		ServiceSpec serviceSpec = context.getServiceSpec();
 		if (serviceSpec == null) {
 			logger.error(" Cannot clean up image without service specs ");
-			throw new HyscaleException(ControllerErrorCodes.SERVICE_SPEC_REQUIRED);
+			throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_REQUIRED);
 		}
 
 		String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);

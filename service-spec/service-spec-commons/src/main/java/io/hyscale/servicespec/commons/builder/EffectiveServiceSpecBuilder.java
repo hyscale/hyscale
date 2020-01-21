@@ -17,7 +17,6 @@ package io.hyscale.servicespec.commons.builder;
 
 
 import java.io.IOException;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -27,6 +26,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.framework.patch.FieldMetaDataProvider;
 import io.hyscale.commons.framework.patch.StrategicPatch;
 import io.hyscale.commons.utils.ObjectMapperFactory;
+import io.hyscale.servicespec.commons.builder.ServiceInputType;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 
 /**
@@ -36,7 +36,7 @@ import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
  */
 public class EffectiveServiceSpecBuilder {
 
-	private Type type = Type.YAML;
+	private ServiceInputType serviceInputType = ServiceInputType.YAML;
 
 	private String serviceSpec;
 
@@ -44,8 +44,8 @@ public class EffectiveServiceSpecBuilder {
 	
 	private FieldMetaDataProvider fieldMetaDataProvider;
 
-	public EffectiveServiceSpecBuilder type(Type type) {
-		this.type = type;
+	public EffectiveServiceSpecBuilder type(ServiceInputType serviceInputType) {
+		this.serviceInputType = serviceInputType;
 		return this;
 	}
 
@@ -68,7 +68,7 @@ public class EffectiveServiceSpecBuilder {
 
 		validate(serviceSpec, profile);
 
-		if (this.type == Type.YAML) {
+		if (this.serviceInputType == ServiceInputType.YAML) {
 			// convert to JSON
 			serviceSpec = ServiceSpecBuilderUtil.yamlToJson(serviceSpec);
 			profile = ServiceSpecBuilderUtil.yamlToJson(profile);
@@ -84,13 +84,13 @@ public class EffectiveServiceSpecBuilder {
 
 	private void validate(String serviceSpec, String profile) throws HyscaleException {
 		if (StringUtils.isBlank(serviceSpec)) {
-			throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_PARSE_ERROR);
+			throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_REQUIRED);
 		}
 		if (StringUtils.isBlank(profile)) {
-			throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_PROFILE_PARSE_ERROR);
+			throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_PROFILE_REQUIRED);
 		}
 		ObjectMapper mapper;
-		if (Type.JSON == this.type) {
+		if (ServiceInputType.JSON == this.serviceInputType) {
 			mapper = ObjectMapperFactory.jsonMapper();
 		} else {
 			mapper = ObjectMapperFactory.yamlMapper();

@@ -38,7 +38,7 @@ import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.servicespec.commons.builder.EffectiveServiceSpecBuilder;
 import io.hyscale.servicespec.commons.builder.MapFieldDataProvider;
-import io.hyscale.servicespec.commons.builder.Type;
+import io.hyscale.servicespec.commons.builder.ServiceInputType;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 /**
@@ -66,7 +66,7 @@ public class ServiceSpecMapper {
                 MapFieldDataProvider mapFieldDataProvider = new MapFieldDataProvider();
                 
                 // Merge
-                serviceSpecData = new EffectiveServiceSpecBuilder().type(Type.YAML).withServiceSpec(serviceSpecData)
+                serviceSpecData = new EffectiveServiceSpecBuilder().type(ServiceInputType.YAML).withServiceSpec(serviceSpecData)
                         .withProfile(profileData).withFieldMetaDataProvider(mapFieldDataProvider).build();
                 mapper = ObjectMapperFactory.jsonMapper();
             } else {
