@@ -13,8 +13,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>framework</module>
-        <module>core</module>
-        <module>integration</module>
     </modules>
 
 </project>
