@@ -41,17 +41,16 @@ import io.kubernetes.client.ApiException;
 import io.kubernetes.client.apis.AppsV1Api;
 import io.kubernetes.client.models.V1DeleteOptions;
 import io.kubernetes.client.models.V1Pod;
+import io.kubernetes.client.custom.V1Patch;
+import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.List;
 
 /**
  * @author tushart
  *
  */
-
-import io.kubernetes.client.models.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1StatefulSet> {
     private static final Logger LOGGER = LoggerFactory.getLogger(V1StatefulSetHandler.class);
@@ -69,7 +68,7 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1Stateful
         try {
             resource.getMetadata().putAnnotationsItem(
                     AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
-            statefulSet = appsV1Api.createNamespacedStatefulSet(namespace, resource, null, TRUE, null);
+            statefulSet = appsV1Api.createNamespacedStatefulSet(namespace, resource, TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
                     ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.CREATE));
@@ -104,7 +103,7 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1Stateful
         try {
             String resourceVersion = existingStatefulSet.getMetadata().getResourceVersion();
             resource.getMetadata().setResourceVersion(resourceVersion);
-            appsV1Api.replaceNamespacedStatefulSet(name, namespace, resource, TRUE, null);
+            appsV1Api.replaceNamespacedStatefulSet(name, namespace, resource, TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
                     ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.UPDATE));
@@ -139,7 +138,7 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1Stateful
         String fieldSelector = label ? null : selector;
         List<V1StatefulSet> statefulSets = null;
         try {
-            V1StatefulSetList statefulSetList = appsV1Api.listNamespacedStatefulSet(namespace, null, TRUE,
+            V1StatefulSetList statefulSetList = appsV1Api.listNamespacedStatefulSet(namespace, TRUE,
                     null, fieldSelector, labelSelector, null, null, null, null);
             statefulSets = statefulSetList != null ? statefulSetList.getItems() : null;
         } catch (ApiException e) {
@@ -179,7 +178,8 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1Stateful
                     target, V1StatefulSet.class);
             deleteRequired = isDeletePodRequired(apiClient, serviceName, namespace);
             LOGGER.debug("Deleting existing pods for updating StatefulSet patch required :{}", deleteRequired);
-            appsV1Api.patchNamespacedStatefulSet(name, namespace, patchObject, TRUE, null);
+            V1Patch v1Patch = new V1Patch(patchObject.toString());
+            appsV1Api.patchNamespacedStatefulSet(name, namespace, v1Patch, TRUE, null, null, false);
         } catch (HyscaleException ex) {
             LOGGER.error("Error while creating patch for StatefulSet {}, source {}, target {}, error {}", name,
                     sourceStatefulSet, target, ex.toString());
@@ -211,7 +211,7 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1Stateful
         WorkflowLogger.startActivity(activityContext);
         try {
             try {
-                appsV1Api.deleteNamespacedStatefulSet(name, namespace, deleteOptions, TRUE, null, null, null, null);
+                appsV1Api.deleteNamespacedStatefulSet(name, namespace, TRUE, deleteOptions, null, null, null, null);
             } catch (JsonSyntaxException e) {
                 // K8s end exception ignore
             }

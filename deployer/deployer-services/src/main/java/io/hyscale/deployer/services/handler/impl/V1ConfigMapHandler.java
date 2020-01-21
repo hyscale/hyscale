@@ -42,6 +42,7 @@ import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.models.V1ConfigMap;
 import io.kubernetes.client.models.V1ConfigMapList;
 import io.kubernetes.client.models.V1DeleteOptions;
+import io.kubernetes.client.custom.V1Patch;
 
 public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap> {
 
@@ -60,7 +61,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         try {
             resource.getMetadata().putAnnotationsItem(
                     AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
-            configMap = coreV1Api.createNamespacedConfigMap(namespace, resource, null, TRUE, null);
+            configMap = coreV1Api.createNamespacedConfigMap(namespace, resource, TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
                     ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.CREATE));
@@ -95,7 +96,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         try {
             String resourceVersion = existingConfigMap.getMetadata().getResourceVersion();
             resource.getMetadata().setResourceVersion(resourceVersion);
-            coreV1Api.replaceNamespacedConfigMap(name, namespace, resource, TRUE, null);
+            coreV1Api.replaceNamespacedConfigMap(name, namespace, resource, TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
                     ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.UPDATE));
@@ -131,7 +132,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
             String labelSelector = label ? selector : null;
             String fieldSelector = label ? null : selector;
 
-            V1ConfigMapList configMapList = coreV1Api.listNamespacedConfigMap(namespace, null, TRUE, null,
+            V1ConfigMapList configMapList = coreV1Api.listNamespacedConfigMap(namespace, TRUE, null,
                     fieldSelector, labelSelector, null, null, null, null);
             configMaps = configMapList != null ? configMapList.getItems() : null;
         } catch (ApiException e) {
@@ -171,7 +172,8 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         try {
             patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1ConfigMap.class), target,
                     V1ConfigMap.class);
-            coreV1Api.patchNamespacedConfigMap(name, namespace, patchObject, TRUE, null);
+            V1Patch v1Patch = new V1Patch(patchObject.toString());
+            coreV1Api.patchNamespacedConfigMap(name, namespace, v1Patch, TRUE, null, null, false);
         } catch (HyscaleException e) {
             LOGGER.error("Error while creating patch for ConfigMap {}, source {}, target {}", name, sourceConfigMap,
                     target);
@@ -198,7 +200,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         WorkflowLogger.startActivity(activityContext);
         try {
             try {
-                coreV1Api.deleteNamespacedConfigMap(name, namespace, deleteOptions, TRUE, null, null, null, null);
+                coreV1Api.deleteNamespacedConfigMap(name, namespace, TRUE,deleteOptions, null, null, null, null);
             } catch (JsonSyntaxException e) {
                 // K8s end exception ignore
             }
