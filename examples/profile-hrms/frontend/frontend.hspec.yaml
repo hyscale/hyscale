@@ -1,0 +1,34 @@
+name: frontend
+image: 
+     registry: registry.hub.docker.com  
+     name: {{username}}/frontend # replace with your dockerhub username for {{username}}
+     tag: 4.0.1
+     buildSpec:
+       stackImage: tomcat:8.5.0-jre8
+       artifacts: 
+           - name: HRScaffold
+             source: artifacts/hrms.war
+             destination: /usr/local/tomcat/webapps/
+
+memory: 2048Mi
+ 
+volumes:
+  - name: tomcat-logs
+    path: /usr/local/content/tomcat/current/logs
+    size: 1Gi
+
+props:
+    MAX_NO_OF_CONNECTIONS: 20
+    COUNTRY: india
+    REGION: hyderabad
+    MYSQL_HOST: endpoint(hrdatabase)
+    MAX_NO_OF_THREADS: 10
+    TOMCAT_HOME: /usr/local/content/tomcat
+
+external: true
+
+ports:
+  - port: 8080/tcp
+    healthCheck:
+      httpPath: /hrms
+ 

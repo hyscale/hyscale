@@ -1,0 +1,27 @@
+name: hrdatabase
+
+image:
+     registry: registry.hub.docker.com  
+     name: {{username}}/hrdatabase # replace with your dockerhub username for {{username}}
+     tag: 4.0.1
+     buildSpec:
+       stackImage: mysql:5.6
+       artifacts:
+           - name: database-dump
+             source: sqldumps/hrdb_dump.sql
+             destination: /docker-entrypoint-initdb.d/hrdb_dump.sql
+volumes:
+   - name: mysql-data-dir
+     path: /var/lib/mysql
+     size: 1Gi
+
+replicas: 2
+
+secrets:
+   MYSQL_ROOT_PASSWORD: login_fail
+
+ports:
+   - port: 3306/tcp
+     healthCheck: {}
+
+memory: 216Mi
