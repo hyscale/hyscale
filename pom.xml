@@ -19,6 +19,7 @@
 		<module>dockerfile-generator</module>
 		<module>service-spec</module>
 		<module>packaging</module>
+		<module>troubleshooting</module>
 
 	</modules>
 
@@ -57,6 +58,7 @@
 		<copyright.year>2019</copyright.year>
 		<copyright.company>Pramati Prism, Inc.</copyright.company>
 		<release.name>First Light</release.name>
+		<jgrapht.version>1.0.1</jgrapht.version>
 	</properties>
 
 	<dependencies>
