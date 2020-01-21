@@ -17,9 +17,9 @@ package io.hyscale.controller.hooks;
 
 import io.hyscale.commons.component.InvokerHook;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.dockerfile.gen.services.exception.DockerfileErrorCodes;
+import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Artifact;
 import io.hyscale.servicespec.commons.model.service.BuildSpec;
@@ -46,7 +46,7 @@ public class BuildSpecValidatorHook implements InvokerHook<WorkflowContext> {
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
             logger.debug("Empty service spec found at BuildSpec validator hook ");
-            throw new HyscaleException(ControllerErrorCodes.SERVICE_SPEC_REQUIRED);
+            throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_REQUIRED);
         }
 
         BuildSpec buildSpec = serviceSpec.get(

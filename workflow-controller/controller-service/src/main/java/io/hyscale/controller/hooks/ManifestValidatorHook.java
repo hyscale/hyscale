@@ -20,6 +20,7 @@ import io.hyscale.commons.component.InvokerHook;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Port;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
@@ -46,7 +47,7 @@ public class ManifestValidatorHook implements InvokerHook<WorkflowContext> {
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
             logger.debug("Empty service spec found at manifest validator hook ");
-            throw new HyscaleException(ControllerErrorCodes.SERVICE_SPEC_REQUIRED);
+            throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_REQUIRED);
         }
         TypeReference<List<Port>> listTypeReference = new TypeReference<List<Port>>() {
         };

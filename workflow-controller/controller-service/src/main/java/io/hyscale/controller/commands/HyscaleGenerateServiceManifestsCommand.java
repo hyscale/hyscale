@@ -17,11 +17,16 @@ package io.hyscale.controller.commands;
 
 import java.io.File;
 import java.util.concurrent.Callable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
+import io.hyscale.controller.util.ServiceProfileUtil;
 import io.hyscale.controller.util.ServiceSpecMapper;
+import io.hyscale.controller.util.ServiceSpecUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +40,6 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.invoker.ManifestGeneratorComponentInvoker;
-import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import picocli.CommandLine;
 
@@ -52,9 +56,9 @@ import javax.validation.constraints.Pattern;
  *
  * @option appName  name of the app
  * @option serviceSpecs  list of service specs
+ * @option profiles  list of profiles for services
  *
- * Eg: hyscale generate service manifests -f s1.hspec.yaml -f s2.hspec.yaml -a sample
- *      -n dev
+ * Eg: hyscale generate service manifests -f s1.hspec.yaml -f s2.hspec.yaml -p p1-s1.hprof.yaml -a sample
  *
  * Generates the manifests from the given hspec and writes the manifests
  * to <USER.HOME/hyscale/apps/[<appName]/[serviceName]/generated-files/manifests/
@@ -76,7 +80,14 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
     private String appName;
 
     @CommandLine.Option(names = {"-f", "--files"}, required = true, description = "Service specs files.", split = ",")
-    private String[] serviceSpecs;
+    private List<
+    @Pattern(regexp = ValidationConstants.SERVICE_SPEC_NAME_REGEX, message = ValidationConstants.INVALID_SERVICE_SPEC_NAME_MSG)
+    String> serviceSpecs;
+    
+    @CommandLine.Option(names = {"-p", "--profile"}, required = false, description = "Profile for service.", split = ",")
+    private List<
+    @Pattern(regexp = ValidationConstants.PROFILE_FILENAME_REGEX, message = ValidationConstants.INVALID_PROFILE_FILE_NAME_MSG)
+    String> profiles;
 
     @Autowired
     private ManifestGeneratorComponentInvoker manifestGeneratorComponentInvoker;
@@ -89,28 +100,34 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
+        
+        Map<String, String> serviceProfileMap = new HashMap<String, String>();
+        try {
+            serviceProfileMap = ServiceProfileUtil.getServiceProfileMap(profiles);
+        } catch (HyscaleException e) {
+            WorkflowLogger.error(ControllerActivity.CANNOT_PROCESS_SERVICE_PROFILE, e.getMessage());
+            throw e;
+        }
         boolean isFailed = false;
-        for (int i = 0; i < serviceSpecs.length; i++) {
+        for (String serviceSpecPath : serviceSpecs) {
 
             WorkflowContext workflowContext = new WorkflowContext();
-            String serviceName = null;
+            String serviceName = ServiceSpecUtil.getServiceNameFromPath(serviceSpecPath);
+            String profilePath = serviceProfileMap.remove(serviceName);
             try {
-                File serviceSpecFile = new File(serviceSpecs[i]);
-                ServiceSpec serviceSpec = serviceSpecMapper.from(serviceSpecFile);
-                serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
+                ServiceSpec serviceSpec = serviceSpecMapper.from(serviceSpecPath, profilePath);
                 workflowContext.setServiceSpec(serviceSpec);
                 workflowContext.setServiceName(serviceName);
-
-                SetupConfig.clearAbsolutePath();
-                SetupConfig.setAbsolutePath(serviceSpecFile.getAbsoluteFile().getParent());
-
             } catch (HyscaleException e) {
                 WorkflowLogger.error(ControllerActivity.CANNOT_PROCESS_SERVICE_SPEC, e.getMessage());
                 throw e;
             }
+            File serviceSpecFile = new File(serviceSpecPath);
+            SetupConfig.clearAbsolutePath();
+            SetupConfig.setAbsolutePath(serviceSpecFile.getAbsoluteFile().getParent());
 
             workflowContext.setAppName(appName.trim());
-            workflowContext.setEnvName(CommandUtil.getEnvName(null, appName.trim()));
+            workflowContext.setEnvName(CommandUtil.getEnvName(profilePath, appName.trim()));
 
             try {
                 manifestGeneratorComponentInvoker.execute(workflowContext);
@@ -127,6 +144,9 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
                     ControllerActivity.MANIFESTS_GENERATION_PATH);
         }
 
+        if (!serviceProfileMap.isEmpty()) {
+            ServiceProfileUtil.printWarnMsg(serviceProfileMap);
+        }
         return isFailed ? ToolConstants.HYSCALE_ERROR_CODE : 0;
     }
 
