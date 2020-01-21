@@ -15,8 +15,11 @@
  */
 package io.hyscale.controller.commands;
 
+import java.util.concurrent.Callable;
+
 import org.springframework.stereotype.Component;
 
+import io.hyscale.commons.constants.ToolConstants;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -24,8 +27,8 @@ import picocli.CommandLine.Command;
  * This class is the first level command for hyscale tool.
  * This class executes 'hyscale' command
  *
- * Every command/sub-command has to implement the Runnable so that
- * whenever the command is executed the {@link #run()}
+ * Every command/sub-command has to implement the {@link Callable} so that
+ * whenever the command is executed the {@link #call()}
  * method will be invoked
  * <p>
  *
@@ -41,15 +44,16 @@ import picocli.CommandLine.Command;
         HyscaleGetCommand.class, HyscaleDeployCommand.class, HyscaleUndeployCommand.class,
         HyscaleGenerateCommand.class})
 @Component
-public class HyscaleCommand implements Runnable {
+public class HyscaleCommand implements Callable<Integer> {
 
     /**
      * Executes the hyscale command
      * Provides usage of this command to the user.
      */
     @Override
-    public void run() {
+    public Integer call() throws Exception {
         new CommandLine(new HyscaleCommand()).usage(System.out);
+        return ToolConstants.INVALID_INPUT_ERROR_CODE;
     }
 
 }

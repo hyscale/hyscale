@@ -15,8 +15,11 @@
  */
 package io.hyscale.controller.commands;
 
+import java.util.concurrent.Callable;
+
 import org.springframework.stereotype.Component;
 
+import io.hyscale.commons.constants.ToolConstants;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -24,15 +27,15 @@ import picocli.CommandLine.Command;
  * This class executes 'hyscale generate' command
  * It is a sub-command of the 'hyscale' command
  * @see HyscaleCommand
- * Every command/sub-command has to implement the Runnable so that
- * whenever the command is executed the {@link #run()}
+ * Every command/sub-command has to implement the {@link Callable} so that
+ * whenever the command is executed the {@link #call()}
  * method will be invoked
  *
  * The sub-commands of are handled by @Command annotation
  */
 @Command(name = "generate", subcommands = { HyscaleGenerateServiceCommand.class }, description = { "Generates the specified resource" })
 @Component
-public class HyscaleGenerateCommand implements Runnable {
+public class HyscaleGenerateCommand implements Callable<Integer> {
 
 	@CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "Displays the help information of the specified command")
 	private boolean helpRequested = false;
@@ -42,7 +45,8 @@ public class HyscaleGenerateCommand implements Runnable {
 	 * Provides usage of this command to the user
 	 */
 	@Override
-	public void run() {
+    public Integer call() throws Exception {
 		new CommandLine(new HyscaleGenerateCommand()).usage(System.out);
+		return ToolConstants.INVALID_INPUT_ERROR_CODE;
 	}
 }

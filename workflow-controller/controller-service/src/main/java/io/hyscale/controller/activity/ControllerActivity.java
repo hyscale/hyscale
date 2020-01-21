@@ -48,7 +48,7 @@ public enum ControllerActivity implements Activity {
     DEPLOY_LOGS_AT("Deploy Logs : {} "),
     CANNOT_PROCESS_SERVICE_SPEC("Service spec cannot be processed :: {} "),
     ERROR_WHILE_READING("Error while reading {} due to {}"),
-    ERROR_WHILE_FETCHING_STATUS("Error while fetching status {}"),
+    ERROR_WHILE_FETCHING_STATUS("Error while fetching status"),
     NO_SERVICE_DEPLOYED("No Service Deployed"),
     CANNOT_FIND_FILE("Cannot find file {}"),
     INFORMATION(" Deployment info "),

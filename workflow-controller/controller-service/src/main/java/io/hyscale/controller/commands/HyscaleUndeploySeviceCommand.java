@@ -21,13 +21,18 @@ import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.UndeployCommandUtil;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import javax.validation.constraints.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
+import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.invoker.UndeployComponentInvoker;
@@ -38,8 +43,8 @@ import picocli.CommandLine.Option;
  *  This class executes 'hyscale undeploy service' command
  *  It is a sub-command of the 'hyscale undeploy' command
  *  @see HyscaleUndeployCommand
- *  Every command/sub-command has to implement the Runnable so that
- *  whenever the command is executed the {@link #run()}
+ *  Every command/sub-command has to implement the {@link Callable} so that
+ *  whenever the command is executed the {@link #call()}
  *  method will be invoked
  *
  * @option namespace  name of the namespace from which the
@@ -56,7 +61,9 @@ import picocli.CommandLine.Option;
  */
 @Command(name = "service", description = "Undeploy service from the configured kubernetes cluster")
 @Component
-public class HyscaleUndeploySeviceCommand implements Runnable {
+public class HyscaleUndeploySeviceCommand implements Callable<Integer> {
+    
+    private static final Logger logger = LoggerFactory.getLogger(HyscaleUndeploySeviceCommand.class);
 
 	@Option(names = { "-h", "--help" }, usageHelp = true, description = "Displays the help information of the specified command")
 	private boolean helpRequested = false;
@@ -78,10 +85,11 @@ public class HyscaleUndeploySeviceCommand implements Runnable {
 	private UndeployComponentInvoker undeployComponentInvoker;
 
 	@Override
-	public void run() {
+	public Integer call() throws Exception {
 	    if (!CommandUtil.isInputValid(this)) {
-            System.exit(1);
+	        return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
+	    boolean isFailed = false;
 		WorkflowContext workflowContext = new WorkflowContext();
 		workflowContext.addAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR, true);
 		workflowContext.setAppName(appName.trim());
@@ -90,10 +98,16 @@ public class HyscaleUndeploySeviceCommand implements Runnable {
 		for (String serviceName: serviceList) {
 		    WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
 		    workflowContext.setServiceName(serviceName);
-		    undeployComponentInvoker.execute(workflowContext);
-		    
+		    try {
+		        undeployComponentInvoker.execute(workflowContext);
+		    } catch (HyscaleException e) {
+		        logger.error("Error while undeploying app: {}, service: {}, in namespace: {}", appName, serviceName, namespace, e);
+		        isFailed = true;
+            } finally {
+                UndeployCommandUtil.logUndeployInfo();
+            }
 		}
-		UndeployCommandUtil.logUndeployInfo();
+		return isFailed ? ToolConstants.HYSCALE_ERROR_CODE : 0;
 	}
 
 }

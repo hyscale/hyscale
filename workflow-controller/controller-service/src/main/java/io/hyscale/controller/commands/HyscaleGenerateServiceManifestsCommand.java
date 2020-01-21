@@ -16,15 +16,20 @@
 package io.hyscale.controller.commands;
 
 import java.io.File;
+import java.util.concurrent.Callable;
 
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.ServiceSpecMapper;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.config.SetupConfig;
+import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
@@ -59,7 +64,9 @@ import javax.validation.constraints.Pattern;
 @CommandLine.Command(name = "manifests", aliases = {"manifest"},
         description = {"Generates manifests from the given service specs"})
 @Component
-public class HyscaleGenerateServiceManifestsCommand implements Runnable {
+public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer> {
+    
+    private static final Logger logger = LoggerFactory.getLogger(HyscaleGenerateServiceManifestsCommand.class);
 
     @CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "Display help message about the specified command")
     private boolean helpRequested = false;
@@ -78,10 +85,11 @@ public class HyscaleGenerateServiceManifestsCommand implements Runnable {
     private ServiceSpecMapper serviceSpecMapper;
 
     @Override
-    public void run() {
+    public Integer call() throws Exception {
         if (!CommandUtil.isInputValid(this)) {
-            System.exit(1);
+            return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
+        boolean isFailed = false;
         for (int i = 0; i < serviceSpecs.length; i++) {
 
             WorkflowContext workflowContext = new WorkflowContext();
@@ -98,14 +106,20 @@ public class HyscaleGenerateServiceManifestsCommand implements Runnable {
 
             } catch (HyscaleException e) {
                 WorkflowLogger.error(ControllerActivity.CANNOT_PROCESS_SERVICE_SPEC, e.getMessage());
-                return;
+                throw e;
             }
 
             workflowContext.setAppName(appName.trim());
             workflowContext.setEnvName(CommandUtil.getEnvName(null, appName.trim()));
 
-            if (!workflowContext.isFailed()) {
+            try {
                 manifestGeneratorComponentInvoker.execute(workflowContext);
+            } catch (HyscaleException e) {
+                logger.error("Error while generating manifest for app: {}, service: {}", appName, serviceName, e);
+                isFailed = true;
+            }
+            if (workflowContext.isFailed()) {
+                isFailed = true;
             }
             WorkflowLogger.footer();
             WorkflowLogger.logPersistedActivities();
@@ -113,6 +127,7 @@ public class HyscaleGenerateServiceManifestsCommand implements Runnable {
                     ControllerActivity.MANIFESTS_GENERATION_PATH);
         }
 
+        return isFailed ? ToolConstants.HYSCALE_ERROR_CODE : 0;
     }
 
     @PreDestroy

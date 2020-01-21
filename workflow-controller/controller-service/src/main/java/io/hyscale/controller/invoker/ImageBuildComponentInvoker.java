@@ -79,7 +79,7 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
             serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
         } catch (HyscaleException e) {
             logger.error("Failed to get service name, error {}", e.toString());
-            return;
+            throw e;
         }
 
         String appName = context.getAppName();
@@ -102,6 +102,7 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
         try {
             imageBuildService.buildAndPush(serviceSpec, buildContext);
         } catch (HyscaleException e) {
+            logger.error("Error while build and push for service: {}", serviceName, e);
             context.setFailed(true);
             throw e;
         } finally {
@@ -112,13 +113,15 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
             context.addAttribute(WorkflowConstants.PUSH_LOGS,
                     buildContext.getPushLogs());
         }
-
     }
 
     @Override
-    protected void onError(WorkflowContext context, HyscaleException he) {
+    protected void onError(WorkflowContext context, HyscaleException he) throws HyscaleException {
         WorkflowLogger.header(ControllerActivity.ERROR);
         WorkflowLogger.error(ControllerActivity.CAUSE, he != null ? he.getMessage() : ImageBuilderErrorCodes.FAILED_TO_BUILD_AND_PUSH_IMAGE.getErrorMessage());
         context.setFailed(true);
+        if (he != null) {
+            throw he;
+        }
     }
 }

@@ -16,10 +16,10 @@
 package io.hyscale.controller.commands;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import javax.validation.constraints.Pattern;
 
@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.TableFields;
@@ -46,8 +47,8 @@ import picocli.CommandLine.Option;
  *  This class executes 'hyscale get service status' command.
  *  It is a sub-command of the 'hyscale get service' command
  *  @see HyscaleGetServiceCommand .
- *  Every command/sub-command has to implement the Runnable so that
- *  whenever the command is executed the {@link #run()}
+ *  Every command/sub-command has to implement the {@link Callable} so that
+ *  whenever the command is executed the {@link #call()}
  *  method will be invoked
  *
  * @option serviceList list of service names
@@ -63,7 +64,7 @@ import picocli.CommandLine.Option;
  *
  */
 @Command(name = "status", description = "Get the status of the deployment")
-public class HyscaleServiceStatusCommand implements Runnable {
+public class HyscaleServiceStatusCommand implements Callable<Integer> {
 
     private static final Logger logger = LoggerFactory.getLogger(HyscaleServiceStatusCommand.class);
     
@@ -90,10 +91,10 @@ public class HyscaleServiceStatusCommand implements Runnable {
     private K8sAuthConfigBuilder authConfigBuilder;
 
     @Override
-    public void run() {
+    public Integer call() throws Exception {
 
         if (!CommandUtil.isInputValid(this)) {
-            System.exit(1);
+            return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
         
         WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
@@ -127,11 +128,14 @@ public class HyscaleServiceStatusCommand implements Runnable {
 				deploymentStatusList.add(serviceStatus);
         	}
         } catch (HyscaleException e) {
+            logger.error("Error while getting status for app: {}, in namespace: {}", appName, namespace);
             WorkflowLogger.error(ControllerActivity.ERROR_WHILE_FETCHING_STATUS, e.toString());
+            throw e;
         } finally {
             WorkflowLogger.footer();
         }
 
+        return 0;
     }
 
 }

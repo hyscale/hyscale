@@ -84,7 +84,7 @@ public class DockerfileGeneratorComponentInvoker extends ComponentInvoker<Workfl
             dockerfileContext.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
         } catch (HyscaleException e) {
             logger.error("Failed to get service name, error {}", e.toString());
-            return;
+            throw e;
         }
         try {
             DockerfileEntity dockerfileEntity = dockerfileGenerator.generateDockerfile(serviceSpec, dockerfileContext);
@@ -104,11 +104,14 @@ public class DockerfileGeneratorComponentInvoker extends ComponentInvoker<Workfl
     }
 
     @Override
-    protected void onError(WorkflowContext context, HyscaleException he) {
+    protected void onError(WorkflowContext context, HyscaleException he) throws HyscaleException {
         WorkflowLogger.header(ControllerActivity.ERROR);
         WorkflowLogger.error(ControllerActivity.CAUSE, he != null ?
                 he.getMessage() : DockerfileErrorCodes.FAILED_TO_GENERATE_DOCKERFILE.getErrorMessage());
         context.setFailed(true);
+        if (he != null) {
+            throw he;
+        }
     }
 
 }
