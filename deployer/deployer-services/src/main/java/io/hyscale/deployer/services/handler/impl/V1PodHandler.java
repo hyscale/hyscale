@@ -48,6 +48,7 @@ import io.kubernetes.client.models.V1ContainerStatus;
 import io.kubernetes.client.models.V1DeleteOptions;
 import io.kubernetes.client.models.V1Pod;
 import io.kubernetes.client.models.V1PodList;
+import io.kubernetes.client.custom.V1Patch;
 
 public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 
@@ -67,7 +68,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 		try {
 			resource.getMetadata().putAnnotationsItem(
 					AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
-			v1Pod = coreV1Api.createNamespacedPod(namespace, resource, null, TRUE, null);
+			v1Pod = coreV1Api.createNamespacedPod(namespace, resource, TRUE, null, null);
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
 					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.CREATE));
@@ -98,7 +99,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 		try {
 			String resourceVersion = existingPod.getMetadata().getResourceVersion();
 			resource.getMetadata().setResourceVersion(resourceVersion);
-			coreV1Api.replaceNamespacedPod(name, namespace, resource, TRUE, null);
+			coreV1Api.replaceNamespacedPod(name, namespace, resource, TRUE, null, null);
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
 					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.UPDATE));
@@ -131,7 +132,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 		String fieldSelector = label ? null : selector;
 		List<V1Pod> v1Pods = null;
 		try {
-			V1PodList v1PodList = coreV1Api.listNamespacedPod(namespace, null, TRUE, null, fieldSelector, labelSelector,
+			V1PodList v1PodList = coreV1Api.listNamespacedPod(namespace, TRUE, null, fieldSelector, labelSelector,
 					null, null, null, null);
 			v1Pods = v1PodList != null ? v1PodList.getItems() : null;
 		} catch (ApiException e) {
@@ -166,7 +167,8 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 		try {
 			patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1Pod.class), target,
 					V1Pod.class);
-			coreV1Api.patchNamespacedPod(name, namespace, patchObject, TRUE, null);
+			V1Patch v1Patch =  new V1Patch(patchObject.toString());
+			coreV1Api.patchNamespacedPod(name, namespace, v1Patch, TRUE, null, null, false);
 		} catch (HyscaleException e) {
 			LOGGER.error("Error while creating patch for Pod {}, source {}, target {}", name, sourcePod, target);
 			throw e;

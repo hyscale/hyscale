@@ -35,6 +35,12 @@ import io.kubernetes.client.apis.AppsV1Api;
 import io.kubernetes.client.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.kubernetes.client.apis.AppsV1beta2Api;
+import io.kubernetes.client.models.V1DeleteOptions;
+import io.kubernetes.client.models.V1beta2Deployment;
+import io.kubernetes.client.models.V1beta2DeploymentList;
+import io.kubernetes.client.models.V1beta2DeploymentStatus;
+import io.kubernetes.client.custom.V1Patch;
 
 import java.util.List;
 
@@ -53,7 +59,7 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deploymen
         try {
             resource.getMetadata().putAnnotationsItem(
                     AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
-            v1Deployment = appsV1Api.createNamespacedDeployment(namespace, resource, null, TRUE, null);
+            v1Deployment = appsV1Api.createNamespacedDeployment(namespace, resource, TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
                     ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.CREATE));
@@ -86,7 +92,7 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deploymen
         try {
             String resourceVersion = existingDeployment.getMetadata().getResourceVersion();
             resource.getMetadata().setResourceVersion(resourceVersion);
-            appsV1Api.replaceNamespacedDeployment(name, namespace, existingDeployment, TRUE, null);
+            appsV1Api.replaceNamespacedDeployment(name, namespace, existingDeployment, TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
                     ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.UPDATE));
@@ -122,7 +128,7 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deploymen
             String labelSelector = label ? selector : null;
             String fieldSelector = label ? null : selector;
 
-            V1DeploymentList v1DeploymentList = appsV1Api.listNamespacedDeployment(namespace, null, TRUE,
+            V1DeploymentList v1DeploymentList = appsV1Api.listNamespacedDeployment(namespace, TRUE,
                     null, fieldSelector, labelSelector, null, null, null, null);
 
             v1Deployments = v1DeploymentList != null ? v1DeploymentList.getItems() : null;
@@ -159,7 +165,8 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deploymen
         try {
             patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1Deployment.class),
                     target, V1Deployment.class);
-            appsV1Api.patchNamespacedDeployment(name, namespace, patchObject, TRUE, null);
+            V1Patch v1Patch = new V1Patch(patchObject.toString());
+            appsV1Api.patchNamespacedDeployment(name, namespace, v1Patch, TRUE, null, null, false);
         } catch (HyscaleException e) {
             LOGGER.error("Error while creating patch for Deployment {}, source {}, target {}", name, sourceDeployment,
                     target);

@@ -87,7 +87,7 @@ public class V1PersistentVolumeClaimHandler implements ResourceLifeCycleHandler<
 			String fieldSelector = label ? null : selector;
 
 			V1PersistentVolumeClaimList v1PersistentVolumeClaimList = coreV1Api.listNamespacedPersistentVolumeClaim(
-					namespace, null, TRUE, null, fieldSelector, labelSelector, null, null, null, null);
+					namespace, TRUE, null, fieldSelector, labelSelector, null, null, null, null);
 			v1PersistentVolumeClaims = v1PersistentVolumeClaimList != null ? v1PersistentVolumeClaimList.getItems()
 					: null;
 		} catch (ApiException e) {
