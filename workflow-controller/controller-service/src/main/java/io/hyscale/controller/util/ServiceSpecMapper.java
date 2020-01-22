@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.Status;
 import io.hyscale.commons.utils.HyscaleFilesUtil;
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.commons.utils.WindowsUtil;
@@ -60,18 +61,27 @@ public class ServiceSpecMapper {
         ObjectMapper mapper = ObjectMapperFactory.yamlMapper();
         if (profileFile != null) {
             profileData = HyscaleFilesUtil.readFileData(profileFile);
+            String profileName = ServiceProfileUtil.getProfileName(profileFile.getName());
+            String serviceName = ServiceSpecUtil.getServiceNameFromPath(serviceSpecFile.getName());
             if (StringUtils.isNotBlank(profileData)) {
-                logger.debug("Merging profile {} for service {}", profileFile.getName(), serviceSpecFile.getName());
-                
-                MapFieldDataProvider mapFieldDataProvider = new MapFieldDataProvider();
-                
-                // Merge
-                serviceSpecData = new EffectiveServiceSpecBuilder().type(ServiceInputType.YAML).withServiceSpec(serviceSpecData)
-                        .withProfile(profileData).withFieldMetaDataProvider(mapFieldDataProvider).build();
+                WorkflowLogger.startActivity(ControllerActivity.APPLYING_PROFILE_FOR_SERVICE, profileName, serviceName);
+                logger.debug("Merging profile {} for service {}", profileName, serviceName);
+                try {
+                    MapFieldDataProvider mapFieldDataProvider = new MapFieldDataProvider();
+                    
+                    // Merge
+                    serviceSpecData = new EffectiveServiceSpecBuilder().type(ServiceInputType.YAML).withServiceSpec(serviceSpecData)
+                            .withProfile(profileData).withFieldMetaDataProvider(mapFieldDataProvider).build();
+                    WorkflowLogger.endActivity(Status.DONE);
+                } catch(HyscaleException e){
+                    logger.error("Error while applying profile {} for service {}", profileName, serviceName, e);
+                    WorkflowLogger.endActivity(Status.FAILED);
+                    throw e;
+                }
                 mapper = ObjectMapperFactory.jsonMapper();
             } else {
                 // empty profile
-                WorkflowLogger.persist(ControllerActivity.PROFILE_NOT_FOUND, profileFile.getName(), serviceSpecFile.getName());
+                WorkflowLogger.persist(ControllerActivity.PROFILE_NOT_FOUND, profileName, serviceName);
             }
         }
         

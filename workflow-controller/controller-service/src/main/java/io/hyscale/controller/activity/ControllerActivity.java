@@ -49,6 +49,7 @@ public enum ControllerActivity implements Activity {
     CANNOT_PROCESS_SERVICE_SPEC("Service spec cannot be processed :: {} "),
     CANNOT_PROCESS_SERVICE_PROFILE("Service Profile cannot be processed:: {} "),
     NO_SERVICE_FOUND_FOR_PROFILE("Service spec not provided for service {}, their profiles are ignored"),
+    APPLYING_PROFILE_FOR_SERVICE("Applying Profile {} for service {} "),
     PROFILE_NOT_FOUND("Profile {} not found for service {}"),
     ERROR_WHILE_READING("Error while reading {} due to {}"),
     ERROR_WHILE_FETCHING_STATUS("Error while fetching status"),
