@@ -1,7 +1,11 @@
 environment: dev
 overrides: frontend
 
-replicas: 2 # update number of replicas
+replicas:   # enable auto scaling
+    min: 1
+    max: 3
+    cpuThreshold: 30%
+
 
 volumes:
   - name: tomcat-logs # change volume size
@@ -9,5 +13,3 @@ volumes:
     
 props:
     REGION: Delhi # update props value
-
-    

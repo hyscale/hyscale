@@ -1,11 +1,6 @@
 environment: dev
 overrides: hrdatabase
 
-replicas:   # enable auto scaling
-    min: 1
-    max: 3
-    cpuThreshold: 30%
-
 secrets:
     MYSQL_ROOT_PASSWORD: pramati  # update secret value
     

@@ -15,7 +15,7 @@ volumes:
      path: /var/lib/mysql
      size: 1Gi
 
-replicas: 2
+replicas: 1
 
 secrets:
    MYSQL_ROOT_PASSWORD: login_fail

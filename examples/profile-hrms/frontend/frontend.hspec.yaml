@@ -11,6 +11,8 @@ image:
              destination: /usr/local/tomcat/webapps/
 
 memory: 2048Mi
+
+replicas: 2
  
 volumes:
   - name: tomcat-logs
