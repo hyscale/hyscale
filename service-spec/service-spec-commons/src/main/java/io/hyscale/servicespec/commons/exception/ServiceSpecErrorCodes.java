@@ -23,7 +23,9 @@ import io.hyscale.commons.exception.HyscaleErrorCode;
  */
 public enum ServiceSpecErrorCodes implements HyscaleErrorCode {
 
+    SERVICE_SPEC_REQUIRED("Service spec required"),
     SERVICE_SPEC_PARSE_ERROR("Failed to parse service spec"),
+    SERVICE_PROFILE_REQUIRED("Service profile required"),
     SERVICE_PROFILE_PARSE_ERROR("Failed to parser service profile"),
     FAILED_TO_PARSE_JSON_TREE("Failed to parse json tree"),
     ERROR_WHILE_FETCH_SERVICE_SPEC_FIELD("Failed to fetch service spec field {}"),

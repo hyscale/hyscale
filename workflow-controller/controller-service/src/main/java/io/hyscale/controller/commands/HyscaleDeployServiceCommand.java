@@ -16,8 +16,10 @@
 package io.hyscale.controller.commands;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.Map;
 
 import io.hyscale.commons.component.ComponentInvoker;
 import io.hyscale.commons.config.SetupConfig;
@@ -28,9 +30,11 @@ import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.invoker.DockerfileGeneratorComponentInvoker;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
+import io.hyscale.controller.util.ServiceProfileUtil;
 import io.hyscale.controller.util.ServiceSpecMapper;
-import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.controller.util.ServiceSpecUtil;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,9 +62,10 @@ import javax.validation.constraints.Pattern;
  * @option namespace  name of the namespace in which the service to be deployed
  * @option appName   name of the app to logically group your services
  * @option serviceSpecs   list of service specs that are to be deployed
+ * @option profiles list of profiles for services
  * @option verbose  prints the verbose output of the deployment
  *
- *  Eg: hyscale deploy service -f s1.hspec.yaml -f s2.hspec.yaml -n dev -a sample
+ *  Eg: hyscale deploy service -f s1.hspec.yaml -f s2.hspec.yaml -p p1-s1.hprof.yaml -n dev -a sample
  *
  *
  *  Responsible for deploying a service with the given 'hspec' to
@@ -90,8 +95,15 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
     @CommandLine.Option(names = {"-v", "--verbose", "-verbose"}, required = false, description = "Verbose output")
     private boolean verbose = false;
 
-    @CommandLine.Option(names = {"-f", "--file", "-file"}, required = true, description = "Service spec")
-    private String[] serviceSpecs;
+    @CommandLine.Option(names = {"-f", "--files"}, required = true, description = "Service specs files.", split = ",")
+    private List<
+    @Pattern(regexp = ValidationConstants.SERVICE_SPEC_NAME_REGEX, message = ValidationConstants.INVALID_SERVICE_SPEC_NAME_MSG)
+    String> serviceSpecs;
+    
+    @CommandLine.Option(names = {"-p", "--profile"}, required = false, description = "Profile for service.", split = ",")
+    private List<
+    @Pattern(regexp = ValidationConstants.PROFILE_FILENAME_REGEX, message = ValidationConstants.INVALID_PROFILE_FILE_NAME_MSG)
+    String> profiles;
 
     @Autowired
     private ImageBuildComponentInvoker imageBuildComponentInvoker;
@@ -113,31 +125,38 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        boolean isCommandFailed = false;
         
-        for (int i = 0; i < serviceSpecs.length; i++) {
+        Map<String, String> serviceProfileMap = new HashMap<String, String>();
+        try {
+            serviceProfileMap = ServiceProfileUtil.getServiceProfileMap(profiles);
+        } catch (HyscaleException e) {
+            WorkflowLogger.error(ControllerActivity.CANNOT_PROCESS_SERVICE_PROFILE, e.getMessage());
+            throw e;
+        }
+        
+        boolean isCommandFailed = false;
+        for (String serviceSpecPath : serviceSpecs) {
             boolean isServiceFailed = false;
 
             WorkflowContext workflowContext = new WorkflowContext();
             workflowContext.addAttribute(WorkflowConstants.DEPLOY_START_TIME, System.currentTimeMillis());
-            String serviceName = null;
+            String serviceName = ServiceSpecUtil.getServiceNameFromPath(serviceSpecPath);
+            File serviceSpecFile = new File(serviceSpecPath);
+            String profilePath = serviceProfileMap.remove(serviceName);
             try {
-                File serviceSpecFile = new File(serviceSpecs[i]);
-                ServiceSpec serviceSpec = serviceSpecMapper.from(serviceSpecFile);
+                ServiceSpec serviceSpec = serviceSpecMapper.from(serviceSpecPath, profilePath);
                 workflowContext.setServiceSpec(serviceSpec);
-                serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
-                workflowContext.setServiceName(serviceName);
-                SetupConfig.clearAbsolutePath();
-                SetupConfig.setAbsolutePath(serviceSpecFile.getAbsoluteFile().getParent());
             } catch (HyscaleException e) {
                 WorkflowLogger.error(ControllerActivity.CANNOT_PROCESS_SERVICE_SPEC, e.getMessage());
                 throw e;
             }
-
+            workflowContext.setServiceName(serviceName);
+            SetupConfig.clearAbsolutePath();
+            SetupConfig.setAbsolutePath(serviceSpecFile.getAbsoluteFile().getParent());
             WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
             workflowContext.setAppName(appName.trim());
             workflowContext.setNamespace(namespace.trim());
-            workflowContext.setEnvName(CommandUtil.getEnvName(null, appName.trim()));
+            workflowContext.setEnvName(CommandUtil.getEnvName(profilePath, appName.trim()));
             workflowContext.addAttribute(WorkflowConstants.VERBOSE, verbose);
 
             // clean up service dir before dockerfileGen
@@ -157,6 +176,9 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
             }
             logWorkflowInfo(workflowContext);
             isCommandFailed = isCommandFailed ? isCommandFailed : isServiceFailed;
+        }
+        if (!serviceProfileMap.isEmpty()) {
+            ServiceProfileUtil.printWarnMsg(serviceProfileMap);
         }
         return isCommandFailed ? ToolConstants.HYSCALE_ERROR_CODE : 0;
     }

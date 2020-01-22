@@ -115,7 +115,7 @@ public class V1StorageClassHandler implements ResourceLifeCycleHandler<V1Storage
 		StorageV1Api storageV1Api = new StorageV1Api(apiClient);
 		List<V1StorageClass> v1StorageList = null;
 		try {
-			V1StorageClassList v1StorageClassList = storageV1Api.listStorageClass(null, TRUE, null, null, null, null,
+			V1StorageClassList v1StorageClassList = storageV1Api.listStorageClass(TRUE, null, null, null, null,
 					null, null, null);
 
 			v1StorageList = v1StorageClassList != null ? v1StorageClassList.getItems() : null;

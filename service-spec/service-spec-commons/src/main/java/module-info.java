@@ -32,7 +32,7 @@ module service_spec_commons {
 	exports io.hyscale.servicespec.commons.json.parser;
 	exports io.hyscale.servicespec.commons.json.parser.constants;
 	exports io.hyscale.servicespec.commons.json.config;
-	exports io.hyscale.servicespec.annotations;
 	exports io.hyscale.servicespec.commons.util;
+	exports io.hyscale.servicespec.commons.builder;
 
 }

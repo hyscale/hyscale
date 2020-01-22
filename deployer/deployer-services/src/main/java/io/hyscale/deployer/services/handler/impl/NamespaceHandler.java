@@ -56,7 +56,7 @@ public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
         String name = resource.getMetadata().getName();
         V1Namespace createdNamespace = null;
         try {
-            createdNamespace = coreV1Api.createNamespace(resource, null, TRUE, null);
+            createdNamespace = coreV1Api.createNamespace(resource, TRUE, null, null);
         } catch (ApiException e) {
             if (e.getCode() != 409) {
                 HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
@@ -97,7 +97,7 @@ public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
         try {
             WorkflowLogger.startActivity(activityContext);
             try {
-                coreV1Api.deleteNamespace(name, deleteOptions, TRUE, null, null, null, null);
+                coreV1Api.deleteNamespace(name,TRUE,deleteOptions,null,null,null,null);
             } catch (JsonSyntaxException e) {
                 // K8s end exception ignore
             }

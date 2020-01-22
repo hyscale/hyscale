@@ -24,7 +24,7 @@ import io.hyscale.commons.exception.HyscaleErrorCode;
 public enum ControllerErrorCodes implements HyscaleErrorCode {
     INVALID_COMMAND("Invalid command {}"),
     CANNOT_FIND_SERVICE_SPEC("Cannot find service spec {} "),
-    SERVICE_SPEC_REQUIRED("Service spec required"),
+    APP_NAME_REQUIRED("Application name required"),
     MANIFEST_REQUIRED("Manifest required"),
     DOCKER_CONFIG_NOT_FOUND("Cannot find config.json at {}"),
     KUBE_CONFIG_NOT_FOUND("Cannot find kubeconfig(config) at {}"),
@@ -32,7 +32,8 @@ public enum ControllerErrorCodes implements HyscaleErrorCode {
     INVALID_PORTS_FOUND("Ports found to be invalid in service spec"),
     INVALID_VOLUMES_FOUND("Volumes found to be invalid in service spec"),
     UNEXPECTED_ERROR("Unexpected error occurred"),
-    UNDEPLOYMENT_FAILED("Failed to Undeploy");
+    UNDEPLOYMENT_FAILED("Failed to Undeploy"),
+    UNIQUE_PROFILE_REQUIRED("Service {} cannot have multiple profiles");
 
     private String message;
 

@@ -17,6 +17,7 @@ package io.hyscale.commons.exception;
 
 public enum CommonErrorCode implements HyscaleErrorCode {
     FAILED_TO_EXECUTE_COMMAND("Failed to execute command {}"),
+    FAILED_TO_READ_FILE("Failed to read file {}"),
     FAILED_TO_WRITE_STDIN("Failed to write standard input to the process"),
     FAILED_TO_COPY_FILE("Failed to copy the file {}"),
     DIRECTORY_REQUIRED_TO_COPY_FILE("Directory required to copy file {}"),
@@ -33,7 +34,9 @@ public enum CommonErrorCode implements HyscaleErrorCode {
     TEMPLATE_CONTEXT_NOT_FOUND("Template Context not found for template {}"),
     INPUTSTREAM_NOT_FOUND("Cannot find inputstream and so cannot write to logfile"),
     FAILED_TO_READ_LOGFILE("Failed to read logs at log file {}"),
-    OUTPUTSTREAM_NOT_FOUND("Cannot find output stream and so cannot write to stream");
+    OUTPUTSTREAM_NOT_FOUND("Cannot find output stream and so cannot write to stream"),
+    STRATEGIC_MERGE_KEY_NOT_FOUND("Merge key not found while merging {}"),
+    INVALID_JSON_FORMAT("Json format is invalid");
     
     private String message;
 

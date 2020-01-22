@@ -34,6 +34,7 @@ import io.hyscale.controller.hooks.ServiceDirCleanUpHook;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.dockerfile.gen.services.model.DockerfileGenContext;
 import io.hyscale.dockerfile.gen.services.generator.DockerfileGenerator;
+import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
@@ -74,7 +75,7 @@ public class DockerfileGeneratorComponentInvoker extends ComponentInvoker<Workfl
     protected void doExecute(WorkflowContext context) throws HyscaleException {
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
-            throw new HyscaleException(ControllerErrorCodes.SERVICE_SPEC_REQUIRED);
+            throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_REQUIRED);
         }
         WorkflowLogger.header(ControllerActivity.DOCKERFILE_GENERATION);
         DockerfileGenContext dockerfileContext = new DockerfileGenContext();

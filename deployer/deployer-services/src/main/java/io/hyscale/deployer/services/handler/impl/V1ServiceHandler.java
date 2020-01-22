@@ -49,6 +49,7 @@ import io.kubernetes.client.models.V1DeleteOptions;
 import io.kubernetes.client.models.V1LoadBalancerIngress;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1ServiceList;
+import io.kubernetes.client.custom.V1Patch;
 
 public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 
@@ -70,7 +71,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 		try {
 			resource.getMetadata().putAnnotationsItem(
 					AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
-			v1Service = coreV1Api.createNamespacedService(namespace, resource, null, TRUE, null);
+			v1Service = coreV1Api.createNamespacedService(namespace, resource, TRUE, null, null);
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
 					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.CREATE));
@@ -105,7 +106,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 			String clusterIP = existingService.getSpec().getClusterIP();
 			resource.getMetadata().setResourceVersion(resourceVersion);
 			resource.getSpec().setClusterIP(clusterIP);
-			coreV1Api.replaceNamespacedService(name, namespace, resource, TRUE, null);
+			coreV1Api.replaceNamespacedService(name, namespace, resource, TRUE, null, null);
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
 					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.UPDATE));
@@ -140,7 +141,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 	try {
 	    String labelSelector = label ? selector : null;
 	    String fieldSelector = label ? null : selector;
-	    V1ServiceList v1ServiceList = coreV1Api.listNamespacedService(namespace, null, TRUE, null, fieldSelector,
+	    V1ServiceList v1ServiceList = coreV1Api.listNamespacedService(namespace, null, null, fieldSelector,
 		    labelSelector, null, null, null, null);
 	    v1Services = v1ServiceList != null ? v1ServiceList.getItems() : null;
 	} catch (ApiException e) {
@@ -176,7 +177,8 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 		try {
 			patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1Service.class), target,
 					V1Service.class);
-			coreV1Api.patchNamespacedService(name, namespace, patchObject, TRUE, null);
+			V1Patch v1Patch = new V1Patch(patchObject.toString());
+			coreV1Api.patchNamespacedService(name, namespace, v1Patch, TRUE, null, null, false);
 		} catch (HyscaleException ex) {
 			LOGGER.error("Error while creating patch for Service {}, source {}, target {}, error", name, sourceService,
 					target, ex.toString());
@@ -202,7 +204,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 	WorkflowLogger.startActivity(activityContext);
 	try {
 	    try {
-		coreV1Api.deleteNamespacedService(name, namespace, deleteOptions, TRUE, null, null, null, null);
+			coreV1Api.deleteNamespacedService(name, namespace, TRUE, deleteOptions, null, null, null, null);
 	    } catch (JsonSyntaxException e) {
 		// K8s end exception ignore
 	    }

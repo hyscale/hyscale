@@ -16,16 +16,18 @@
 package io.hyscale.commons.utils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import io.hyscale.commons.constants.ToolConstants;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 
@@ -223,5 +225,20 @@ public class HyscaleFilesUtil {
 			}
 		}
 	}
-
+	
+	public static String readFileData(File filepath) throws HyscaleException {
+	    if (filepath == null) {
+	        return null;
+	    }
+	    if (!filepath.exists()) {
+	        logger.debug("File {} does not exist, returning null data", filepath);
+	        return null;
+	    }
+	    try (FileInputStream inputStream = new FileInputStream(filepath)){
+	        return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_READ_FILE, filepath.getAbsolutePath());
+            throw ex;
+        }
+	}
 }

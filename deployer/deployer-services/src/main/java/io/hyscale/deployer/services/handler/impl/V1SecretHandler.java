@@ -44,6 +44,7 @@ import io.kubernetes.client.apis.CoreV1Api;
 import io.kubernetes.client.models.V1DeleteOptions;
 import io.kubernetes.client.models.V1Secret;
 import io.kubernetes.client.models.V1SecretList;
+import io.kubernetes.client.custom.V1Patch;
 
 // TODO Integrate logging with AOP
 public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
@@ -63,7 +64,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 		try {
 			resource.getMetadata().putAnnotationsItem(
 					AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
-			v1Secret = coreV1Api.createNamespacedSecret(namespace, resource, null, TRUE, null);
+			v1Secret = coreV1Api.createNamespacedSecret(namespace, resource, TRUE, null, null);
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
 					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.CREATE));
@@ -96,7 +97,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 
 			String resourceVersion = existingSecret.getMetadata().getResourceVersion();
 			resource.getMetadata().setResourceVersion(resourceVersion);
-			coreV1Api.replaceNamespacedSecret(name, namespace, resource, TRUE, null);
+			coreV1Api.replaceNamespacedSecret(name, namespace, resource, TRUE, null,null);
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
 					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.UPDATE));
@@ -130,7 +131,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 		try {
 			String labelSelector = label ? selector : null;
 			String fieldSelector = label ? null : selector;
-			V1SecretList v1SecretList = coreV1Api.listNamespacedSecret(namespace, null, TRUE, null, fieldSelector,
+			V1SecretList v1SecretList = coreV1Api.listNamespacedSecret(namespace,null, null,fieldSelector,
 					labelSelector, null, null, null, null);
 			v1Secrets = v1SecretList != null ? v1SecretList.getItems() : null;
 		} catch (ApiException e) {
@@ -166,7 +167,8 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 		try {
 			patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1Secret.class), target,
 					V1Secret.class);
-			coreV1Api.patchNamespacedSecret(name, namespace, patchObject, TRUE, null);
+			V1Patch v1Patch = new V1Patch(patchObject.toString());
+			coreV1Api.patchNamespacedSecret(name, namespace, v1Patch, TRUE, null, null,false);
 		} catch (HyscaleException ex) {
 			LOGGER.error("Error while creating patch for Secret {}, source {}, target {}, error {}", name, sourceSecret,
 					target, ex.toString());
@@ -191,7 +193,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 		WorkflowLogger.startActivity(activityContext);
 		try {
 		    try {
-			coreV1Api.deleteNamespacedSecret(name, namespace, deleteOptions, TRUE, null, null, null, null);
+				coreV1Api.deleteNamespacedSecret(name, namespace, TRUE, deleteOptions, null, null, null, null);
 		    } catch (JsonSyntaxException e) {
 			// K8s end exception ignore
 		    }

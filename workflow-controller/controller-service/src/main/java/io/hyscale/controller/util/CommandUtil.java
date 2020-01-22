@@ -24,7 +24,6 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import io.hyscale.commons.logger.WorkflowLogger;
@@ -40,13 +39,13 @@ public class CommandUtil {
 
 	/**
 	 * Get environment name for labels in resources
-	 * @param profile
+	 * @param profile in format .../<service-name>.<profile-name>.yaml
 	 * @param appName
 	 * @return environment name
 	 */
 	public static String getEnvName(String profile, String appName) {
 		if (StringUtils.isNotBlank(profile)) {
-			return FilenameUtils.getBaseName(profile);
+			return ServiceProfileUtil.getProfileName(profile);
 		}
 		StringBuilder sb = new StringBuilder();
 		sb.append(appName).append(WorkflowConstants.DASH).append(WorkflowConstants.DEV_ENV);
