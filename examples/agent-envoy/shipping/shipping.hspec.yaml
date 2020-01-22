@@ -35,7 +35,7 @@ props:
 
 agents:
 - name: envoy
-  image: envoyproxy/envoy:latest
+  image: envoyproxy/envoy:v1.12.2
   props:
     envoy.yaml : file(envoy.yaml)
   propsVolumePath: /etc/envoy/
