@@ -1,3 +1,18 @@
+# v0.9.2 Release
+
+This is a minor release to support profiles , 1.14 cluster support
+
+### Features:
+
+* Support for profiles with hprof file
+* Support for kubernetes 1.14 cluster.
+
+
+### Fixes
+
+* Fix for apiversion of deployment, statefulset manifest generation with apps/v1
+
+
 # v0.9.1 Release
 
 This is a minor release to support mac , sidecar and autoscaling support.
