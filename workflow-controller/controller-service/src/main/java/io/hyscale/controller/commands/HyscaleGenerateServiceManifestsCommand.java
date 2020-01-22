@@ -110,9 +110,9 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
         }
         boolean isFailed = false;
         for (String serviceSpecPath : serviceSpecs) {
-
-            WorkflowContext workflowContext = new WorkflowContext();
             String serviceName = ServiceSpecUtil.getServiceNameFromPath(serviceSpecPath);
+            WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
+            WorkflowContext workflowContext = new WorkflowContext();
             String profilePath = serviceProfileMap.remove(serviceName);
             try {
                 ServiceSpec serviceSpec = serviceSpecMapper.from(serviceSpecPath, profilePath);

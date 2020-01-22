@@ -137,10 +137,11 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
         boolean isCommandFailed = false;
         for (String serviceSpecPath : serviceSpecs) {
             boolean isServiceFailed = false;
+            String serviceName = ServiceSpecUtil.getServiceNameFromPath(serviceSpecPath);
+            WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
 
             WorkflowContext workflowContext = new WorkflowContext();
             workflowContext.addAttribute(WorkflowConstants.DEPLOY_START_TIME, System.currentTimeMillis());
-            String serviceName = ServiceSpecUtil.getServiceNameFromPath(serviceSpecPath);
             File serviceSpecFile = new File(serviceSpecPath);
             String profilePath = serviceProfileMap.remove(serviceName);
             try {
@@ -153,7 +154,6 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
             workflowContext.setServiceName(serviceName);
             SetupConfig.clearAbsolutePath();
             SetupConfig.setAbsolutePath(serviceSpecFile.getAbsoluteFile().getParent());
-            WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
             workflowContext.setAppName(appName.trim());
             workflowContext.setNamespace(namespace.trim());
             workflowContext.setEnvName(CommandUtil.getEnvName(profilePath, appName.trim()));
