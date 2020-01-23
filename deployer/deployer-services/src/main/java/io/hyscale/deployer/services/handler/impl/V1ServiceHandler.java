@@ -178,7 +178,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 			patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1Service.class), target,
 					V1Service.class);
 			V1Patch v1Patch = new V1Patch(patchObject.toString());
-			coreV1Api.patchNamespacedService(name, namespace, v1Patch, TRUE, null, null, false);
+			coreV1Api.patchNamespacedService(name, namespace, v1Patch, TRUE, null, null, null);
 		} catch (HyscaleException ex) {
 			LOGGER.error("Error while creating patch for Service {}, source {}, target {}, error", name, sourceService,
 					target, ex.toString());

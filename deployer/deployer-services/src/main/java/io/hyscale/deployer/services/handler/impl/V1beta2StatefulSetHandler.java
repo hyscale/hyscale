@@ -193,7 +193,7 @@ public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1bet
 			deleteRequired = isDeletePodRequired(apiClient, serviceName, namespace);
 			LOGGER.debug("Deleting existing pods for updating StatefulSet patch required :{}", deleteRequired);
 			V1Patch v1Patch = new V1Patch(patchObject.toString());
-			appsV1beta2Api.patchNamespacedStatefulSet(name, namespace, v1Patch, TRUE, null, null, false);
+			appsV1beta2Api.patchNamespacedStatefulSet(name, namespace, v1Patch, TRUE, null, null, null);
 		} catch (HyscaleException ex) {
 			LOGGER.error("Error while creating patch for StatefulSet {}, source {}, target {}, error {}", name,
 					sourceStatefulSet, target, ex.toString());

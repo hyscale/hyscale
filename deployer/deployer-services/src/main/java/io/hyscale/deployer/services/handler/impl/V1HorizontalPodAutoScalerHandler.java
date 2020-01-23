@@ -169,7 +169,7 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
             patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1HorizontalPodAutoscaler.class),
                     target, V1HorizontalPodAutoscaler.class);
             V1Patch v1Patch = new V1Patch(patchObject.toString());
-            autoscalingV1Api.patchNamespacedHorizontalPodAutoscaler(name, namespace, v1Patch, TRUE, null, null, false);
+            autoscalingV1Api.patchNamespacedHorizontalPodAutoscaler(name, namespace, v1Patch, TRUE, null, null, null);
         } catch (HyscaleException e) {
             logger.error("Error while creating patch for HorizontalPodAutoScaler {}, source {}, target {}", name, sourceHorizontalPodAutoScaler,
                     target);

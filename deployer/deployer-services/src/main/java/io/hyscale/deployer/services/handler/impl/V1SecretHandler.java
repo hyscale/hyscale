@@ -168,7 +168,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 			patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1Secret.class), target,
 					V1Secret.class);
 			V1Patch v1Patch = new V1Patch(patchObject.toString());
-			coreV1Api.patchNamespacedSecret(name, namespace, v1Patch, TRUE, null, null,false);
+			coreV1Api.patchNamespacedSecret(name, namespace, v1Patch, TRUE, null, null,null);
 		} catch (HyscaleException ex) {
 			LOGGER.error("Error while creating patch for Secret {}, source {}, target {}, error {}", name, sourceSecret,
 					target, ex.toString());

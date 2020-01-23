@@ -42,6 +42,9 @@ import io.kubernetes.client.models.V1beta2DeploymentList;
 import io.kubernetes.client.models.V1beta2DeploymentStatus;
 import io.kubernetes.client.custom.V1Patch;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.hyscale.commons.utils.ObjectMapperFactory;
+
 import java.util.List;
 
 public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deployment> {
@@ -166,7 +169,7 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deploymen
             patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1Deployment.class),
                     target, V1Deployment.class);
             V1Patch v1Patch = new V1Patch(patchObject.toString());
-            appsV1Api.patchNamespacedDeployment(name, namespace, v1Patch, TRUE, null, null, false);
+            appsV1Api.patchNamespacedDeployment(name, namespace, v1Patch, TRUE, null, null, null);
         } catch (HyscaleException e) {
             LOGGER.error("Error while creating patch for Deployment {}, source {}, target {}", name, sourceDeployment,
                     target);
