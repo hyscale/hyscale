@@ -16,6 +16,7 @@
 package io.hyscale.controller.hooks;
 
 import io.hyscale.commons.component.InvokerHook;
+import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.HyscaleFilesUtil;
 import io.hyscale.controller.model.WorkflowContext;
@@ -40,8 +41,10 @@ public class ManifestCleanUpHook implements InvokerHook<WorkflowContext> {
 	@Override
 	public void preHook(WorkflowContext context) throws HyscaleException {
 		String manifestDir = manifestConfig.getManifestDir(context.getAppName(), context.getServiceName());
-		logger.debug("Cleaning up manifests directory {}", manifestDir);
-		HyscaleFilesUtil.clearDirectory(manifestDir);
+		String absManifestDir = SetupConfig.getMountPathOf(manifestDir);
+		logger.debug("Cleaning up manifests directory {}", absManifestDir);
+		HyscaleFilesUtil.clearDirectory(absManifestDir);
+		logger.debug("Manifest directory cleaned");
 	}
 
 	@Override
@@ -51,6 +54,6 @@ public class ManifestCleanUpHook implements InvokerHook<WorkflowContext> {
 
 	@Override
 	public void onError(WorkflowContext context, Throwable th) {
-
+	    logger.error("Error while clearing manifests directory, ignoring", th);
 	}
 }
