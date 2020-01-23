@@ -57,9 +57,7 @@ public class PortsHandler implements ManifestHandler {
         };
         List<Port> portList = serviceSpec.get(HyscaleSpecFields.ports, listTypeReference);
         List<ManifestSnippet> manifestSnippetList = null;
-        String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec)
-                ? ManifestResource.STATEFUL_SET.getKind()
-                : ManifestResource.DEPLOYMENT.getKind();
+        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
         if (portList != null && !portList.isEmpty()) {
             logger.debug("Processing container and service ports");
             manifestSnippetList = Lists.newArrayList();

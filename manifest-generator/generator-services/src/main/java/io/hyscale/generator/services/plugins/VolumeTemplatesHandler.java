@@ -87,8 +87,6 @@ public class VolumeTemplatesHandler implements ManifestHandler {
             // Creating a manifest snippet for volumeClaimTemplates
             snippetList.add(buildVolumeClaimSnippet(volumes, appMetaData));
             snippetList.add(getServiceNameSnippet(appMetaData.getServiceName()));
-            manifestContext.addGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER,
-                    ManifestResource.STATEFUL_SET.getKind());
 
         } catch (JsonProcessingException e) {
             logger.error("Error while serializing volumes snippet ", e);
@@ -153,8 +151,6 @@ public class VolumeTemplatesHandler implements ManifestHandler {
     private boolean validateVolumes(List<Volume> volumes, ManifestContext manifestContext) throws HyscaleException {
         if (volumes == null || volumes.isEmpty()) {
             logger.debug("No volumes found.");
-            manifestContext.addGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER,
-                    ManifestResource.DEPLOYMENT.getKind());
             return false;
         }
 

@@ -50,16 +50,14 @@ public class ImageHandler implements ManifestHandler {
         }
         List<ManifestSnippet> snippetList = new ArrayList<>();
         snippetList.add(getImageSnippet(serviceSpec, manifestContext));
-        snippetList.add(getImagePullPolicy(serviceSpec));
+        snippetList.add(getImagePullPolicy(serviceSpec, manifestContext));
         return snippetList;
     }
 
-    private ManifestSnippet getImagePullPolicy(ServiceSpec serviceSpec) {
+    private ManifestSnippet getImagePullPolicy(ServiceSpec serviceSpec, ManifestContext manifestContext) {
         ManifestSnippet manifestSnippet = new ManifestSnippet();
         manifestSnippet.setSnippet(ManifestGenConstants.DEFAULT_IMAGE_PULL_POLICY);
-        String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec)
-                ? ManifestResource.STATEFUL_SET.getKind()
-                : ManifestResource.DEPLOYMENT.getKind();
+        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
         manifestSnippet.setKind(podSpecOwner);
         manifestSnippet.setPath("spec.template.spec.containers[0].imagePullPolicy");
         return manifestSnippet;
@@ -68,6 +66,7 @@ public class ImageHandler implements ManifestHandler {
     private ManifestSnippet getImageSnippet(ServiceSpec serviceSpec, ManifestContext manifestContext)
             throws HyscaleException {
         String imageShaId = (String) manifestContext.getGenerationAttribute(ManifestGenConstants.IMAGE_SHA_SUM);
+        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
         String image = null;
         if (StringUtils.isNotBlank(imageShaId)) {
             logger.debug("Preparing image with its digest.");
@@ -76,9 +75,6 @@ public class ImageHandler implements ManifestHandler {
             logger.debug("Preparing image directly from given tag.");
             image = ImageUtil.getImage(serviceSpec);
         }
-        String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec)
-                ? ManifestResource.STATEFUL_SET.getKind()
-                : ManifestResource.DEPLOYMENT.getKind();
         ManifestSnippet imageSnippet = new ManifestSnippet();
         imageSnippet.setSnippet(image);
         imageSnippet.setPath("spec.template.spec.containers[0].image");
