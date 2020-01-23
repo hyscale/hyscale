@@ -39,7 +39,7 @@ public class CommandUtil {
 
 	/**
 	 * Get environment name for labels in resources
-	 * @param profile in format .../<service-name>.<profile-name>.yaml
+	 * @param profile in format .../<profile-name>-<service-name>.hprof.yaml
 	 * @param appName
 	 * @return environment name
 	 */
@@ -47,9 +47,7 @@ public class CommandUtil {
 		if (StringUtils.isNotBlank(profile)) {
 			return ServiceProfileUtil.getProfileName(profile);
 		}
-		StringBuilder sb = new StringBuilder();
-		sb.append(appName).append(WorkflowConstants.DASH).append(WorkflowConstants.DEV_ENV);
-		return sb.toString();
+		return WorkflowConstants.DEV_ENV;
 	}
 
 	public static void logMetaInfo(String info, ControllerActivity controllerActivity) {
