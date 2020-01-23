@@ -171,7 +171,7 @@ public class V1beta2DeploymentHandler implements ResourceLifeCycleHandler<V1beta
 			patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1beta2Deployment.class),
 					target, V1beta2Deployment.class);
 			V1Patch v1Patch = new V1Patch(patchObject.toString());
-			appsV1beta2Api.patchNamespacedDeployment(name, namespace, v1Patch, TRUE, null, null, false);
+			appsV1beta2Api.patchNamespacedDeployment(name, namespace, v1Patch, TRUE, null, null, null);
 		} catch (HyscaleException e) {
 			LOGGER.error("Error while creating patch for Deployment {}, source {}, target {}", name, sourceDeployment,
 					target);

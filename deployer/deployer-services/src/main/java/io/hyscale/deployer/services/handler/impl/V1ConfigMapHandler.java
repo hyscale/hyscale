@@ -173,7 +173,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
             patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1ConfigMap.class), target,
                     V1ConfigMap.class);
             V1Patch v1Patch = new V1Patch(patchObject.toString());
-            coreV1Api.patchNamespacedConfigMap(name, namespace, v1Patch, TRUE, null, null, false);
+            coreV1Api.patchNamespacedConfigMap(name, namespace, v1Patch, TRUE, null, null, null);
         } catch (HyscaleException e) {
             LOGGER.error("Error while creating patch for ConfigMap {}, source {}, target {}", name, sourceConfigMap,
                     target);

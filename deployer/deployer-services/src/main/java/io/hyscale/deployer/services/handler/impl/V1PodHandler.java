@@ -168,7 +168,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 			patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1Pod.class), target,
 					V1Pod.class);
 			V1Patch v1Patch =  new V1Patch(patchObject.toString());
-			coreV1Api.patchNamespacedPod(name, namespace, v1Patch, TRUE, null, null, false);
+			coreV1Api.patchNamespacedPod(name, namespace, v1Patch, TRUE, null, null, null);
 		} catch (HyscaleException e) {
 			LOGGER.error("Error while creating patch for Pod {}, source {}, target {}", name, sourcePod, target);
 			throw e;
