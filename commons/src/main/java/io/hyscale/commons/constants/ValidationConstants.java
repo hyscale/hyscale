@@ -23,7 +23,7 @@ public class ValidationConstants {
     
     public static final String SERVICE_SPEC_NAME_REGEX = "(.*)" + SERVICE_NAME_REGEX + "(\\.hspec\\.yaml)$";
     
-    public static final String PROFILE_NAME_REGEX = "([a-zA-Z0-9]){2,30}";
+    public static final String PROFILE_NAME_REGEX = "([-a-zA-Z0-9]){2,30}";
     
     public static final String PROFILE_FILENAME_REGEX = "(.*)" + PROFILE_NAME_REGEX + ToolConstants.DASH + SERVICE_NAME_REGEX + "(\\.hprof\\.yaml)$";
 
