@@ -16,6 +16,7 @@
 package io.hyscale.generator.services.plugins;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.utils.PodSpecEnvUtil;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
@@ -53,8 +54,7 @@ public class PodSpecEnvHandler implements ManifestHandler {
         appMetaData.setAppName(manifestContext.getAppName());
         appMetaData.setEnvName(manifestContext.getEnvName());
         appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
-        String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ?
-                ManifestResource.STATEFUL_SET.getKind() : ManifestResource.DEPLOYMENT.getKind();
+        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
 
         List<V1EnvVar> envVarList = new DecoratedArrayList<V1EnvVar>();
         try {

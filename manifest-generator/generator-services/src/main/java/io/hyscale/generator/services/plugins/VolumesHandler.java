@@ -16,6 +16,7 @@
 package io.hyscale.generator.services.plugins;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
@@ -53,9 +54,7 @@ public class VolumesHandler implements ManifestHandler {
         appMetaData.setEnvName(manifestContext.getEnvName());
         appMetaData.setAppName(manifestContext.getAppName());
 
-        String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec)
-                ? ManifestResource.STATEFUL_SET.getKind()
-                : ManifestResource.DEPLOYMENT.getKind();
+        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
         List<ManifestSnippet> snippetList = new ArrayList<>();
         try {
             snippetList.add(buildVolumeSnippet(serviceSpec, appMetaData, podSpecOwner));

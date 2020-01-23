@@ -20,6 +20,7 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.ConfigTemplate;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
+import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.generator.services.model.AppMetaData;
 import io.hyscale.generator.services.model.ManifestGeneratorActivity;
@@ -101,8 +102,7 @@ public class AutoScalingPluginHandler implements ManifestHandler {
         appMetaData.setAppName(manifestContext.getAppName());
         appMetaData.setEnvName(manifestContext.getEnvName());
         appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
-        ManifestResource podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ? ManifestResource.STATEFUL_SET :
-                ManifestResource.DEPLOYMENT;
+        ManifestResource podSpecOwner = (ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER);
         context.put(TARGET_KIND, podSpecOwner.getKind());
         context.put(TARGET_APIVERSION, podSpecOwner.getApiVersion());
         context.put(TARGET_NAME, podSpecOwner.getName(appMetaData));

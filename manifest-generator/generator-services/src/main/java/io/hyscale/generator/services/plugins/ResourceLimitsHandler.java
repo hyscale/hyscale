@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
+import io.hyscale.generator.services.constants.ManifestGenConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,8 +72,7 @@ public class ResourceLimitsHandler implements ManifestHandler {
             logger.debug("Preparing cpu limits.");
             cpuRange = getRange(cpu, cpuRangePattern);
         }
-        String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ?
-                ManifestResource.STATEFUL_SET.getKind() : ManifestResource.DEPLOYMENT.getKind();
+        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         try {
             manifestSnippetList.add(getResourceRequirements(memoryRange, cpuRange, podSpecOwner));

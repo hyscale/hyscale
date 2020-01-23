@@ -24,6 +24,7 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.hyscale.commons.utils.ObjectMapperFactory;
+import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Secrets;
 import org.slf4j.Logger;
@@ -50,9 +51,7 @@ public class ServiceSpecAnnotationHandler implements ManifestHandler {
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
-        String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec)
-                ? ManifestResource.STATEFUL_SET.getKind()
-                : ManifestResource.DEPLOYMENT.getKind();
+        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
         ManifestSnippet manifestSnippet = new ManifestSnippet();
         manifestSnippet.setKind(podSpecOwner);
         manifestSnippet.setPath("metadata.annotations");

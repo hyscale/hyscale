@@ -18,6 +18,7 @@ package io.hyscale.generator.services.plugins;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.generator.services.model.ManifestResource;
@@ -107,9 +108,7 @@ public class HealthChecksHandler implements ManifestHandler {
             v1Probe.setTimeoutSeconds(DEFAULT_TIMEOUT_IN_SECONDS);
             v1Probe.setFailureThreshold(DEFAULT_FAILURE_THRESHOLD_IN_SECONDS);
             try {
-                String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec)
-                        ? ManifestResource.STATEFUL_SET.getKind()
-                        : ManifestResource.DEPLOYMENT.getKind();
+                String podSpecOwner = ((ManifestResource) context.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
                 manifestSnippetList.add(buildReadinessProbe(v1Probe, podSpecOwner));
                 manifestSnippetList.add(buildLiveinessProbe(v1Probe, podSpecOwner));
                 logger.debug("Processing HealthChecks done.");

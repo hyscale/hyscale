@@ -18,6 +18,7 @@ package io.hyscale.generator.services.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.generator.K8sResourceNameGenerator;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
@@ -50,8 +51,7 @@ public class AgentVolumesBuilder extends AgentHelper implements AgentBuilder {
 
     @Override
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException, HyscaleException {
-        String podSpecOwner = ManifestPredicates.getVolumesPredicate().test(serviceSpec) ?
-                ManifestResource.STATEFUL_SET.getKind() : ManifestResource.DEPLOYMENT.getKind();
+        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
         List<ManifestSnippet> volumeSnippets = new ArrayList<ManifestSnippet>();
         List<Agent> agents = getAgents(serviceSpec);
         String serviceName = serviceSpec.get(HyscaleSpecFields.name,String.class);

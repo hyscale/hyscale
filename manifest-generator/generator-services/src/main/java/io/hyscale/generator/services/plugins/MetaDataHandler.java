@@ -16,6 +16,8 @@
 package io.hyscale.generator.services.plugins;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.hyscale.generator.services.constants.ManifestGenConstants;
+import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
@@ -64,6 +66,8 @@ public class MetaDataHandler implements ManifestHandler {
                 }
 
             }
+            context.addGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER, ManifestPredicates.getVolumesPredicate().test(serviceSpec) ? ManifestResource.STATEFUL_SET :
+                    ManifestResource.DEPLOYMENT);
         } catch (JsonProcessingException e) {
             logger.error("Error while serializing metadata snippet.", e);
         }
