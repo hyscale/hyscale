@@ -12,6 +12,7 @@ This is a minor release to support profiles , 1.14 cluster support
 * Fix for apiversion of deployment, statefulset manifest generation with apps/v1
 * Fix for secretsVolumePath not being mounted as secret.props
 * Fix for manifest cleanup with installater
+* Fix for image build with dockerfile
 
 
 # v0.9.1 Release
