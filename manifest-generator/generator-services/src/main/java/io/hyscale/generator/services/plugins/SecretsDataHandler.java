@@ -16,6 +16,7 @@
 package io.hyscale.generator.services.plugins;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.utils.SecretsDataUtil;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
@@ -36,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@ManifestPlugin(name = "ConfigMapDataHandler")
+@ManifestPlugin(name = "SecretsDataHandler")
 public class SecretsDataHandler implements ManifestHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(SecretsDataHandler.class);
@@ -59,7 +60,7 @@ public class SecretsDataHandler implements ManifestHandler {
 
             manifestSnippetList.add(getSecretsData(secrets, secretsVolumePath));
         } catch (JsonProcessingException e) {
-            logger.error("Error while generating manifest for props of service {}", appMetaData.getServiceName(), e);
+            logger.error("Error while generating manifest for secrets of service {}", appMetaData.getServiceName(), e);
         }
         return manifestSnippetList;
 
@@ -68,14 +69,7 @@ public class SecretsDataHandler implements ManifestHandler {
 
     private ManifestSnippet getSecretsData(Secrets secrets, String secretsVolumePath)
             throws JsonProcessingException {
-
-        String fileName = null;
-        try{
-            fileName = HyscaleFilesUtil.getFileName(secretsVolumePath);
-        }catch (HyscaleException e){
-            logger.error("Error while processing secrets volumes path {}.", secretsVolumePath);
-        }
-        ManifestSnippet snippet = SecretsDataUtil.build(secrets,secretsVolumePath,fileName);
+        ManifestSnippet snippet = SecretsDataUtil.build(secrets, secretsVolumePath, ManifestGenConstants.DEFAULT_SECRETS_FILE);
         return snippet;
     }
 }
