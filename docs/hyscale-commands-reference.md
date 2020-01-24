@@ -1,6 +1,6 @@
 # HyScale Tool Command Reference
 
-> Version 0.9.1 <br />
+> Version 0.9.2 <br />
 
 ---
 
@@ -12,15 +12,16 @@ Usage:  hyscale deploy service [OPTIONS]
 Deploy an application service
 
 Options:
-  -f, --file string          service spec file `<serviceName>.hspec`. Can be repeated for multiple service deployment.
-  -n, --namespace string     name of namespace `<nameSpace>`
-  -a, --application string   Application Name
+  -f, --file string          Service spec file `<serviceName>.hspec.yaml`. Can be repeated for multiple service deployment.
+  -p, --profile string       `Optional` service profile file  `<profileName>-<serviceName>.hprof.yaml`. Can be repeated for different services.
+  -n, --namespace string     name of namespace `<namespace>`
+  -a, --application string   name of application `<applicationName>`
   -v  --verbose              `Optional` verbose mode
 ```
 
 #### Description
 
-To deploy an application service which is defined in the hspec file, use the "deploy" command. The command requires hspec file, Kubernetes namespace and the application name as  inputs.  Multiple hspec files (-f `<serviceName1>`.hspec -f `<serviceName2>`.hspec `<serviceNameN>`.hspec) can be provided to deploy multiple services.
+To deploy an application service which is defined in the hspec file, use the "deploy" command. The command requires hspec file, Kubernetes namespace and application name as inputs, additionally profile can also be provided for a service.  Multiple hspec files (-f `<serviceName1>`.hspec.yaml -f `<serviceName2>`.hspec.yaml `<serviceNameN>`.hspec.yaml) can be provided to deploy multiple services. Similarly profiles files (-p `<profileName1>-<serviceName1>`.hprof.yaml -p `<profileName2>-<serviceName2>`.hprof.yaml -p `<profileNameN>-<serviceNameN>`.hprof.yaml) can also be provided for services. At max one profile is allowed per service.
 
 ## service status
 
@@ -31,14 +32,29 @@ Status of an Application Service.
 
 Options:
   -s --service string         name of service `<serviceName>`
-  -n --namespace string       name of namespace `<nameSpace>`
+  -n --namespace string       name of namespace `<namespace>`
   -a --application string     name of application `<applicationName>`   
 ```
 
 #### Description
 
-To get the status of a particular deployed service, use the "get service status". The command requires the service name , Kubernetes namespace and application name as inputs.  Multiple service names (-s `<serviceName1>` -s `<serviceName2>` -s `<serviceNameN>`)  can be provided to get status of multiple services.
+To get the status of a particular deployed service, use "get service status" command. The command requires service name, Kubernetes namespace and application name as inputs.  Multiple service names (-s `<serviceName1>` -s `<serviceName2>` -s `<serviceNameN>`)  can be provided to get status of multiple services of an application.
 
+## app status
+
+```markdown
+Usage: hyscale get app status [OPTIONS]
+
+Status of Deployed Application.
+
+Options:
+  -n --namespace string       name of namespace `<namespace>`
+  -a --application string     name of application `<applicationName>`
+```
+
+#### Description
+
+To get the status of all the deployed services in an application, use "get app status" command. The command requires the Kubernetes namespace and application name as inputs.
 
 ## logs
 
@@ -49,7 +65,7 @@ Logs of an application Service
 
 Options:
   -s --service string         name of service `<serviceName>`
-  -n --namespace string       name of namespace `<nameSpace>`
+  -n --namespace string       name of namespace `<namespace>`
   -a --application string     name of application `<applicationName>`
   -l --lines int              `Optional` output the last given lines
   -t --tail                   `Optional` follow the logs
@@ -57,7 +73,7 @@ Options:
 
 #### Description
 
-To get the stdout logs of the deployed service , use the "get service logs" command as below. The command requires servicename, Kubernetes namespace and the application name as inputs. The command can tail the logs with the specified number of lines using -t and -l options to the command.
+To get the stdout logs of the deployed service, use "get service logs" command. The command requires service name, Kubernetes namespace and application name as inputs. The command can tail the logs with the specified number of lines using -t and -l options to the command.
 
 ## undeploy service
 
@@ -68,13 +84,13 @@ Undeploy an existing deployed application service.
 
 Options: 
   -s --service string         name of service `<serviceName>`
-  -n --namespace string       name of namespace `<nameSpace>`
+  -n --namespace string       name of namespace `<namespace>`
   -a --application string     name of application `<applicationName>`
 ```
 
 #### Description
 
-To undeploy a particular application service which was deployed by HyScale, use the "undeploy service" command. The undeploy command requires the service name , Kubernetes namespace and the application name as inputs. Multiple service names (-s `<serviceName1>` -s `<serviceName2>` -s `<serviceNameN>`) can be provided to undeploy multiple services.
+To undeploy a particular application service which was deployed by HyScale, use "undeploy service" command. The undeploy command requires the service name, Kubernetes namespace and the application name as inputs. Multiple service names (-s `<serviceName1>` -s `<serviceName2>` -s `<serviceNameN>`) can be provided to undeploy multiple services.
 
 ## undeploy app
 
@@ -84,13 +100,13 @@ Usage: hyscale undeploy app [OPTIONS]
 Undeploy an existing deployed application.
 
 Options:
-  -n --namespace string       name of namespace `<nameSpace>`
+  -n --namespace string       name of namespace `<namespace>`
   -a --application string     name of application `<applicationName>`
 ```
 
 #### Description
 
-HyScale deletes all the services of an application using the "undeploy app" command. The command requires the Kubernetes namespace and the application name as inputs.
+To undeploy all services  for an application which was deployed by HyScale, use  "undeploy app" command. The command requires the Kubernetes namespace and the application name as inputs.
 
 ## generate manifests
 
@@ -100,37 +116,26 @@ Usage: hyscale generate service manifests [OPTIONS]
 Generate kubernetes manifests for the specified services.
 
 Options:
-  -f, --file string          service spec file `<serviceName>.hspec`. Can be repeated for multiple service specifications.
+  -f, --file string          service spec file `<serviceName>.hspec.yaml`. Can be repeated for multiple service specifications.
+  -p, --profile string       `Optional` service profile file `<profileName>-<serviceName>.hprof.yaml`. Can be repeated for different services.
   -a --application string     name of application `<applicationName>`
 ```
 #### Description
 
-HyScale abstracts the generation of Kubernetes manifests for deployments, however a user can generate the Kubernetes manifests without deployment using the "generate service manifests" command. The command requires service name , Kubernetes namespace and the application name as inputs. Multiple service names (-f `<serviceName1>`.hspec -f `<serviceName2>`.hspec `<serviceNameN>`.hspec) can be provided to generate Kubernetes manifests for multiple services.
-
-## app status
-
-```markdown
-Usage: hyscale get app status [OPTIONS]
-
-Status of Deployed Application.
-
-Options:
-  -n --namespace string       name of namespace `<nameSpace>`
-  -a --application string     name of application `<applicationName>`
-```
-
-#### Description
-
-To get the status of all the deployed services in an application , use the "get app status". The command requires the Kubernetes namespace and application name as inputs.
-
+HyScale abstracts the generation of Kubernetes manifests for deployments, however a user can generate the Kubernetes manifests without deployment using the "generate service manifests" command. The command requires service name, the application name as inputs, additionally profile can also be provided for a service. Multiple service names (-f `<serviceName1>`.hspec.yaml -f `<serviceName2>`.hspec.yaml `<serviceNameN>`.hspec.yaml) can be provided to generate Kubernetes manifests for multiple services. Additionally profiles files (-p `<profileName1>-<serviceName1>`.hprof.yaml -p `<profileName2>-<serviceName2>`.hprof.yaml -p `<profileNameN>-<serviceNameN>`.hprof.yaml) can also be provided for services. At max one profile is allowed per service.
 
 ## Tool Options Description:
 
-**_-f `<serviceName>`.hspec_**
+**_-f `<serviceName>`.hspec.yaml_**
 
 HyScale Service Spec file where file name should be same as service name mentioned inside spec. This is the name with which service by default gets deployed. To know how to write service spec click [here](https://github.com/hyscale/hspec/blob/master/docs/hyscale-spec-reference.md).
 
-**_-n `<nameSpace>`_**
+**_-p `<profileName>-<serviceName>`.hprof.yaml_**
+
+HyScale Service Profile file where file name should follow the pattern `<profileName>-<serviceName>`.hprof.yaml. Profile provides flexibility to declare environment specific values for certain parameters. To know what all is supported in profile click [here](https://github.com/hyscale/hspec/blob/master/docs/hyscale-spec-reference.md#Profile-Files). 
+Profile name must consist of alphanumeric characters or '-', with length in the range of 2-30. Regex used for profile name validation is *`([-a-zA-Z0-9]){2,30}`*
+
+**_-n `<namespace>`_**
 
 Kubernetes namespace where service is deployed. `namespace` acts like an isolation for your application services. Generally namespace is used for describing application environments (like QA, STAGE, UAT etc..). If namespace is not present, hyscale will create one with the given name provided kubeconfig permissions.
 Namespace must consist of lower case alphanumeric characters or '-', with length in the range of 2-30. Regex used for validation is *`([a-z0-9-]){2,30}`*
