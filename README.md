@@ -115,6 +115,12 @@ replicas:
 **To deploy, invoke the hyscale deploy command:**
     
 ```sh
+hyscale deploy service -f `<myservice.hspec.yaml>` -n `<my-namespace>` -a `<my-app-name>`
+```
+
+**To deploy with profiles, invoke the hyscale deploy command:**
+    
+```sh
 hyscale deploy service -f `<myservice.hspec.yaml>` -n `<my-namespace>` -a `<my-app-name>` -p `<stage-myservice.hprof.yaml>`
 ```
 
