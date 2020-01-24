@@ -128,11 +128,11 @@ HyScale abstracts the generation of Kubernetes manifests for deployments, howeve
 
 **_-f `<serviceName>`.hspec.yaml_**
 
-HyScale Service Spec file where file name should be same as service name mentioned inside spec. This is the name with which service by default gets deployed. To know how to write service spec click [here](https://github.com/hyscale/hspec/blob/master/docs/hyscale-spec-reference.md).
+HyScale Service Spec file where file name should be same as service name mentioned inside spec. This is the name with which service by default gets deployed. To know how to write service spec click [here](https://github.com/hyscale/hspec/blob/release/HSpec0.6.1/docs/hyscale-spec-reference.md).
 
 **_-p `<profileName>-<serviceName>`.hprof.yaml_**
 
-HyScale Service Profile file where file name should follow the pattern `<profileName>-<serviceName>`.hprof.yaml. Profile provides flexibility to declare environment specific values for certain parameters. To know what all is supported in profile click [here](https://github.com/hyscale/hspec/blob/master/docs/hyscale-spec-reference.md#Profile-Files). 
+HyScale Service Profile file where file name should follow the pattern `<profileName>-<serviceName>`.hprof.yaml. Profile provides flexibility to declare environment specific values for certain parameters. To know what all is supported in profile click [here](https://github.com/hyscale/hspec/blob/release/HSpec0.6.1/docs/hyscale-spec-reference.md#Profile-Files). 
 Profile name must consist of alphanumeric characters or '-', with length in the range of 2-30. Regex used for profile name validation is *`([-a-zA-Z0-9]){2,30}`*
 
 **_-n `<namespace>`_**
