@@ -18,6 +18,13 @@ Here is a glimpse of what HyScale does when you invoke it
 
 To get started, install hyscale as per the below instructions & follow the [tutorial](https://www.hyscale.io/tutorial/get-started/) to deploy your first app.
 
+## What's New
+ 1. Autoscaling, scale your pods dynamically based on the load.
+ 2. Agents as sidecars , Ex: tracing agents like envoy , logging agents like fluentd .
+ 3. Profiles , override configuration on an environment basis
+ 4. Kubernetes 1.14 cluster support.
+
+
 ## Prerequisites
 In order to deploy your service to k8s, you must have the following configurations and installations in place on your machine from which you wish to deploy your application.
 1. Docker 18.09.x or above. Your Linux user should be part of the docker group and `docker.sock` should be present at /var/run/docker.sock (Default location) 
@@ -72,6 +79,11 @@ volumes:
       path: /usr/local/tomcat/logs
       size: 1Gi
       storageClass: standard
+
+replicas:
+    min: 1
+    max: 3
+    cpuThresold: 40%
  
 external: true
 ports:
@@ -81,12 +93,29 @@ ports:
 
 ```
 
+####  Stage profile for myservice can be like
+```yaml
+environment: stage
+overrides: myservice
+ 
+volumes:
+    - name: tomcat-logs-dir
+      size: 2Gi
+
+replicas:
+    min: 1
+    max: 4
+    cpuThreshold: 30%
+ 
+
+```
+
 ### Deploy the service
 
 **To deploy, invoke the hyscale deploy command:**
     
 ```sh
-hyscale deploy service -f `<myservice.hspec.yaml>` -n `<my-namespace>` -a `<my-app-name>`
+hyscale deploy service -f `<myservice.hspec.yaml>` -n `<my-namespace>` -a `<my-app-name>` -p `<stage-myservice.hprof.yaml>`
 ```
 
 **To view the status of your deployment:**
