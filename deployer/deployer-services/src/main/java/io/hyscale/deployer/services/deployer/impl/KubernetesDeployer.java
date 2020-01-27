@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.hyscale.commons.annotations.ComponentInterceptor;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.ActivityContext;
 import io.hyscale.commons.logger.WorkflowLogger;
@@ -51,6 +52,9 @@ import io.hyscale.deployer.services.handler.impl.V1PersistentVolumeClaimHandler;
 import io.hyscale.deployer.services.handler.impl.V1PodHandler;
 import io.hyscale.deployer.services.handler.impl.V1ServiceHandler;
 import io.hyscale.deployer.services.predicates.PodPredicates;
+import io.hyscale.deployer.services.processor.impl.DeployStaleVolumeProcessor;
+import io.hyscale.deployer.services.processor.impl.K8SResourcesCleanUpProcessor;
+import io.hyscale.deployer.services.processor.impl.UndeployStaleVolumeProcessor;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.hyscale.deployer.services.util.DeploymentStatusUtil;
 import io.hyscale.deployer.services.util.K8sPodUtil;
@@ -80,8 +84,10 @@ public class KubernetesDeployer implements Deployer {
     private K8sClientProvider clientProvider;
 
     @Override
+    @ComponentInterceptor(processors = {K8SResourcesCleanUpProcessor.class, DeployStaleVolumeProcessor.class})
     public void deploy(DeploymentContext context) throws HyscaleException {
 
+        WorkflowLogger.header(DeployerActivity.STARTING_DEPLOYMENT);
         K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(clientProvider.get((K8sAuthorisation) context.getAuthConfig()));
         try {
             resourceDispatcher.waitForReadiness(context.isWaitForReadiness());
@@ -146,6 +152,7 @@ public class KubernetesDeployer implements Deployer {
     }
 
     @Override
+    @ComponentInterceptor(processors = UndeployStaleVolumeProcessor.class)
     public void unDeploy(DeploymentContext context) throws HyscaleException {
         K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(clientProvider.get((K8sAuthorisation) context.getAuthConfig()));
         try {

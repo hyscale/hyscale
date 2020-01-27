@@ -21,6 +21,8 @@ import io.hyscale.commons.models.Activity;
  * Activities list for Deployer Service
  */
 public enum DeployerActivity implements Activity {
+    STARTING_DEPLOYMENT(" Deployment "),
+    CLEANING_UP_RESOURCES("Deleting stale resources"),
 	DEPLOYING_CONFIGMAP("Applying ConfigMap "),
 	DEPLOYING_STATEFULSET("Applying StatefulSet "),
 	DEPLOYING_DEPLOYMENT("Applying Deployment "),

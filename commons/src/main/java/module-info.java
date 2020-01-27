@@ -19,6 +19,7 @@ module commons {
 	exports io.hyscale.commons.models;
 	exports io.hyscale.commons.utils;
 	exports io.hyscale.commons.logger;
+	exports io.hyscale.commons.listener;
 	exports io.hyscale.commons.commands;
 	exports io.hyscale.commons.config;
 	exports io.hyscale.commons.component;

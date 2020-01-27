@@ -28,8 +28,8 @@ import org.springframework.context.annotation.Configuration;
 import io.hyscale.commons.annotations.ComponentInterceptor;
 import io.hyscale.commons.component.IInterceptorProcessor;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.listener.HyscaleContextHelper;
 import io.hyscale.commons.models.ManifestContext;
-import io.hyscale.commons.utils.HyscaleContextUtil;
 import io.hyscale.generator.services.processor.ManifestInterceptorProcessor;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
@@ -84,14 +84,14 @@ public class ManifestGeneratorAspect {
         }
     }
 
-    @AfterThrowing("manifestPointCut(interceptor, serviceSpec, context)")
+    @AfterThrowing(pointcut = "manifestPointCut(interceptor, serviceSpec, context)", throwing = "th")
     public void onError(JoinPoint jp, ComponentInterceptor interceptor, ServiceSpec serviceSpec,
-            ManifestContext context) throws HyscaleException {
+            ManifestContext context, Throwable th) throws HyscaleException {
         try {
             for (Class<? extends IInterceptorProcessor> processor : interceptor.processors()) {
                 ManifestInterceptorProcessor processorBean = validateAndGetProcessorBean(processor);
                 if (processorBean != null) {
-                    processorBean.onError(serviceSpec, context);
+                    processorBean.onError(serviceSpec, context, th);
                 }
             }
         } catch (HyscaleException ex) {
@@ -101,7 +101,7 @@ public class ManifestGeneratorAspect {
     }
 
     private ManifestInterceptorProcessor validateAndGetProcessorBean(Class<? extends IInterceptorProcessor> processor) {
-        IInterceptorProcessor processorBean = HyscaleContextUtil.getSpringBean(processor);
+        IInterceptorProcessor processorBean = HyscaleContextHelper.getSpringBean(processor);
         if (processorBean == null) {
             logger.debug("Bean not found for Processor {}, ignoring processing", processor.getCanonicalName());
             return null;

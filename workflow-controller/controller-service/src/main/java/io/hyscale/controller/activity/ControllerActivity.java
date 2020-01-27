@@ -25,7 +25,6 @@ public enum ControllerActivity implements Activity {
     DOCKERFILE_GENERATION("Dockerfile Generation"),
     DOCKERFILE_GENERATION_FAILED(" Dockerfile generation failed :: {}"),
     MANIFEST_GENERATION_FAILED(" Manifest generation failed :: {} "),
-    CLEANING_UP_RESOURCES("Deleting stale resources"),
     CLEANING_UP_VOLUMES("Deleting stale pvc"),
     BUILD_AND_PUSH("Image build and Push"),
     STARTING_MANIFEST_GENERATION(" Manifest Generation "),

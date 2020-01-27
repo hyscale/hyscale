@@ -38,8 +38,6 @@ import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.core.exception.ControllerErrorCodes;
-import io.hyscale.controller.hooks.K8SResourcesCleanUpHook;
-import io.hyscale.controller.hooks.VolumeCleanUpHook;
 import io.hyscale.controller.hooks.VolumeValidatorHook;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.LoggerUtility;
@@ -77,19 +75,11 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
     private LogProcessor logProcessor;
 
     @Autowired
-    private K8SResourcesCleanUpHook k8sResourcesCleanUpHook;
-
-    @Autowired
-    private VolumeCleanUpHook volumeCleanUpHook;
-
-    @Autowired
     private VolumeValidatorHook volumeValidatorHook;
 
     @PostConstruct
     public void init() {
         super.addHook(volumeValidatorHook);
-        super.addHook(k8sResourcesCleanUpHook);
-        super.addHook(volumeCleanUpHook);
     }
 
     /**
@@ -135,14 +125,11 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
             logger.error("Failed to get service name, error {}", e.toString());
             return;
         }
-
         deploymentContext.setServiceName(serviceName);
         context.setServiceName(serviceName);
-        WorkflowLogger.header(ControllerActivity.STARTING_DEPLOYMENT);
         /*
             Deploys and waits for the deployment completion
          */
-
         try {
             deployer.deploy(deploymentContext);
             deployer.waitForDeployment(deploymentContext);

@@ -28,7 +28,7 @@ import org.springframework.context.annotation.Configuration;
 import io.hyscale.commons.annotations.ComponentInterceptor;
 import io.hyscale.commons.component.IInterceptorProcessor;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.utils.HyscaleContextUtil;
+import io.hyscale.commons.listener.HyscaleContextHelper;
 import io.hyscale.dockerfile.gen.services.model.DockerfileGenContext;
 import io.hyscale.dockerfile.gen.services.processor.DockerfileGenInterceptorProcessor;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
@@ -83,14 +83,14 @@ public class DockerfileGenAspect {
         }
     }
 
-    @AfterThrowing("dockerfileGenPointCut(interceptor, serviceSpec, context)")
+    @AfterThrowing(pointcut = "dockerfileGenPointCut(interceptor, serviceSpec, context)", throwing = "th")
     public void onError(JoinPoint jp, ComponentInterceptor interceptor, ServiceSpec serviceSpec,
-            DockerfileGenContext context) throws HyscaleException {
+            DockerfileGenContext context, Throwable th) throws HyscaleException {
         try {
             for (Class<? extends IInterceptorProcessor> processor : interceptor.processors()) {
                 DockerfileGenInterceptorProcessor processorBean = validateAndGetProcessorBean(processor);
                 if (processorBean != null) {
-                    processorBean.onError(serviceSpec, context);
+                    processorBean.onError(serviceSpec, context, th);
                 }
             }
         } catch (HyscaleException ex) {
@@ -100,7 +100,7 @@ public class DockerfileGenAspect {
     }
 
     private DockerfileGenInterceptorProcessor validateAndGetProcessorBean(Class<? extends IInterceptorProcessor> processor) {
-        IInterceptorProcessor processorBean = HyscaleContextUtil.getSpringBean(processor);
+        IInterceptorProcessor processorBean = HyscaleContextHelper.getSpringBean(processor);
         if (processorBean == null) {
             logger.debug("Bean not found for Processor {}, ignoring processing", processor.getCanonicalName());
             return null;

@@ -34,7 +34,7 @@ public abstract class BuilderInterceptorProcessor implements IInterceptorProcess
 
     abstract protected void _postProcess(ServiceSpec serviceSpec, BuildContext context) throws HyscaleException;
 
-    abstract protected void _onError(ServiceSpec serviceSpec, BuildContext context) throws HyscaleException;
+    abstract protected void _onError(ServiceSpec serviceSpec, BuildContext context, Throwable th) throws HyscaleException;
 
     @Override
     public void preProcess(Object... args) throws HyscaleException {
@@ -66,7 +66,11 @@ public abstract class BuilderInterceptorProcessor implements IInterceptorProcess
             logger.error(ex.getMessage());
             throw ex;
         }
-        _onError((ServiceSpec) args[0], (BuildContext) args[1]);
+        if (args[2] != null) {
+            _onError((ServiceSpec) args[0], (BuildContext) args[1], (Throwable)args[2]);
+        } else {
+            _onError((ServiceSpec) args[0], (BuildContext) args[1], null);
+        }
     }
 
     private boolean validateInput(Object... args) {

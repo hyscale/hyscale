@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.commons.utils;
+package io.hyscale.commons.listener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
-public class HyscaleContextUtil {
+public class HyscaleContextHelper {
     
-    private static final Logger logger = LoggerFactory.getLogger(HyscaleContextUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(HyscaleContextHelper.class);
 
     private static ApplicationContext applicationContext;
 
-    public static void setContext(ApplicationContext appContext) {
+    protected static void setContext(ApplicationContext appContext) {
         applicationContext = appContext;
     }
 

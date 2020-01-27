@@ -33,7 +33,7 @@ public abstract class DeployerInterceptorProcessor implements IInterceptorProces
 
     abstract protected void _postProcess(DeploymentContext context) throws HyscaleException;
 
-    abstract protected void _onError(DeploymentContext context) throws HyscaleException;
+    abstract protected void _onError(DeploymentContext context, Throwable th) throws HyscaleException;
 
     @Override
     public void preProcess(Object... args) throws HyscaleException {
@@ -65,7 +65,11 @@ public abstract class DeployerInterceptorProcessor implements IInterceptorProces
             logger.error(ex.getMessage());
             throw ex;
         }
-        _onError((DeploymentContext) args[0]);
+        if (args[1] != null) {
+            _onError((DeploymentContext) args[0], (Throwable) args[1]);
+        } else {
+            _onError((DeploymentContext) args[0], null);
+        }
     }
 
     private boolean validateInput(Object... args) {

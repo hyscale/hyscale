@@ -31,7 +31,6 @@ import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.controller.hooks.AppDirCleanUpHook;
 import io.hyscale.controller.hooks.ServiceDirCleanUpHook;
-import io.hyscale.controller.hooks.StaleVolumeDetailsHook;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.deployer.services.deployer.Deployer;
 
@@ -56,14 +55,10 @@ public class UndeployComponentInvoker extends ComponentInvoker<WorkflowContext> 
     @Autowired
     private AppDirCleanUpHook appDirCleanUpHook;
     
-    @Autowired
-    private StaleVolumeDetailsHook staleVolumeDetailsHook;
-
     @PostConstruct
     public void init() {
         addHook(serviceDirCleanUpHook);
         addHook(appDirCleanUpHook);
-        addHook(staleVolumeDetailsHook);
     }
     
     @Override

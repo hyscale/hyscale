@@ -34,7 +34,7 @@ public abstract class DockerfileGenInterceptorProcessor implements IInterceptorP
 
     protected abstract void _postProcess(ServiceSpec serviceSpec, DockerfileGenContext context) throws HyscaleException;
 
-    protected abstract void _onError(ServiceSpec serviceSpec, DockerfileGenContext context) throws HyscaleException;
+    protected abstract void _onError(ServiceSpec serviceSpec, DockerfileGenContext context, Throwable th) throws HyscaleException;
 
     @Override
     public void preProcess(Object... args) throws HyscaleException {
@@ -66,7 +66,11 @@ public abstract class DockerfileGenInterceptorProcessor implements IInterceptorP
             logger.error(ex.getMessage());
             throw ex;
         }
-        _onError((ServiceSpec) args[0], (DockerfileGenContext) args[1]);
+        if (args[2] != null) {
+            _onError((ServiceSpec) args[0], (DockerfileGenContext) args[1], (Throwable)args[2]);
+        } else {
+            _onError((ServiceSpec) args[0], (DockerfileGenContext) args[1], null);
+        }
     }
 
     private boolean validateInput(Object... args) {

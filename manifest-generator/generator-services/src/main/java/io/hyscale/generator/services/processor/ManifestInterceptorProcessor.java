@@ -34,7 +34,8 @@ public abstract class ManifestInterceptorProcessor implements IInterceptorProces
 
     protected abstract void _postProcess(ServiceSpec serviceSpec, ManifestContext context) throws HyscaleException;
 
-    protected abstract void _onError(ServiceSpec serviceSpec, ManifestContext context) throws HyscaleException;
+    protected abstract void _onError(ServiceSpec serviceSpec, ManifestContext context, Throwable th)
+            throws HyscaleException;
 
     @Override
     public void preProcess(Object... args) throws HyscaleException {
@@ -66,7 +67,11 @@ public abstract class ManifestInterceptorProcessor implements IInterceptorProces
             logger.error(ex.getMessage());
             throw ex;
         }
-        _onError((ServiceSpec) args[0], (ManifestContext) args[1]);
+        if (args[2] != null) {
+            _onError((ServiceSpec) args[0], (ManifestContext) args[1], (Throwable) args[2]);
+        } else {
+            _onError((ServiceSpec) args[0], (ManifestContext) args[1], null);
+        }
     }
 
     private boolean validateInput(Object... args) {

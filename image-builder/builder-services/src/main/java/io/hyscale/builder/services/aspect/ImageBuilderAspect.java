@@ -30,7 +30,7 @@ import io.hyscale.builder.services.processor.BuilderInterceptorProcessor;
 import io.hyscale.commons.annotations.ComponentInterceptor;
 import io.hyscale.commons.component.IInterceptorProcessor;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.utils.HyscaleContextUtil;
+import io.hyscale.commons.listener.HyscaleContextHelper;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @Aspect
@@ -84,14 +84,14 @@ public class ImageBuilderAspect {
         }
     }
 
-    @AfterThrowing("manifestPointCut(interceptor, serviceSpec, context)")
-    public void onError(JoinPoint jp, ComponentInterceptor interceptor, ServiceSpec serviceSpec, BuildContext context)
-            throws HyscaleException {
+    @AfterThrowing(pointcut = "manifestPointCut(interceptor, serviceSpec, context)", throwing = "th")
+    public void onError(JoinPoint jp, ComponentInterceptor interceptor, ServiceSpec serviceSpec, BuildContext context,
+            Throwable th) throws HyscaleException {
         try {
             for (Class<? extends IInterceptorProcessor> processor : interceptor.processors()) {
                 BuilderInterceptorProcessor processorBean = validateAndGetProcessorBean(processor);
                 if (processorBean != null) {
-                    processorBean.onError(serviceSpec, context);
+                    processorBean.onError(serviceSpec, context, th);
                 }
             }
         } catch (HyscaleException ex) {
@@ -101,7 +101,7 @@ public class ImageBuilderAspect {
     }
 
     private BuilderInterceptorProcessor validateAndGetProcessorBean(Class<? extends IInterceptorProcessor> processor) {
-        IInterceptorProcessor processorBean = HyscaleContextUtil.getSpringBean(processor);
+        IInterceptorProcessor processorBean = HyscaleContextHelper.getSpringBean(processor);
         if (processorBean == null) {
             logger.debug("Bean not found for Processor {}, ignoring processing", processor.getCanonicalName());
             return null;
