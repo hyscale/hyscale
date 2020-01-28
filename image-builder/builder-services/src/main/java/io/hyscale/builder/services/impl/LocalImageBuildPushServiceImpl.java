@@ -16,6 +16,8 @@
 package io.hyscale.builder.services.impl;
 
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
+import io.hyscale.builder.services.processor.impl.ImageCleanUpProcessor;
+import io.hyscale.builder.services.processor.impl.ImageValidatorProcessor;
 import io.hyscale.builder.services.service.ImageBuildPushService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -25,6 +27,7 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.builder.core.models.BuildContext;
 import io.hyscale.builder.core.models.ImageBuilderActivity;
+import io.hyscale.commons.annotations.ComponentInterceptor;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.servicespec.commons.model.service.Dockerfile;
@@ -44,6 +47,7 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
     private LocalImagePushServiceImpl pushService;
 
     @Override
+    @ComponentInterceptor(processors = {ImageCleanUpProcessor.class, ImageValidatorProcessor.class})
     public void buildAndPush(ServiceSpec serviceSpec, BuildContext context) throws HyscaleException {
 
         if (validate(serviceSpec) && isImageBuildPushRequired(serviceSpec, context)) {

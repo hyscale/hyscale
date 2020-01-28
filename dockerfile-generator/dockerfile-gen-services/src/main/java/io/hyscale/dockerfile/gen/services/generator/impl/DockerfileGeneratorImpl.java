@@ -19,10 +19,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.hyscale.commons.annotations.ComponentInterceptor;
 import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.dockerfile.gen.services.generator.DockerfileContentGenerator;
 import io.hyscale.dockerfile.gen.services.generator.DockerfileGenerator;
 import io.hyscale.dockerfile.gen.services.predicates.DockerfileGenPredicates;
+import io.hyscale.dockerfile.gen.services.processor.impl.BuildSpecValidatorProcessor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,6 +91,7 @@ public class DockerfileGeneratorImpl implements DockerfileGenerator {
      * Writes  dockerfile to a file
      */
     @Override
+    @ComponentInterceptor(processors = BuildSpecValidatorProcessor.class)
     public DockerfileEntity generateDockerfile(ServiceSpec serviceSpec, DockerfileGenContext context)
             throws HyscaleException {
 

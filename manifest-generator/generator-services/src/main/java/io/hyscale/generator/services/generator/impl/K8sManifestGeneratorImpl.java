@@ -19,10 +19,12 @@ import java.util.List;
 
 import io.hyscale.generator.services.generator.ManifestGenerator;
 import io.hyscale.generator.services.processor.PluginProcessor;
+import io.hyscale.generator.services.processor.impl.ManifestValidatorProcessor;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.hyscale.commons.annotations.ComponentInterceptor;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.commons.models.ManifestContext;
@@ -34,6 +36,7 @@ public class K8sManifestGeneratorImpl implements ManifestGenerator {
 	private PluginProcessor pluginProcessor;
 
 	@Override
+	@ComponentInterceptor(processors = ManifestValidatorProcessor.class)
 	public List<Manifest> generate(ServiceSpec serviceSpec, ManifestContext context) throws HyscaleException {
 		return pluginProcessor.getManifests(serviceSpec, context);
 	}

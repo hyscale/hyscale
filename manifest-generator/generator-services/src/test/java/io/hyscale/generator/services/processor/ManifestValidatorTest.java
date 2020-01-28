@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.hooks;
+package io.hyscale.generator.services.processor;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -25,54 +25,42 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.util.ServiceSpecTestUtil;
+import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.generator.services.processor.impl.ManifestValidatorProcessor;
+import io.hyscale.generator.services.utils.ServiceSpecTestUtil;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
-@SpringBootTest
-public class BuildSpecValidatorTest {
+public class ManifestValidatorTest {
 
-    @Autowired
-    private BuildSpecValidatorHook buildSpecValidatorHook;
+    private ManifestValidatorProcessor manifestValidatorProcessor = new ManifestValidatorProcessor();
 
     public static Stream<Arguments> input() {
         return Stream.of(Arguments.of(null, HyscaleException.class),
-                Arguments.of("/servicespecs/invalid_buildSpec1.hspec.yaml", HyscaleException.class),
-                Arguments.of("/servicespecs/invalid_buildSpec2.hspec.yaml", HyscaleException.class));
+                Arguments.of("/servicespecs/invalid_vol.hspec.yaml", HyscaleException.class),
+                Arguments.of("/servicespecs/invalid_ports.hspec.yaml", HyscaleException.class));
     }
 
     @ParameterizedTest
     @MethodSource(value = "input")
-    public void testInvalidServiceSpec(String serviceSpecPath, Class exception) {
-        WorkflowContext context = new WorkflowContext();
-        ServiceSpec serviceSpec = null;
-        try {
-            serviceSpec = ServiceSpecTestUtil.getServiceSpec(serviceSpecPath);
-        } catch (IOException e1) {
-            fail();
-        }
-        context.setServiceSpec(serviceSpec);
-        assertThrows(exception, () -> {
-            buildSpecValidatorHook.preHook(context);
+    public void testInvalidManifest(String serviceSpecPath, Class klazz) {
+        assertThrows(klazz, () -> {
+            manifestValidatorProcessor.preProcess(ServiceSpecTestUtil.getServiceSpec(serviceSpecPath),
+                    new ManifestContext());
         });
     }
 
     @Test
-    public void validBuildSpec() {
-        WorkflowContext context = new WorkflowContext();
+    public void validManifest() {
         ServiceSpec serviceSpec = null;
         try {
             serviceSpec = ServiceSpecTestUtil.getServiceSpec("/servicespecs/myservice.hspec.yaml");
-        } catch (IOException e1) {
+        } catch (IOException e) {
             fail();
         }
-        context.setServiceSpec(serviceSpec);
         try {
-            buildSpecValidatorHook.preHook(context);
+            manifestValidatorProcessor.preProcess(serviceSpec, new ManifestContext());
         } catch (HyscaleException e) {
             fail();
         }

@@ -13,33 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.hooks;
+package io.hyscale.builder.services.processor.impl;
 
-import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
-import io.hyscale.commons.component.InvokerHook;
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
-import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
-import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import io.hyscale.builder.core.models.BuildContext;
+import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
+import io.hyscale.builder.services.processor.BuilderInterceptorProcessor;
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
+import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+
 /**
- * Hook to validate image details in service spec
+ * Processor to validate image details in service spec before building image
+ * @author tushar
  *
  */
 @Component
-public class ImageValidatorHook implements InvokerHook<WorkflowContext> {
+public class ImageValidatorProcessor extends BuilderInterceptorProcessor {
 
-    private static final Logger logger = LoggerFactory.getLogger(ImageValidatorHook.class);
+    private static final Logger logger = LoggerFactory.getLogger(ImageValidatorProcessor.class);
 
     @Override
-    public void preHook(WorkflowContext context) throws HyscaleException {
+    protected void _preProcess(ServiceSpec serviceSpec, BuildContext context) throws HyscaleException {
         logger.debug("Executing {}", getClass());
-        ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
             throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_REQUIRED);
         }
@@ -50,12 +51,16 @@ public class ImageValidatorHook implements InvokerHook<WorkflowContext> {
     }
 
     @Override
-    public void postHook(WorkflowContext context) throws HyscaleException {
-
+    protected void _postProcess(ServiceSpec serviceSpec, BuildContext context) throws HyscaleException {
     }
 
     @Override
-    public void onError(WorkflowContext context, Throwable th) {
-        context.setFailed(true);
+    protected void _onError(ServiceSpec serviceSpec, BuildContext context, Throwable th)
+            throws HyscaleException {
+        if (th != null && th instanceof HyscaleException) {
+            HyscaleException hex = (HyscaleException) th;
+            logger.error("Inside on error method in {}", getClass().toString(), hex.getMessage());
+            throw hex;
+        }
     }
 }

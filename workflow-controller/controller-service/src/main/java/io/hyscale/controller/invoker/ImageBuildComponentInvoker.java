@@ -33,8 +33,6 @@ import io.hyscale.commons.component.ComponentInvoker;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DockerfileEntity;
-import io.hyscale.controller.core.exception.ControllerErrorCodes;
-import io.hyscale.controller.hooks.ImageCleanUpHook;
 import io.hyscale.builder.services.service.ImageBuildPushService;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -54,12 +52,8 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
     @Autowired
     private RegistryManager registryManager;
 
-    @Autowired
-    private ImageCleanUpHook imageCleanUpHook;
-
     @PostConstruct
     public void init() {
-        super.addHook(imageCleanUpHook);
     }
 
     private static final Logger logger = LoggerFactory.getLogger(ImageBuildComponentInvoker.class);
@@ -103,6 +97,7 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
         try {
             imageBuildService.buildAndPush(serviceSpec, buildContext);
         } catch (HyscaleException e) {
+            WorkflowLogger.error(ControllerActivity.IMAGE_BUILD_PUSH_FAILED, e.getMessage());
             logger.error("Error while build and push for service: {}", serviceName, e);
             context.setFailed(true);
             throw e;

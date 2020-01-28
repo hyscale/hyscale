@@ -24,7 +24,9 @@ public enum ManifestErrorCodes implements HyscaleErrorCode {
     MISSING_STORAGE_CLASS_FOR_VOLUMES("Missing storage class for volumes {}"),
     INVALID_SIZE_FORMAT("Invalid size format {} "),
     INSUFFICIENT_MEMORY("Insufficient memory {}"),
-    INVALID_FORMAT_CPUTHRESHOLD("Invalid format for cpuThreshold , use : <number>% ");
+    INVALID_FORMAT_CPUTHRESHOLD("Invalid format for cpuThreshold , use : <number>% "),
+    INVALID_PORTS_FOUND("Ports found to be invalid in service spec"),
+    INVALID_VOLUMES_FOUND("Volumes found to be invalid in service spec");
 
     private String message;
 
