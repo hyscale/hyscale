@@ -66,4 +66,15 @@ public class ToolConstants {
     public static final Integer HYSCALE_ERROR_CODE = 11;
 
     public static final Integer INVALID_INPUT_ERROR_CODE = 2;
+
+    public static final Integer HYSCALE_SUCCESS_CODE = 0;
+
+    public static final Integer HYSCALE_FAILURE_CODE = 1;
+
+    public static final String RELEASE = "0.6.1";
+
+    public static final String NASHORNS_ARGS = "nashorn.args";
+
+    public static final String NASHORNS_DEPRECATION_WARNING_FLAG = "--no-deprecation-warning";
+
 }

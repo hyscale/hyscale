@@ -15,6 +15,7 @@
  */
 package io.hyscale.controller.util;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -24,6 +25,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
+import io.hyscale.commons.exception.HyscaleException;
 import org.apache.commons.lang3.StringUtils;
 
 import io.hyscale.commons.logger.WorkflowLogger;
@@ -43,8 +45,8 @@ public class CommandUtil {
 	 * @param appName
 	 * @return environment name
 	 */
-	public static String getEnvName(String profile, String appName) {
-		if (StringUtils.isNotBlank(profile)) {
+	public static String getEnvName(File profile, String appName) throws HyscaleException {
+		if (profile != null) {
 			return ServiceProfileUtil.getProfileName(profile);
 		}
 		return WorkflowConstants.DEV_ENV;
