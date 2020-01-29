@@ -62,7 +62,11 @@ public enum ControllerActivity implements Activity {
     UNEXPECTED_ERROR("Unexpected error occurred. For details refer to log file at {}"),
     INVALID_INPUT("Invalid input:: {}"),
     TOTAL_TIME("Total time : {}"),
-    FAILED_TO_FETCH_DEPLOY_LOGS("Failed to fetch deploy logs {}");
+    FAILED_TO_FETCH_DEPLOY_LOGS("Failed to fetch deploy logs {}"),
+    UNABLE_TO_PROCESS_INPUT("Error occured while processing given input {}"),
+    EMPTY_FILE_PATH("Empty file path given"),
+    EMPTY_FILE_FOUND("Empty file:{} cannot be processed."),
+    DIRECTORY_INPUT_FOUND("Found directory {} instead of file");
 
     private String message;
 

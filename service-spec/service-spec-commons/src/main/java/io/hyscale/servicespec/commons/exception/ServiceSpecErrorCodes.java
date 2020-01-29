@@ -29,7 +29,12 @@ public enum ServiceSpecErrorCodes implements HyscaleErrorCode {
     SERVICE_PROFILE_PARSE_ERROR("Failed to parser service profile"),
     FAILED_TO_PARSE_JSON_TREE("Failed to parse json tree"),
     ERROR_WHILE_FETCH_SERVICE_SPEC_FIELD("Failed to fetch service spec field {}"),
-    CANNOT_PROCESS_SERVICE_SPEC("Cannot process service spec");
+    INVALID_FILE_EXTENSION("Invalid file extension:{} given."),
+    INVALID_FORMAT("Invalid format {}."),
+    MISSING_FIELD_IN_PROFILE_FILE("Cannot find field {},in the specified profile file.Required for fetching {}"),
+    MISSING_FIELD_IN_SERVICE_FILE("Cannot find field {},in the specified service file.Required for fetching {}"),
+    INPUT_DATA_MISMATCH("Service or env name in the file name did not match with names specified in the input file.");
+
 
     private String message;
 

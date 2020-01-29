@@ -18,6 +18,7 @@ package io.hyscale.servicespec.commons.builder;
 
 import java.io.IOException;
 
+import io.hyscale.commons.utils.DataFormatConverter;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,7 +27,6 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.framework.patch.FieldMetaDataProvider;
 import io.hyscale.commons.framework.patch.StrategicPatch;
 import io.hyscale.commons.utils.ObjectMapperFactory;
-import io.hyscale.servicespec.commons.builder.ServiceInputType;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 
 /**
@@ -36,75 +36,75 @@ import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
  */
 public class EffectiveServiceSpecBuilder {
 
-	private ServiceInputType serviceInputType = ServiceInputType.YAML;
+    private ServiceInputType serviceInputType = ServiceInputType.YAML;
 
-	private String serviceSpec;
+    private String serviceSpec;
 
-	private String profile;
-	
-	private FieldMetaDataProvider fieldMetaDataProvider;
+    private String profile;
 
-	public EffectiveServiceSpecBuilder type(ServiceInputType serviceInputType) {
-		this.serviceInputType = serviceInputType;
-		return this;
-	}
+    private FieldMetaDataProvider fieldMetaDataProvider;
 
-	public EffectiveServiceSpecBuilder withServiceSpec(String serviceSpec) {
-		this.serviceSpec = serviceSpec;
-		return this;
-	}
+    public EffectiveServiceSpecBuilder type(ServiceInputType serviceInputType) {
+        this.serviceInputType = serviceInputType;
+        return this;
+    }
 
-	public EffectiveServiceSpecBuilder withProfile(String profile) {
-		this.profile = profile;
-		return this;
-	}
-	
-	public EffectiveServiceSpecBuilder withFieldMetaDataProvider(FieldMetaDataProvider fieldMetaDataProvider) {
+    public EffectiveServiceSpecBuilder withServiceSpec(String serviceSpec) {
+        this.serviceSpec = serviceSpec;
+        return this;
+    }
+
+    public EffectiveServiceSpecBuilder withProfile(String profile) {
+        this.profile = profile;
+        return this;
+    }
+
+    public EffectiveServiceSpecBuilder withFieldMetaDataProvider(FieldMetaDataProvider fieldMetaDataProvider) {
         this.fieldMetaDataProvider = fieldMetaDataProvider;
         return this;
     }
 
-	public String build() throws HyscaleException {
+    public String build() throws HyscaleException {
 
-		validate(serviceSpec, profile);
+        validate(serviceSpec, profile);
 
-		if (this.serviceInputType == ServiceInputType.YAML) {
-			// convert to JSON
-			serviceSpec = ServiceSpecBuilderUtil.yamlToJson(serviceSpec);
-			profile = ServiceSpecBuilderUtil.yamlToJson(profile);
-		}
+        if (this.serviceInputType == ServiceInputType.YAML) {
+            // convert to JSON
+            serviceSpec = DataFormatConverter.yamlToJson(serviceSpec);
+            profile = DataFormatConverter.yamlToJson(profile);
+        }
 
-		// Remove unrequired fields from the profile
-		profile = ServiceSpecBuilderUtil.updateProfile(profile);
+        // Remove unrequired fields from the profile
+        profile = ServiceSpecBuilderUtil.updateProfile(profile);
 
-		String strategicMergeJson = StrategicPatch.apply(serviceSpec, profile, fieldMetaDataProvider);
+        String strategicMergeJson = StrategicPatch.apply(serviceSpec, profile, fieldMetaDataProvider);
 
-		return strategicMergeJson;
-	}
+        return strategicMergeJson;
+    }
 
-	private void validate(String serviceSpec, String profile) throws HyscaleException {
-		if (StringUtils.isBlank(serviceSpec)) {
-			throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_REQUIRED);
-		}
-		if (StringUtils.isBlank(profile)) {
-			throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_PROFILE_REQUIRED);
-		}
-		ObjectMapper mapper;
-		if (ServiceInputType.JSON == this.serviceInputType) {
-			mapper = ObjectMapperFactory.jsonMapper();
-		} else {
-			mapper = ObjectMapperFactory.yamlMapper();
-		}
-		try {
-			mapper.readTree(serviceSpec);
-		} catch (IOException e) {
-			throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_PARSE_ERROR);
-		}
-		try {
-			mapper.readTree(profile);
-		} catch (IOException e) {
-			throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_PROFILE_PARSE_ERROR);
-		}
-	}
+    private void validate(String serviceSpec, String profile) throws HyscaleException {
+        if (StringUtils.isBlank(serviceSpec)) {
+            throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_REQUIRED);
+        }
+        if (StringUtils.isBlank(profile)) {
+            throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_PROFILE_REQUIRED);
+        }
+        ObjectMapper mapper;
+        if (ServiceInputType.JSON == this.serviceInputType) {
+            mapper = ObjectMapperFactory.jsonMapper();
+        } else {
+            mapper = ObjectMapperFactory.yamlMapper();
+        }
+        try {
+            mapper.readTree(serviceSpec);
+        } catch (IOException e) {
+            throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_PARSE_ERROR);
+        }
+        try {
+            mapper.readTree(profile);
+        } catch (IOException e) {
+            throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_PROFILE_PARSE_ERROR);
+        }
+    }
 
 }
