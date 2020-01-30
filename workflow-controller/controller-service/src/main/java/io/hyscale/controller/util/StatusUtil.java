@@ -19,13 +19,14 @@ import org.joda.time.DateTime;
 import org.ocpsoft.prettytime.PrettyTime;
 
 import io.hyscale.deployer.core.model.DeploymentStatus;
+import io.hyscale.deployer.core.model.ReplicaInfo;
 
 /**
  * Utility for deployment status commands
  *
  */
 public class StatusUtil {
-	
+    
 	public static String[] getRowData(DeploymentStatus deploymentStatus) {
 		if (deploymentStatus == null) {
 			return null;
@@ -37,6 +38,15 @@ public class StatusUtil {
         return rowData;
     }
 	
+	public static String[] getReplicasData(ReplicaInfo replicaInfo) {
+	    if (replicaInfo == null) {
+	        return null;
+	    }
+	    String age = getAge(replicaInfo.getAge());
+	    String[] rowData = new String[] {replicaInfo.getName(), replicaInfo.getStatus(), age};
+	    return rowData;
+	    
+	}
 	/**
 	 * 
 	 * @param dateTime

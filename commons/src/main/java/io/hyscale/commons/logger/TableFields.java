@@ -18,7 +18,7 @@ package io.hyscale.commons.logger;
 public enum TableFields {
 
 	SERVICE("Service Name", 30), STATUS("Status"), AGE("Age"), REASON("Reason"), MESSAGE("Message"),
-	SERVICE_ADDRESS("Service Address", 40);
+	SERVICE_ADDRESS("Service Address", 40), REPLICA_NAME("Replica name", 40), INDEX("Index", 10);
 
 	private TableFields(String fieldName, Integer length) {
 		this.fieldName = fieldName;

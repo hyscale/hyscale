@@ -50,12 +50,12 @@ public class DeployerLogUtil {
 	@Autowired
 	private LogProcessor logProcessor;
 
-	public void processLogs(DeploymentContext context) throws HyscaleException {
+	public void processLogs(DeploymentContext context, String podName) throws HyscaleException {
 
 		if (context.isTailLogs()) {
-			tailLogs(context);
+			tailLogs(context, podName);
 		} else {
-			readLogs(context);
+			readLogs(context, podName);
 		}
 
 	}
@@ -67,12 +67,12 @@ public class DeployerLogUtil {
 	 * @param context
 	 * @throws HyscaleException
 	 */
-	private void readLogs(DeploymentContext context) throws HyscaleException {
+	private void readLogs(DeploymentContext context, String podName) throws HyscaleException {
 		String appName = context.getAppName();
 		String serviceName = context.getServiceName();
 		String logFile = deployerConfig.getServiceLogDir(appName, serviceName);
-		context.setTailLogs(false);
-		try (InputStream is = deployer.logs(context)) {
+		try (InputStream is = deployer.logs(context.getAuthConfig(), serviceName, context.getNamespace(), 
+		        podName, serviceName, context.getReadLines(), false)) {
 			logProcessor.writeLogFile(is, logFile);
 			logProcessor.readLogFile(new File(logFile), System.out);
 		} catch (IOException e) {
@@ -89,8 +89,10 @@ public class DeployerLogUtil {
 	 * @param context
 	 * @throws HyscaleException
 	 */
-	private void tailLogs(DeploymentContext context) throws HyscaleException {
-		try (InputStream is = deployer.logs(context)) {
+	private void tailLogs(DeploymentContext context, String podName) throws HyscaleException {
+	    String serviceName = context.getServiceName();
+		try (InputStream is = deployer.logs(context.getAuthConfig(), serviceName, context.getNamespace(), 
+                podName, serviceName, context.getReadLines(), true)) {
 			IOUtils.copy(is, System.out);
 		} catch (IOException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_GET_LOGS);
