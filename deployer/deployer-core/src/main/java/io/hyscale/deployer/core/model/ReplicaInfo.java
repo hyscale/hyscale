@@ -13,20 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.commons.logger;
+package io.hyscale.deployer.core.model;
 
-public enum LoggerTags {
+import org.joda.time.DateTime;
 
-	USER_INFO_TAG("[INFO]"), ERROR("[ERROR]"), WARN("[WARN]"), VERBOSE("[VERBOSE]"), DEBUG("[DEBUG]"),
-	ACTION("[ACTION]"), INPUT("[INPUT]");
+public class ReplicaInfo {
 
-	private String tag;
+    private String name;
+    private String status;
+    private DateTime age;
 
-	LoggerTags(String s) {
-		this.tag = s;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public String getTag() {
-		return tag;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public DateTime getAge() {
+        return age;
+    }
+
+    public void setAge(DateTime age) {
+        this.age = age;
+    }
 }

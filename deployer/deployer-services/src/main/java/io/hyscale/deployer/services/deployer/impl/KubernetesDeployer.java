@@ -41,6 +41,7 @@ import io.hyscale.commons.models.YAMLManifest;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.commons.utils.ThreadPoolUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
+import io.hyscale.deployer.core.model.ReplicaInfo;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.config.DeployerConfig;
 import io.hyscale.deployer.services.deployer.Deployer;
@@ -426,5 +427,25 @@ public class KubernetesDeployer implements Deployer {
             Thread.sleep(milliSeconds);
         } catch (InterruptedException e) {
         }
+    }
+
+    @Override
+    public List<ReplicaInfo> getReplicas(DeploymentContext context, boolean isFilter)
+            throws HyscaleException {
+        V1PodHandler v1PodHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
+        String selector = ResourceSelectorUtil.getServiceSelector(context.getAppName(), context.getServiceName());
+        ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
+        List<V1Pod> podList = v1PodHandler.getBySelector(apiClient, selector, true, context.getNamespace());
+        
+        if (podList == null || podList.isEmpty()) {
+            return null;
+        }
+        
+        if (!isFilter) {
+            return K8sPodUtil.getReplicaInfo(podList);
+        }
+        
+        // TODO filtering logic
+        return null;
     }
 }

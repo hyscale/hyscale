@@ -49,6 +49,10 @@ public class WorkflowLogger {
     public static void info(Activity activity, String... args) {
         logActivity(activity, LoggerTags.USER_INFO_TAG, args);
     }
+    
+    public static void input(Activity activity, String... args) {
+        logActivity(activity, LoggerTags.INPUT, args);
+    }
 
     public static void debug(Activity activity, String... args) {
         logActivity(activity, LoggerTags.DEBUG, args);

@@ -18,10 +18,12 @@ package io.hyscale.deployer.services.util;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
 import io.hyscale.commons.constants.K8SRuntimeConstants;
+import io.hyscale.deployer.core.model.ReplicaInfo;
 import io.hyscale.deployer.services.model.PodCondition;
 import io.kubernetes.client.models.V1ContainerStatus;
 import io.kubernetes.client.models.V1Pod;
@@ -33,6 +35,25 @@ import io.kubernetes.client.models.V1PodCondition;
  * 
  */
 public class K8sPodUtil {
+    
+    public static List<ReplicaInfo> getReplicaInfo(List<V1Pod> podList) {
+        if (podList == null) {
+            return null;
+        }
+        return podList.stream().map(each -> getReplicaInfo(each)).collect(Collectors.toList());
+    }
+    
+    public static ReplicaInfo getReplicaInfo(V1Pod pod) {
+        if (pod == null) {
+            return null;
+        }
+        ReplicaInfo replicaInfo = new ReplicaInfo();
+        replicaInfo.setName(pod.getMetadata().getName());
+        replicaInfo.setAge(pod.getStatus().getStartTime());
+        replicaInfo.setStatus(getAggregatedStatusOfContainersForPod(pod));
+        
+        return replicaInfo;
+    }
 
 	/**
 	 * Gets aggregate status from Init containers - empty if init containers are ready

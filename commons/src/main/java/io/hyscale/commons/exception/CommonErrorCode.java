@@ -16,6 +16,8 @@
 package io.hyscale.commons.exception;
 
 public enum CommonErrorCode implements HyscaleErrorCode {
+    FAILED_TO_GET_USER_INPUT("Failed to get user input"),
+    INVALID_INPUT_BY_USER("User provided invalid input {}"),
     FAILED_TO_EXECUTE_COMMAND("Failed to execute command {}"),
     FAILED_TO_READ_FILE("Failed to read file {}"),
     FAILED_TO_WRITE_STDIN("Failed to write standard input to the process"),
