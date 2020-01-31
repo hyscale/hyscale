@@ -25,6 +25,7 @@ import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ReplicaInfo;
+import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.model.Pod;
 import io.hyscale.deployer.services.model.ResourceStatus;
 import io.hyscale.deployer.services.model.ServiceAddress;
@@ -91,8 +92,29 @@ public interface Deployer {
 	 */
 	public List<DeploymentStatus> getDeploymentStatus(DeploymentContext deploymentContext) throws HyscaleException;
 
-	
-	public List<ReplicaInfo> getReplicas(DeploymentContext deploymentContext, boolean isFilter) throws HyscaleException;
+
+	/**
+	 * Get replicas info based on pods
+	 * <p>
+	 * isFilter if disabled return replica info for all pods fetched based on selector
+	 * if enabled,
+	 * 1. If owner kind for pods is different, warn user and return replica info for all pods
+	 * 2. If owner kind is {@link ResourceKind #DEPLOYMENT} or {@link ResourceKind #REPLICA_SET},
+	 *     Get Revision from deployment, get replicas set with this revision,
+	 *     filter pods based on pod-template-hash from replica set
+	 *     return replica info for filtered pods
+	 * 3. Else return replica info for all pods
+	 * </p>
+	 * @param authConfig
+	 * @param appName
+	 * @param serviceName
+	 * @param namespace
+	 * @param isFilter
+	 * @return List of {@link ReplicaInfo} based on pods fetched
+	 * @throws HyscaleException
+	 */
+	public List<ReplicaInfo> getReplicas(AuthConfig authConfig, String appName, String serviceName, String namespace, 
+	        boolean isFilter) throws HyscaleException;
 	
 	/**
 	 * Get Service logs from Pods

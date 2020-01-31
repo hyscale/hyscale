@@ -64,7 +64,7 @@ public enum ControllerActivity implements Activity {
     TOTAL_TIME("Total time : {}"),
     FAILED_TO_FETCH_DEPLOY_LOGS("Failed to fetch deploy logs {}"),
     INPUT_REPLICA_DETAIL("Enter replica index or name to continue..."),
-    INVALID_INPUT_RETRY("Invalid input {} provided, please retry");
+    INVALID_INPUT_RETRY("Input \"{}\" is invalid, please retry");
 
     private String message;
 

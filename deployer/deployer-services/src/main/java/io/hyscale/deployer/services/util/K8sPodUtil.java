@@ -18,14 +18,17 @@ package io.hyscale.deployer.services.util;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
 import io.hyscale.commons.constants.K8SRuntimeConstants;
-import io.hyscale.deployer.core.model.ReplicaInfo;
 import io.hyscale.deployer.services.model.PodCondition;
 import io.kubernetes.client.models.V1ContainerStatus;
+import io.kubernetes.client.models.V1OwnerReference;
 import io.kubernetes.client.models.V1Pod;
 import io.kubernetes.client.models.V1PodCondition;
 
@@ -36,25 +39,6 @@ import io.kubernetes.client.models.V1PodCondition;
  */
 public class K8sPodUtil {
     
-    public static List<ReplicaInfo> getReplicaInfo(List<V1Pod> podList) {
-        if (podList == null) {
-            return null;
-        }
-        return podList.stream().map(each -> getReplicaInfo(each)).collect(Collectors.toList());
-    }
-    
-    public static ReplicaInfo getReplicaInfo(V1Pod pod) {
-        if (pod == null) {
-            return null;
-        }
-        ReplicaInfo replicaInfo = new ReplicaInfo();
-        replicaInfo.setName(pod.getMetadata().getName());
-        replicaInfo.setAge(pod.getStatus().getStartTime());
-        replicaInfo.setStatus(getAggregatedStatusOfContainersForPod(pod));
-        
-        return replicaInfo;
-    }
-
 	/**
 	 * Gets aggregate status from Init containers - empty if init containers are ready
 	 * If init container status not found gets aggregated status from containers
@@ -299,4 +283,152 @@ public class K8sPodUtil {
 		}
 		return initContainerStatus;
 	}
+	
+	/**
+	 * 
+	 * @param podList
+	 * @return pod owner kind if all pods have same owner, else null
+	 */
+	
+	public static String getPodsOwner(List<V1Pod> podList) {
+	    if (podList == null || podList.isEmpty()) {
+	        return null;
+	    }
+	    
+	    String podOwner = getPodOwner(podList.get(0));
+	    if (StringUtils.isBlank(podOwner)) {
+	        return null;
+	    }
+	    
+	    for (V1Pod pod: podList) {
+	        if (!podOwner.equals(getPodOwner(pod))) {
+	            return null;
+	        }
+	    }
+	    
+	    return podOwner;
+	}
+	
+	/**
+	 * 
+	 * @param pod
+	 * @return pod owner kind
+	 */
+	public static String getPodOwner(V1Pod pod) {
+        if (pod == null) {
+            return null;
+        }
+        V1OwnerReference podOwner =  getOwnerReference(pod);
+        
+        return podOwner != null ? podOwner.getKind() : null;
+    }
+    
+    /**
+     * 
+     * @param podList
+     * @param filter predicate used for filtering
+     * @return filtered pods
+     */
+    public static List<V1Pod> getFilteredPods(List<V1Pod> podList, Predicate filter){
+        if (podList == null || podList.isEmpty() || filter == null) {
+            return podList;
+        }
+        
+        return podList.stream().filter(pod -> filter.test(pod))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 
+     * @param podList
+     * @param filter condition and value
+     * @param filterValue - value used for filtering
+     * @return
+     */
+    public static List<V1Pod> getFilteredPods(List<V1Pod> podList, BiPredicate filter, Object filterValue){
+        if (podList == null || podList.isEmpty() || filter == null || filterValue == null) {
+            return podList;
+        }
+        
+        return podList.stream().filter(pod -> filter.test(pod, filterValue))
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Check if pods contains passed labels
+     * @param pod
+     * @param labels
+     * @return true if pod contains passed labels, else false
+     */
+    public static boolean checkPodLabels(V1Pod pod, Map<String, String> labels) {
+        if (pod == null || labels == null || labels.isEmpty()) {
+            return false;
+        }
+        Map<String, String> podLabels = pod.getMetadata().getLabels();
+        
+        if (podLabels == null) {
+            return false;
+        }
+        
+        for (Entry<String, String> labelEntry : labels.entrySet()) {
+            String value = labelEntry.getValue();
+            String key = labelEntry.getKey();
+            if (!podLabels.containsKey(key)) {
+                return false;
+            }
+            String podValue = podLabels.get(key);
+            if (value == null) {
+                if (podValue != null) {
+                    return false;
+                }
+            }
+            if (!value.equals(podValue)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * Pods are ambiguous if pods have different owner kinds, or same owner with different uid
+     * @param podList
+     * @return whether all pods belong to same owner
+     */
+    public static boolean checkForPodAmbiguity(List<V1Pod> podList) {
+        if (podList == null || podList.size() < 2) {
+            return false;
+        }
+        V1OwnerReference ownerReference = getOwnerReference(podList.get(0));
+        if (ownerReference == null) {
+            return true;
+        }
+        String podOwner = ownerReference.getKind();
+        String ownerUID = ownerReference.getUid();
+        
+        if (StringUtils.isBlank(podOwner) || StringUtils.isBlank(ownerUID)) {
+            return true;
+        }
+        
+        for (V1Pod pod : podList) {
+            ownerReference = getOwnerReference(pod);
+            if (ownerReference == null) {
+                return true;
+            }
+            if (!podOwner.equals(ownerReference.getKind()) || !ownerUID.equals(ownerReference.getUid())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private static V1OwnerReference getOwnerReference(V1Pod pod) {
+        if (pod == null) {
+            return null;
+        }
+        List<V1OwnerReference> ownerReferences = pod.getMetadata().getOwnerReferences();
+        if (ownerReferences == null || ownerReferences.size() < 1) {
+            return null;
+        }
+        return ownerReferences.get(0);
+    }
 }
