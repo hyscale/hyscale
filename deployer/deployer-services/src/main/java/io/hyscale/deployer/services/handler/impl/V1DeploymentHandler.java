@@ -40,6 +40,7 @@ import io.kubernetes.client.models.V1DeleteOptions;
 import io.kubernetes.client.custom.V1Patch;
 
 import java.util.List;
+import java.util.Map;
 
 public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deployment> {
     private static final Logger LOGGER = LoggerFactory.getLogger(V1DeploymentHandler.class);
@@ -277,5 +278,18 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deploymen
             return ResourceStatus.PENDING;
         }
         return ResourceStatus.STABLE;
+    }
+    
+    public String getDeploymentRevision(V1Deployment deployment) {
+        if (deployment == null) {
+            return null;
+        }
+        Map<String, String> annotations = deployment.getMetadata().getAnnotations();
+        
+        if (annotations == null) {
+            return null;
+        }
+        
+        return annotations.get(AnnotationKey.K8S_DEPLOYMENT_REVISION.getAnnotation());
     }
 }

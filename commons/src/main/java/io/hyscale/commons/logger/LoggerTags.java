@@ -18,7 +18,7 @@ package io.hyscale.commons.logger;
 public enum LoggerTags {
 
 	USER_INFO_TAG("[INFO]"), ERROR("[ERROR]"), WARN("[WARN]"), VERBOSE("[VERBOSE]"), DEBUG("[DEBUG]"),
-	ACTION("[ACTION]"), INPUT("[INPUT]");
+	ACTION("[ACTION]");
 
 	private String tag;
 

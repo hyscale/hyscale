@@ -25,19 +25,24 @@ import org.slf4j.LoggerFactory;
 import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 
-public class HyscaleInputUtil {
+/**
+ * Class to read user provided input
+ * @author tushar
+ *
+ */
+public class HyscaleInputReader {
 
-    private static final Logger logger = LoggerFactory.getLogger(HyscaleInputUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(HyscaleInputReader.class);
 
     public static final Integer MAX_RETRIES = 2;
 
     private static final InputStream DEFAULT_INPUT_STREAM = System.in;
 
-    public static String getStringInput() throws HyscaleException {
-        return getStringInput(null);
+    public static String readInput() throws HyscaleException {
+        return readInput(null);
     }
 
-    public static String getStringInput(InputStream is) throws HyscaleException {
+    public static String readInput(InputStream is) throws HyscaleException {
         if (is == null) {
             is = DEFAULT_INPUT_STREAM;
         }
@@ -45,30 +50,9 @@ public class HyscaleInputUtil {
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
             return br.readLine();
         } catch (Exception e) {
-            HyscaleException hex = new HyscaleException(e, CommonErrorCode.FAILED_TO_GET_USER_INPUT);
-            logger.error("Error while getting user input", hex);
-            throw hex;
+            logger.error("Error while getting valid input", e);
+            throw new HyscaleException(e, CommonErrorCode.FAILED_TO_GET_VALID_INPUT);
         }
     }
 
-    public static Integer getIntegerInput() throws HyscaleException {
-        return getIntegerInput(null);
-    }
-
-    public static Integer getIntegerInput(InputStream is) throws HyscaleException {
-        int tries = 0;
-        while (tries < MAX_RETRIES) {
-            tries++;
-            String input = getStringInput(is);
-            try {
-                return Integer.parseInt(input);
-            } catch (NumberFormatException e) {
-                logger.error("Invalid input by user expected integer got {}", input);
-                if (tries == MAX_RETRIES) {
-                    throw new HyscaleException(CommonErrorCode.INVALID_INPUT_BY_USER, input);
-                }
-            }
-        }
-        return null;
-    }
 }

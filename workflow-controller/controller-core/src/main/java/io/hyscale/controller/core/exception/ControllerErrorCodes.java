@@ -22,7 +22,6 @@ import io.hyscale.commons.exception.HyscaleErrorCode;
  *
  */
 public enum ControllerErrorCodes implements HyscaleErrorCode {
-    VALID_INPUT_NOT_PROVIDED("User did not provide valid input"),
     INVALID_COMMAND("Invalid command {}"),
     CANNOT_FIND_SERVICE_SPEC("Cannot find service spec {} "),
     APP_NAME_REQUIRED("Application name required"),
