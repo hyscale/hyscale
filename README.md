@@ -6,24 +6,48 @@ Kubernetes (k8s) has emerged as the de facto container orchestration platform of
 
 HyScale is a starting point for how a simplified service spec can allow developers to easily deploy the various (micro-)services in their app to k8s without having to wade through k8s complexities and also without having to write or maintain hundreds of lines of manifest yamls.
 
+## Capabilities
+
+**Automatic containerization & auto-generation of k8s yamls**
+
+HyScale offers a declarative spec for k8s abstraction using which k8s manifests & docker files are automatically generated, docker images are built & pushed to the target docker registry, and the manifests are deployed to the k8s cluster resulting in a URL.
+
+
+**App-centric abstraction**
+
+Some useful things you can achieve in just a few lines with HyScale's app-centric abstraction:
+
+1.Setting up resource-limits and enabling auto-scaling.
+
+2.Enabling health-checks on a http path or tcp port.
+
+3.Declaring volume paths for storing service data.
+
+4.Providing configuration properties that are automatically made available as a file within the pod and as env props in the service container.
+
+5.Declaring the keys for secrets such as passwords & tokens that are automatically made available from the k8s secrets store.
+
+6.Attaching log, monitoring and tracing agents to the service.
+
+7.Override or add different configurations for different environments using profiles.
+
+**App-centric troubleshooting ( This is currently in progress )**
+
+Deployment failures at kubernetes are not clear for users to proceed from the failure.
+They have to understand the terminologies & complexities of kubernetes and spend some quality time troubleshooting the issue . There is definitely a need to abstract kubernetes errors in app-centric deployments. 
+
+## Getting started
+
 Here is what you need to do:
 
 <img src="docs/images/user-workflow.png" height="125" />
-
-HyScale offers a declarative spec for k8s abstraction using which k8s manifests & docker files are automatically generated, docker images are built & pushed to the target docker registry, and the manifests are deployed to the k8s cluster resulting in a URL.
 
 Here is a glimpse of what HyScale does when you invoke it
 
 <img src="docs/images/inside-hyscale.png" height="400" />
 
-To get started, install hyscale as per the below instructions & follow the [tutorial](https://www.hyscale.io/tutorial/get-started/) to deploy your first app.
-
-## What's New
- 1. Autoscaling, scale your pods dynamically based on the load.
- 2. Agents as sidecars , Ex: tracing agents like envoy , logging agents like fluentd .
- 3. Profiles , override configuration on an environment basis
- 4. Kubernetes 1.14 cluster support.
-
+To get started, install hyscale as per the below [instructions](https://github.com/hyscale/hyscale#prerequisites) & follow the [tutorial](https://www.hyscale.io/tutorial/get-started/) to deploy your first app.
+For detailed information, refer [hspec](https://github.com/hyscale/hspec/blob/master/docs/hyscale-spec-reference.md).
 
 ## Prerequisites
 In order to deploy your service to k8s, you must have the following configurations and installations in place on your machine from which you wish to deploy your application.
@@ -67,6 +91,8 @@ Verified on CentOS, Ubuntu and Debian Linux,Mac .  Windows installer coming soon
 
 Here is a basic service spec for deploying tomcat (without any application). To get started with more options see the [tutorial](https://www.hyscale.io/tutorial/get-started/).
 
+myservice.hspec
+
 ```yaml
 name: myservice
 image:
@@ -92,8 +118,13 @@ ports:
        httpPath: /docs/images/tomcat.gif
 
 ```
+Managing configuration differences across environments is necessary, so a single hspec may not be sufficient across all environments.
+Environment specific configurations can be achieved through [profiles](https://github.com/hyscale/hspec/blob/master/docs/hyscale-spec-reference.md#profile-files).
 
 ####  Stage profile for myservice can be like
+
+stage-myservice.hprof
+
 ```yaml
 environment: stage
 overrides: myservice
