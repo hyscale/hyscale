@@ -34,7 +34,7 @@ Some useful things you can achieve in just a few lines with HyScale's app-centri
 **App-centric troubleshooting ( This is currently in progress )**
 
 Deployment failures at kubernetes are not clear for users to proceed from the failure.
-They have to understand the terminologies & complexities of kubernetes and spend some quality time troubleshooting the issue . There is definitely a need to abstract kubernetes errors in app-centric deployments. 
+They have to understand the terminologies & complexities of kubernetes and spend some quality time troubleshooting the issue . Hyscale abstracts kubernetes errors to an app-centric model Ex: A Pending pod due to lack of resources will be abstracted like "New services cannot be accommodated as cluster is full".
 
 ## Getting started
 
