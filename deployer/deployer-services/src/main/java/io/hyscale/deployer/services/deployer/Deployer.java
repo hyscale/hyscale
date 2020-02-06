@@ -102,7 +102,6 @@ public interface Deployer {
 	/**
 	 * Get logs of a specific Pod of a Service
 	 * tail logs or read specific number of lines
-	 * @param deploymentContext
 	 * @return Input Stream with logs
 	 * @throws HyscaleException
 	 */
@@ -130,4 +129,5 @@ public interface Deployer {
 	}
 
 	List<Pod> getPods(String namespace, String appName, String serviceName, K8sAuthorisation k8sAuthorisation) throws Exception;
+
 }

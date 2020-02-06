@@ -29,7 +29,8 @@ public enum ResourceKind {
     NAMESPACE("Namespace"),
     STORAGE_CLASS("StorageClass"),
     HORIZONTAL_POD_AUTOSCALER("HorizontalPodAutoscaler", 0),
-    PERSISTENT_VOLUME_CLAIM("PersistentVolumeClaim", 2);
+    PERSISTENT_VOLUME_CLAIM("PersistentVolumeClaim", 2),
+    EVENT("Event");
 
     private String kind;
 
