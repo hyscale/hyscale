@@ -13,8 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.dockerfile.gen.core.models;
+package io.hyscale.dockerfile.gen.services.model;
+
+
+import io.hyscale.dockerfile.gen.services.constants.DockerfileGenConstants;
 
 public enum CommandType {
-	CONFIGURE, RUN;
+    CONFIGURE {
+        @Override
+        public String getTemplateField() {
+            return DockerfileGenConstants.CONFIGURE_COMMANDS_FIELD;
+        }
+    }, RUN {
+        @Override
+        public String getTemplateField() {
+            return DockerfileGenConstants.RUN_COMMANDS_FIELD;
+        }
+    };
+
+    public abstract String getTemplateField();
+
 }
