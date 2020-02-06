@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.builder.services.command.ImageCommandGenerator;
+import io.hyscale.commons.commands.provider.ImageCommandProvider;
 import io.hyscale.commons.component.InvokerHook;
 import io.hyscale.commons.commands.CommandExecutor;
 import io.hyscale.commons.exception.HyscaleException;
@@ -40,7 +40,7 @@ public class ImageCleanUpHook implements InvokerHook<WorkflowContext> {
 	private static final Logger logger = LoggerFactory.getLogger(ImageCleanUpHook.class);
 
 	@Autowired
-	private ImageCommandGenerator imageCommandGenerator;
+	private ImageCommandProvider imageCommandProvider;
 
 	@Override
 	public void preHook(WorkflowContext context) {
@@ -59,7 +59,7 @@ public class ImageCleanUpHook implements InvokerHook<WorkflowContext> {
 
 		String tag = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.tag),
 				String.class);
-		String cleanUpCommand = imageCommandGenerator.getImageCleanUpCommand(context.getAppName(), serviceName, tag);
+		String cleanUpCommand = imageCommandProvider.getImageCleanUpCommand(context.getAppName(), serviceName, tag);
 		logger.debug("Starting image cleanup, command {}", cleanUpCommand);
 		boolean success = CommandExecutor.execute(cleanUpCommand);
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.builder.services.command;
+package io.hyscale.commons.commands.provider;
 
 import java.util.Map;
 
@@ -24,7 +24,7 @@ import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
 
 @Component
-public class ImageCommandGenerator {
+public class ImageCommandProvider {
 
 	private static final String HYSCALE_IO_URL = "hyscale.io";
 	private static final String SLASH = "/";

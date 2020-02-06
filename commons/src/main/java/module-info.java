@@ -23,6 +23,7 @@ module commons {
 	exports io.hyscale.commons.component;
 	exports io.hyscale.commons.exception;
 	exports io.hyscale.commons.framework.patch;
+	exports io.hyscale.commons.commands.provider;
 
 	requires client.java.proto;
 	requires com.fasterxml.jackson.annotation;
