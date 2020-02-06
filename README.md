@@ -17,24 +17,26 @@ HyScale offers a declarative spec for k8s abstraction using which k8s manifests 
 
 Some useful things you can achieve in just a few lines with HyScale's app-centric abstraction:
 
-1.Setting up resource-limits and enabling auto-scaling.
++ Setting up resource-limits and enabling auto-scaling.
 
-2.Enabling health-checks on a http path or tcp port.
++ Enabling health-checks on a http path or tcp port.
 
-3.Declaring volume paths for storing service data.
++ Declaring volume paths for storing service data.
 
-4.Providing configuration properties that are automatically made available as a file within the pod and as env props in the service container.
++ Providing configuration properties that are automatically made available as a file within the pod and as env props in the service container.
 
-5.Declaring the keys for secrets such as passwords & tokens that are automatically made available from the k8s secrets store.
++ Declaring the keys for secrets such as passwords & tokens that are automatically made available from the k8s secrets store.
 
-6.Attaching log, monitoring and tracing agents to the service.
++ Attaching log, monitoring and tracing agents to the service.
 
-7.Override or add different configurations for different environments using profiles.
++ Override or add different configurations for different environments using profiles.
 
-**App-centric troubleshooting ( This is currently in progress )**
 
-Deployment failures at kubernetes are not clear for users to proceed from the failure.
-They have to understand the terminologies & complexities of kubernetes and spend some quality time troubleshooting the issue . Hyscale abstracts kubernetes errors to an app-centric model Ex: A Pending pod due to lack of resources will be abstracted like "New services cannot be accommodated as cluster is full".
+**App-centric troubleshooting** (in the works)
+
+Deployment failures at Kubernetes are cryptic and not intuitive for debugging. When issues occur abstraction is needed to simplify troubleshooting. So instead of presenting users with an error like "CrashLoopBackOff", HyScale executes a troubleshooting flowchart that will basically try to figure out the possible causes and inform the user in plain terms. 
+Hyscale abstracts Kubernetes errors to an app-centric model eg.: a "Pending" state may mean one of many things such as "New services cannot be accommodated as cluster capacity is full" or "Specified volume cannot be attached to the service"
+
 
 ## Getting started
 
@@ -91,7 +93,7 @@ Verified on CentOS, Ubuntu and Debian Linux,Mac .  Windows installer coming soon
 
 Here is a basic service spec for deploying tomcat (without any application). To get started with more options see the [tutorial](https://www.hyscale.io/tutorial/get-started/).
 
-myservice.hspec
+##### myservice.hspec
 
 ```yaml
 name: myservice
@@ -118,12 +120,11 @@ ports:
        httpPath: /docs/images/tomcat.gif
 
 ```
-Managing configuration differences across environments is necessary, so a single hspec may not be sufficient across all environments.
-Environment specific configurations can be achieved through [profiles](https://github.com/hyscale/hspec/blob/master/docs/hyscale-spec-reference.md#profile-files).
+Managing configuration differences across environments is necessary, so a hspec alone may not be sufficient across all environments. Environment specific configurations can be achieved through [profiles](https://github.com/hyscale/hspec/blob/master/docs/hyscale-spec-reference.md#profile-files) as shown in the example below.
 
 ####  Stage profile for myservice can be like
 
-stage-myservice.hprof
+##### stage-myservice.hprof
 
 ```yaml
 environment: stage
@@ -146,13 +147,13 @@ replicas:
 **To deploy, invoke the hyscale deploy command:**
     
 ```sh
-hyscale deploy service -f `<myservice.hspec.yaml>` -n `<my-namespace>` -a `<my-app-name>`
+hyscale deploy service -f `<myservice.hspec>` -n `<my-namespace>` -a `<my-app-name>`
 ```
 
 **To deploy with profiles, invoke the hyscale deploy command:**
     
 ```sh
-hyscale deploy service -f `<myservice.hspec.yaml>` -n `<my-namespace>` -a `<my-app-name>` -p `<stage-myservice.hprof.yaml>`
+hyscale deploy service -f `<myservice.hspec>` -n `<my-namespace>` -a `<my-app-name>` -p `<stage-myservice.hprof>`
 ```
 
 **To view the status of your deployment:**
