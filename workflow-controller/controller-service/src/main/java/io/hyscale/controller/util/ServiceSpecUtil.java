@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class ServiceSpecUtil {
+
     private static final Logger logger = LoggerFactory.getLogger(ServiceSpecUtil.class);
 
     public static String getServiceName(File serviceFile) throws HyscaleException{

@@ -20,9 +20,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.utils.ObjectMapperFactory;
+import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 import io.hyscale.servicespec.commons.json.parser.JsonTreeParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 
 /**
@@ -31,7 +36,9 @@ import java.io.IOException;
  * @see <a href="https://github.com/hyscale/hspec/blob/master/docs/hyscale-spec-reference.md">Spec Reference</a>
  *
  */
-public final class ServiceSpec implements HyscaleFieldUtil {
+public final class ServiceSpec implements HyscaleSpec {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(HyscaleSpec.class);
 
     private JsonNode root;
 
@@ -44,7 +51,9 @@ public final class ServiceSpec implements HyscaleFieldUtil {
         try {
             this.root = mapper.readTree(serviceSpec);
         } catch (IOException e) {
-            throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_PARSE_ERROR);
+            LOGGER.error(e.getMessage());
+            WorkflowLogger.error(ServiceSpecActivity.ERROR, e.getMessage());
+            throw new HyscaleException(e,ServiceSpecErrorCodes.SERVICE_SPEC_PARSE_ERROR);
         }
     }
 

@@ -19,7 +19,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.hyscale.commons.exception.HyscaleException;
 
-public interface HyscaleFieldUtil {
+public interface HyscaleSpec {
     /**
      * Get JsonNode for field defined by path from the root
      *

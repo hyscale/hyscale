@@ -42,10 +42,6 @@ public class ValidationConstants {
             + " start with an alphabetic character, and end with an alphanumeric character (e.g. 'my-name',  or 'abc-123', "
             + "regex used for validation is '"
             + SERVICE_NAME_REGEX + "')";
-    
-    public static final String INVALID_SERVICE_SPEC_NAME_MSG = "Service spec name \"{}\" is invalid. It should follow the pattern <service-name>.hspec.yaml";
-    
-    public static final String INVALID_PROFILE_FILE_NAME_MSG = "Profile name \"{}\" is invalid. It should follow the pattern <profile-name>-<service-name>.hprof.yaml";
 
     public static final String INVALID_NAMESPACE_MSG = "Namespace \"{}\" is invalid. It must consist of lower case alphanumeric characters or '-', "
             + "its length should be between 2 and 30."

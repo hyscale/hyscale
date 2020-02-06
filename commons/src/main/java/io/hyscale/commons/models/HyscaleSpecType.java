@@ -15,12 +15,12 @@
  */
 package io.hyscale.commons.models;
 
-public enum HyscaleFileInputTypes {
+public enum HyscaleSpecType {
     SERVICE("service name"),
     ENVIRONMENT("environment name");
     private String resourceName;
 
-    HyscaleFileInputTypes(String resourceName) {
+    HyscaleSpecType(String resourceName) {
         this.resourceName = resourceName;
     }
 

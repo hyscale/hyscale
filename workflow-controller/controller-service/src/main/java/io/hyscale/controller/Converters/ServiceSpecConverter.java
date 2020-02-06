@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package Converters;
+package io.hyscale.controller.Converters;
 
-import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.HyscaleSpecType;
 import io.hyscale.controller.util.ServiceSpecUtil;
 import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
 import org.apache.commons.io.FilenameUtils;
@@ -28,12 +29,12 @@ import java.io.File;
 
 /*
 Provides parameters and funtions such as profile reference schema,Regex for profile file naming,
-data validation and respective warning and error messages  for service spec validation.
+data validation and respective error messages for service spec validation.
  */
-public class ServiceSpecConverter extends Converter {
-    private static final Logger logger = LoggerFactory.getLogger(ServiceSpecConverter.class);
 
-    private static final String SERVICE_SCHEMA_FILE = "/hspec/" + ToolConstants.RELEASE + "/service-spec.json";
+public class ServiceSpecConverter extends Converter {
+
+    private static final Logger logger = LoggerFactory.getLogger(ServiceSpecConverter.class);
 
     @Override
     public String getFilePattern() {
@@ -41,22 +42,25 @@ public class ServiceSpecConverter extends Converter {
     }
 
     @Override
-    public String getReferenceSchema() {
-        return SERVICE_SCHEMA_FILE;
+    public HyscaleSpecType getReferenceSchemaType() {
+        return HyscaleSpecType.SERVICE;
     }
 
     @Override
-    public String getWarnMessage() {
-        return ValidationConstants.INVALID_SERVICE_SPEC_NAME_MSG;
+    public ServiceSpecActivity getWarnMessage() {
+        return ServiceSpecActivity.INVALID_SERVICE_SPEC_NAME_MSG;
     }
 
     @Override
-    public void validateData(File serviceSpecFile) throws HyscaleException{
+    public boolean validateData(File serviceSpecFile) throws HyscaleException{
         String serviceFileName = FilenameUtils.getBaseName(serviceSpecFile.getPath());
         String serviceName =  serviceFileName.split("\\.")[0];
         if(!serviceName.equals(ServiceSpecUtil.getServiceName(serviceSpecFile))){
-            logger.warn(ServiceSpecActivity.SERVICE_NAME_MISMATCH.getActivityMessage(), serviceFileName);
+            logger.warn(ServiceSpecActivity.SERVICE_NAME_MISMATCH.getActivityMessage(), serviceSpecFile.getName());
+            WorkflowLogger.warn(ServiceSpecActivity.SERVICE_NAME_MISMATCH,serviceSpecFile.getName());
+            return false;
         }
+        return true;
     }
 
 }

@@ -26,11 +26,12 @@ import io.hyscale.commons.exception.HyscaleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
  * Created by vijays on 18/9/19.
- * Compares input String,JsonNode with the reference Json Schema passed and returns report.
+ * Compares input spec with the reference Json Schema passed and returns report.
  */
 public class JsonSchemaValidator {
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonSchemaValidator.class);
@@ -39,18 +40,19 @@ public class JsonSchemaValidator {
     /**
      * Validates whether the given input string satisfies schema.
      *
-     * @param inputServiceSpec String input
-     * @param schema Reference Json Schema
+     * @param inputSpec String input
+     * @param schema Reference Json Schema String Input
      * @return ProcessingReport
      * @throws HyscaleException
      */
-    public static ProcessingReport validate(String inputServiceSpec, String schema) throws HyscaleException {
+    public static ProcessingReport validate(String inputSpec, String schema) throws HyscaleException {
         try {
-            JsonNode inputServiceSpecJsonNode = JsonLoader.fromString(inputServiceSpec);
-            return validate(inputServiceSpecJsonNode,schema);
+            JsonNode inputSpecJsonNode = JsonLoader.fromString(inputSpec);
+            JsonNode schemaNode = JsonLoader.fromString(schema);
+            return validate(inputSpecJsonNode,schemaNode);
         }catch (IOException e) {
             LOGGER.error(e.getMessage());
-            HyscaleException ex = new HyscaleException(e,CommonErrorCode.STRING_TO_JSON_NODE_CONVERSION_FAILURE,e.getMessage());
+            HyscaleException ex = new HyscaleException(e,CommonErrorCode.STRING_TO_JSON_NODE_CONVERSION_FAILURE);
             throw ex;
         }
     }
@@ -58,31 +60,41 @@ public class JsonSchemaValidator {
     /**
      * Validates whether the given input json node satisfies schema.
      *
-     * @param inputServiceSpec JsonNode input
-     * @param schemaPath Reference Json Schema
+     * @param inputSpecNode JsonNode input
+     * @param referenceSchema JsonNode input
      * @return ProcessingReport
      * @throws HyscaleException
      */
-    public static ProcessingReport validate(JsonNode inputServiceSpec, String schemaPath) throws HyscaleException{
-        try {
-            JsonNode schemaJsonNode = JsonLoader.fromResource(schemaPath);
-            return validate(inputServiceSpec,schemaJsonNode);
-        }catch (IOException i){
-            LOGGER.error(i.getMessage());
-            throw new HyscaleException(i,CommonErrorCode.FAILED_TO_READ_FILE,schemaPath);
+    public static ProcessingReport validate(JsonNode inputSpecNode,JsonNode referenceSchema) throws HyscaleException{
+        if(referenceSchema == null){
+            throw new HyscaleException(CommonErrorCode.NULL_SCHEMA_NODE);
         }
-    }
-
-    public static ProcessingReport validate(JsonNode inputServiceSpec,JsonNode referenceSchema) throws HyscaleException{
         try {
             JsonSchema schema = factory.getJsonSchema(referenceSchema);
-            return schema.validate(inputServiceSpec);
+            return schema.validate(inputSpecNode);
         }catch (ProcessingException p){
             LOGGER.error(p.getMessage());
             throw new HyscaleException(p,CommonErrorCode.SCHEMA_PROCESSING_ERROR);
-        }catch (NullPointerException n){
-            LOGGER.error(n.getMessage());
-            throw new HyscaleException(n,CommonErrorCode.NULL_SCHEMA);
+        }
+    }
+
+    /**
+     * validates whether the given input spec file satisfies schema
+     *
+     * @param inputSpecFile
+     * @param referenceSchemaFile
+     * @return ProcessingReport
+     * @throws HyscaleException
+     */
+    public static ProcessingReport validate(File inputSpecFile, File referenceSchemaFile) throws HyscaleException{
+        try {
+            JsonNode inputSpecJsonNode = JsonLoader.fromFile(inputSpecFile);
+            JsonNode schemaNode = JsonLoader.fromFile(referenceSchemaFile);
+            return validate(inputSpecJsonNode,schemaNode);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage());
+            HyscaleException ex = new HyscaleException(e,CommonErrorCode.FILE_TO_JSON_NODE_CONVERSION_FAILURE,e.getMessage());
+            throw ex;
         }
     }
 }
