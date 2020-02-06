@@ -71,7 +71,7 @@ public class ToolConstants {
 
     public static final Integer HYSCALE_FAILURE_CODE = 1;
 
-    public static final String RELEASE = "0.6.1";
+    public static final String HSPEC_VERSION = "hspec.version";
 
     public static final String NASHORNS_ARGS = "nashorn.args";
 

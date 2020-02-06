@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.Map;
 
-import Converters.ProfileConverter;
-import Converters.ServiceSpecConverter;
+import io.hyscale.controller.Converters.ProfileConverter;
+import io.hyscale.controller.Converters.ServiceSpecConverter;
 import io.hyscale.commons.component.ComponentInvoker;
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
@@ -153,7 +153,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
             SetupConfig.setAbsolutePath(serviceSpecFile.getAbsoluteFile().getParent());
             workflowContext.setAppName(appName.trim());
             workflowContext.setNamespace(namespace.trim());
-            workflowContext.setEnvName(CommandUtil.getEnvName(profile, appName.trim()));
+            workflowContext.setEnvName(CommandUtil.getEnvName(ServiceProfileUtil.getProfileName(profile), appName.trim()));
             workflowContext.addAttribute(WorkflowConstants.VERBOSE, verbose);
 
             // clean up service dir before dockerfileGen

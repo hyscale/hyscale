@@ -26,7 +26,7 @@ import io.hyscale.servicespec.commons.json.parser.JsonTreeParser;
 
 import java.io.IOException;
 
-public class Profile implements HyscaleFieldUtil {
+public class Profile implements HyscaleSpec {
     private JsonNode root;
 
     public Profile(JsonNode root) {

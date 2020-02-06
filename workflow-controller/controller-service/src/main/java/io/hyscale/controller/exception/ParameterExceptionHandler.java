@@ -49,6 +49,7 @@ public class ParameterExceptionHandler implements CommandLine.IParameterExceptio
         CommandLine commandLine = ex.getCommandLine();
         PrintWriter writer = commandLine.getErr();
         writer.printf(commandLine.getUsageMessage());
+        logger.error(ex.getMessage());
         return ToolConstants.INVALID_INPUT_ERROR_CODE;
     }
 }

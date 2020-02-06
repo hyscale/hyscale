@@ -45,9 +45,9 @@ public class CommandUtil {
 	 * @param appName
 	 * @return environment name
 	 */
-	public static String getEnvName(File profile, String appName) throws HyscaleException {
-		if (profile != null) {
-			return ServiceProfileUtil.getProfileName(profile);
+	public static String getEnvName(String profile, String appName) throws HyscaleException {
+		if (StringUtils.isNotBlank(profile)) {
+			return profile;
 		}
 		return WorkflowConstants.DEV_ENV;
 	}

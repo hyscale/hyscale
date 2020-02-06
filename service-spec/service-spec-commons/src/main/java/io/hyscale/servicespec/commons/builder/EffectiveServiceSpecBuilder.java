@@ -18,7 +18,9 @@ package io.hyscale.servicespec.commons.builder;
 
 import java.io.IOException;
 
+import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.utils.DataFormatConverter;
+import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -98,12 +100,14 @@ public class EffectiveServiceSpecBuilder {
         try {
             mapper.readTree(serviceSpec);
         } catch (IOException e) {
-            throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_PARSE_ERROR);
+            WorkflowLogger.error(ServiceSpecActivity.ERROR, e.getMessage());
+            throw new HyscaleException(e,ServiceSpecErrorCodes.SERVICE_SPEC_PARSE_ERROR);
         }
         try {
             mapper.readTree(profile);
         } catch (IOException e) {
-            throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_PROFILE_PARSE_ERROR);
+            WorkflowLogger.error(ServiceSpecActivity.ERROR, e.getMessage());
+            throw new HyscaleException(e,ServiceSpecErrorCodes.SERVICE_PROFILE_PARSE_ERROR);
         }
     }
 

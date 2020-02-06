@@ -23,7 +23,6 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.hyscale.commons.exception.CommonErrorCode;
-import io.hyscale.commons.models.HyscaleFileInputTypes;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Profile;
@@ -71,7 +70,7 @@ public class ServiceProfileUtil {
      * @throws HyscaleException
      */
     public static String getServiceNameFromProfile(File profileFile) throws HyscaleException {
-       return get(profileFile,HyscaleSpecFields.overrides,HyscaleFileInputTypes.SERVICE.getResourceName());
+       return get(profileFile,HyscaleSpecFields.overrides);
     }
 
     /**
@@ -84,10 +83,10 @@ public class ServiceProfileUtil {
      * @throws HyscaleException
      */
     public static String getProfileName(File profileFile) throws HyscaleException{
-       return get(profileFile,HyscaleSpecFields.environment,HyscaleFileInputTypes.ENVIRONMENT.getResourceName());
+       return get(profileFile,HyscaleSpecFields.environment);
     }
 
-    private static String get(File profileFile, String field, String type) throws HyscaleException{
+    private static String get(File profileFile, String field) throws HyscaleException{
         if (profileFile == null) {
             return null;
         }
@@ -95,7 +94,7 @@ public class ServiceProfileUtil {
             Profile profile = new Profile(FileUtils.readFileToString(profileFile, ToolConstants.CHARACTER_ENCODING));
             JsonNode fieldValue = profile.get(field);
             if (fieldValue == null) {
-                HyscaleException hyscaleException = new HyscaleException(ServiceSpecErrorCodes.MISSING_FIELD_IN_PROFILE_FILE, field,type);
+                HyscaleException hyscaleException = new HyscaleException(ServiceSpecErrorCodes.MISSING_FIELD_IN_PROFILE_FILE, field);
                 logger.error(hyscaleException.getMessage());
                 throw hyscaleException;
             }

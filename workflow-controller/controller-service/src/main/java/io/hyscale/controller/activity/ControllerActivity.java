@@ -68,7 +68,8 @@ public enum ControllerActivity implements Activity {
     INVALID_INPUT_RETRY("Input \"{}\" is invalid, please retry"),
     UNABLE_TO_PROCESS_INPUT("Error occured while processing given input {}"),
     EMPTY_FILE_PATH("Empty file path given"),
-    EMPTY_FILE_FOUND("Empty file:{} cannot be processed."),
+    EMPTY_FILE_FOUND("Empty file {} cannot be processed."),
+    INVALID_FILE_INPUT("Given input {} is not a file.Expecting file input."),
     DIRECTORY_INPUT_FOUND("Found directory {} instead of file");
 
     private String message;
