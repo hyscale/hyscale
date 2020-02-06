@@ -86,6 +86,11 @@
 			<artifactId>builder-services</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>io.hyscale</groupId>
+			<artifactId>troubleshooting-integration</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<!-- Status time formatting -->
 		<dependency>
 			<groupId>org.ocpsoft.prettytime</groupId>

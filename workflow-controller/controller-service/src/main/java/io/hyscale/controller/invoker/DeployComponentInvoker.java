@@ -21,6 +21,9 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import io.hyscale.commons.models.K8sAuthorisation;
+import io.hyscale.troubleshooting.integration.models.ServiceInfo;
+import io.hyscale.troubleshooting.integration.service.TroubleshootService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +87,9 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
 
     @Autowired
     private VolumeValidatorHook volumeValidatorHook;
+
+    @Autowired
+    private TroubleshootService troubleshootService;
 
     @PostConstruct
     public void init() {
@@ -153,6 +159,7 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
             //WorkflowLogger.error(ControllerActivity.DEPLOYMENT_FAILED,e.getMessage());
             throw e;
         } finally {
+            //troubleshoot(deploymentContext);
             writeDeployLogs(context, deploymentContext);
         }
         context.addAttribute(WorkflowConstants.OUTPUT, true);
@@ -173,6 +180,17 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
                     context.addAttribute(WorkflowConstants.SERVICE_IP, serviceAddress.toString());
                 }
             }
+        }
+    }
+
+    private void troubleshoot(DeploymentContext deploymentContext) {
+        ServiceInfo serviceInfo = new ServiceInfo();
+        serviceInfo.setAppName(deploymentContext.getAppName());
+        serviceInfo.setServiceName(deploymentContext.getServiceName());
+        try {
+            troubleshootService.troubleshoot(serviceInfo, (K8sAuthorisation) deploymentContext.getAuthConfig(), deploymentContext.getNamespace());
+        } catch (HyscaleException e) {
+            logger.error("Error while executing troubleshooot serice {}", e);
         }
     }
 
