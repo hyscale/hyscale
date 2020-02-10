@@ -17,18 +17,18 @@ package io.hyscale.troubleshooting.integration.actions;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.troubleshooting.integration.models.ActionMessage;
-import io.hyscale.troubleshooting.integration.models.Node;
-import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
+import io.hyscale.troubleshooting.integration.models.*;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ContactClusterAdministratorAction implements Node<TroubleshootingContext> {
+public class ContactClusterAdministratorAction extends ActionNode<TroubleshootingContext> {
 
     @Override
-    public Node<TroubleshootingContext> next(TroubleshootingContext context) throws HyscaleException {
-        WorkflowLogger.debug(ActionMessage.CONTACT_CLUSTER_ADMINISTRATOR);
-        return null;
+    public void process(TroubleshootingContext context) {
+        DiagnosisReport report = new DiagnosisReport();
+        report.setReason(AbstractedErrorMessage.CONTACT_CLUSTER_ADMINISTRATOR.getReason());
+        report.setRecommendedFix(AbstractedErrorMessage.CONTACT_CLUSTER_ADMINISTRATOR.getMessage());
+        context.addReport(report);
     }
 
     @Override
@@ -36,9 +36,4 @@ public class ContactClusterAdministratorAction implements Node<TroubleshootingCo
         return "Please contact cluster administrator";
     }
 
-    //TODO throw ?
-    @Override
-    public boolean test(TroubleshootingContext context) throws HyscaleException {
-        return false;
-    }
 }

@@ -13,14 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.troubleshooting.integration.constants;
+package io.hyscale.troubleshooting.integration.models;
 
-public class TroubleshootConstants {
+public interface IMessage {
 
-    public static final String PENDING_PHASE = "Pending";
-
-    public static final String SERVICE_PODS = "ServicePods";
-
-    public static final String FAILED_POD = "failedPod";
-
+    public String getMessage();
 }

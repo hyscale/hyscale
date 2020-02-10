@@ -17,26 +17,28 @@ package io.hyscale.troubleshooting.integration.conditions;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.deployer.core.model.ResourceKind;
-import io.hyscale.troubleshooting.integration.models.Node;
+import io.hyscale.troubleshooting.integration.models.*;
 import io.hyscale.troubleshooting.integration.actions.ContactClusterAdministratorAction;
 import io.hyscale.troubleshooting.integration.actions.PendingPvcAction;
 import io.hyscale.troubleshooting.integration.constants.TroubleshootConstants;
-import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
 import io.hyscale.troubleshooting.integration.util.ConditionUtil;
-import io.hyscale.troubleshooting.integration.util.TroubleshootUtil;
+import io.hyscale.troubleshooting.integration.util.TroubleshootContextValidator;
 import io.kubernetes.client.models.V1Event;
 import io.kubernetes.client.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.models.V1Pod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Component
-public class AnyPendingPVCCondition implements Node<TroubleshootingContext> {
+public class AnyPendingPVCCondition extends ConditionNode<TroubleshootingContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(AnyPendingPVCCondition.class);
 
@@ -53,48 +55,73 @@ public class AnyPendingPVCCondition implements Node<TroubleshootingContext> {
         this.pendingPvcCondition = new Predicate<TroubleshootingContext>() {
             @Override
             public boolean test(TroubleshootingContext context) {
-                if (TroubleshootUtil.validateContext(context)) {
-                    logger.debug("Cannot troubleshoot without resource data and context");
+                List<TroubleshootingContext.ResourceInfo> resourceData = context.getResourceInfos().get(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind());
+
+                // Since there are no pvc's found for the service, there's not pending pvc
+                if (resourceData == null || resourceData.isEmpty()) {
+                    logger.debug("No PVC's found for service {}", context.getServiceInfo().getServiceName());
                     return false;
                 }
 
-                TroubleshootingContext.ResourceData resourceData = context.getResourceData().get(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind());
-                //TODO proper error handling
-                if (ConditionUtil.isResourceInValid(resourceData)) {
-                    logger.error("Cannot proceed with incomplete resource data {}");
+                Object obj = context.getAttribute(FailedResourceKey.FAILED_POD);
+                if (obj == null) {
+                    logger.debug("Cannot find any failed pod for to {}", describe());
                     return false;
                 }
 
-                List<Object> pvcList = resourceData.getResource();
+                V1Pod pod = (V1Pod) FailedResourceKey.FAILED_POD.getKlazz().cast(obj);
+
+                // Get all the pvc names associated to the failed pod
+                List<String> podPvcList = pod.getSpec().getVolumes().stream().map(each -> {
+                    return each.getPersistentVolumeClaim() != null && each.getPersistentVolumeClaim().getClaimName() != null ? each.getPersistentVolumeClaim().getClaimName() : null;
+                }).collect(Collectors.toList());
+
+
+                // get all the pvc list for this particular failed pod from context
+                List<V1PersistentVolumeClaim> pvcList = resourceData.stream().filter(each -> {
+                    if (each != null && each.getResource() != null && each.getResource() instanceof V1PersistentVolumeClaim) {
+                        V1PersistentVolumeClaim persistentVolumeClaim = (V1PersistentVolumeClaim) each.getResource();
+                        return podPvcList.contains(persistentVolumeClaim.getMetadata().getName());
+                    }
+                    return false;
+                }).map(each -> {
+                    return (V1PersistentVolumeClaim) each.getResource();
+                }).collect(Collectors.toList());
+
+                // Since there are no pvc's found for the service, there's not pending pvc
                 if (pvcList != null || pvcList.isEmpty()) {
                     logger.debug("PVC List if found empty for service {}", context.getServiceInfo().getServiceName());
                     return false;
                 }
-                boolean anyPendingPvc = pvcList.stream().anyMatch(each -> {
-                    if (each instanceof V1PersistentVolumeClaim) {
-                        V1PersistentVolumeClaim persistentVolumeClaim = (V1PersistentVolumeClaim) each;
-                        String pvcPhase = persistentVolumeClaim.getStatus().getPhase();
-                        return pvcPhase != null ? pvcPhase.equals(TroubleshootConstants.PENDING_PHASE) : false;
-                    }
-                    return false;
+                return pvcList.stream().filter(each -> {
+                    return each != null && each instanceof V1PersistentVolumeClaim;
+                }).anyMatch(each -> {
+                    V1PersistentVolumeClaim persistentVolumeClaim = (V1PersistentVolumeClaim) each;
+                    String pvcPhase = persistentVolumeClaim.getStatus().getPhase();
+                    return pvcPhase != null ? pvcPhase.equals(TroubleshootConstants.PENDING_PHASE) : false;
                 });
-                return anyPendingPvc;
             }
         };
     }
 
     @Override
-    public Node<TroubleshootingContext> next(TroubleshootingContext context) throws HyscaleException {
-        return this.pendingPvcCondition.test(context) ? pendingPvcAction : contactClusterAdministratorAction;
+    public boolean decide(TroubleshootingContext context) throws HyscaleException {
+        return this.pendingPvcCondition.test(context);
+    }
+
+    @Override
+    public Node<TroubleshootingContext> onSuccess() {
+        return pendingPvcAction;
+    }
+
+    @Override
+    public Node<TroubleshootingContext> onFailure() {
+        return contactClusterAdministratorAction;
     }
 
     @Override
     public String describe() {
-        return "Are there any pending pvc's ?? ";
+        return "Are there any pending pvc's ? ";
     }
 
-    @Override
-    public boolean test(TroubleshootingContext context) throws HyscaleException {
-        return this.pendingPvcCondition.test(context);
-    }
 }

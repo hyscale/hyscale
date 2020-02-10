@@ -13,14 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.troubleshooting.integration.constants;
+package io.hyscale.troubleshooting.integration.models;
 
-public class TroubleshootConstants {
+import io.hyscale.commons.exception.HyscaleException;
 
-    public static final String PENDING_PHASE = "Pending";
+public abstract class ConditionNode<C extends NodeContext> implements Node<C> {
 
-    public static final String SERVICE_PODS = "ServicePods";
+    public abstract boolean decide(C context) throws HyscaleException;
 
-    public static final String FAILED_POD = "failedPod";
+    public abstract Node<C> onSuccess();
 
+    public abstract Node<C> onFailure();
+
+    @Override
+    public final Node<C> next(C context) throws HyscaleException {
+        return decide(context) ? onSuccess() : onFailure();
+    }
 }

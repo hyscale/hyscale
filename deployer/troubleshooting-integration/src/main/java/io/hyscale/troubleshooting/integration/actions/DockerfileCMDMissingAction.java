@@ -17,27 +17,23 @@ package io.hyscale.troubleshooting.integration.actions;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.troubleshooting.integration.models.Node;
-import io.hyscale.troubleshooting.integration.models.ActionMessage;
-import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
+import io.hyscale.troubleshooting.integration.models.*;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DockerfileCMDMissingAction implements Node<TroubleshootingContext> {
+public class DockerfileCMDMissingAction extends ActionNode<TroubleshootingContext> {
 
     @Override
-    public Node<TroubleshootingContext> next(TroubleshootingContext context) throws HyscaleException {
-        WorkflowLogger.debug(ActionMessage.DOCKERFILE_CMD_UNCERTAINITY);
-        return null;
+    public void process(TroubleshootingContext context) {
+        DiagnosisReport report = new DiagnosisReport();
+        report.setRecommendedFix(AbstractedErrorMessage.DOCKERFILE_CMD_UNCERTAINITY.getMessage());
+        report.setReason(AbstractedErrorMessage.DOCKERFILE_CMD_UNCERTAINITY.getReason());
+        context.addReport(report);
     }
 
     @Override
-    public String describe()  {
+    public String describe() {
         return "Is CMD present in your Dockerfile  or kubernetes podspec args present not ?";
     }
 
-    @Override
-    public boolean test(TroubleshootingContext context) throws HyscaleException {
-        return false;
-    }
 }

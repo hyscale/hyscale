@@ -17,27 +17,22 @@ package io.hyscale.troubleshooting.integration.actions;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.troubleshooting.integration.models.Node;
-import io.hyscale.troubleshooting.integration.models.ActionMessage;
-import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
+import io.hyscale.troubleshooting.integration.models.*;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DefaultAction implements Node<TroubleshootingContext> {
+public class DefaultAction extends ActionNode<TroubleshootingContext> {
 
     @Override
-    public Node<TroubleshootingContext> next(TroubleshootingContext context) throws HyscaleException {
-        WorkflowLogger.debug(ActionMessage.CANNOT_INFER_ERROR);
-        return null;
+    public void process(TroubleshootingContext context) {
+        DiagnosisReport report = new DiagnosisReport();
+        report.setRecommendedFix(AbstractedErrorMessage.CANNOT_INFER_ERROR.getMessage());
+        context.addReport(report);
     }
 
     @Override
     public String describe() {
-        return null;
+        return "Default Action when error cannot be inferred from the service state";
     }
 
-    @Override
-    public boolean test(TroubleshootingContext context) throws HyscaleException {
-        return false;
-    }
 }

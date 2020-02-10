@@ -15,16 +15,8 @@
  */
 package io.hyscale.troubleshooting.integration.models;
 
-public class ServiceStatus {
+public interface IReason {
 
-    private String message;
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
+    public String getReason();
 
 }

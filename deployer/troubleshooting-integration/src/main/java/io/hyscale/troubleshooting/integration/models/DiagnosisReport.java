@@ -15,42 +15,40 @@
  */
 package io.hyscale.troubleshooting.integration.models;
 
-import org.springframework.lang.NonNull;
+public class DiagnosisReport {
 
-//TODO JAVADOC
-public class ServiceInfo {
+    private String reason;
+    private String recommendedFix;
+    private StatusLevel level;
 
-    @NonNull
-    private String serviceName;
-
-    @NonNull
-    private String appName;
-
-    @NonNull
-    private String envName;
-
-    public String getServiceName() {
-        return serviceName;
+    public String getRecommendedFix() {
+        return recommendedFix;
     }
 
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
+    public void setRecommendedFix(String recommendedFix) {
+        this.recommendedFix = recommendedFix;
     }
 
-    public String getAppName() {
-        return appName;
+    public String getReason() {
+        return reason;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 
-    public String getEnvName() {
-        return envName;
+    public StatusLevel getLevel() {
+        return level;
     }
 
-    public void setEnvName(String envName) {
-        this.envName = envName;
+    public void setLevel(StatusLevel level) {
+        this.level = level;
+    }
+
+    public enum StatusLevel {
+        WARNING,
+        ERROR,
+        NORMAL;
     }
 
 }

@@ -17,11 +17,12 @@ package io.hyscale.troubleshooting.integration.models;
 
 import io.hyscale.commons.exception.HyscaleException;
 
+//TODO JAVADOC
 public interface Node<C extends NodeContext> {
 
     public Node<C> next(C context) throws HyscaleException;
 
     public String describe() ;
 
-    public boolean test(C context) throws HyscaleException;
+
 }

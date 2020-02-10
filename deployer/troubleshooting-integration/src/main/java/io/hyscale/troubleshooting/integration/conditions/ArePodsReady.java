@@ -18,10 +18,8 @@ package io.hyscale.troubleshooting.integration.conditions;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.model.PodCondition;
-import io.hyscale.troubleshooting.integration.models.Node;
-import io.hyscale.troubleshooting.integration.actions.FixHealthCheckAction;
-import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
-import io.hyscale.troubleshooting.integration.util.ConditionUtil;
+import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
+import io.hyscale.troubleshooting.integration.models.*;
 import io.kubernetes.client.models.V1Pod;
 import io.kubernetes.client.models.V1PodCondition;
 import org.slf4j.Logger;
@@ -29,59 +27,70 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
-import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
+//TODO JAVADOC
 @Component
-public class ArePodsReady implements Node<TroubleshootingContext> {
+public class ArePodsReady extends ConditionNode<TroubleshootingContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(ArePodsReady.class);
 
-    private Predicate<TroubleshootingContext> podsReadyCondition;
-
     @Autowired
-    private FixHealthCheckAction fixHealthCheckAction;
+    private IsPodsReadinessFailing isPodsReadinessFailing;
 
-    @PostConstruct
-    public void init() {
-        this.podsReadyCondition = new Predicate<TroubleshootingContext>() {
-            @Override
-            public boolean test(TroubleshootingContext context) {
-                if (context == null || context.getResourceData() == null) {
-                    logger.debug("Cannot troubleshoot without resource data and context");
-                    return false;
-                }
+    @Override
+    public boolean decide(TroubleshootingContext context) throws HyscaleException {
+        List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos().get(ResourceKind.POD.getKind());
+        DiagnosisReport report = new DiagnosisReport();
+        if (resourceInfos == null || resourceInfos.isEmpty()) {
+            report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceInfo().getServiceName()));
+            report.setRecommendedFix(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.getMessage());
+            context.addReport(report);
+            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
+        }
 
-                TroubleshootingContext.ResourceData resourceData = context.getResourceData().get(ResourceKind.POD.getKind());
-                //TODO proper error handling
-                if (ConditionUtil.isResourceInValid(resourceData)) {
-                    logger.error("Cannot proceed with incomplete resource data {}");
-                    return false;
-                }
+        List<V1Pod> podsList = resourceInfos.stream().filter(each -> {
+            return each != null && each.getResource() != null && each.getResource() instanceof V1Pod;
+        }).map(pod -> {
+            return (V1Pod) pod.getResource();
+        }).collect(Collectors.toList());
 
-                List<Object> podsList = resourceData.getResource();
-                if (podsList == null && podsList.isEmpty()) {
-                    return false;
+        if (podsList == null && podsList.isEmpty()) {
+            report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceInfo().getServiceName()));
+            report.setRecommendedFix(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.getMessage());
+            context.addReport(report);
+            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
+        }
+
+        // check if all pods are in ready state with the pod condition ready
+        return podsList.stream().filter(each -> {
+            return each instanceof V1Pod;
+        }).allMatch(each -> {
+            V1Pod pod = (V1Pod) each;
+            boolean ready = false;
+            for (V1PodCondition condition : pod.getStatus().getConditions()) {
+                if (condition.getType().equals(PodCondition.READY.getPodCondition())) {
+                    ready = condition.getStatus().equals("True");
                 }
-                return podsList.stream().filter(each -> {
-                    return each instanceof V1Pod;
-                }).allMatch(each -> {
-                    V1Pod pod = (V1Pod) each;
-                    for (V1PodCondition condition : pod.getStatus().getConditions()) {
-                        if (condition.getType().equals(PodCondition.READY.getPodCondition())) {
-                            return condition.getStatus().equals("True");
-                        }
-                    }
-                    return false;
-                });
+                if (!ready) {
+                    context.addAttribute(FailedResourceKey.UNREADY_POD, each);
+                    break;
+                }
             }
-        };
+            return ready;
+        });
+    }
+
+
+    @Override
+    public Node<TroubleshootingContext> onSuccess() {
+        return null;
     }
 
     @Override
-    public Node<TroubleshootingContext> next(TroubleshootingContext context) throws HyscaleException {
-        return this.podsReadyCondition.test(context) ? null : fixHealthCheckAction;
+    public Node<TroubleshootingContext> onFailure() {
+        return isPodsReadinessFailing;
     }
 
     @Override
@@ -89,8 +98,4 @@ public class ArePodsReady implements Node<TroubleshootingContext> {
         return "Are all pods ready ?";
     }
 
-    @Override
-    public boolean test(TroubleshootingContext context) throws HyscaleException {
-        return this.podsReadyCondition.test(context);
-    }
 }

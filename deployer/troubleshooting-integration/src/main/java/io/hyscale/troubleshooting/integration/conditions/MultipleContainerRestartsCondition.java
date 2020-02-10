@@ -17,10 +17,10 @@ package io.hyscale.troubleshooting.integration.conditions;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.deployer.core.model.ResourceKind;
-import io.hyscale.troubleshooting.integration.models.Node;
+import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
+import io.hyscale.troubleshooting.integration.models.*;
 import io.hyscale.troubleshooting.integration.actions.FixCrashingApplication;
 import io.hyscale.troubleshooting.integration.actions.FixImageNameAction;
-import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
 import io.hyscale.troubleshooting.integration.util.ConditionUtil;
 import io.kubernetes.client.models.V1Pod;
 import org.slf4j.Logger;
@@ -29,15 +29,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
+//TODO JAVADOC
 @Component
-public class MultipleContainerRestartsCondition implements Node<TroubleshootingContext> {
+public class MultipleContainerRestartsCondition extends ConditionNode<TroubleshootingContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(MultipleContainerRestartsCondition.class);
-
-    private Predicate<TroubleshootingContext> multipleContainerRestarts;
 
     @Autowired
     private FixImageNameAction fixImageNameAction;
@@ -45,52 +47,57 @@ public class MultipleContainerRestartsCondition implements Node<TroubleshootingC
     @Autowired
     private FixCrashingApplication fixCrashingApplication;
 
-    @PostConstruct
-    public void init() {
-        this.multipleContainerRestarts = new Predicate<TroubleshootingContext>() {
-            @Override
-            public boolean test(TroubleshootingContext context) {
-                if (context == null || context.getResourceData() == null) {
-                    logger.debug("Cannot troubleshoot without resource data and context");
-                    return false;
-                }
+    @Override
+    public boolean decide(TroubleshootingContext context) throws HyscaleException {
 
-                TroubleshootingContext.ResourceData resourceData = context.getResourceData().get(ResourceKind.POD.getKind());
-                //TODO proper error handling
-                if (ConditionUtil.isResourceInValid(resourceData)) {
-                    logger.error("Cannot proceed with incomplete resource data {}");
-                    return false;
-                }
-                List<Object> podList = resourceData.getResource();
-                if (podList == null || podList.isEmpty()) {
-                    //Log it user
-                    return false;
-                }
-                return podList.stream().anyMatch(each -> {
-                    if (each instanceof V1Pod) {
-                        V1Pod pod = (V1Pod) each;
-                        return pod.getStatus().getContainerStatuses().stream().anyMatch(containerStatus -> {
-                            return containerStatus.getRestartCount() > 0;
-                        });
-                    }
-                    return false;
+        DiagnosisReport report = new DiagnosisReport();
+        List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos().get(ResourceKind.POD.getKind());
+        if (resourceInfos == null || resourceInfos.isEmpty()) {
+            report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceInfo().getServiceName()));
+            report.setRecommendedFix(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.getMessage());
+            context.addReport(report);
+            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
+        }
+
+        Object obj = context.getAttribute(FailedResourceKey.FAILED_POD);
+        List<V1Pod> podList = null;
+        if (obj == null) {
+            podList = resourceInfos.stream().filter(each -> {
+                return each != null && each.getResource() != null && each.getResource() instanceof V1Pod;
+            }).map(resourceInfo -> {
+                return (V1Pod) resourceInfo.getResource();
+            }).collect(Collectors.toList());
+        } else {
+            V1Pod failedPod = (V1Pod) FailedResourceKey.FAILED_POD.getKlazz().cast(obj);
+            podList = new LinkedList<>();
+            podList.add(failedPod);
+        }
+
+        return podList.stream().anyMatch(each -> {
+            if (each instanceof V1Pod) {
+                V1Pod pod = (V1Pod) each;
+                return pod.getStatus().getContainerStatuses().stream().anyMatch(containerStatus -> {
+                    return containerStatus.getRestartCount() > 0;
                 });
             }
-        };
+            return false;
+        });
+    }
+
+
+    @Override
+    public Node<TroubleshootingContext> onSuccess() {
+        return fixCrashingApplication;
     }
 
     @Override
-    public Node<TroubleshootingContext> next(TroubleshootingContext context) throws HyscaleException {
-        return this.multipleContainerRestarts.test(context) ? fixCrashingApplication : fixImageNameAction;
+    public Node<TroubleshootingContext> onFailure() {
+        return fixImageNameAction;
     }
 
     @Override
-    public String describe()  {
+    public String describe() {
         return "Multiple container restarts ?";
     }
 
-    @Override
-    public boolean test(TroubleshootingContext context) throws HyscaleException {
-        return this.multipleContainerRestarts.test(context);
-    }
 }

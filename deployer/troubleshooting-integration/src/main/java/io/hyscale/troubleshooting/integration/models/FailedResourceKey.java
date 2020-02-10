@@ -13,14 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.troubleshooting.integration.constants;
+package io.hyscale.troubleshooting.integration.models;
 
-public class TroubleshootConstants {
+import io.kubernetes.client.models.V1Pod;
 
-    public static final String PENDING_PHASE = "Pending";
+import java.util.List;
 
-    public static final String SERVICE_PODS = "ServicePods";
+public enum FailedResourceKey {
 
-    public static final String FAILED_POD = "failedPod";
+    FAILED_POD(V1Pod.class),
+    FAILED_POD_EVENTS(List.class),
+    UNREADY_POD(V1Pod.class);
 
+    private Class klazz;
+
+    public Class getKlazz() {
+        return klazz;
+    }
+
+    FailedResourceKey(Class klazz) {
+        this.klazz = klazz;
+    }
 }

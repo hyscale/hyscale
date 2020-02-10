@@ -15,25 +15,21 @@
  */
 package io.hyscale.troubleshooting.integration.actions;
 
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.deployer.core.model.ResourceKind;
-import io.hyscale.troubleshooting.integration.models.Node;
-import io.hyscale.troubleshooting.integration.models.ActionMessage;
-import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
-import io.hyscale.troubleshooting.integration.util.ConditionUtil;
-import io.hyscale.troubleshooting.integration.util.TroubleshootUtil;
-import io.kubernetes.client.models.V1Event;
+import io.hyscale.troubleshooting.integration.models.*;
+import io.kubernetes.client.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Component
-public class PendingPvcAction implements Node<TroubleshootingContext> {
+public class PendingPvcAction extends ActionNode<TroubleshootingContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(PendingPvcAction.class);
 
@@ -42,22 +38,45 @@ public class PendingPvcAction implements Node<TroubleshootingContext> {
     private static final Pattern pattern = Pattern.compile(STORAGE_CLASS_NOTFOUND);
 
     @Override
-    public Node<TroubleshootingContext> next(TroubleshootingContext context) throws HyscaleException {
-        if (TroubleshootUtil.validateContext(context)) {
-            logger.debug("Cannot troubleshoot without resource data and context");
-            return null;
-        }
-
-        TroubleshootingContext.ResourceData resourceData = context.getResourceData().get(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind());
+    public void process(TroubleshootingContext context) {
+        DiagnosisReport report = new DiagnosisReport();
+        List<TroubleshootingContext.ResourceInfo> resourceData = context.getResourceInfos().get(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind());
         //TODO proper error handling
-        if (ConditionUtil.isResourceInValid(resourceData)) {
-            logger.error("Cannot proceed with incomplete resource data {}");
-            return null;
+        if (resourceData == null || resourceData.isEmpty()) {
+            logger.debug("Cannot find any volumes that have been provisioned");
+            return;
         }
 
-        List<V1Event> eventList = resourceData.getEvents();
+        Object obj = context.getAttribute(FailedResourceKey.FAILED_POD);
+        if (obj == null) {
+            logger.debug("Cannot find any failed pod for to {}", describe());
+            return;
+        }
+
+        V1Pod pod = (V1Pod) FailedResourceKey.FAILED_POD.getKlazz().cast(obj);
+
+        // Get all the pvc names associated to the failed pod
+        List<String> podPvcList = pod.getSpec().getVolumes().stream().map(each -> {
+            return each.getPersistentVolumeClaim() != null && each.getPersistentVolumeClaim().getClaimName() != null ? each.getPersistentVolumeClaim().getClaimName() : null;
+        }).collect(Collectors.toList());
+
+        // get all the events of pvc's associated with the failed pod
+        List<V1Event> eventList = new ArrayList<>();
+        resourceData.stream().filter(each -> {
+            return each != null && each.getResource() != null && each.getResource() instanceof V1PersistentVolumeClaim;
+        }).forEach(resourceInfo -> {
+            // match the pvc name from the failed pod in the list of all pvc's
+            V1PersistentVolumeClaim persistentVolumeClaim = (V1PersistentVolumeClaim) resourceInfo.getResource();
+            if (podPvcList.contains(persistentVolumeClaim.getMetadata().getName())) {
+                eventList.addAll(resourceInfo.getEvents());
+            }
+        });
+
         if (eventList == null || eventList.isEmpty()) {
-            return null;
+            report.setReason(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getReason());
+            report.setRecommendedFix(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getMessage());
+            context.addReport(report);
+            return;
         }
 
         // ProvisioningFailed
@@ -67,18 +86,28 @@ public class PendingPvcAction implements Node<TroubleshootingContext> {
             return PROVISIONING_FAILED.equals(each.getReason()) && pattern.matcher(each.getMessage()).matches();
         });
 
-        WorkflowLogger.debug(ActionMessage.INVALID_STORAGE_CLASS, volume.get(), context.getServiceInfo().getServiceName());
-
-        return null;
+        List<TroubleshootingContext.ResourceInfo> storageClassResources = context.getResourceInfos().get(ResourceKind.STORAGE_CLASS.getKind());
+        if ((storageClassResources == null || storageClassResources.isEmpty()) && provsioningFailed) {
+            report.setReason(AbstractedErrorMessage.NO_STORAGE_CLASS_FOUND.getReason());
+            report.setRecommendedFix(AbstractedErrorMessage.INVALID_STORAGE_CLASS.getMessage());
+            return;
+        }
+        if (provsioningFailed) {
+            report.setReason(AbstractedErrorMessage.INVALID_STORAGE_CLASS.formatReason(context.getServiceInfo().getServiceName()));
+            report.setRecommendedFix(AbstractedErrorMessage.INVALID_STORAGE_CLASS.formatMessage(storageClassResources.stream().filter(each -> {
+                        return each != null && each.getResource() != null && each.getResource() instanceof V1StorageClass;
+                    }).map(each -> {
+                        V1StorageClass storageClass = (V1StorageClass) each.getResource();
+                        return storageClass.getMetadata().getName();
+                    }).collect(Collectors.joining(","))
+            ));
+        }
     }
+
 
     @Override
-    public String describe()  {
-        return null;
+    public String describe() {
+        return "Checks if the pod failure is due to any pending volume";
     }
 
-    @Override
-    public boolean test(TroubleshootingContext context) throws HyscaleException {
-        return false;
-    }
 }

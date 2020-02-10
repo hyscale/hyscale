@@ -15,25 +15,29 @@
  */
 package io.hyscale.troubleshooting.integration.actions;
 
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.troubleshooting.integration.models.*;
+import io.hyscale.troubleshooting.integration.models.AbstractedErrorMessage;
+import io.hyscale.troubleshooting.integration.models.ActionNode;
+import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
+import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
 import org.springframework.stereotype.Component;
 
+/*
+ * Prepares a diagnosis report stating that no service has been
+ * deployed in the cluster. Useful for cases when a wrong service
+ * name in unintendedly provided.
+ */
 @Component
-public class FixHealthCheckAction extends ActionNode<TroubleshootingContext> {
+public class ServiceNotDeployedAction extends ActionNode<TroubleshootingContext> {
 
     @Override
     public void process(TroubleshootingContext context) {
         DiagnosisReport report = new DiagnosisReport();
-        report.setReason(AbstractedErrorMessage.LIVENESS_PROBE_FAILURE.getReason());
-        report.setRecommendedFix(AbstractedErrorMessage.LIVENESS_PROBE_FAILURE.getMessage());
+        report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatMessage(context.getServiceInfo().getServiceName()));
         context.addReport(report);
     }
 
     @Override
     public String describe() {
-        return "Fix Liveness probe ";
+        return "Service is not deployed";
     }
-
 }

@@ -15,29 +15,26 @@
  */
 package io.hyscale.troubleshooting.integration.actions;
 
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.troubleshooting.integration.models.Node;
-import io.hyscale.troubleshooting.integration.models.ActionMessage;
+import io.hyscale.troubleshooting.integration.models.AbstractedErrorMessage;
+import io.hyscale.troubleshooting.integration.models.ActionNode;
+import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
 import org.springframework.stereotype.Component;
 
 @Component
-public class OOMKilledAction implements Node<TroubleshootingContext> {
+public class OOMKilledAction extends ActionNode<TroubleshootingContext> {
 
     @Override
-    public Node<TroubleshootingContext> next(TroubleshootingContext context) throws HyscaleException {
-        WorkflowLogger.debug(ActionMessage.OOMKILLED, context.getServiceInfo().getServiceName());
-        return null;
+    public void process(TroubleshootingContext context) {
+        DiagnosisReport report = new DiagnosisReport();
+        report.setRecommendedFix(AbstractedErrorMessage.OOMKILLED.getMessage());
+        report.setReason(AbstractedErrorMessage.OOMKILLED.getReason());
+        context.addReport(report);
     }
 
     @Override
-    public String describe()  {
-        return "OOMKilled ?";
+    public String describe() {
+        return "service is killed by out of memory";
     }
 
-    @Override
-    public boolean test(TroubleshootingContext context) throws HyscaleException {
-        return false;
-    }
 }

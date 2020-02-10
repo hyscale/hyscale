@@ -18,9 +18,8 @@ package io.hyscale.troubleshooting.integration.service;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.troubleshooting.integration.models.ServiceInfo;
-import io.hyscale.troubleshooting.integration.models.ServiceStatus;
 
 public interface TroubleshootService {
 
-    public ServiceStatus troubleshoot(ServiceInfo serviceInfo, K8sAuthorisation k8sAuthorisation,String namespace) throws HyscaleException;
+    public void troubleshoot(ServiceInfo serviceInfo, K8sAuthorisation k8sAuthorisation, String namespace) throws HyscaleException;
 }

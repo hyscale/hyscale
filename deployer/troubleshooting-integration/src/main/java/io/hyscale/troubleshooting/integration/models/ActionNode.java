@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.troubleshooting.integration.util;
+package io.hyscale.troubleshooting.integration.models;
 
-import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
+import io.hyscale.commons.exception.HyscaleException;
 
-public class TroubleshootUtil {
+public abstract class ActionNode<C extends NodeContext> implements Node<C> {
 
-    public static boolean validateContext(TroubleshootingContext context) {
-        if (context == null || context.getResourceData() == null) {
-            return false;
-        }
-        return true;
+    public abstract void process(C context);
+
+    @Override
+    public final Node<C> next(C context) throws HyscaleException {
+        process(context);
+        return null;
     }
 }

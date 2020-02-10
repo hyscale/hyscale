@@ -17,20 +17,20 @@ package io.hyscale.troubleshooting.integration.models;
 
 import io.kubernetes.client.models.V1Event;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+//TODO JAVADOC
 public class TroubleshootingContext implements NodeContext {
 
     private ServiceInfo serviceInfo;
-    private Map<String, ResourceData> resourceData;
-    private Map<String, Object> communicationAttributes;
-    private boolean debug;
+    private Map<String, List<ResourceInfo>> resourceInfos;
+    private Map<FailedResourceKey, Object> failedObjects;
+    private List<DiagnosisReport> diagnosisReports;
+    private boolean trace;
 
     public TroubleshootingContext() {
-        this.communicationAttributes = new HashMap<>();
+        this.failedObjects = new HashMap<>();
+        this.diagnosisReports = new ArrayList<>();
     }
 
     public ServiceInfo getServiceInfo() {
@@ -41,38 +41,47 @@ public class TroubleshootingContext implements NodeContext {
         this.serviceInfo = serviceInfo;
     }
 
-    public Map<String, ResourceData> getResourceData() {
-        return resourceData;
+    public Map<FailedResourceKey, Object> getFailedObjects() {
+        return Collections.unmodifiableMap(failedObjects);
     }
 
-    public void setResourceData(Map<String, ResourceData> resourceData) {
-        this.resourceData = resourceData;
+    public Object addAttribute(FailedResourceKey key, Object value) {
+        return failedObjects.put(key, value);
     }
 
-    public Map<String, Object> getCommunicationAttributes() {
-        return Collections.unmodifiableMap(communicationAttributes);
+    public Object getAttribute(FailedResourceKey key) {
+        return failedObjects.get(key);
     }
 
-    public Object addAttribute(String key, Object value) {
-        return communicationAttributes.put(key, value);
+    public boolean isTrace() {
+        return trace;
     }
 
-    public Object getAttribute(String key) {
-        return communicationAttributes.get(key);
+    public void setTrace(boolean trace) {
+        this.trace = trace;
     }
 
-    public boolean isDebug() {
-        return debug;
+    public Map<String, List<ResourceInfo>> getResourceInfos() {
+        return resourceInfos;
     }
 
-    public void setDebug(boolean debug) {
-        this.debug = debug;
+    public void setResourceInfos(Map<String, List<ResourceInfo>> resourceInfos) {
+        this.resourceInfos = resourceInfos;
     }
 
-    public static class ResourceData {
+    public List<DiagnosisReport> getDiagnosisReports() {
+        return Collections.unmodifiableList(diagnosisReports);
+    }
+
+    public void addReport(DiagnosisReport report) {
+        diagnosisReports.add(report);
+    }
+
+
+    public static class ResourceInfo {
 
         private List<V1Event> events;
-        private List<Object> resource;
+        private Object resource;
 
         public List<V1Event> getEvents() {
             return events;
@@ -82,12 +91,14 @@ public class TroubleshootingContext implements NodeContext {
             this.events = events;
         }
 
-        public List<Object> getResource() {
+        public Object getResource() {
             return resource;
         }
 
-        public void setResource(List<Object> resource) {
+        public void setResource(Object resource) {
             this.resource = resource;
         }
     }
+
+
 }

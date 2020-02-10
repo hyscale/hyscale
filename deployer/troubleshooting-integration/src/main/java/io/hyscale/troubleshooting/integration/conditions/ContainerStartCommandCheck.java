@@ -24,12 +24,10 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.CommandResult;
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.deployer.core.model.ResourceKind;
-import io.hyscale.troubleshooting.integration.models.Node;
+import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
+import io.hyscale.troubleshooting.integration.models.*;
 import io.hyscale.troubleshooting.integration.actions.DockerfileCMDMissingAction;
 import io.hyscale.troubleshooting.integration.actions.FixCrashingApplication;
-import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
-import io.hyscale.troubleshooting.integration.util.ConditionUtil;
-import io.hyscale.troubleshooting.integration.util.TroubleshootUtil;
 import io.kubernetes.client.models.V1Pod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,11 +39,15 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
+//TODO JAVADOC
 @Component
-public class ContainerStartCommandCheck implements Node<TroubleshootingContext> {
+public class ContainerStartCommandCheck extends ConditionNode<TroubleshootingContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(ContainerStartCommandCheck.class);
+    private static final String DOCKER_INSTALLATION_NOTFOUND_MESSAGE = "Docker is not installed";
+    private static final String IMAGE_NOT_FOUND_LOCALLY = "Image %s is not found locally to inspect";
 
     private Predicate<TroubleshootingContext> containerStartCommandCheck;
 
@@ -59,97 +61,115 @@ public class ContainerStartCommandCheck implements Node<TroubleshootingContext> 
     private FixCrashingApplication fixCrashingApplication;
 
 
-    @PostConstruct
-    public void init() {
-        this.containerStartCommandCheck = new Predicate<TroubleshootingContext>() {
-            @Override
-            public boolean test(TroubleshootingContext context) {
-                if (TroubleshootUtil.validateContext(context)) {
-                    logger.debug("Cannot troubleshoot without resource data and context");
-                    return false;
-                }
+    @Override
+    public boolean decide(TroubleshootingContext context) throws HyscaleException {
+        List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos().get(ResourceKind.POD.getKind());
+        DiagnosisReport report = new DiagnosisReport();
+        if (resourceInfos == null || resourceInfos.isEmpty()) {
+            report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceInfo().getServiceName()));
+            report.setRecommendedFix(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.getMessage());
+            context.addReport(report);
+            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
+        }
 
-                TroubleshootingContext.ResourceData resourceData = context.getResourceData().get(ResourceKind.POD.getKind());
-                //TODO proper error handling
-                if (ConditionUtil.isResourceInValid(resourceData)) {
-                    logger.error("Cannot proceed with incomplete resource data {}");
-                    return false;
-                }
-                List<Object> podsList = resourceData.getResource();
+        List<V1Pod> podsList = resourceInfos.stream().filter(each -> {
+            return each != null && each.getResource() != null && each.getResource() instanceof V1Pod;
+        }).map(pod -> {
+            return (V1Pod) pod.getResource();
+        }).collect(Collectors.toList());
 
-                if (podsList == null || podsList.isEmpty()) {
-                    // TODO talk about result accuracy without events
-                    return false;
-                }
-                V1Pod pod = (V1Pod) podsList.get(0);
+        if (podsList == null && podsList.isEmpty()) {
+            report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceInfo().getServiceName()));
+            report.setRecommendedFix(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.getMessage());
+            context.addReport(report);
+            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
+        }
 
-                // Add tracing on verbose logging
-                if (checkForStartCommands(pod)) {
-                    return true;
-                }
+        V1Pod pod = (V1Pod) podsList.get(0);
 
-                String image = getImageFromPods(pod);
-                if (image == null) {
-                    // TODO indicate about result
-                    return false;
-                }
+        if (checkForStartCommands(pod)) {
+            return true;
+        }
 
-                String dockerInstallCommand = commandProvider.getDockerInstalledCommand();
-                if (!CommandExecutor.execute(dockerInstallCommand)) {
-                    // Throw that result cannot be obtained because docker is not installed,
-                    // Still show this can be the possbility of error
-                    return false;
-                }
+        String image = getImageFromPods(pod);
+        if (image == null) {
+            report.setReason(AbstractedErrorMessage.CANNOT_INFER_ERROR.getReason());
+            report.setRecommendedFix(AbstractedErrorMessage.CANNOT_INFER_ERROR.getMessage());
+            context.addReport(report);
+            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
+        }
+
+        String dockerInstallCommand = commandProvider.getDockerInstalledCommand();
+        if (!CommandExecutor.execute(dockerInstallCommand)) {
+            report.setReason(AbstractedErrorMessage.DOCKERFILE_CMD_UNCERTAINITY.formatReason(context.getServiceInfo().getServiceName()));
+            report.setRecommendedFix(DOCKER_INSTALLATION_NOTFOUND_MESSAGE);
+            context.addReport(report);
+            return false;
+        }
 
 
-                CommandResult result = CommandExecutor.executeAndGetResults(commandProvider.getImageInspectCommand(image));
-                if (result == null || result.getExitCode() != 0) {
-                    // Throw that result cannot be obtained because docker is not installed,
-                    return true;
-                }
+        CommandResult result = CommandExecutor.executeAndGetResults(commandProvider.getImageInspectCommand(image));
+        if (result == null || result.getExitCode() != 0) {
+            report.setReason(AbstractedErrorMessage.DOCKERFILE_CMD_UNCERTAINITY.formatReason(context.getServiceInfo().getServiceName()));
+            report.setRecommendedFix(IMAGE_NOT_FOUND_LOCALLY.format(image));
+            context.addReport(report);
+            return false;
+        }
 
-                return checkForDockerfileCMD(result.getCommandOutput());
+        return checkForDockerfileCMD(result.getCommandOutput());
+    }
+
+    private boolean checkForDockerfileCMD(String commandOutput) {
+        ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
+        try {
+            JsonNode node = mapper.readTree(commandOutput);
+            JsonNode cmdNode = null;
+            if (node.isArray()) {
+                cmdNode = node.get(0).get("Config").get("Cmd");
+            } else {
+                cmdNode = node.get("Config").get("Cmd");
             }
-
-            private boolean checkForDockerfileCMD(String commandOutput) {
-                ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
-                try {
-                    JsonNode node = mapper.readTree(commandOutput);
-                    JsonNode cmdNode = null;
-                    if (node.isArray()) {
-                        cmdNode = node.get(0).get("Config").get("Cmd");
-                    } else {
-                        cmdNode = node.get("Config").get("Cmd");
-                    }
-                    if (cmdNode == null) {
-                        return true;
-                    }
+            if (cmdNode == null) {
+                return true;
+            }
 
                     /* If CMD is an array and is not empty, then it means CMD is
                         present in the dockerfile.
                      */
-                    if (cmdNode.isArray()) {
-                        ArrayNode arrayNode = (ArrayNode) cmdNode;
-                        return arrayNode.isEmpty();
-                    } else {
-                        // CMD is not present in Dockerfile
-                        return true;
-                    }
-                } catch (IOException e) {
-                    logger.error("Error while processing image inspect results ", e);
-                    //TODO Stop the troubleshooting and inform user to do check this condition
-                    return false;
-                }
+            if (cmdNode.isArray()) {
+                ArrayNode arrayNode = (ArrayNode) cmdNode;
+                return arrayNode.isEmpty();
+            } else {
+                // CMD is not present in Dockerfile
+                return true;
             }
-        };
+        } catch (IOException e) {
+            logger.error("Error while processing image inspect results ", e);
+            //TODO Stop the troubleshooting and inform user to do check this condition
+            return false;
+        }
+    }
 
+    @Override
+    public Node<TroubleshootingContext> onSuccess() {
+        return dockerfileCMDMissingAction;
+    }
+
+    @Override
+    public Node<TroubleshootingContext> onFailure() {
+        return fixCrashingApplication;
+    }
+
+    @Override
+    public String describe() {
+        return "Is either of Dockerfile CMD or Args in kubernetes yaml defined ?";
     }
 
     private boolean checkForStartCommands(V1Pod pod) {
         if (pod == null) {
             return false;
         }
-        return StringUtils.isEmpty(pod.getSpec().getContainers().get(0).getArgs());
+        return StringUtils.isEmpty(pod.getSpec().getContainers().get(0).getArgs()) || StringUtils.isEmpty(pod.getSpec().getContainers().get(0).getCommand());
     }
 
     private String getImageFromPods(V1Pod pod) {
@@ -157,21 +177,5 @@ public class ContainerStartCommandCheck implements Node<TroubleshootingContext> 
             return null;
         }
         return pod.getSpec().getContainers().get(0).getImage();
-    }
-
-
-    @Override
-    public Node<TroubleshootingContext> next(TroubleshootingContext context) throws HyscaleException {
-        return test(context) ? dockerfileCMDMissingAction : fixCrashingApplication;
-    }
-
-    @Override
-    public String describe()  {
-        return "Is either of Dockerfile CMD or Args in kubernetes yaml defined ?";
-    }
-
-    @Override
-    public boolean test(TroubleshootingContext context) throws HyscaleException {
-        return this.containerStartCommandCheck.test(context);
     }
 }

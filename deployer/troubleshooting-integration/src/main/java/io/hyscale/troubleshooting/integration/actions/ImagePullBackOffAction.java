@@ -16,18 +16,16 @@
 package io.hyscale.troubleshooting.integration.actions;
 
 import io.hyscale.commons.config.SetupConfig;
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.troubleshooting.integration.models.Node;
-import io.hyscale.troubleshooting.integration.models.ActionMessage;
-import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
+import io.hyscale.troubleshooting.integration.models.*;
 
-public class ImagePullBackOffAction implements Node<TroubleshootingContext> {
+public class ImagePullBackOffAction extends ActionNode<TroubleshootingContext> {
 
     @Override
-    public Node<TroubleshootingContext> next(TroubleshootingContext context) throws HyscaleException {
-        WorkflowLogger.debug(ActionMessage.IMAGEPULL_BACKOFF_ACTION, SetupConfig.getMountOfDockerConf(SetupConfig.USER_HOME_DIR + "/.docker/config"));
-        return null;
+    public void process(TroubleshootingContext context) {
+        DiagnosisReport report = new DiagnosisReport();
+        report.setRecommendedFix(AbstractedErrorMessage.IMAGEPULL_BACKOFF_ACTION.getMessage());
+        report.setReason(AbstractedErrorMessage.IMAGEPULL_BACKOFF_ACTION.formatMessage(SetupConfig.getMountOfDockerConf(SetupConfig.USER_HOME_DIR + "/.docker/config")));
+        context.addReport(report);
     }
 
     @Override
@@ -35,8 +33,4 @@ public class ImagePullBackOffAction implements Node<TroubleshootingContext> {
         return "Please check your image name & tag & target registry credentials";
     }
 
-    @Override
-    public boolean test(TroubleshootingContext context) throws HyscaleException {
-        return false;
-    }
 }

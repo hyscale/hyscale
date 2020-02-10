@@ -16,6 +16,7 @@
 package io.hyscale.deployer.services.handler.impl;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.models.ResourceFieldSelectorKey;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
@@ -121,5 +122,22 @@ public class V1EventHandler implements ResourceLifeCycleHandler<V1Event> {
     @Override
     public boolean cleanUp() {
         return false;
+    }
+
+    public enum EventFieldKey implements ResourceFieldSelectorKey {
+        INVOLVED_OBJECT_NAME("involvedObject.name"),
+        INVOLVED_OBJECT_NAMESPACE("involvedObject.namespace"),
+        INVOLVED_OBJECT_UID("involvedObject.uid"),
+        ;
+
+        private String fieldName;
+
+        EventFieldKey(String fieldName) {
+            this.fieldName = fieldName;
+        }
+
+        public String getFieldName() {
+            return fieldName;
+        }
     }
 }

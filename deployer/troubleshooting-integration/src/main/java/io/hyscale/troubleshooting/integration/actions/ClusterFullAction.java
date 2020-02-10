@@ -17,18 +17,19 @@ package io.hyscale.troubleshooting.integration.actions;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.troubleshooting.integration.models.ActionMessage;
-import io.hyscale.troubleshooting.integration.models.Node;
-import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
+import io.hyscale.troubleshooting.integration.models.*;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ClusterFullAction implements Node<TroubleshootingContext> {
+public class ClusterFullAction extends ActionNode<TroubleshootingContext> {
 
     @Override
-    public Node<TroubleshootingContext> next(TroubleshootingContext context) throws HyscaleException {
-        WorkflowLogger.debug(ActionMessage.CLUSTER_FULL);
-        return null;
+    public void process(TroubleshootingContext context) {
+        DiagnosisReport report = new DiagnosisReport();
+        report.setReason(AbstractedErrorMessage.CLUSTER_FULL.getReason());
+        report.setRecommendedFix(AbstractedErrorMessage.CLUSTER_FULL.getMessage());
+        report.setLevel(DiagnosisReport.StatusLevel.ERROR);
+        context.addReport(report);
     }
 
     @Override
@@ -36,8 +37,4 @@ public class ClusterFullAction implements Node<TroubleshootingContext> {
         return "Cluster is full action";
     }
 
-    @Override
-    public boolean test(TroubleshootingContext context) throws HyscaleException {
-        return false;
-    }
 }

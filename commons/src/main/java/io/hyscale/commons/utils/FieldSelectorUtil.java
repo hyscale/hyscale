@@ -13,14 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.troubleshooting.integration.constants;
+package io.hyscale.commons.utils;
 
-public class TroubleshootConstants {
+import io.hyscale.commons.models.ResourceFieldSelectorKey;
 
-    public static final String PENDING_PHASE = "Pending";
+import java.util.Map;
+import java.util.stream.Collectors;
 
-    public static final String SERVICE_PODS = "ServicePods";
+public class FieldSelectorUtil {
 
-    public static final String FAILED_POD = "failedPod";
-
+    public static String getSelectorFromFieldMap(Map<ResourceFieldSelectorKey, String> fieldMap) {
+        if (fieldMap == null || fieldMap.isEmpty()) {
+            return null;
+        }
+        return fieldMap.entrySet().stream().map((entry) -> entry.getKey().getFieldName() + "=" + entry.getValue())
+                .collect(Collectors.joining(","));
+    }
 }

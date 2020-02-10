@@ -17,23 +17,28 @@ package io.hyscale.troubleshooting.integration.conditions;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.deployer.core.model.ResourceKind;
-import io.hyscale.troubleshooting.integration.models.Node;
+import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
+import io.hyscale.troubleshooting.integration.models.*;
 import io.hyscale.troubleshooting.integration.actions.ClusterFullAction;
-import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
-import io.hyscale.troubleshooting.integration.util.ConditionUtil;
 import io.kubernetes.client.models.V1Event;
+import io.kubernetes.client.models.V1Pod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+//TODO JAVADOC
+// Exception Handling
 @Component
-public class IsClusterFull implements Node<TroubleshootingContext> {
+public class IsClusterFull extends ConditionNode<TroubleshootingContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(IsClusterFull.class);
 
@@ -49,51 +54,52 @@ public class IsClusterFull implements Node<TroubleshootingContext> {
     private static final String FAILED_SCHEDULING = "FailedScheduling";
     private static final Pattern pattern = Pattern.compile(INSUFFICIENT_MEMORY_REGEX);
 
-    @PostConstruct
-    public void init() {
-        this.isClusterFull = new Predicate<TroubleshootingContext>() {
-            @Override
-            public boolean test(TroubleshootingContext context) {
-                if (context == null || context.getResourceData() == null) {
-                    logger.debug("Cannot troubleshoot without resource data and context");
-                    return false;
-                }
 
-                TroubleshootingContext.ResourceData resourceData = context.getResourceData().get(ResourceKind.POD.getKind());
-                //TODO proper error handling
-                if (ConditionUtil.isResourceInValid(resourceData)) {
-                    logger.error("Cannot proceed with incomplete resource data {}");
-                    return false;
-                }
+    @Override
+    public boolean decide(TroubleshootingContext context) throws HyscaleException {
+        List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos().get(ResourceKind.POD.getKind());
+        DiagnosisReport report = new DiagnosisReport();
+        if (resourceInfos == null || resourceInfos.isEmpty()) {
+            report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceInfo().getServiceName()));
+            report.setRecommendedFix(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.getMessage());
+            context.addReport(report);
+            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
+        }
 
-                List<V1Event> eventList = resourceData.getEvents();
-                if (eventList == null || eventList.isEmpty()) {
-                    //Lost events results may not be appropriate
-                    return false;
-                }
-                //logger.debug("Observed events for service {}");
-                return eventList.stream().anyMatch(each -> {
-                    V1Event event = each;
-                    //TODO Only on trace
-                    //logger.debug("Reason: {}, Message : {}", event.getReason(), event.getMessage());
-                    return FAILED_SCHEDULING.equals(event.getReason()) && pattern.matcher(event.getMessage()).matches();
-                });
-            }
-        };
+        Object obj = context.getAttribute(FailedResourceKey.FAILED_POD_EVENTS);
+        if (obj == null) {
+            logger.debug("Cannot find any failed pod for to {}", describe());
+            return false;
+        }
+
+        List<V1Event> eventList = (List<V1Event>) FailedResourceKey.FAILED_POD_EVENTS.getKlazz().cast(obj);
+
+        if (eventList == null || eventList.isEmpty()) {
+            report.setReason(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getReason());
+            report.setRecommendedFix(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getMessage());
+            context.addReport(report);
+            return false;
+        }
+
+        return eventList.stream().anyMatch(event -> {
+            return FAILED_SCHEDULING.equals(event.getReason()) && pattern.matcher(event.getMessage()).matches();
+        });
+    }
+
+
+    @Override
+    public Node<TroubleshootingContext> onSuccess() {
+        return clusterFullAction;
     }
 
     @Override
-    public Node<TroubleshootingContext> next(TroubleshootingContext context) throws HyscaleException {
-        return this.isClusterFull.test(context) ? clusterFullAction : pendingPVCCondition;
+    public Node<TroubleshootingContext> onFailure() {
+        return pendingPVCCondition;
     }
 
     @Override
-    public String describe()  {
+    public String describe() {
         return "Is Cluster Full ?";
     }
 
-    @Override
-    public boolean test(TroubleshootingContext context) throws HyscaleException {
-        return this.isClusterFull.test(context);
-    }
 }

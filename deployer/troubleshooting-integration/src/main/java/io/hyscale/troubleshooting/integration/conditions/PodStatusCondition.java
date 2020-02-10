@@ -19,19 +19,27 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.HyscaleContextUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.util.K8sPodUtil;
+import io.hyscale.troubleshooting.integration.actions.DefaultAction;
+import io.hyscale.troubleshooting.integration.actions.FixCrashingApplication;
+import io.hyscale.troubleshooting.integration.actions.ImagePullBackOffAction;
+import io.hyscale.troubleshooting.integration.actions.ServiceNotDeployedAction;
+import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
+import io.hyscale.troubleshooting.integration.models.FailedResourceKey;
 import io.hyscale.troubleshooting.integration.models.Node;
-import io.hyscale.troubleshooting.integration.models.PodStatus;
+import io.hyscale.deployer.services.model.PodStatus;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
+import io.hyscale.troubleshooting.integration.util.TroubleshootContextValidator;
 import io.kubernetes.client.models.V1Pod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
 
 /**
- * This is a condition to check whether a kubernetes pod
+ * {@link PodStatusCondition}  checks whether a kubernetes pod
  * has a status in @{@link PodStatus} . The condition is
  * checked based on the pod status from the {@link TroubleshootingContext}.
  * The status of all replicas is determined and aggregated when the first
@@ -44,49 +52,80 @@ public class PodStatusCondition implements Node<TroubleshootingContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(PodStatusCondition.class);
 
+    @Autowired
+    private ServiceNotDeployedAction serviceNotDeployedAction;
+
+    @Autowired
+    private DefaultAction defaultAction;
+
     @Override
     public Node<TroubleshootingContext> next(TroubleshootingContext context) throws HyscaleException {
-        if (context == null || context.getResourceData() == null) {
-            logger.debug("Cannot troubleshoot without resource data and context");
-            return null;
-        }
-        TroubleshootingContext.ResourceData resourceData = context.getResourceData().get(ResourceKind.POD.getKind());
-        //TODO proper exception handling
-        if (resourceData == null || resourceData.getResource() == null || resourceData.getResource().isEmpty()) {
-            logger.debug("Cannot troubleshoot without resource details");
-            return null;
+        DiagnosisReport report = new DiagnosisReport();
+        if (context.getResourceInfos() == null) {
+            return serviceNotDeployedAction;
         }
 
-        List<Object> podsList = resourceData.getResource();
-        if (podsList == null || podsList.isEmpty()) {
-            //TODO Log about result accuracy
-            return null;
+        List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos().getOrDefault(ResourceKind.POD.getKind(), null);
+        if (resourceInfos == null) {
+            // TODO redirect parent resource check
+            if (context.isTrace()) {
+                logger.debug("Cannot find any pods for the service {}", context.getServiceInfo().getServiceName());
+            }
+            return defaultAction;
         }
         PodStatus effectivePodStatus = PodStatus.DEFAULT;
-        for (Object each : podsList) {
-            if (each instanceof V1Pod) {
-                V1Pod v1Pod = (V1Pod) each;
+        for (TroubleshootingContext.ResourceInfo each : resourceInfos) {
+            if (each == null || each.getResource() == null) {
+                continue;
+            }
+            if (each.getResource() instanceof V1Pod) {
+                V1Pod v1Pod = (V1Pod) each.getResource();
                 String aggregatedStatus = K8sPodUtil.getAggregatedStatusOfContainersForPod(v1Pod);
                 if (StringUtils.isEmpty(aggregatedStatus)) {
                     continue;
                 }
                 effectivePodStatus = PodStatus.get(aggregatedStatus);
-                if (!effectivePodStatus.isFailed()) {
-                    continue;
+                /*
+                   First encountered  Pod that is failed
+                 */
+                if (effectivePodStatus.isFailed()) {
+                    if (context.isTrace()) {
+                        logger.debug("Observed failed pod {} and status {}", v1Pod.getMetadata().getName(), effectivePodStatus.getStatus());
+                    }
+                    context.addAttribute(FailedResourceKey.FAILED_POD, v1Pod);
+                    context.addAttribute(FailedResourceKey.FAILED_POD_EVENTS, each.getEvents());
+                    break;
                 }
-                return HyscaleContextUtil.getSpringBean(effectivePodStatus.getNextNode());
             }
         }
-        return null;
+        return HyscaleContextUtil.getSpringBean(getNextNode(effectivePodStatus));
     }
 
     @Override
     public String describe() {
-        return "Checks for pod status condition";
+        return "Checks for pod status and continue the workflow based on the status";
     }
 
-    @Override
-    public boolean test(TroubleshootingContext context) throws HyscaleException {
-        return false;
+    public Class<? extends Node> getNextNode(PodStatus podStatus) {
+        Class<? extends Node> defaultActionClass = DefaultAction.class;
+        if (podStatus == null) {
+            return defaultActionClass;
+        }
+        switch (podStatus) {
+            case IMAGEPULL_BACKOFF:
+            case ERR_IMAGE_PULL:
+                return ImagePullBackOffAction.class;
+            case CRASHLOOP_BACKOFF:
+                return ContainerStartCommandCheck.class;
+            case RUNNING:
+                return ArePodsReady.class;
+            case OOMKILLED:
+                return FixCrashingApplication.class;
+            case PENDING:
+                return IsClusterFull.class;
+            case DEFAULT:
+                return defaultActionClass;
+        }
+        return defaultActionClass;
     }
 }

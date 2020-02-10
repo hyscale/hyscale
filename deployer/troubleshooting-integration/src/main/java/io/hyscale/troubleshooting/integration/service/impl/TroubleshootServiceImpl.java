@@ -17,11 +17,10 @@ package io.hyscale.troubleshooting.integration.service.impl;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.K8sAuthorisation;
-import io.hyscale.troubleshooting.integration.builder.TroubleshootingContextBuilder;
+import io.hyscale.troubleshooting.integration.builder.TroubleshootingContextCollector;
 import io.hyscale.troubleshooting.integration.conditions.PodStatusCondition;
 import io.hyscale.troubleshooting.integration.models.Node;
 import io.hyscale.troubleshooting.integration.models.ServiceInfo;
-import io.hyscale.troubleshooting.integration.models.ServiceStatus;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
 import io.hyscale.troubleshooting.integration.service.TroubleshootService;
 import org.slf4j.Logger;
@@ -35,14 +34,13 @@ public class TroubleshootServiceImpl implements TroubleshootService {
     private static final Logger logger = LoggerFactory.getLogger(TroubleshootServiceImpl.class);
 
     @Autowired
-    private TroubleshootingContextBuilder contextBuilder;
+    private TroubleshootingContextCollector contextBuilder;
 
     @Autowired
     private PodStatusCondition podStatusCondition;
 
     @Override
-    public ServiceStatus troubleshoot(ServiceInfo serviceInfo, K8sAuthorisation k8sAuthorisation, String namespace) throws HyscaleException {
-        ServiceStatus serviceStatus = new ServiceStatus();
+    public void troubleshoot(ServiceInfo serviceInfo, K8sAuthorisation k8sAuthorisation, String namespace) throws HyscaleException {
         try {
             TroubleshootingContext troubleshootingContext = contextBuilder.build(serviceInfo, k8sAuthorisation, namespace);
             executeTroubleshootFlow(troubleshootingContext);
@@ -52,14 +50,13 @@ public class TroubleshootServiceImpl implements TroubleshootService {
         } finally {
 
         }
-        return serviceStatus;
     }
 
     private void executeTroubleshootFlow(TroubleshootingContext troubleshootingContext) throws HyscaleException {
         Node current = podStatusCondition;
         try {
             do {
-                if (troubleshootingContext.isDebug()) {
+                if (troubleshootingContext.isTrace()) {
                     logger.debug("Executing troubleshooting node {}", current.describe());
                 }
                 current = current.next(troubleshootingContext);

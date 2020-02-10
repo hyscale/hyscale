@@ -17,10 +17,10 @@ package io.hyscale.troubleshooting.integration.util;
 
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
 
+import java.util.List;
+
 public class ConditionUtil {
 
-    public static boolean isResourceInValid(TroubleshootingContext.ResourceData resourceData) {
-        return resourceData == null || resourceData.getResource() == null || resourceData.getResource().isEmpty();
-    }
+
 
 }

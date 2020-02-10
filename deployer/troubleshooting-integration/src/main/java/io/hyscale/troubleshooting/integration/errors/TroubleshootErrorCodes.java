@@ -20,7 +20,9 @@ import io.hyscale.commons.exception.HyscaleErrorCode;
 public enum TroubleshootErrorCodes implements HyscaleErrorCode {
 
     ERROR_WHILE_BUILDING_RESOURCES("Error while building resources for troubleshooting service {}"),
-    INVALID_ACTION("Action is not applicable for this resource");
+    INVALID_ACTION("Action is not applicable for this resource"),
+    SERVICE_IS_NOT_DEPLOYED("Service {} is not deployed in the cluster "),
+    CANNOT_DETERMINE_CAUSE_OF_THE_ERROR("Cannot determine the cause of the problem");
 
     private String message;
 
