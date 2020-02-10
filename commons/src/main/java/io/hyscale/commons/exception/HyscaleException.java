@@ -15,10 +15,13 @@
  */
 package io.hyscale.commons.exception;
 
+import io.hyscale.commons.constants.ToolConstants;
+
 public class HyscaleException extends Exception {
 
     private HyscaleErrorCode hyscaleErrorCode;
     private String[] args;
+    private Integer code = ToolConstants.HYSCALE_ERROR_CODE;
 
     public HyscaleException(HyscaleErrorCode hyscaleErrorCode, String... args) {
         super(hyscaleErrorCode.getErrorMessage());
@@ -39,6 +42,17 @@ public class HyscaleException extends Exception {
     public HyscaleException(Throwable throwable, HyscaleErrorCode hyscaleErrorCode, String... args) {
         super(hyscaleErrorCode.getErrorMessage(), throwable);
         this.hyscaleErrorCode = hyscaleErrorCode;
+        this.args = args;
+    }
+
+    public HyscaleException(HyscaleErrorCode hyscaleErrorCode, Integer code) {
+        this.hyscaleErrorCode = hyscaleErrorCode;
+        this.code = code;
+    }
+
+    public HyscaleException(HyscaleErrorCode hyscaleErrorCode, Integer code, String... args) {
+        this.hyscaleErrorCode = hyscaleErrorCode;
+        this.code = code;
         this.args = args;
     }
 
@@ -66,5 +80,9 @@ public class HyscaleException extends Exception {
     @Override
     public String getMessage() {
         return toString();
+    }
+
+    public int getCode() {
+        return code;
     }
 }
