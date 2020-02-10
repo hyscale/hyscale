@@ -56,8 +56,8 @@ public class ServiceSpecConverter extends Converter {
         String serviceFileName = FilenameUtils.getBaseName(serviceSpecFile.getPath());
         String serviceName =  serviceFileName.split("\\.")[0];
         if(!serviceName.equals(ServiceSpecUtil.getServiceName(serviceSpecFile))){
-            logger.warn(ServiceSpecActivity.SERVICE_NAME_MISMATCH.getActivityMessage(), serviceSpecFile.getName());
-            WorkflowLogger.warn(ServiceSpecActivity.SERVICE_NAME_MISMATCH,serviceSpecFile.getName());
+            logger.warn(ServiceSpecActivity.SERVICE_NAME_MISMATCH.getActivityMessage(), serviceName);
+            WorkflowLogger.warn(ServiceSpecActivity.SERVICE_NAME_MISMATCH,serviceName);
             return false;
         }
         return true;

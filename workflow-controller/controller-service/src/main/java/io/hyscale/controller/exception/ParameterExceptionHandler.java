@@ -44,7 +44,7 @@ public class ParameterExceptionHandler implements CommandLine.IParameterExceptio
         }
         if (ex.getCause() instanceof HyscaleException) {
             logger.error(ex.getMessage());
-            return ToolConstants.HYSCALE_ERROR_CODE;
+            return ((HyscaleException) ex.getCause()).getCode();
         }
         CommandLine commandLine = ex.getCommandLine();
         PrintWriter writer = commandLine.getErr();
