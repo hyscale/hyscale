@@ -290,7 +290,7 @@ public class K8sPodUtil {
 	 * @return pod owner kind if all pods have same owner, else null
 	 */
 	
-	public static String getPodsOwner(List<V1Pod> podList) {
+	public static String getCommonPodsOwner(List<V1Pod> podList) {
 	    if (podList == null || podList.isEmpty()) {
 	        return null;
 	    }
@@ -329,7 +329,7 @@ public class K8sPodUtil {
      * @param filter predicate used for filtering
      * @return filtered pods
      */
-    public static List<V1Pod> getFilteredPods(List<V1Pod> podList, Predicate filter){
+    public static List<V1Pod> filterPods(List<V1Pod> podList, Predicate filter){
         if (podList == null || podList.isEmpty() || filter == null) {
             return podList;
         }
@@ -345,7 +345,7 @@ public class K8sPodUtil {
      * @param filterValue - value used for filtering
      * @return
      */
-    public static List<V1Pod> getFilteredPods(List<V1Pod> podList, BiPredicate filter, Object filterValue){
+    public static List<V1Pod> filterPods(List<V1Pod> podList, BiPredicate filter, Object filterValue){
         if (podList == null || podList.isEmpty() || filter == null || filterValue == null) {
             return podList;
         }

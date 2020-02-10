@@ -42,6 +42,10 @@ public class PodPredicates {
 		return pod -> K8sPodUtil.checkForPodCreation(pod);
 	}
 	
+	/**
+	 * Pods are ambiguous if pods have different owner kinds, or same owner with different uid
+	 * @return {@link Predicate} which checks for ambiguity condition
+	 */
 	public static Predicate<List<V1Pod>> isPodAmbiguous() {
 	     return podList -> K8sPodUtil.checkForPodAmbiguity(podList);
 	}
