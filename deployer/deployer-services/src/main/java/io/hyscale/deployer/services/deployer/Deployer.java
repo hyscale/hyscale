@@ -25,7 +25,6 @@ import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ReplicaInfo;
-import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.model.Pod;
 import io.hyscale.deployer.services.model.ResourceStatus;
 import io.hyscale.deployer.services.model.ServiceAddress;
@@ -95,16 +94,8 @@ public interface Deployer {
 
 	/**
 	 * Get replicas info based on pods
-	 * <p>
-	 * isFilter if disabled return replica info for all pods fetched based on selector
-	 * if enabled,
-	 * 1. If owner kind for pods is different, warn user and return replica info for all pods
-	 * 2. If owner kind is {@link ResourceKind #DEPLOYMENT} or {@link ResourceKind #REPLICA_SET},
-	 *     Get Revision from deployment, get replicas set with this revision,
-	 *     filter pods based on pod-template-hash from replica set
-	 *     return replica info for filtered pods
-	 * 3. Else return replica info for all pods
-	 * </p>
+	 * isFilter restricts which pods for which replica info is required
+	 * 
 	 * @param authConfig
 	 * @param appName
 	 * @param serviceName
@@ -154,6 +145,6 @@ public interface Deployer {
 	default ResourceStatus status(String namespace, Manifest manifest, AuthConfig authConfig) throws Exception {
 		return ResourceStatus.STABLE;
 	}
-
+	
 	List<Pod> getPods(String namespace, String appName, String serviceName, K8sAuthorisation k8sAuthorisation) throws Exception;
 }

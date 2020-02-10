@@ -434,7 +434,21 @@ public class KubernetesDeployer implements Deployer {
         } catch (InterruptedException e) {
         }
     }
-
+    
+    /**
+     * Get Replica info for pods
+     * Implementation:
+     * <p>
+     * isFilter if disabled return replica info for all pods fetched based on selector
+     * if enabled,
+     * 1. If owner kind for pods is different, warn user and return replica info for all pods
+     * 2. If owner kind is {@link ResourceKind #DEPLOYMENT} or {@link ResourceKind #REPLICA_SET},
+     *     Get Revision from deployment, get replicas set with this revision,
+     *     filter pods based on pod-template-hash from replica set
+     *     return replica info for filtered pods
+     * 3. Else return replica info for all pods
+     * </p>
+     */
     @Override
     public List<ReplicaInfo> getReplicas(AuthConfig authConfig, String appName, String serviceName, String namespace, 
             boolean isFilter) throws HyscaleException {
@@ -454,7 +468,7 @@ public class KubernetesDeployer implements Deployer {
         if (!PodPredicates.isPodAmbiguous().test(podList)) {
             return K8sReplicaUtil.getReplicaInfo(podList);
         }
-        String podOwner = K8sPodUtil.getPodsOwner(podList);
+        String podOwner = K8sPodUtil.getCommonPodsOwner(podList);
         ResourceKind podOwnerKind = ResourceKind.fromString(podOwner);
         
         // Unknown parent
@@ -467,7 +481,7 @@ public class KubernetesDeployer implements Deployer {
         // Deployment
         if (ResourceKind.REPLICA_SET.equals(podOwnerKind) || ResourceKind.DEPLOYMENT.equals(podOwnerKind)) {
             // Get deployment, get revision, get RS with the revision, get all labels and filter pods
-            return K8sReplicaUtil.getReplicaInfo(getDeploymentFilteredPods(apiClient, appName, serviceName, namespace, podList));
+            return K8sReplicaUtil.getReplicaInfo(filterPodsByDeployment(apiClient, appName, serviceName, namespace, podList));
         }
         
         // TODO do we need to handle STS cases ??
@@ -475,7 +489,21 @@ public class KubernetesDeployer implements Deployer {
         return K8sReplicaUtil.getReplicaInfo(podList);
     }
     
-    private List<V1Pod> getDeploymentFilteredPods(ApiClient apiClient, String appName, String serviceName, String namespace, List<V1Pod> podList){
+    /**
+     * Get {@link V1Deployment} from cluster based on namespace, appname and service name.
+     * Deployment provides the revision for corresponding replica set
+     * Get {@link V1ReplicaSet} from cluster based on namespace, appname, service name and revision.
+     * Replica set provides pod-template-hash label(cluster internal) for corresponding pods
+     * From the provided pods return the ones which contains pod-template-hash in label 
+     * 
+     * @param apiClient
+     * @param appName
+     * @param serviceName
+     * @param namespace
+     * @param podList
+     * @return pods from pod list which refer to deployment for the app and service in namespace
+     */
+    public List<V1Pod> filterPodsByDeployment(ApiClient apiClient, String appName, String serviceName, String namespace, List<V1Pod> podList){
         String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
         V1DeploymentHandler v1DeploymentHandler = (V1DeploymentHandler) ResourceHandlers.getHandlerOf(ResourceKind.DEPLOYMENT.getKind());
         List<V1Deployment> deploymentList = null;
@@ -516,7 +544,7 @@ public class KubernetesDeployer implements Deployer {
         Map<String, String> searchLabel =  new HashMap<String, String>();
         searchLabel.put(K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH, podTemplateHash);
         
-        return K8sPodUtil.getFilteredPods(podList, PodPredicates.podContainsLabel(), searchLabel);
+        return K8sPodUtil.filterPods(podList, PodPredicates.podContainsLabel(), searchLabel);
         
     }
 }

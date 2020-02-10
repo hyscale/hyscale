@@ -34,7 +34,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.TableFields;
 import io.hyscale.commons.logger.TableFormatter;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.DeploymentContext;
+import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.utils.HyscaleInputReader;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
@@ -74,28 +74,21 @@ public class LoggerUtility {
     /**
      * Deployment logs 
      * @param context
-     * @throws HyscaleException 
+     * @throws HyscaleException
      */
     public void deploymentLogs(WorkflowContext context) throws HyscaleException {
-
         String appName = context.getAppName();
         String serviceName = context.getServiceName();
         String namespace = context.getNamespace();
-
-        Boolean tail = (Boolean) context.getAttribute(WorkflowConstants.TAIL_LOGS);
-        tail = (tail == null) ? false : tail;
+        
+        Boolean isTail = (Boolean) context.getAttribute(WorkflowConstants.TAIL_LOGS);
+        isTail = (isTail == null) ? false : isTail;
         Integer lines = (Integer) context.getAttribute(WorkflowConstants.LINES);
-        DeploymentContext deploymentContext = new DeploymentContext();
-        deploymentContext.setAuthConfig(authConfigBuilder.getAuthConfig());
-        deploymentContext.setNamespace(namespace);
-        deploymentContext.setAppName(appName);
-        deploymentContext.setServiceName(serviceName);
-        deploymentContext.setTailLogs(tail);
-        deploymentContext.setReadLines(lines);
+        AuthConfig authConfig = authConfigBuilder.getAuthConfig();
 
         String selectedPod = null;
         try {
-            selectedPod = getSelectedPod(deploymentContext);
+            selectedPod = getSelectedPod(authConfig, appName, serviceName, namespace);
         } catch (HyscaleException ex) {
             // fail
             context.setFailed(true);
@@ -113,7 +106,7 @@ public class LoggerUtility {
         }
         try {
             WorkflowLogger.header(ControllerActivity.SERVICE_LOGS);
-            deployerLogUtil.processLogs(deploymentContext, selectedPod);
+            deployerLogUtil.processLogs(authConfig, appName, serviceName, selectedPod, namespace, lines, isTail);
         } catch (HyscaleException ex) {
             logger.error("Error while getting deployment logs for service: {}, in namespace: {}", serviceName,
                     namespace, ex);
@@ -131,13 +124,17 @@ public class LoggerUtility {
 
     /**
      * 
-     * @param context
-     * @return pod name selected by user
-     * @throws HyscaleException 
+     * @param authConfig
+     * @param appName
+     * @param serviceName
+     * @param namespace
+     * @return pod name selected by user based on index or name
+     * @throws HyscaleException
      */
-    private String getSelectedPod(DeploymentContext context) throws HyscaleException {
-        List<ReplicaInfo> replicasInfo = deployer.getReplicas(context.getAuthConfig(), context.getAppName(), 
-                context.getServiceName(), context.getNamespace(), true);
+    private String getSelectedPod(AuthConfig authConfig, String appName, String serviceName, 
+            String namespace) throws HyscaleException {
+        List<ReplicaInfo> replicasInfo = deployer.getReplicas(authConfig, appName, 
+                serviceName, namespace, true);
         if (replicasInfo == null || replicasInfo.isEmpty()) {
             return null;
         }

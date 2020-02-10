@@ -17,6 +17,7 @@ package io.hyscale.deployer.services.handler.impl;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,8 +129,13 @@ public class V1ReplicaSetHandler implements ResourceLifeCycleHandler<V1ReplicaSe
             String revision) throws HyscaleException {
         List<V1ReplicaSet> replicaSetList = getBySelector(apiClient, selector, label, namespace);
 
-        if (replicaSetList == null) {
+        if (replicaSetList == null || replicaSetList.isEmpty()) {
             return null;
+        }
+        
+        if (StringUtils.isBlank(revision)) {
+            logger.debug("Replcias set revision not provided returning first element");
+            return replicaSetList.get(0);
         }
         
         for (V1ReplicaSet replicaSet : replicaSetList) {
