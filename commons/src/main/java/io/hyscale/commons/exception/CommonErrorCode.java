@@ -37,13 +37,12 @@ public enum CommonErrorCode implements HyscaleErrorCode {
     OUTPUTSTREAM_NOT_FOUND("Cannot find output stream and so cannot write to stream"),
     STRATEGIC_MERGE_KEY_NOT_FOUND("Merge key not found while merging {}"),
     YAML_TO_JSON_CONVERSION_FAILURE("Error occured while converting given yaml to json.{}"),
-    NULL_SCHEMA_NODE("Cannot be process null schema node"),
-    STRING_TO_JSON_NODE_CONVERSION_FAILURE("Unable to convert string to json node."),
-    FILE_TO_JSON_NODE_CONVERSION_FAILURE("Unable to convert file to json node."),
+    EMPTY_REFERENCE_SCHEMA_FOUND("Cannot be process empty schema"),
     SCHEMA_PROCESSING_ERROR("Unable process schema path,missing node"),
     EMPTY_FILE_FOUND("Empty file:{} cannot be processed."),
     INVALID_FILE_INPUT("Given input {} is not a file.Expecting file input."),
     UNABLE_READ_SCHEMA("Cannot process empty schema {}"),
+    ERROR_OCCURED_WHILE_SCHEMA_VALIDATION("Schema validation failed due to \"{}\""),
     INVALID_JSON_FORMAT("Json format is invalid");
 
     private String message;

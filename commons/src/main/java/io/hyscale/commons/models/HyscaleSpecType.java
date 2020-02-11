@@ -17,7 +17,7 @@ package io.hyscale.commons.models;
 
 public enum HyscaleSpecType {
     SERVICE("service name"),
-    ENVIRONMENT("environment name");
+    PROFILE("profile name");
     private String resourceName;
 
     HyscaleSpecType(String resourceName) {

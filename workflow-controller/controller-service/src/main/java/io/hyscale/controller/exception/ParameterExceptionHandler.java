@@ -17,8 +17,6 @@ package io.hyscale.controller.exception;
 
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.controller.activity.ControllerActivity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

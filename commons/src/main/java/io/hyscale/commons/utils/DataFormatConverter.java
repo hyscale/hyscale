@@ -63,6 +63,9 @@ public class DataFormatConverter {
      */
     public static String yamlToJson(File file) throws HyscaleException{
         try {
+            if(file==null){
+               return null;
+            }
             String data = FileUtils.readFileToString(file,ToolConstants.CHARACTER_ENCODING);
             return yamlToJson(data);
         } catch (IOException e) {

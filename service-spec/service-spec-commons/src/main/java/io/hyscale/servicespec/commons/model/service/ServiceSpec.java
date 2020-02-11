@@ -52,7 +52,6 @@ public final class ServiceSpec implements HyscaleSpec {
             this.root = mapper.readTree(serviceSpec);
         } catch (IOException e) {
             LOGGER.error(e.getMessage());
-            WorkflowLogger.error(ServiceSpecActivity.ERROR, e.getMessage());
             throw new HyscaleException(e,ServiceSpecErrorCodes.SERVICE_SPEC_PARSE_ERROR);
         }
     }

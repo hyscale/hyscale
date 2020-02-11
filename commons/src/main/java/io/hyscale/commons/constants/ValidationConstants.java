@@ -21,11 +21,11 @@ public class ValidationConstants {
 
     public static final String SERVICE_NAME_REGEX = "[a-z]([-a-z0-9]*[a-z0-9])?";
     
-    public static final String SERVICE_SPEC_NAME_REGEX = "(.*)" + SERVICE_NAME_REGEX + "(\\.hspec\\.yaml)$";
+    public static final String SERVICE_SPEC_NAME_REGEX = "^" + SERVICE_NAME_REGEX + "(\\.hspec)$";
     
     public static final String PROFILE_NAME_REGEX = "([-a-zA-Z0-9]){2,30}";
     
-    public static final String PROFILE_FILENAME_REGEX = "(.*)" + PROFILE_NAME_REGEX + ToolConstants.DASH + SERVICE_NAME_REGEX + "(\\.hprof\\.yaml)$";
+    public static final String PROFILE_FILENAME_REGEX = "^" + PROFILE_NAME_REGEX + ToolConstants.DASH + SERVICE_NAME_REGEX + "(\\.hprof)$";
 
     public static final String NAMESPACE_REGEX = "([a-z0-9-]){2,30}";
     

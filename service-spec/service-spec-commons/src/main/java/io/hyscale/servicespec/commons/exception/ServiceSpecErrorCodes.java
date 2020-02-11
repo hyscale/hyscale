@@ -31,8 +31,8 @@ public enum ServiceSpecErrorCodes implements HyscaleErrorCode {
     ERROR_WHILE_FETCH_SERVICE_SPEC_FIELD("Failed to fetch service spec field {}"),
     INVALID_FILE_EXTENSION("Invalid file extension:{} given."),
     INVALID_FORMAT("Invalid format {}."),
-    MISSING_FIELD_IN_PROFILE_FILE("Cannot find field {},in the specified profile file."),
-    MISSING_FIELD_IN_SERVICE_FILE("Cannot find field {},in the specified service file."),
+    MISSING_FIELD_IN_PROFILE_FILE("Cannot find {} in the hprof file."),
+    MISSING_FIELD_IN_SERVICE_FILE("Cannot find {} in the hspec file."),
     INPUT_DATA_MISMATCH("Service or env name in the file name did not match with names specified in the input file.");
 
 

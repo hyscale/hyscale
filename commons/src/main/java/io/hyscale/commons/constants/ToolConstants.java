@@ -61,7 +61,7 @@ public class ToolConstants {
     
     public static final Integer HYSCALE_ERROR_CODE = 11;
 
-    public static final Integer INVALID_SPEC_ERROR_CODE = 22;
+    public static final Integer SCHEMA_VALIDATION_FAILURE_ERROR_CODE = 22;
 
     public static final Integer INVALID_INPUT_ERROR_CODE = 2;
 

@@ -21,7 +21,6 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.HyscaleSpecType;
 import io.hyscale.controller.util.ServiceSpecUtil;
 import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,16 +47,16 @@ public class ServiceSpecConverter extends Converter {
 
     @Override
     public ServiceSpecActivity getWarnMessage() {
-        return ServiceSpecActivity.INVALID_SERVICE_SPEC_NAME_MSG;
+        return ServiceSpecActivity.IMPROPER_SERVICE_FILE_NAME;
     }
 
     @Override
     public boolean validateData(File serviceSpecFile) throws HyscaleException{
-        String serviceFileName = FilenameUtils.getBaseName(serviceSpecFile.getPath());
+        String serviceFileName = serviceSpecFile.getName();
         String serviceName =  serviceFileName.split("\\.")[0];
         if(!serviceName.equals(ServiceSpecUtil.getServiceName(serviceSpecFile))){
-            logger.warn(ServiceSpecActivity.SERVICE_NAME_MISMATCH.getActivityMessage(), serviceName);
-            WorkflowLogger.warn(ServiceSpecActivity.SERVICE_NAME_MISMATCH,serviceName);
+            logger.warn(ServiceSpecActivity.SERVICE_NAME_MISMATCH.getActivityMessage());
+            WorkflowLogger.warn(ServiceSpecActivity.SERVICE_NAME_MISMATCH);
             return false;
         }
         return true;
