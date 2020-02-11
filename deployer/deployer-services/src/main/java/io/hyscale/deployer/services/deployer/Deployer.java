@@ -100,7 +100,7 @@ public interface Deployer {
 	 * @param appName
 	 * @param serviceName
 	 * @param namespace
-	 * @param isFilter
+	 * @param isFilter TODO Enable predicate based filter
 	 * @return List of {@link ReplicaInfo} based on pods fetched
 	 * @throws HyscaleException
 	 */

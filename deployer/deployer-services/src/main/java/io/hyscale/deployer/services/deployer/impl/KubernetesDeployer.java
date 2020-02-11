@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.commons.constants.K8SRuntimeConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.ActivityContext;
 import io.hyscale.commons.logger.WorkflowLogger;
@@ -49,23 +48,20 @@ import io.hyscale.deployer.services.deployer.Deployer;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
-import io.hyscale.deployer.services.handler.impl.V1DeploymentHandler;
 import io.hyscale.deployer.services.handler.impl.V1PersistentVolumeClaimHandler;
 import io.hyscale.deployer.services.handler.impl.V1PodHandler;
-import io.hyscale.deployer.services.handler.impl.V1ReplicaSetHandler;
 import io.hyscale.deployer.services.handler.impl.V1ServiceHandler;
 import io.hyscale.deployer.services.predicates.PodPredicates;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.hyscale.deployer.services.util.DeploymentStatusUtil;
+import io.hyscale.deployer.services.util.K8sDeployerUtil;
 import io.hyscale.deployer.services.util.K8sPodUtil;
 import io.hyscale.deployer.services.util.K8sReplicaUtil;
 import io.hyscale.deployer.services.util.K8sResourceDispatcher;
 import io.hyscale.deployer.services.util.KubernetesResourceUtil;
 import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.models.V1Deployment;
 import io.kubernetes.client.models.V1PersistentVolumeClaim;
 import io.kubernetes.client.models.V1Pod;
-import io.kubernetes.client.models.V1ReplicaSet;
 import io.kubernetes.client.models.V1Volume;
 import io.kubernetes.client.models.V1VolumeMount;
 
@@ -468,7 +464,7 @@ public class KubernetesDeployer implements Deployer {
         if (!PodPredicates.isPodAmbiguous().test(podList)) {
             return K8sReplicaUtil.getReplicaInfo(podList);
         }
-        String podOwner = K8sPodUtil.getCommonPodsOwner(podList);
+        String podOwner = K8sPodUtil.getPodsUniqueOwner(podList);
         ResourceKind podOwnerKind = ResourceKind.fromString(podOwner);
         
         // Unknown parent
@@ -481,7 +477,7 @@ public class KubernetesDeployer implements Deployer {
         // Deployment
         if (ResourceKind.REPLICA_SET.equals(podOwnerKind) || ResourceKind.DEPLOYMENT.equals(podOwnerKind)) {
             // Get deployment, get revision, get RS with the revision, get all labels and filter pods
-            return K8sReplicaUtil.getReplicaInfo(filterPodsByDeployment(apiClient, appName, serviceName, namespace, podList));
+            return K8sReplicaUtil.getReplicaInfo(K8sDeployerUtil.filterPodsByDeployment(apiClient, appName, serviceName, namespace, podList));
         }
         
         // TODO do we need to handle STS cases ??
@@ -489,62 +485,4 @@ public class KubernetesDeployer implements Deployer {
         return K8sReplicaUtil.getReplicaInfo(podList);
     }
     
-    /**
-     * Get {@link V1Deployment} from cluster based on namespace, appname and service name.
-     * Deployment provides the revision for corresponding replica set
-     * Get {@link V1ReplicaSet} from cluster based on namespace, appname, service name and revision.
-     * Replica set provides pod-template-hash label(cluster internal) for corresponding pods
-     * From the provided pods return the ones which contains pod-template-hash in label 
-     * 
-     * @param apiClient
-     * @param appName
-     * @param serviceName
-     * @param namespace
-     * @param podList
-     * @return pods from pod list which refer to deployment for the app and service in namespace
-     */
-    public List<V1Pod> filterPodsByDeployment(ApiClient apiClient, String appName, String serviceName, String namespace, List<V1Pod> podList){
-        String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
-        V1DeploymentHandler v1DeploymentHandler = (V1DeploymentHandler) ResourceHandlers.getHandlerOf(ResourceKind.DEPLOYMENT.getKind());
-        List<V1Deployment> deploymentList = null;
-        try {
-            deploymentList = v1DeploymentHandler.getBySelector(apiClient, selector, true, namespace);
-        } catch (HyscaleException e) {
-            logger.error("Error fetching deployment for pod filtering, ignoring", e);
-            return podList;
-        }
-        if (deploymentList == null || deploymentList.isEmpty()) {
-            logger.debug("No deployment found for filtering pods, returning empty list");
-            return new ArrayList<V1Pod>();
-        }
-        
-        String revision = v1DeploymentHandler.getDeploymentRevision(deploymentList.get(0));
-        
-        if (StringUtils.isBlank(revision)) {
-            return podList;
-        }
-        V1ReplicaSetHandler v1ReplicaSetHandler = (V1ReplicaSetHandler) ResourceHandlers.getHandlerOf(ResourceKind.REPLICA_SET.getKind());
-        
-        V1ReplicaSet replicaSet = null;
-        
-        try {
-            replicaSet = v1ReplicaSetHandler.getReplicaSetByRevision(apiClient, namespace, selector, true, revision);
-        } catch (HyscaleException e) {
-            logger.error("Error fetching replica set with revision {} for pod filtering, ignoring", revision, e);
-            return podList;
-        }
-        if (replicaSet == null) {
-            logger.debug("No Replica set found with revision: {} for filtering pods, returning empty list", revision);
-            return new ArrayList<V1Pod>();
-        }
-        
-        Map<String, String> replicaLabels = replicaSet.getMetadata().getLabels();
-        String podTemplateHash = replicaLabels != null ? replicaLabels.get(K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH) : null ;
-        
-        Map<String, String> searchLabel =  new HashMap<String, String>();
-        searchLabel.put(K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH, podTemplateHash);
-        
-        return K8sPodUtil.filterPods(podList, PodPredicates.podContainsLabel(), searchLabel);
-        
-    }
 }

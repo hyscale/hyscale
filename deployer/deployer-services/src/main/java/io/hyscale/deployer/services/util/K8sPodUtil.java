@@ -18,7 +18,6 @@ package io.hyscale.deployer.services.util;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -290,7 +289,7 @@ public class K8sPodUtil {
 	 * @return pod owner kind if all pods have same owner, else null
 	 */
 	
-	public static String getCommonPodsOwner(List<V1Pod> podList) {
+	public static String getPodsUniqueOwner(List<V1Pod> podList) {
 	    if (podList == null || podList.isEmpty()) {
 	        return null;
 	    }
@@ -355,14 +354,17 @@ public class K8sPodUtil {
     }
     
     /**
-     * Check if pods contains passed labels
+     * Check if pods contains passed labels(key as well as value)
      * @param pod
      * @param labels
      * @return true if pod contains passed labels, else false
      */
     public static boolean checkPodLabels(V1Pod pod, Map<String, String> labels) {
-        if (pod == null || labels == null || labels.isEmpty()) {
+        if (pod == null) {
             return false;
+        }
+        if (labels == null || labels.isEmpty()) {
+            return true;
         }
         Map<String, String> podLabels = pod.getMetadata().getLabels();
         
@@ -370,23 +372,7 @@ public class K8sPodUtil {
             return false;
         }
         
-        for (Entry<String, String> labelEntry : labels.entrySet()) {
-            String value = labelEntry.getValue();
-            String key = labelEntry.getKey();
-            if (!podLabels.containsKey(key)) {
-                return false;
-            }
-            String podValue = podLabels.get(key);
-            if (value == null) {
-                if (podValue != null) {
-                    return false;
-                }
-            }
-            if (!value.equals(podValue)) {
-                return false;
-            }
-        }
-        return true;
+        return podLabels.entrySet().containsAll(labels.entrySet());
     }
     
     /**
