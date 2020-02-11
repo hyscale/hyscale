@@ -121,7 +121,7 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
             SetupConfig.setAbsolutePath(serviceSpecFile.getAbsoluteFile().getParent());
 
             workflowContext.setAppName(appName.trim());
-            workflowContext.setEnvName(CommandUtil.getEnvName(ServiceProfileUtil.getProfileName(profile), appName.trim()));
+            workflowContext.setEnvName(CommandUtil.getEnvName(ServiceProfileUtil.getProfileName(profile)));
             try {
                 manifestGeneratorComponentInvoker.execute(workflowContext);
             } catch (HyscaleException e) {

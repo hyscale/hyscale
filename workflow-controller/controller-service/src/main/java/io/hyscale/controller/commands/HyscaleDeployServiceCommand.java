@@ -153,7 +153,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
             SetupConfig.setAbsolutePath(serviceSpecFile.getAbsoluteFile().getParent());
             workflowContext.setAppName(appName.trim());
             workflowContext.setNamespace(namespace.trim());
-            workflowContext.setEnvName(CommandUtil.getEnvName(ServiceProfileUtil.getProfileName(profile), appName.trim()));
+            workflowContext.setEnvName(CommandUtil.getEnvName(ServiceProfileUtil.getProfileName(profile)));
             workflowContext.addAttribute(WorkflowConstants.VERBOSE, verbose);
 
             // clean up service dir before dockerfileGen

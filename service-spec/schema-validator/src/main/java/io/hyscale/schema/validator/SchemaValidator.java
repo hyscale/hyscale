@@ -76,7 +76,7 @@ public class SchemaValidator {
         StringBuilder schemaPathBuilder = new StringBuilder();
         if(type == HyscaleSpecType.SERVICE){
          schemaPathBuilder.append("/hspec/").append(buildProperties.get(ToolConstants.HSPEC_VERSION)).append("/service-spec.json");
-        }else if (type == HyscaleSpecType.ENVIRONMENT){
+        }else if (type == HyscaleSpecType.PROFILE){
             schemaPathBuilder.append("/hprof/").append(buildProperties.get(ToolConstants.HSPEC_VERSION)).append("/profile-spec.json");
         }
         return schemaPathBuilder.toString();
@@ -84,14 +84,15 @@ public class SchemaValidator {
 
     private String getSchema(HyscaleSpecType type) throws HyscaleException{
         String schemaPath = getSchemaPath(type);
-        InputStream is = SchemaValidator.class.getClassLoader().getResourceAsStream(schemaPath);
-        if(is==null){
-            throw new HyscaleException(CommonErrorCode.FAILED_TO_READ_FILE,schemaPath);
-        }
-        try {
+        try (InputStream is = SchemaValidator.class.getClassLoader().getResourceAsStream(schemaPath)) {
+            if (is == null) {
+                HyscaleException ex = new HyscaleException(CommonErrorCode.FAILED_TO_READ_FILE, schemaPath);
+                LOGGER.error(ex.getMessage());
+                throw ex;
+            }
             return new String(is.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            HyscaleException ex = new HyscaleException(CommonErrorCode.UNABLE_READ_SCHEMA,schemaPath);
+            HyscaleException ex = new HyscaleException(e, CommonErrorCode.ERROR_OCCURED_WHILE_SCHEMA_VALIDATION, e.getMessage());
             LOGGER.error(ex.getMessage());
             throw ex;
         }

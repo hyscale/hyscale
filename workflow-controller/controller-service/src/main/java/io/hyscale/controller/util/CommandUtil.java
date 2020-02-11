@@ -42,10 +42,9 @@ public class CommandUtil {
 	/**
 	 * Get environment name for labels in resources
 	 * @param profile in format .../<profile-name>-<service-name>.hprof.yaml
-	 * @param appName
 	 * @return environment name
 	 */
-	public static String getEnvName(String profile, String appName) throws HyscaleException {
+	public static String getEnvName(String profile) throws HyscaleException {
 		if (StringUtils.isNotBlank(profile)) {
 			return profile;
 		}

@@ -22,7 +22,6 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.HyscaleSpecType;
 import io.hyscale.controller.util.ServiceProfileUtil;
 import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +29,7 @@ import org.springframework.boot.info.BuildProperties;
 
 import java.io.File;
 
-/*
+/**
 Provides parameters and funtions such as profile reference schema,Regex for profile file naming,
 data validation and respective error messages  for profile file validation.
  */
@@ -48,30 +47,29 @@ public class ProfileConverter extends Converter {
 
     @Override
     public HyscaleSpecType getReferenceSchemaType() {
-        return HyscaleSpecType.ENVIRONMENT;
+        return HyscaleSpecType.PROFILE;
     }
 
     @Override
     public ServiceSpecActivity getWarnMessage() {
-        return ServiceSpecActivity.INVALID_PROFILE_FILE_NAME_MSG;
+        return ServiceSpecActivity.IMPROPER_PROFILE_FILE_NAME;
     }
 
     @Override
     public boolean validateData(File profileFile) throws HyscaleException {
-        String profileFileName = FilenameUtils.getBaseName(profileFile.getName()).split("\\.")[0];
+        String profileFileName = profileFile.getName().split("\\.")[0];
         int dashIndex = profileFileName.indexOf(ToolConstants.DASH);
         if (dashIndex < 0) {
             WorkflowLogger.warn(ServiceSpecActivity.PROFILE_NAME_MISMATCH, profileFile.getName());
             logger.warn(ServiceSpecActivity.PROFILE_NAME_MISMATCH.getActivityMessage(), profileFileName);
             return false;
-        } else {
-            StringBuilder profileNameBuilder = new StringBuilder();
-            profileNameBuilder.append(ServiceProfileUtil.getProfileName(profileFile)).append(ToolConstants.DASH).append(ServiceProfileUtil.getServiceNameFromProfile(profileFile));
-            if (!profileFileName.equals(profileNameBuilder.toString())) {
-                logger.warn(ServiceSpecActivity.PROFILE_NAME_MISMATCH.getActivityMessage(), profileFile.getName());
-                WorkflowLogger.warn(ServiceSpecActivity.PROFILE_NAME_MISMATCH, profileFile.getName());
-                return false;
-            }
+        }
+        StringBuilder profileNameBuilder = new StringBuilder();
+        profileNameBuilder.append(ServiceProfileUtil.getProfileName(profileFile)).append(ToolConstants.DASH).append(ServiceProfileUtil.getServiceNameFromProfile(profileFile));
+        if (!profileFileName.equals(profileNameBuilder.toString())) {
+            logger.warn(ServiceSpecActivity.PROFILE_NAME_MISMATCH.getActivityMessage(), profileFile.getName());
+            WorkflowLogger.warn(ServiceSpecActivity.PROFILE_NAME_MISMATCH, profileFile.getName());
+            return false;
         }
         return true;
     }

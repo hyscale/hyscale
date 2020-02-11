@@ -84,6 +84,7 @@ public class EffectiveServiceSpecBuilder {
         return strategicMergeJson;
     }
 
+    //TODO   integrating service spec and profile schema validation
     private void validate(String serviceSpec, String profile) throws HyscaleException {
         if (StringUtils.isBlank(serviceSpec)) {
             throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_REQUIRED);

@@ -85,8 +85,6 @@ public class HyscaleSpecFields {
 	public static final String propsVolumePath = "propsVolumePath";
 	public static final String secretsVolumePath = "secretsVolumePath";
 	public static final String storageClass = "storageClass";
-	public static final String service = "service";
-
 
 	//Replicas
 	public static final String min="min";

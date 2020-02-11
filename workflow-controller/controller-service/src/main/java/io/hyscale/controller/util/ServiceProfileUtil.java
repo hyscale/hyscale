@@ -62,7 +62,7 @@ public class ServiceProfileUtil {
 
     /**
      * Gets service name from profile file.
-     * 1.returns service name if present with the key @HyscaleSpecFields#overrides.
+     * 1.returns service name if present with the key {@link HyscaleSpecFields#overrides}.
      * 2.else returns null when file is null or throws relative HyscaleException.
      *
      * @param profileFile

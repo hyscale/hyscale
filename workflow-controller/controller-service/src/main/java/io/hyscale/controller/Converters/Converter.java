@@ -18,7 +18,6 @@ package io.hyscale.controller.Converters;
 import com.github.fge.jsonschema.core.report.ProcessingMessage;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
 import io.hyscale.commons.constants.ToolConstants;
-import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
@@ -45,10 +44,10 @@ import java.util.List;
  */
 public abstract class Converter implements CommandLine.ITypeConverter<List<File>> {
 
+    private static final Logger logger = LoggerFactory.getLogger(Converter.class);
+
     @Autowired
     private SchemaValidator schemaValidator;
-
-    private static final Logger logger = LoggerFactory.getLogger(Converter.class);
 
     public abstract String getFilePattern();
 
@@ -79,21 +78,21 @@ public abstract class Converter implements CommandLine.ITypeConverter<List<File>
 
         if (StringUtils.isBlank(inputFilePath)) {
             WorkflowLogger.error(ControllerActivity.EMPTY_FILE_PATH);
-            throw new HyscaleException(CommonErrorCode.EMPTY_FILE_PATH, ToolConstants.INVALID_SPEC_ERROR_CODE);
+            throw new HyscaleException(CommonErrorCode.EMPTY_FILE_PATH, ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE);
         }
 
         File specfile = new File(inputFilePath);
         if (!specfile.exists()) {
             WorkflowLogger.error(ControllerActivity.CANNOT_FIND_FILE, inputFilePath);
-            throw new HyscaleException(CommonErrorCode.FILE_NOT_FOUND,ToolConstants.INVALID_SPEC_ERROR_CODE,inputFilePath);
+            throw new HyscaleException(CommonErrorCode.FILE_NOT_FOUND,ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE,inputFilePath);
         }
         if (specfile.isDirectory()) {
             WorkflowLogger.error(ControllerActivity.DIRECTORY_INPUT_FOUND, inputFilePath);
-            throw new HyscaleException(CommonErrorCode.FOUND_DIRECTORY_INSTEAD_OF_FILE,ToolConstants.INVALID_SPEC_ERROR_CODE,inputFilePath);
+            throw new HyscaleException(CommonErrorCode.FOUND_DIRECTORY_INSTEAD_OF_FILE,ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE,inputFilePath);
         }
         if (!specfile.isFile()) {
             WorkflowLogger.error(ControllerActivity.INVALID_FILE_INPUT, inputFilePath);
-            throw new HyscaleException(CommonErrorCode.INVALID_FILE_INPUT,ToolConstants.INVALID_SPEC_ERROR_CODE);
+            throw new HyscaleException(CommonErrorCode.INVALID_FILE_INPUT,ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE);
         }
         String fileName = specfile.getName();
         if (!fileName.matches(getFilePattern())) {
@@ -102,20 +101,20 @@ public abstract class Converter implements CommandLine.ITypeConverter<List<File>
         }
         if (specfile.length() == 0) {
             WorkflowLogger.error(ControllerActivity.EMPTY_FILE_FOUND, inputFilePath);
-            throw new HyscaleException(CommonErrorCode.EMPTY_FILE_FOUND,ToolConstants.INVALID_SPEC_ERROR_CODE, inputFilePath);
+            throw new HyscaleException(CommonErrorCode.EMPTY_FILE_FOUND,ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE, inputFilePath);
         }
         try {
             processingReport = schemaValidator.validateSpec(DataFormatConverter.yamlToJson(specfile), getReferenceSchemaType());
         } catch (HyscaleException e) {
             WorkflowLogger.error(ServiceSpecActivity.ERROR, e.getMessage());
-            throw new HyscaleException(e.getHyscaleErrorCode(),ToolConstants.INVALID_SPEC_ERROR_CODE);
+            throw new HyscaleException(e.getHyscaleErrorCode(),ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE);
         }
         if (processingReport.isSuccess()) {
             try {
                 validateData(specfile);
             }catch (HyscaleException e) {
                 WorkflowLogger.error(ServiceSpecActivity.ERROR, e.getMessage());
-                throw new HyscaleException(e.getHyscaleErrorCode(),ToolConstants.INVALID_SPEC_ERROR_CODE);
+                throw new HyscaleException(e.getHyscaleErrorCode(),ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE);
             }
             inputFiles.add(specfile);
             return inputFiles;
@@ -128,7 +127,7 @@ public abstract class Converter implements CommandLine.ITypeConverter<List<File>
         }
         WorkflowLogger.error(ServiceSpecActivity.ERROR, messageBuilder.toString());
         logger.error(messageBuilder.toString());
-        throw new HyscaleException(ServiceSpecErrorCodes.INVALID_FORMAT, ToolConstants.INVALID_SPEC_ERROR_CODE, messageBuilder.toString());
+        throw new HyscaleException(ServiceSpecErrorCodes.INVALID_FORMAT, ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE, messageBuilder.toString());
     }
 }
 

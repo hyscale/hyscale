@@ -52,29 +52,8 @@ public class JsonSchemaValidator {
             return validate(inputSpecJsonNode,schemaNode);
         }catch (IOException e) {
             LOGGER.error(e.getMessage());
-            HyscaleException ex = new HyscaleException(e,CommonErrorCode.STRING_TO_JSON_NODE_CONVERSION_FAILURE);
+            HyscaleException ex = new HyscaleException(e,CommonErrorCode.ERROR_OCCURED_WHILE_SCHEMA_VALIDATION,e.getMessage());
             throw ex;
-        }
-    }
-
-    /**
-     * Validates whether the given input json node satisfies schema.
-     *
-     * @param inputSpecNode JsonNode input
-     * @param referenceSchema JsonNode input
-     * @return ProcessingReport
-     * @throws HyscaleException
-     */
-    public static ProcessingReport validate(JsonNode inputSpecNode,JsonNode referenceSchema) throws HyscaleException{
-        if(referenceSchema == null){
-            throw new HyscaleException(CommonErrorCode.NULL_SCHEMA_NODE);
-        }
-        try {
-            JsonSchema schema = factory.getJsonSchema(referenceSchema);
-            return schema.validate(inputSpecNode);
-        }catch (ProcessingException p){
-            LOGGER.error(p.getMessage());
-            throw new HyscaleException(p,CommonErrorCode.SCHEMA_PROCESSING_ERROR);
         }
     }
 
@@ -93,8 +72,31 @@ public class JsonSchemaValidator {
             return validate(inputSpecJsonNode,schemaNode);
         } catch (IOException e) {
             LOGGER.error(e.getMessage());
-            HyscaleException ex = new HyscaleException(e,CommonErrorCode.FILE_TO_JSON_NODE_CONVERSION_FAILURE,e.getMessage());
+            HyscaleException ex = new HyscaleException(e,CommonErrorCode.ERROR_OCCURED_WHILE_SCHEMA_VALIDATION,e.getMessage());
             throw ex;
         }
     }
+
+    /**
+     * Validates whether the given input json node satisfies schema.
+     *
+     * @param inputSpecNode JsonNode input
+     * @param referenceSchema JsonNode input
+     * @return ProcessingReport
+     * @throws HyscaleException
+     */
+    public static ProcessingReport validate(JsonNode inputSpecNode,JsonNode referenceSchema) throws HyscaleException{
+        if(referenceSchema==null || referenceSchema.isNull()){
+            LOGGER.error(CommonErrorCode.EMPTY_REFERENCE_SCHEMA_FOUND.getErrorMessage());
+            throw new HyscaleException(CommonErrorCode.EMPTY_REFERENCE_SCHEMA_FOUND);
+        }
+        try {
+            JsonSchema schema = factory.getJsonSchema(referenceSchema);
+            return schema.validate(inputSpecNode);
+        }catch (ProcessingException p){
+            LOGGER.error(p.getMessage());
+            throw new HyscaleException(p,CommonErrorCode.SCHEMA_PROCESSING_ERROR);
+        }
+    }
+
 }
