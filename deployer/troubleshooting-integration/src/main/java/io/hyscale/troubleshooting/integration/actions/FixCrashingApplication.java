@@ -17,7 +17,11 @@ package io.hyscale.troubleshooting.integration.actions;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.deployer.services.model.PodStatus;
+import io.hyscale.deployer.services.model.PodStatusUtil;
 import io.hyscale.troubleshooting.integration.models.*;
+import io.kubernetes.client.models.V1Event;
+import io.kubernetes.client.models.V1Pod;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -25,9 +29,30 @@ public class FixCrashingApplication extends ActionNode<TroubleshootingContext> {
 
     @Override
     public void process(TroubleshootingContext context) {
+        Object obj = context.getAttribute(FailedResourceKey.FAILED_POD);
+        String lastState = null;
+        if (obj != null) {
+            V1Pod pod = (V1Pod) FailedResourceKey.FAILED_POD.getKlazz().cast(obj);
+            lastState = pod != null ? PodStatusUtil.lastStateOf(pod) : null;
+        }
+
         DiagnosisReport report = new DiagnosisReport();
-        report.setReason(AbstractedErrorMessage.APPLICATION_CRASH.getReason());
-        report.setRecommendedFix(AbstractedErrorMessage.APPLICATION_CRASH.getMessage());
+        if (lastState != null) {
+            if (lastState.equals(PodStatus.OOMKILLED.getStatus())) {
+                report.setReason(AbstractedErrorMessage.NOT_ENOUGH_MEMORY_FOUND.formatReason(context.getServiceInfo().getServiceName()));
+                report.setRecommendedFix(AbstractedErrorMessage.NOT_ENOUGH_MEMORY_FOUND.formatMessage(context.getServiceInfo().getServiceName()));
+            } else if (lastState.equals(PodStatus.COMPLETED.getStatus())) {
+                report.setReason(AbstractedErrorMessage.INVALID_STARTCOMMANDS_FOUND.formatReason(context.getServiceInfo().getServiceName(),
+                        context.getServiceInfo().getServiceName()));
+                report.setRecommendedFix(AbstractedErrorMessage.INVALID_STARTCOMMANDS_FOUND.getMessage());
+            } else {
+                report.setReason(AbstractedErrorMessage.APPLICATION_CRASH.getReason());
+                report.setRecommendedFix(AbstractedErrorMessage.APPLICATION_CRASH.getMessage());
+            }
+        } else {
+            report.setReason(AbstractedErrorMessage.APPLICATION_CRASH.getReason());
+            report.setRecommendedFix(AbstractedErrorMessage.APPLICATION_CRASH.getMessage());
+        }
         context.addReport(report);
     }
 

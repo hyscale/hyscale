@@ -19,6 +19,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.model.PodStatus;
 import io.hyscale.deployer.services.util.K8sPodUtil;
+import io.hyscale.troubleshooting.integration.actions.FixCrashingApplication;
 import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
 import io.hyscale.troubleshooting.integration.models.*;
 import io.hyscale.troubleshooting.integration.actions.FixHealthCheckAction;
@@ -47,7 +48,7 @@ public class IsPodsReadinessFailing extends ConditionNode<TroubleshootingContext
     private FixHealthCheckAction fixHealthCheckAction;
 
     @Autowired
-    private MultipleContainerRestartsCondition multipleContainerRestartsCondition;
+    private FixCrashingApplication fixCrashingApplication;
 
     @Override
     public boolean decide(TroubleshootingContext context) throws HyscaleException {
@@ -93,7 +94,11 @@ public class IsPodsReadinessFailing extends ConditionNode<TroubleshootingContext
         }
         return v1Events.stream().
                 anyMatch(each -> {
-                    return UNHEALTHY_REASON.equals(each.getReason());
+                    if (UNHEALTHY_REASON.equals(each.getReason())) {
+                        context.addAttribute(FailedResourceKey.UNHEALTHY_POD_EVENT, each);
+                        return true;
+                    }
+                    return false;
                 });
     }
 
@@ -104,7 +109,7 @@ public class IsPodsReadinessFailing extends ConditionNode<TroubleshootingContext
 
     @Override
     public Node<TroubleshootingContext> onFailure() {
-        return multipleContainerRestartsCondition;
+        return fixCrashingApplication;
     }
 
     @Override

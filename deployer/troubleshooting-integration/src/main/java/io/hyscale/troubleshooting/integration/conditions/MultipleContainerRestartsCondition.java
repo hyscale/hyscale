@@ -77,7 +77,14 @@ public class MultipleContainerRestartsCondition extends ConditionNode<Troublesho
             if (each instanceof V1Pod) {
                 V1Pod pod = (V1Pod) each;
                 return pod.getStatus().getContainerStatuses().stream().anyMatch(containerStatus -> {
-                    return containerStatus.getRestartCount() > 0;
+                    if (containerStatus.getRestartCount() > 0) {
+                        // Passing the failed pod to the next nodes when it is not set in the context
+                        if (obj == null) {
+                            context.addAttribute(FailedResourceKey.FAILED_POD, pod);
+                        }
+                        return true;
+                    }
+                    return false;
                 });
             }
             return false;

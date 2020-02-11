@@ -26,6 +26,7 @@ import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.handler.impl.V1EventHandler;
 import io.hyscale.deployer.services.handler.impl.V1StorageClassHandler;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
+import io.hyscale.deployer.services.util.KubernetesResourceUtil;
 import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
 import io.hyscale.troubleshooting.integration.models.ServiceInfo;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
@@ -38,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -62,7 +64,9 @@ public class TroubleshootingContextCollector {
             context.setTrace(true);
             long start = System.currentTimeMillis();
             context.setResourceInfos(getResources(serviceInfo, apiClient, namespace));
-            System.out.println(TimeUnit.SECONDS.convert(System.currentTimeMillis() - start, TimeUnit.MILLISECONDS));
+            if (context.isTrace()) {
+                logger.debug("Time taken to build the context for service  {} is {}", serviceInfo.getServiceName(), System.currentTimeMillis() - start);
+            }
         } catch (HyscaleException e) {
             logger.error("Error while preparing context to troubleshoot the service {}", serviceInfo.getServiceName());
             throw e;
@@ -93,11 +97,11 @@ public class TroubleshootingContextCollector {
                 List<TroubleshootingContext.ResourceInfo> resourceInfoList = new ArrayList<>();
                 resourceList.stream().forEach(eachResource -> {
                     TroubleshootingContext.ResourceInfo resourceInfo = new TroubleshootingContext.ResourceInfo();
-                    V1ObjectMeta v1ObjectMeta = (V1ObjectMeta) eachResource;
-                    resourceInfo.setResource(eachResource);
                     try {
+                        V1ObjectMeta v1ObjectMeta = KubernetesResourceUtil.getObjectMeta(eachResource);
+                        resourceInfo.setResource(eachResource);
                         resourceInfo.setEvents(eventHandler.getBySelector(apiClient, getFieldSelector(v1ObjectMeta.getName(), namespace), false, namespace));
-                    } catch (HyscaleException e) {
+                    } catch (HyscaleException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                         logger.debug("Error while fetching resource {} logs in namespace {}", eachResource.getClass(), namespace);
                     }
                     resourceInfoList.add(resourceInfo);
@@ -109,6 +113,7 @@ public class TroubleshootingContextCollector {
             }
         });
 
+        // Adding storage class to the context
         V1StorageClassHandler storageClassHandler = (V1StorageClassHandler) ResourceHandlers.getHandlerOf(ResourceKind.STORAGE_CLASS.getKind());
         List<V1StorageClass> storageClasses = storageClassHandler.getAll(apiClient);
         if (storageClasses != null && !storageClasses.isEmpty()) {
@@ -122,7 +127,6 @@ public class TroubleshootingContextCollector {
                 resourceMap.put(ResourceKind.STORAGE_CLASS.getKind(), storageClassResourceInfoList);
             }
         }
-
 
         return resourceMap;
     }

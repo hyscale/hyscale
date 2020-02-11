@@ -11,6 +11,10 @@
 
     <artifactId>deployer</artifactId>
     <packaging>pom</packaging>
+    <properties>
+          <main.basedir>../</main.basedir>
+        </properties>
+
     <modules>
         <module>deployer-core</module>
         <module>deployer-services</module>

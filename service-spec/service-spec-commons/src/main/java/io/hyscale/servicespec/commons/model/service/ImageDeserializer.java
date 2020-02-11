@@ -58,7 +58,7 @@ public class ImageDeserializer extends JsonDeserializer {
         }
         JsonNode registryNode = imageNode.get(path);
         if(registryNode != null) {
-            return registryNode.textValue();
+            return registryNode.asText();
         }
         return null;
     }

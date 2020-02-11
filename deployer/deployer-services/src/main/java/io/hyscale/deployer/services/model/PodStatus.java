@@ -27,6 +27,8 @@ public enum PodStatus {
     ERR_IMAGE_PULL("ErrImagePull", true),
     OOMKILLED("OOMKilled", true),
     RUN_CONTAINER_ERROR("RunContainerErr", true),
+    ERROR("Error", true),
+    COMPLETED("Completed", true),
     RUNNING("Running", false),
     DEFAULT("default", true);
 

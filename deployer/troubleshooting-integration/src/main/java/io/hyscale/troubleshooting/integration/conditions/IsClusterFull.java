@@ -21,19 +21,14 @@ import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
 import io.hyscale.troubleshooting.integration.models.*;
 import io.hyscale.troubleshooting.integration.actions.ClusterFullAction;
 import io.kubernetes.client.models.V1Event;
-import io.kubernetes.client.models.V1Pod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 //TODO JAVADOC
 // Exception Handling
@@ -50,7 +45,7 @@ public class IsClusterFull extends ConditionNode<TroubleshootingContext> {
     @Autowired
     private AnyPendingPVCCondition pendingPVCCondition;
 
-    private static final String INSUFFICIENT_MEMORY_REGEX = "\\d\\/\\d nodes are available: \\d+ Insufficient memory";
+    private static final String INSUFFICIENT_MEMORY_REGEX = "\\d\\/\\d nodes are available: \\d+ Insufficient memory.";
     private static final String FAILED_SCHEDULING = "FailedScheduling";
     private static final Pattern pattern = Pattern.compile(INSUFFICIENT_MEMORY_REGEX);
 

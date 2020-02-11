@@ -19,6 +19,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.troubleshooting.integration.builder.TroubleshootingContextCollector;
 import io.hyscale.troubleshooting.integration.conditions.PodStatusCondition;
+import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
 import io.hyscale.troubleshooting.integration.models.Node;
 import io.hyscale.troubleshooting.integration.models.ServiceInfo;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
@@ -27,6 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class TroubleshootServiceImpl implements TroubleshootService {
@@ -40,15 +43,14 @@ public class TroubleshootServiceImpl implements TroubleshootService {
     private PodStatusCondition podStatusCondition;
 
     @Override
-    public void troubleshoot(ServiceInfo serviceInfo, K8sAuthorisation k8sAuthorisation, String namespace) throws HyscaleException {
+    public List<DiagnosisReport> troubleshoot(ServiceInfo serviceInfo, K8sAuthorisation k8sAuthorisation, String namespace) throws HyscaleException {
         try {
             TroubleshootingContext troubleshootingContext = contextBuilder.build(serviceInfo, k8sAuthorisation, namespace);
             executeTroubleshootFlow(troubleshootingContext);
+            return troubleshootingContext.getDiagnosisReports();
         } catch (HyscaleException e) {
             logger.error("Error while troubleshooting service {}", serviceInfo.getServiceName(), e);
             throw e;
-        } finally {
-
         }
     }
 

@@ -58,7 +58,7 @@ public class ContainerStartCommandCheck extends ConditionNode<TroubleshootingCon
     private DockerfileCMDMissingAction dockerfileCMDMissingAction;
 
     @Autowired
-    private FixCrashingApplication fixCrashingApplication;
+    private MultipleContainerRestartsCondition multipleContainerRestartsCondition;
 
 
     @Override
@@ -109,9 +109,9 @@ public class ContainerStartCommandCheck extends ConditionNode<TroubleshootingCon
 
 
         CommandResult result = CommandExecutor.executeAndGetResults(commandProvider.getImageInspectCommand(image));
-        if (result == null || result.getExitCode() != 0) {
+        if (result == null || StringUtils.isEmpty(result.getCommandOutput()) || result.getExitCode() != 0) {
             report.setReason(AbstractedErrorMessage.DOCKERFILE_CMD_UNCERTAINITY.formatReason(context.getServiceInfo().getServiceName()));
-            report.setRecommendedFix(IMAGE_NOT_FOUND_LOCALLY.format(image));
+            report.setRecommendedFix(String.format(IMAGE_NOT_FOUND_LOCALLY, image));
             context.addReport(report);
             return false;
         }
@@ -120,6 +120,9 @@ public class ContainerStartCommandCheck extends ConditionNode<TroubleshootingCon
     }
 
     private boolean checkForDockerfileCMD(String commandOutput) {
+        if (StringUtils.isEmpty(commandOutput)) {
+            return true;
+        }
         ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
         try {
             JsonNode node = mapper.readTree(commandOutput);
@@ -157,7 +160,7 @@ public class ContainerStartCommandCheck extends ConditionNode<TroubleshootingCon
 
     @Override
     public Node<TroubleshootingContext> onFailure() {
-        return fixCrashingApplication;
+        return multipleContainerRestartsCondition;
     }
 
     @Override
@@ -169,7 +172,7 @@ public class ContainerStartCommandCheck extends ConditionNode<TroubleshootingCon
         if (pod == null) {
             return false;
         }
-        return StringUtils.isEmpty(pod.getSpec().getContainers().get(0).getArgs()) || StringUtils.isEmpty(pod.getSpec().getContainers().get(0).getCommand());
+        return !StringUtils.isEmpty(pod.getSpec().getContainers().get(0).getArgs()) || !StringUtils.isEmpty(pod.getSpec().getContainers().get(0).getCommand());
     }
 
     private String getImageFromPods(V1Pod pod) {

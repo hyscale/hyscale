@@ -18,6 +18,7 @@ package io.hyscale.troubleshooting.integration.conditions;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.HyscaleContextUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
+import io.hyscale.deployer.services.model.PodStatusUtil;
 import io.hyscale.deployer.services.util.K8sPodUtil;
 import io.hyscale.troubleshooting.integration.actions.DefaultAction;
 import io.hyscale.troubleshooting.integration.actions.FixCrashingApplication;
@@ -80,7 +81,11 @@ public class PodStatusCondition implements Node<TroubleshootingContext> {
             }
             if (each.getResource() instanceof V1Pod) {
                 V1Pod v1Pod = (V1Pod) each.getResource();
-                String aggregatedStatus = K8sPodUtil.getAggregatedStatusOfContainersForPod(v1Pod);
+                String aggregatedStatus = PodStatusUtil.currentStatusOf(v1Pod);
+                if (context.isTrace()) {
+                    logger.debug("Aggregated status of pod {} of service {}", v1Pod.getMetadata().getName(),
+                            context.getServiceInfo().getServiceName());
+                }
                 if (StringUtils.isEmpty(aggregatedStatus)) {
                     continue;
                 }
@@ -123,6 +128,10 @@ public class PodStatusCondition implements Node<TroubleshootingContext> {
                 return FixCrashingApplication.class;
             case PENDING:
                 return IsClusterFull.class;
+            case ERROR:
+                return ArePodsReady.class;
+            case COMPLETED:
+                return FixCrashingApplication.class;
             case DEFAULT:
                 return defaultActionClass;
         }

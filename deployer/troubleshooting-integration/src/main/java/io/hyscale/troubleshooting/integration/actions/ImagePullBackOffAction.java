@@ -17,20 +17,68 @@ package io.hyscale.troubleshooting.integration.actions;
 
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.troubleshooting.integration.models.*;
+import io.kubernetes.client.models.V1Event;
+import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+@Component
 public class ImagePullBackOffAction extends ActionNode<TroubleshootingContext> {
+
+    private static final String FAILED = "Failed";
+    private static final String IMAGE_NOT_FOUND = "manifest for .* not found";
+    private static final String INVALID_CREDENTIALS = ".* unauthorized: incorrect username or password";
+    private static final Pattern imageNotFoundPattern = Pattern.compile(IMAGE_NOT_FOUND);
+    private static final Pattern invalidCredentialsPattern = Pattern.compile(INVALID_CREDENTIALS);
 
     @Override
     public void process(TroubleshootingContext context) {
-        DiagnosisReport report = new DiagnosisReport();
-        report.setRecommendedFix(AbstractedErrorMessage.IMAGEPULL_BACKOFF_ACTION.getMessage());
-        report.setReason(AbstractedErrorMessage.IMAGEPULL_BACKOFF_ACTION.formatMessage(SetupConfig.getMountOfDockerConf(SetupConfig.USER_HOME_DIR + "/.docker/config")));
-        context.addReport(report);
+
+        Object obj = context.getAttribute(FailedResourceKey.FAILED_POD_EVENTS);
+        if (obj != null) {
+            List<V1Event> eventList = (List<V1Event>) FailedResourceKey.FAILED_POD_EVENTS.getKlazz().cast(obj);
+            if (eventList != null && !eventList.isEmpty()) {
+                boolean actedOn = false;
+                for (V1Event event : eventList) {
+                    if (!FAILED.equals(event.getReason())) {
+                        continue;
+                    }
+                    DiagnosisReport report = new DiagnosisReport();
+                    if (imageNotFoundPattern.matcher(event.getMessage()).matches()) {
+                        report.setReason(AbstractedErrorMessage.FIX_IMAGE_NAME.formatReason(context.getServiceInfo().getServiceName()));
+                        report.setRecommendedFix(AbstractedErrorMessage.FIX_IMAGE_NAME.formatMessage(context.getServiceInfo().getServiceName()));
+                        context.addReport(report);
+                        actedOn = true;
+                        break;
+                    } else if (invalidCredentialsPattern.matcher(event.getMessage()).matches()) {
+                        report.setReason(AbstractedErrorMessage.INVALID_PULL_REGISTRY_CREDENTIALS.formatReason(SetupConfig.getMountOfDockerConf(SetupConfig.USER_HOME_DIR + "/.docker/config")));
+                        report.setRecommendedFix(AbstractedErrorMessage.INVALID_PULL_REGISTRY_CREDENTIALS.getMessage());
+                        context.addReport(report);
+                        actedOn = true;
+                        break;
+                    }
+                }
+                if (!actedOn) {
+                    context.addReport(getDefaultReport());
+                }
+            }
+        } else {
+            context.addReport(getDefaultReport());
+        }
     }
 
     @Override
     public String describe() {
         return "Please check your image name & tag & target registry credentials";
+    }
+
+    private DiagnosisReport getDefaultReport() {
+        DiagnosisReport report = new DiagnosisReport();
+        report.setRecommendedFix(AbstractedErrorMessage.IMAGEPULL_BACKOFF_ACTION.getMessage());
+        report.setReason(AbstractedErrorMessage.IMAGEPULL_BACKOFF_ACTION.formatReason(SetupConfig.getMountOfDockerConf(SetupConfig.USER_HOME_DIR + "/.docker/config")));
+        return report;
     }
 
 }

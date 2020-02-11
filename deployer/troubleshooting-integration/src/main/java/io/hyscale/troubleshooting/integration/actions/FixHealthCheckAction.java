@@ -18,6 +18,7 @@ package io.hyscale.troubleshooting.integration.actions;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.troubleshooting.integration.models.*;
+import io.kubernetes.client.models.V1Event;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -25,8 +26,16 @@ public class FixHealthCheckAction extends ActionNode<TroubleshootingContext> {
 
     @Override
     public void process(TroubleshootingContext context) {
+
+        Object obj = context.getAttribute(FailedResourceKey.UNHEALTHY_POD_EVENT);
+        String eventMessage = null;
+        if (obj != null) {
+            V1Event event = (V1Event) FailedResourceKey.UNHEALTHY_POD_EVENT.getKlazz().cast(obj);
+            eventMessage = event != null ? event.getMessage() : null;
+        }
+
         DiagnosisReport report = new DiagnosisReport();
-        report.setReason(AbstractedErrorMessage.LIVENESS_PROBE_FAILURE.getReason());
+        report.setReason(AbstractedErrorMessage.LIVENESS_PROBE_FAILURE.formatReason(context.getServiceInfo().getServiceName(),eventMessage));
         report.setRecommendedFix(AbstractedErrorMessage.LIVENESS_PROBE_FAILURE.getMessage());
         context.addReport(report);
     }

@@ -11,6 +11,9 @@
 
 	<artifactId>deployer-core</artifactId>
 	<packaging>jar</packaging>
+        <properties>
+          <main.basedir>../../</main.basedir>
+        </properties>
 
 	<dependencies>
 		<dependency>

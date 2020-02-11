@@ -37,7 +37,7 @@ public class ArePodsReady extends ConditionNode<TroubleshootingContext> {
     private static final Logger logger = LoggerFactory.getLogger(ArePodsReady.class);
 
     @Autowired
-    private IsPodsReadinessFailing isPodsReadinessFailing;
+    private MultipleContainerRestartsCondition multipleContainerRestartsCondition;
 
     @Override
     public boolean decide(TroubleshootingContext context) throws HyscaleException {
@@ -68,14 +68,14 @@ public class ArePodsReady extends ConditionNode<TroubleshootingContext> {
             return each instanceof V1Pod;
         }).allMatch(each -> {
             V1Pod pod = (V1Pod) each;
-            boolean ready = false;
+            boolean ready = true;
             for (V1PodCondition condition : pod.getStatus().getConditions()) {
                 if (condition.getType().equals(PodCondition.READY.getPodCondition())) {
-                    ready = condition.getStatus().equals("True");
-                }
-                if (!ready) {
-                    context.addAttribute(FailedResourceKey.UNREADY_POD, each);
-                    break;
+                    if (condition.getStatus().equals("False")) {
+                        ready = false;
+                        context.addAttribute(FailedResourceKey.UNREADY_POD, each);
+                        break;
+                    }
                 }
             }
             return ready;
@@ -90,7 +90,7 @@ public class ArePodsReady extends ConditionNode<TroubleshootingContext> {
 
     @Override
     public Node<TroubleshootingContext> onFailure() {
-        return isPodsReadinessFailing;
+        return multipleContainerRestartsCondition;
     }
 
     @Override
