@@ -91,7 +91,7 @@
         },
         "tag": {
           "description": "tag defines the final image tag",
-          "type": "string"
+          "pattern": "[\\w][\\w.-]{0,127}"
         },
         "registry": {
           "description": "docker registry url along with namespace",
