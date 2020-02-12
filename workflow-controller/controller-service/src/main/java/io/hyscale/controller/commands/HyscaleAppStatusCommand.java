@@ -80,6 +80,8 @@ public class HyscaleAppStatusCommand implements Callable<Integer> {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
         
+        WorkflowLogger.info(ControllerActivity.WAITING_FOR_SERVICE_STATUS);
+        
         WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
 
         TableFormatter table = new TableFormatter.Builder()

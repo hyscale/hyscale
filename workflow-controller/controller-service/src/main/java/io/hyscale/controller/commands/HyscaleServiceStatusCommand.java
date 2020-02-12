@@ -93,6 +93,8 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
 
+        WorkflowLogger.info(ControllerActivity.WAITING_FOR_SERVICE_STATUS);
+        
         WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
 
         TableFormatter table = new TableFormatter.Builder()
@@ -123,9 +125,6 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
         } catch (HyscaleException e) {
             logger.error("Error while getting status for app: {}, in namespace: {}", appName, namespace);
             WorkflowLogger.error(ControllerActivity.ERROR_WHILE_FETCHING_STATUS, e.toString());
-            throw e;
-        } catch(Exception e) { 
-            e.printStackTrace();
             throw e;
         }
         finally {

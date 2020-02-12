@@ -17,6 +17,8 @@ package io.hyscale.controller.util;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
 
@@ -37,9 +39,11 @@ public class TroubleshootUtil {
                 return;
             }
             String reason = each.getReason();
-            message.append(reason);
-            if (!reason.endsWith(ToolConstants.COMMA) || !reason.endsWith(ToolConstants.DOT)) {
-                message.append(ToolConstants.COMMA).append(ToolConstants.SPACE);
+            if (StringUtils.isNotBlank(reason)) {
+                message.append(reason);
+                if (!reason.endsWith(ToolConstants.COMMA) || !reason.endsWith(ToolConstants.DOT)) {
+                    message.append(ToolConstants.COMMA).append(ToolConstants.SPACE);
+                }
             }
             message.append(each.getRecommendedFix());
             message.append(ToolConstants.NEW_LINE);
