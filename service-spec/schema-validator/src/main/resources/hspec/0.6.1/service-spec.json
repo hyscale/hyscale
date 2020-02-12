@@ -126,7 +126,8 @@
       "additionalProperties": {
         "type": [
           "string",
-          "integer"
+          "number",
+          "boolean"
         ]
       }
     },
@@ -134,7 +135,10 @@
       "description": "Defines the keys of any attribute the service",
       "type": "array",
       "items": {
-        "type": "string",
+        "type": [
+          "string",
+          "number"
+        ],
         "description": "string key"
       }
     },
