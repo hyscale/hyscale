@@ -63,6 +63,7 @@ public enum ControllerActivity implements Activity {
     INVALID_INPUT("Invalid input:: {}"),
     TOTAL_TIME("Total time : {}"),
     FAILED_TO_FETCH_DEPLOY_LOGS("Failed to fetch deploy logs {}"),
+    WAITING_FOR_SERVICE_STATUS("Getting service status, it might take some time as it runs diagnosis for services not in running state"),
     TROUBLESHOOT("{}");
 
     private String message;
