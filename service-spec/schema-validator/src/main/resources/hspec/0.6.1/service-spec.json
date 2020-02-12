@@ -18,10 +18,7 @@
         },
         "args": {
           "description": "args is the list of build arguments to be passed during container image build. should be given in this format <key>=<value> ",
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
+          "$ref": "#/definitions/io.hyscale.api.map.string"
         }
       },
       "type": "object"
@@ -129,7 +126,8 @@
       "additionalProperties": {
         "type": [
           "string",
-          "integer"
+          "number",
+          "boolean"
         ]
       }
     },
@@ -137,7 +135,10 @@
       "description": "Defines the keys of any attribute the service",
       "type": "array",
       "items": {
-        "type": "string",
+        "type": [
+          "string",
+          "number"
+        ],
         "description": "string key"
       }
     },
