@@ -15,7 +15,6 @@
  */
 package io.hyscale.controller.commands;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -23,12 +22,11 @@ import java.util.concurrent.Callable;
 
 import javax.validation.constraints.Pattern;
 
-import io.hyscale.commons.models.K8sAuthorisation;
-import io.hyscale.controller.builder.K8sAuthConfigBuilder;
+import io.hyscale.controller.constants.WorkflowConstants;
+import io.hyscale.controller.invoker.StatusComponentInvoker;
+import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.StatusUtil;
-import io.hyscale.troubleshooting.integration.models.ServiceInfo;
-import io.hyscale.troubleshooting.integration.service.TroubleshootService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,10 +37,8 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.TableFields;
 import io.hyscale.commons.logger.TableFormatter;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.deployer.core.model.DeploymentStatus;
-import io.hyscale.deployer.services.deployer.Deployer;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -82,18 +78,13 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
     @Option(names = {"-a", "--app"}, required = true, description = "Application name")
     private String appName;
 
-    @Pattern(regexp = ValidationConstants.SERVICE_NAME_REGEX, message = ValidationConstants.INVALID_SERVICE_NAME_MSG)
     @Option(names = {"-s", "--service"}, required = true, description = "Service names")
-    private List<String> serviceList;
+    private List<
+    @Pattern(regexp = ValidationConstants.SERVICE_NAME_REGEX, message = ValidationConstants.INVALID_SERVICE_NAME_MSG)
+    String> serviceList;
 
     @Autowired
-    private Deployer deployer;
-
-    @Autowired
-    private K8sAuthConfigBuilder authConfigBuilder;
-
-    @Autowired
-    private TroubleshootService troubleshootService;
+    private StatusComponentInvoker statusComponentInvoker;
 
     @Override
     public Integer call() throws Exception {
@@ -111,41 +102,34 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
                 .addField(TableFields.SERVICE_ADDRESS.getFieldName(), TableFields.SERVICE_ADDRESS.getLength())
                 .addField(TableFields.MESSAGE.getFieldName(), TableFields.MESSAGE.getLength()).build();
 
-        DeploymentContext deploymentContext = new DeploymentContext();
-        deploymentContext.setAuthConfig(authConfigBuilder.getAuthConfig());
-        deploymentContext.setNamespace(namespace.trim());
-        deploymentContext.setAppName(appName.trim());
-        deploymentContext.setWaitForReadiness(false);
-
-        List<DeploymentStatus> deploymentStatusList = new ArrayList<>();
-
+        WorkflowContext context = new WorkflowContext();
+        context.setAppName(appName);
+        context.setNamespace(namespace);
+        
         try {
             Set<String> services = new HashSet<String>(serviceList);
             WorkflowLogger.logTableFields(table);
             for (String serviceName : services) {
-                deploymentContext.setServiceName(serviceName);
-                DeploymentStatus serviceStatus = deployer.getServiceDeploymentStatus(deploymentContext);
+                context.setServiceName(serviceName);
+                statusComponentInvoker.execute(context);
+                DeploymentStatus serviceStatus = (DeploymentStatus) context.getAttribute(
+                        WorkflowConstants.DEPLOYMENT_STATUS);
                 if (serviceStatus != null) {
                     String[] tableRow = StatusUtil.getRowData(serviceStatus);
                     table.addRow(tableRow);
                     WorkflowLogger.logTableRow(table, tableRow);
                 }
-                deploymentStatusList.add(serviceStatus);
             }
         } catch (HyscaleException e) {
             logger.error("Error while getting status for app: {}, in namespace: {}", appName, namespace);
             WorkflowLogger.error(ControllerActivity.ERROR_WHILE_FETCHING_STATUS, e.toString());
             throw e;
-        } finally {
-            WorkflowLogger.footer();
+        } catch(Exception e) { 
+            e.printStackTrace();
+            throw e;
         }
-
-        for (String serviceName : serviceList) {
-            ServiceInfo serviceInfo = new ServiceInfo();
-            serviceInfo.setServiceName(serviceName);
-            serviceInfo.setAppName(appName);
-            serviceInfo.setEnvName(CommandUtil.getEnvName(null, appName));
-            troubleshootService.troubleshoot(serviceInfo, (K8sAuthorisation) authConfigBuilder.getAuthConfig(), namespace);
+        finally {
+            WorkflowLogger.footer();
         }
 
         return 0;

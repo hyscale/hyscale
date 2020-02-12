@@ -26,6 +26,8 @@ public class ToolConstants {
     public static final String DOUBLE_COLON = "::";
 
     public static final String COMMA = ",";
+    
+    public static final String DOT = ".";
 
     public static final String DASH = "-";
 
@@ -36,6 +38,8 @@ public class ToolConstants {
     public static final String QUOTES = "\"";
 
     public static final String SPACE = " ";
+    
+    public static final String NEW_LINE = "\n";
     
     public static final String LINUX_FILE_SEPARATOR = "/";
 

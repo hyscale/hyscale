@@ -20,7 +20,9 @@ import java.util.concurrent.Callable;
 
 import javax.validation.constraints.Pattern;
 
-import io.hyscale.controller.builder.K8sAuthConfigBuilder;
+import io.hyscale.controller.constants.WorkflowConstants;
+import io.hyscale.controller.invoker.StatusComponentInvoker;
+import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.StatusUtil;
 
@@ -34,9 +36,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.TableFields;
 import io.hyscale.commons.logger.TableFormatter;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.deployer.services.deployer.Deployer;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -72,10 +72,7 @@ public class HyscaleAppStatusCommand implements Callable<Integer> {
     private String appName;
 
     @Autowired
-    private Deployer deployer;
-
-    @Autowired
-    private K8sAuthConfigBuilder authConfigBuilder;
+    private StatusComponentInvoker statusComponentInvoker;
 
     @Override
     public Integer call() throws Exception{
@@ -91,15 +88,15 @@ public class HyscaleAppStatusCommand implements Callable<Integer> {
                 .addField(TableFields.AGE.getFieldName(), TableFields.AGE.getLength())
                 .addField(TableFields.SERVICE_ADDRESS.getFieldName(), TableFields.SERVICE_ADDRESS.getLength())
                 .addField(TableFields.MESSAGE.getFieldName(), TableFields.MESSAGE.getLength()).build();
-
-        DeploymentContext deploymentContext = new DeploymentContext();
-        deploymentContext.setAuthConfig(authConfigBuilder.getAuthConfig());
-        deploymentContext.setNamespace(namespace.trim());
-        deploymentContext.setAppName(appName.trim());
-        deploymentContext.setWaitForReadiness(false);
+        
+        WorkflowContext context = new WorkflowContext();
+        context.setAppName(appName);
+        context.setNamespace(namespace);
 
         try {
-        	List<DeploymentStatus> deploymentStatusList = deployer.getDeploymentStatus(deploymentContext);
+            statusComponentInvoker.execute(context);
+            List<DeploymentStatus> deploymentStatusList = (List<DeploymentStatus>) context.getAttribute(
+                    WorkflowConstants.DEPLOYMENT_STATUS_LIST);
         	
             if (deploymentStatusList != null && !deploymentStatusList.isEmpty()) {
                 deploymentStatusList.stream().forEach(each -> {

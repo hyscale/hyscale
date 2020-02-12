@@ -78,7 +78,7 @@ public class KubernetesDeployer implements Deployer {
 
     @Autowired
     private K8sClientProvider clientProvider;
-
+    
     @Override
     public void deploy(DeploymentContext context) throws HyscaleException {
 
@@ -215,23 +215,22 @@ public class KubernetesDeployer implements Deployer {
             throw new HyscaleException(DeployerErrorCodes.APPLICATION_REQUIRED);
         }
 
-        if (context != null && StringUtils.isBlank(context.getServiceName())) {
+        String serviceName = context.getServiceName();
+        if (context != null && StringUtils.isBlank(serviceName)) {
             throw new HyscaleException(DeployerErrorCodes.SERVICE_REQUIRED);
         }
 
         List<V1Pod> v1PodList = null;
-        DeploymentStatus deploymentStatus = new DeploymentStatus();
-        deploymentStatus.setServiceName(context.getServiceName());
         try {
             ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
             V1PodHandler v1PodHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
-            String selector = ResourceSelectorUtil.getServiceSelector(context.getAppName(), context.getServiceName());
+            String selector = ResourceSelectorUtil.getServiceSelector(context.getAppName(), serviceName);
             v1PodList = v1PodHandler.getBySelector(apiClient, selector, true, context.getNamespace());
-            deploymentStatus = getPodDeploymentStatus(context, v1PodList);
         } catch (HyscaleException e) {
-            return DeploymentStatusUtil.getNotDeployedStatus(context.getServiceName());
+            return DeploymentStatusUtil.getNotDeployedStatus(serviceName);
         }
-        return deploymentStatus;
+        
+        return getPodDeploymentStatus(context, v1PodList);
     }
 
     /**
@@ -278,10 +277,10 @@ public class KubernetesDeployer implements Deployer {
             return DeploymentStatusUtil.getNotDeployedStatus(context.getServiceName());
         }
         DeploymentStatus deploymentStatus = new DeploymentStatus();
+        deploymentStatus.setServiceName(context.getServiceName());
         deploymentStatus.setAge(DeploymentStatusUtil.getAge(v1PodList));
         deploymentStatus.setMessage(DeploymentStatusUtil.getMessage(v1PodList));
         deploymentStatus.setStatus(DeploymentStatusUtil.getStatus(v1PodList));
-        deploymentStatus.setServiceName(context.getServiceName());
 
         try {
             ServiceAddress serviceAddress = getServiceAddress(context);

@@ -22,8 +22,10 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 
 import io.hyscale.commons.models.K8sAuthorisation;
+import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
 import io.hyscale.troubleshooting.integration.models.ServiceInfo;
 import io.hyscale.troubleshooting.integration.service.TroubleshootService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import io.hyscale.commons.component.ComponentInvoker;
+import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DeploymentContext;
@@ -46,6 +49,7 @@ import io.hyscale.controller.hooks.VolumeCleanUpHook;
 import io.hyscale.controller.hooks.VolumeValidatorHook;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.LoggerUtility;
+import io.hyscale.controller.util.TroubleshootUtil;
 import io.hyscale.deployer.services.config.DeployerConfig;
 import io.hyscale.deployer.services.deployer.Deployer;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
@@ -146,7 +150,7 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
         context.setServiceName(serviceName);
         WorkflowLogger.header(ControllerActivity.STARTING_DEPLOYMENT);
         /*
-            Deploys and waits for the deployment completion
+         * Deploys and waits for the deployment completion
          */
 
         try {
@@ -154,12 +158,11 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
             deployer.waitForDeployment(deploymentContext);
 
         } catch (HyscaleException e) {
-            logger.error("Deployment failed with error: {}", e.toString());
-            //WorkflowLogger.footer();
-            //WorkflowLogger.error(ControllerActivity.DEPLOYMENT_FAILED,e.getMessage());
+            logger.error("Deployment failed with error: {}, running troubleshoot", e.toString());
+            String troubleshootMessage = TroubleshootUtil.getTroubleshootMessage(troubleshoot(deploymentContext));
+            context.addAttribute(WorkflowConstants.TROUBLESHOOT_MESSAGE, troubleshootMessage);
             throw e;
         } finally {
-            //troubleshoot(deploymentContext);
             writeDeployLogs(context, deploymentContext);
         }
         context.addAttribute(WorkflowConstants.OUTPUT, true);
@@ -175,25 +178,33 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
             };
             List<Port> servicePorts = serviceSpec.get(HyscaleSpecFields.ports, typeReference);
             if (servicePorts != null) {
-                ServiceAddress serviceAddress = deployer.getServiceAddress(deploymentContext);
-                if (serviceAddress != null) {
-                    context.addAttribute(WorkflowConstants.SERVICE_IP, serviceAddress.toString());
+                try {
+                    ServiceAddress serviceAddress = deployer.getServiceAddress(deploymentContext);
+                    if (serviceAddress != null) {
+                        context.addAttribute(WorkflowConstants.SERVICE_IP, serviceAddress.toString());
+                    }
+                } catch (HyscaleException e) {
+                    logger.error("Error while getting service IP address {}, running troubleshoot", e.getMessage());
+                    String troubleshootMessage = TroubleshootUtil.getTroubleshootMessage(troubleshoot(deploymentContext));
+                    context.addAttribute(WorkflowConstants.TROUBLESHOOT_MESSAGE, troubleshootMessage);
+                    throw e;
                 }
             }
         }
     }
 
-    private void troubleshoot(DeploymentContext deploymentContext) {
+    private List<DiagnosisReport> troubleshoot(DeploymentContext deploymentContext) {
         ServiceInfo serviceInfo = new ServiceInfo();
         serviceInfo.setAppName(deploymentContext.getAppName());
         serviceInfo.setServiceName(deploymentContext.getServiceName());
         try {
-            troubleshootService.troubleshoot(serviceInfo, (K8sAuthorisation) deploymentContext.getAuthConfig(), deploymentContext.getNamespace());
+            return troubleshootService.troubleshoot(serviceInfo, (K8sAuthorisation) deploymentContext.getAuthConfig(), deploymentContext.getNamespace());
         } catch (HyscaleException e) {
             logger.error("Error while executing troubleshooot serice {}", e);
         }
+        return null;
     }
-
+        
     /**
      * Write deployment logs to file for later access
      *
@@ -217,7 +228,15 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
     @Override
     protected void onError(WorkflowContext context, HyscaleException he) throws HyscaleException {
         WorkflowLogger.header(ControllerActivity.ERROR);
-        WorkflowLogger.error(ControllerActivity.CAUSE, he != null ? he.getMessage() : DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST.getErrorMessage());
+        Object troubleshootMsgObj = context.getAttribute(WorkflowConstants.TROUBLESHOOT_MESSAGE);
+        StringBuilder errorMessage = new StringBuilder();
+        errorMessage.append(he != null ? he.getMessage() : DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST.getErrorMessage());
+        if (troubleshootMsgObj != null) {
+            String troubleshootMessage = (String)troubleshootMsgObj;
+            logger.error("Troubleshoot message: {}", troubleshootMessage);
+            errorMessage.append(ToolConstants.NEW_LINE).append(troubleshootMessage);
+        }
+        WorkflowLogger.error(ControllerActivity.TROUBLESHOOT, errorMessage.toString());
         context.setFailed(true);
         if (he != null) {
             throw he;
