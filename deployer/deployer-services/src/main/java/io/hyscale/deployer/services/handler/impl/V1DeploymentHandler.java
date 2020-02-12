@@ -35,17 +35,11 @@ import io.kubernetes.client.apis.AppsV1Api;
 import io.kubernetes.client.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.kubernetes.client.apis.AppsV1beta2Api;
 import io.kubernetes.client.models.V1DeleteOptions;
-import io.kubernetes.client.models.V1beta2Deployment;
-import io.kubernetes.client.models.V1beta2DeploymentList;
-import io.kubernetes.client.models.V1beta2DeploymentStatus;
 import io.kubernetes.client.custom.V1Patch;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.hyscale.commons.utils.ObjectMapperFactory;
-
 import java.util.List;
+import java.util.Map;
 
 public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deployment> {
     private static final Logger LOGGER = LoggerFactory.getLogger(V1DeploymentHandler.class);
@@ -282,5 +276,18 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deploymen
             return ResourceStatus.PENDING;
         }
         return ResourceStatus.STABLE;
+    }
+    
+    public String getDeploymentRevision(V1Deployment deployment) {
+        if (deployment == null) {
+            return null;
+        }
+        Map<String, String> annotations = deployment.getMetadata().getAnnotations();
+        
+        if (annotations == null) {
+            return null;
+        }
+        
+        return annotations.get(AnnotationKey.K8S_DEPLOYMENT_REVISION.getAnnotation());
     }
 }

@@ -49,7 +49,7 @@ public class WorkflowLogger {
     public static void info(Activity activity, String... args) {
         logActivity(activity, LoggerTags.USER_INFO_TAG, args);
     }
-
+    
     public static void debug(Activity activity, String... args) {
         logActivity(activity, LoggerTags.DEBUG, args);
     }
@@ -64,6 +64,10 @@ public class WorkflowLogger {
 
     public static void warn(Activity activity, String... args) {
         logActivity(activity, LoggerTags.WARN, args);
+    }
+    
+    public static void action(Activity activity, String... args) {
+        logActivity(activity, LoggerTags.ACTION, args);
     }
 
     public static void startActivity(Activity activity, String... args) {

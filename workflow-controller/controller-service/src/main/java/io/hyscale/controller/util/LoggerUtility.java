@@ -15,22 +15,35 @@
  */
 package io.hyscale.controller.util;
 
-import io.hyscale.controller.builder.K8sAuthConfigBuilder;
-import io.hyscale.controller.model.WorkflowContext;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.builder.core.models.BuildContext;
+import io.hyscale.builder.services.util.ImageLogUtil;
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.TableFields;
+import io.hyscale.commons.logger.TableFormatter;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.DeploymentContext;
+import io.hyscale.commons.models.AuthConfig;
+import io.hyscale.commons.utils.HyscaleInputReader;
 import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
+import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.deployer.core.model.ReplicaInfo;
+import io.hyscale.deployer.services.deployer.Deployer;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.util.DeployerLogUtil;
-import io.hyscale.builder.services.util.ImageLogUtil;
 
 /**
  * Utility to fetch deployment logs of the service specified.
@@ -38,74 +51,168 @@ import io.hyscale.builder.services.util.ImageLogUtil;
 @Component
 public class LoggerUtility {
 
-	private static final Logger logger = LoggerFactory.getLogger(LoggerUtility.class);
+    private static final Logger logger = LoggerFactory.getLogger(LoggerUtility.class);
 
-	@Autowired
-	private ImageLogUtil imageLogUtil;
+    @Autowired
+    private ImageLogUtil imageLogUtil;
 
-	@Autowired
-	private K8sAuthConfigBuilder authConfigBuilder;
+    @Autowired
+    private K8sAuthConfigBuilder authConfigBuilder;
 
-	@Autowired
-	private DeployerLogUtil deployerLogUtil;
+    @Autowired
+    private DeployerLogUtil deployerLogUtil;
 
-	public void getLogs(WorkflowContext workflowContext) {
-	    // Ignore image logs as they can be viewed at the directory
-		// imageBuilderLogs(workflowContext);
-		deploymentLogs(workflowContext);
-	}
+    @Autowired
+    private Deployer deployer;
 
-	/**
-	 * Deployment logs 
-	 * @param context
-	 */
-	public void deploymentLogs(WorkflowContext context) {
+    public void getLogs(WorkflowContext workflowContext) throws HyscaleException {
+        // Ignore image logs as they can be viewed at the directory
+        // imageBuilderLogs(workflowContext);
+        deploymentLogs(workflowContext);
+    }
 
-		String appName = context.getAppName();
-		String serviceName = context.getServiceName();
-		String namespace = context.getNamespace();
+    /**
+     * Deployment logs 
+     * @param context
+     * @throws HyscaleException
+     */
+    public void deploymentLogs(WorkflowContext context) throws HyscaleException {
+        String appName = context.getAppName();
+        String serviceName = context.getServiceName();
+        String namespace = context.getNamespace();
+        
+        Boolean isTail = (Boolean) context.getAttribute(WorkflowConstants.TAIL_LOGS);
+        isTail = (isTail == null) ? false : isTail;
+        Integer lines = (Integer) context.getAttribute(WorkflowConstants.LINES);
+        AuthConfig authConfig = authConfigBuilder.getAuthConfig();
 
-		Boolean tail = (Boolean) context.getAttribute(WorkflowConstants.TAIL_LOGS);
-		tail = (tail == null) ? false : tail;
-		Integer lines = (Integer) context.getAttribute(WorkflowConstants.LINES);
-		DeploymentContext deploymentContext = new DeploymentContext();
-		deploymentContext.setAuthConfig(authConfigBuilder.getAuthConfig());
-        deploymentContext.setNamespace(namespace);
-		deploymentContext.setAppName(appName);
-		deploymentContext.setServiceName(serviceName);
-		deploymentContext.setTailLogs(tail);
-		deploymentContext.setReadLines(lines);
+        String selectedPod = null;
+        try {
+            selectedPod = getSelectedPod(authConfig, appName, serviceName, namespace);
+        } catch (HyscaleException ex) {
+            // fail
+            context.setFailed(true);
+            if (ex.getHyscaleErrorCode() != CommonErrorCode.FAILED_TO_GET_VALID_INPUT) {
+                WorkflowLogger.error(ControllerActivity.FAILED_TO_STREAM_SERVICE_LOGS, ex.getMessage());
+            }
+            throw ex;
+        }
+        if (StringUtils.isBlank(selectedPod)) {
+            // No service found case
+            WorkflowLogger.error(ControllerActivity.SERVICE_NOT_CREATED);
+            WorkflowLogger.error(ControllerActivity.CHECK_SERVICE_STATUS);
+            WorkflowLogger.footer();
+            return;
+        }
+        try {
+            WorkflowLogger.header(ControllerActivity.SERVICE_LOGS);
+            deployerLogUtil.processLogs(authConfig, appName, serviceName, selectedPod, namespace, lines, isTail);
+        } catch (HyscaleException ex) {
+            logger.error("Error while getting deployment logs for service: {}, in namespace: {}", serviceName,
+                    namespace, ex);
+            if (ex.getHyscaleErrorCode() == DeployerErrorCodes.FAILED_TO_RETRIEVE_POD) {
+                WorkflowLogger.error(ControllerActivity.SERVICE_NOT_CREATED);
+            } else {
+                context.setFailed(true);
+                WorkflowLogger.error(ControllerActivity.FAILED_TO_STREAM_SERVICE_LOGS, ex.getMessage());
+            }
+            WorkflowLogger.error(ControllerActivity.CHECK_SERVICE_STATUS);
+        } finally {
+            WorkflowLogger.footer();
+        }
+    }
 
-		try {
-			WorkflowLogger.header(ControllerActivity.SERVICE_LOGS);
-			deployerLogUtil.processLogs(deploymentContext);
-		} catch (HyscaleException ex) {
-		    logger.error("Error while getting deployment logs for service: {}, in namespace: {}", serviceName, namespace, ex);
-			if (ex.getHyscaleErrorCode() == DeployerErrorCodes.FAILED_TO_RETRIEVE_POD) {
-				WorkflowLogger.error(ControllerActivity.SERVICE_NOT_CREATED);
-			} else {
-			    context.setFailed(true);
-				WorkflowLogger.error(ControllerActivity.FAILED_TO_STREAM_SERVICE_LOGS, ex.getMessage());
-			}
-			WorkflowLogger.error(ControllerActivity.CHECK_SERVICE_STATUS);
-		} finally {
-			WorkflowLogger.footer();
-		}
-	}
+    /**
+     * 
+     * @param authConfig
+     * @param appName
+     * @param serviceName
+     * @param namespace
+     * @return pod name selected by user based on index or name
+     * @throws HyscaleException
+     */
+    private String getSelectedPod(AuthConfig authConfig, String appName, String serviceName, 
+            String namespace) throws HyscaleException {
+        List<ReplicaInfo> replicasInfo = deployer.getReplicas(authConfig, appName, 
+                serviceName, namespace, true);
+        if (replicasInfo == null || replicasInfo.isEmpty()) {
+            return null;
+        }
+        if (replicasInfo.size() == 1) {
+            return replicasInfo.get(0).getName();
+        }
+        List<String> replicas = replicasInfo.stream().map(each -> each.getName()).collect(Collectors.toList());
+        Map<Integer, ReplicaInfo> indexedReplicasInfo = new HashMap<Integer, ReplicaInfo>();
 
-	/**
-	 * Image build and push logs
-	 * @param context
-	 */
-	public void imageBuilderLogs(WorkflowContext context) throws HyscaleException{
-		BuildContext buildContext = new BuildContext();
-		buildContext.setAppName(context.getAppName());
-		buildContext.setServiceName(context.getServiceName());
-		Boolean tail = (Boolean) context.getAttribute(WorkflowConstants.TAIL_LOGS);
-		logger.debug("Getting Image Builder logs");
-		tail = tail == null ? false : tail;
-		buildContext.setTail(tail);
-		imageLogUtil.handleLogs(buildContext);
+        Integer replicaIndex = 1;
+        for (ReplicaInfo replicaInfo : replicasInfo) {
+            indexedReplicasInfo.put(replicaIndex++, replicaInfo);
+        }
+        printReplicasInfo(indexedReplicasInfo);
 
-	}
+        WorkflowLogger.action(ControllerActivity.INPUT_REPLICA_DETAIL);
+        int inputAttempt = 0;
+
+        do {
+            boolean isInvalidInput = false;
+            inputAttempt++;
+            String input = HyscaleInputReader.readInput();
+            try {
+                replicaIndex = Integer.parseInt(input);
+                if (indexedReplicasInfo.containsKey(replicaIndex)) {
+                    return indexedReplicasInfo.get(replicaIndex).getName();
+                } else {
+                    isInvalidInput = true;
+                }
+            } catch (NumberFormatException e) {
+                if (replicas.contains(input)) {
+                    return input;
+                } else {
+                    isInvalidInput = true;
+                }
+            }
+            if (isInvalidInput && inputAttempt < HyscaleInputReader.MAX_RETRIES) {
+                WorkflowLogger.warn(ControllerActivity.INVALID_INPUT_RETRY, input);
+            }
+        } while (inputAttempt < HyscaleInputReader.MAX_RETRIES);
+        
+        HyscaleException hex = new HyscaleException(CommonErrorCode.FAILED_TO_GET_VALID_INPUT);
+        WorkflowLogger.error(ControllerActivity.INVALID_INPUT, hex.getMessage());
+        WorkflowLogger.footer();
+        throw hex;
+    }
+
+    private static void printReplicasInfo(Map<Integer, ReplicaInfo> indexedReplicasInfo) {
+        TableFormatter replicaTable = new TableFormatter.Builder()
+                .addField(TableFields.INDEX.getFieldName(), TableFields.INDEX.getLength())
+                .addField(TableFields.REPLICA_NAME.getFieldName(), TableFields.REPLICA_NAME.getLength())
+                .addField(TableFields.STATUS.getFieldName())
+                .addField(TableFields.AGE.getFieldName(), TableFields.AGE.getLength()).build();
+
+        indexedReplicasInfo.entrySet().forEach(replicaInfoSet -> {
+            String[] replicaData = StatusUtil.getReplicasData(replicaInfoSet.getValue());
+            String[] rowData = ArrayUtils.insert(0, replicaData, replicaInfoSet.getKey().toString());
+            replicaTable.addRow(rowData);
+        });
+
+        WorkflowLogger.logTable(replicaTable);
+        WorkflowLogger.footer();
+
+    }
+
+    /**
+     * Image build and push logs
+     * @param context
+     */
+    public void imageBuilderLogs(WorkflowContext context) throws HyscaleException {
+        BuildContext buildContext = new BuildContext();
+        buildContext.setAppName(context.getAppName());
+        buildContext.setServiceName(context.getServiceName());
+        Boolean tail = (Boolean) context.getAttribute(WorkflowConstants.TAIL_LOGS);
+        logger.debug("Getting Image Builder logs");
+        tail = tail == null ? false : tail;
+        buildContext.setTail(tail);
+        imageLogUtil.handleLogs(buildContext);
+
+    }
 }
