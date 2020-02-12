@@ -29,6 +29,7 @@ import io.hyscale.servicespec.commons.util.ImageUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -57,16 +58,16 @@ public class ImageHandler implements ManifestHandler {
     private ManifestSnippet getImagePullPolicy(ServiceSpec serviceSpec, ManifestContext manifestContext) {
         ManifestSnippet manifestSnippet = new ManifestSnippet();
         manifestSnippet.setSnippet(ManifestGenConstants.DEFAULT_IMAGE_PULL_POLICY);
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         manifestSnippet.setKind(podSpecOwner);
         manifestSnippet.setPath("spec.template.spec.containers[0].imagePullPolicy");
+        manifestSnippet.setKind(podSpecOwner);
         return manifestSnippet;
     }
 
     private ManifestSnippet getImageSnippet(ServiceSpec serviceSpec, ManifestContext manifestContext)
             throws HyscaleException {
         String imageShaId = (String) manifestContext.getGenerationAttribute(ManifestGenConstants.IMAGE_SHA_SUM);
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
         String image = null;
         if (StringUtils.isNotBlank(imageShaId)) {
             logger.debug("Preparing image with its digest.");
@@ -75,6 +76,7 @@ public class ImageHandler implements ManifestHandler {
             logger.debug("Preparing image directly from given tag.");
             image = ImageUtil.getImage(serviceSpec);
         }
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         ManifestSnippet imageSnippet = new ManifestSnippet();
         imageSnippet.setSnippet(image);
         imageSnippet.setPath("spec.template.spec.containers[0].image");

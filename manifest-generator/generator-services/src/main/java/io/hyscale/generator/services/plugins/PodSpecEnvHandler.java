@@ -36,6 +36,7 @@ import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
 import io.kubernetes.client.models.V1EnvVar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -54,7 +55,7 @@ public class PodSpecEnvHandler implements ManifestHandler {
         appMetaData.setAppName(manifestContext.getAppName());
         appMetaData.setEnvName(manifestContext.getEnvName());
         appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
 
         List<V1EnvVar> envVarList = new DecoratedArrayList<V1EnvVar>();
         try {

@@ -35,6 +35,7 @@ import io.kubernetes.client.models.V1StatefulSet;
 import io.kubernetes.client.models.V1Volume;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -53,8 +54,7 @@ public class VolumesHandler implements ManifestHandler {
         appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
         appMetaData.setEnvName(manifestContext.getEnvName());
         appMetaData.setAppName(manifestContext.getAppName());
-
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         List<ManifestSnippet> snippetList = new ArrayList<>();
         try {
             snippetList.add(buildVolumeSnippet(serviceSpec, appMetaData, podSpecOwner));

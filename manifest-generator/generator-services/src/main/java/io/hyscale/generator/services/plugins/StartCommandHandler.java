@@ -31,6 +31,7 @@ import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -42,7 +43,6 @@ public class StartCommandHandler implements ManifestHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(StartCommandHandler.class);
 
-
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         String startCommand = serviceSpec.get(HyscaleSpecFields.startCommand, String.class);
@@ -50,7 +50,7 @@ public class StartCommandHandler implements ManifestHandler {
             logger.debug("Found empty start command.");
             return null;
         }
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         return getCommandAndArgsSnippet(startCommand, podSpecOwner);
     }
 

@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.Map;
-
 import io.hyscale.commons.component.ComponentInvoker;
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
@@ -34,12 +33,10 @@ import io.hyscale.controller.util.ServiceProfileUtil;
 import io.hyscale.controller.util.ServiceSpecMapper;
 import io.hyscale.controller.util.ServiceSpecUtil;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.controller.activity.ControllerActivity;
@@ -47,10 +44,8 @@ import io.hyscale.controller.invoker.DeployComponentInvoker;
 import io.hyscale.controller.invoker.ImageBuildComponentInvoker;
 import io.hyscale.controller.invoker.ManifestGeneratorComponentInvoker;
 import picocli.CommandLine;
-
 import javax.annotation.PreDestroy;
 import javax.validation.constraints.Pattern;
-
 /**
  *  This class executes 'hyscale deploy service' command
  *  It is a sub-command of the 'hyscale deploy' command

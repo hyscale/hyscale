@@ -31,6 +31,7 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -50,12 +51,12 @@ public class SelectorLabelsHandler implements ManifestHandler {
         appMetaData.setEnvName(manifestContext.getEnvName());
         appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
         List<ManifestSnippet> snippetList = new ArrayList<>();
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         try {
             snippetList.add(getPodSpecSelectorLabels(appMetaData, podSpecOwner));
             if (ManifestResource.SERVICE.getPredicate().test(serviceSpec)) {
                 logger.debug("Checking  for service ports in spec and adding service seletor labels to the snippet.");
-                snippetList.add(getServiceSelectorLabels(appMetaData, podSpecOwner));
+                snippetList.add(getServiceSelectorLabels(appMetaData));
             }
         } catch (JsonProcessingException e) {
             logger.error("Error while serializing pod spec labels snippet ", e);
@@ -63,12 +64,12 @@ public class SelectorLabelsHandler implements ManifestHandler {
         return snippetList;
     }
 
-    private ManifestSnippet getServiceSelectorLabels(AppMetaData appMetaData, String podSpecOwner)
+    private ManifestSnippet getServiceSelectorLabels(AppMetaData appMetaData)
             throws JsonProcessingException {
         ManifestSnippet selectorSnippet = new ManifestSnippet();
         selectorSnippet.setPath("spec.selector");
         selectorSnippet.setKind(ManifestResource.SERVICE.getKind());
-        selectorSnippet.setSnippet(JsonSnippetConvertor.serialize(getSelectorLabels(appMetaData, podSpecOwner)));
+        selectorSnippet.setSnippet(JsonSnippetConvertor.serialize(getSelectorLabels(appMetaData)));
         return selectorSnippet;
     }
 
@@ -77,15 +78,11 @@ public class SelectorLabelsHandler implements ManifestHandler {
         ManifestSnippet selectorSnippet = new ManifestSnippet();
         selectorSnippet.setPath("spec.selector.matchLabels");
         selectorSnippet.setKind(podSpecOwner);
-        selectorSnippet.setSnippet(JsonSnippetConvertor.serialize(getSelectorLabels(appMetaData, podSpecOwner)));
+        selectorSnippet.setSnippet(JsonSnippetConvertor.serialize(getSelectorLabels(appMetaData)));
         return selectorSnippet;
     }
 
-    private Map<String, String> getSelectorLabels(AppMetaData appMetaData, String podSpecOwner) {
-        ManifestResource manifestResource = ManifestResource.fromString(podSpecOwner);
-        if (manifestResource == null) {
-            return null;
-        }
+    private Map<String, String> getSelectorLabels(AppMetaData appMetaData) {
         return DefaultLabelBuilder.build(appMetaData);
     }
 

@@ -36,6 +36,7 @@ import io.kubernetes.client.models.V1TCPSocketAction;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -108,7 +109,7 @@ public class HealthChecksHandler implements ManifestHandler {
             v1Probe.setTimeoutSeconds(DEFAULT_TIMEOUT_IN_SECONDS);
             v1Probe.setFailureThreshold(DEFAULT_FAILURE_THRESHOLD_IN_SECONDS);
             try {
-                String podSpecOwner = ((ManifestResource) context.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+                String podSpecOwner = ((String) context.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
                 manifestSnippetList.add(buildReadinessProbe(v1Probe, podSpecOwner));
                 manifestSnippetList.add(buildLiveinessProbe(v1Probe, podSpecOwner));
                 logger.debug("Processing HealthChecks done.");

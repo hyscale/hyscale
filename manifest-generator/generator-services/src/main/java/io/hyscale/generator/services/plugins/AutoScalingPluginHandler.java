@@ -18,6 +18,7 @@ package io.hyscale.generator.services.plugins;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.ConfigTemplate;
+import io.hyscale.commons.models.Manifest;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
@@ -38,10 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * {@link AutoScalingPluginHandler} creates a HorizontalPodAutoScaler
@@ -71,7 +69,8 @@ public class AutoScalingPluginHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
-        if (!ManifestPredicates.isAutoScalingEnabledWithPrint().test(serviceSpec, true)) {
+        String podSpecOwner = (String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER);
+        if (!ManifestPredicates.isAutoScalingEnabledWithPrint().test(serviceSpec, true) || !(podSpecOwner.equals(ManifestResource.STATEFUL_SET.getKind()) || podSpecOwner.equals(ManifestResource.DEPLOYMENT.getKind()))) {
             logger.debug("Skipping AutoScaling handler");
             return null;
         }
@@ -102,8 +101,9 @@ public class AutoScalingPluginHandler implements ManifestHandler {
         appMetaData.setAppName(manifestContext.getAppName());
         appMetaData.setEnvName(manifestContext.getEnvName());
         appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
-        ManifestResource podSpecOwner = (ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER);
-        context.put(TARGET_KIND, podSpecOwner.getKind());
+        ManifestResource podSpecOwner = null;
+        podSpecOwner = ManifestResource.fromString((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
+        context.put(TARGET_KIND, podSpecOwner);
         context.put(TARGET_APIVERSION, podSpecOwner.getApiVersion());
         context.put(TARGET_NAME, podSpecOwner.getName(appMetaData));
         context.put(MIN_REPLICAS, replicas.getMin());

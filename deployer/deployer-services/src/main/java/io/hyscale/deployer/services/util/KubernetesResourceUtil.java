@@ -24,6 +24,8 @@ import io.hyscale.commons.models.Manifest;
 import io.hyscale.commons.models.YAMLManifest;
 import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.util.Yaml;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility for generic kubernetes resource
@@ -40,7 +42,6 @@ public class KubernetesResourceUtil {
         if (manifest == null) {
             return null;
         }
-
         KubernetesResource resource = new KubernetesResource();
         YAMLManifest yamlManifest = (YAMLManifest) manifest;
         Object obj = Yaml.load(yamlManifest.getYamlManifest());
@@ -55,7 +56,6 @@ public class KubernetesResourceUtil {
         resource.setKind(kind);
         resource.setResource(obj);
         return resource;
-
     }
 
     public static V1ObjectMeta getObjectMeta(Object object) throws NoSuchMethodException, SecurityException,

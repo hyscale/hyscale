@@ -24,6 +24,7 @@ import io.hyscale.generator.services.constants.ManifestGenConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -72,7 +73,7 @@ public class ResourceLimitsHandler implements ManifestHandler {
             logger.debug("Preparing cpu limits.");
             cpuRange = getRange(cpu, cpuRangePattern);
         }
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         try {
             manifestSnippetList.add(getResourceRequirements(memoryRange, cpuRange, podSpecOwner));
