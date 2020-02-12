@@ -96,7 +96,7 @@ public abstract class Converter implements CommandLine.ITypeConverter<List<File>
         }
         String fileName = specfile.getName();
         if (!fileName.matches(getFilePattern())) {
-            WorkflowLogger.warn(getWarnMessage(),fileName);
+            WorkflowLogger.persist(getWarnMessage(),fileName);
             logger.warn(getWarnMessage().getActivityMessage(), fileName);
         }
         if (specfile.length() == 0) {
