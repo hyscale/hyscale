@@ -31,11 +31,9 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
 import io.kubernetes.client.models.V1ConfigMapVolumeSource;
 import io.kubernetes.client.models.V1SecretVolumeSource;
-import io.kubernetes.client.models.V1StatefulSet;
 import io.kubernetes.client.models.V1Volume;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

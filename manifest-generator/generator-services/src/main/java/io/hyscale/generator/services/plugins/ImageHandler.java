@@ -61,7 +61,6 @@ public class ImageHandler implements ManifestHandler {
         String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         manifestSnippet.setKind(podSpecOwner);
         manifestSnippet.setPath("spec.template.spec.containers[0].imagePullPolicy");
-        manifestSnippet.setKind(podSpecOwner);
         return manifestSnippet;
     }
 
