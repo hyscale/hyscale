@@ -22,19 +22,19 @@ import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
 import org.springframework.stereotype.Component;
 
 @Component
-public class OOMKilledAction extends ActionNode<TroubleshootingContext> {
+public class TryAfterSometimeAction extends ActionNode<TroubleshootingContext> {
+
 
     @Override
     public void process(TroubleshootingContext context) {
         DiagnosisReport report = new DiagnosisReport();
-        report.setRecommendedFix(AbstractedErrorMessage.NOT_ENOUGH_MEMORY_FOUND.formatMessage(context.getServiceInfo().getServiceName()));
-        report.setReason(AbstractedErrorMessage.NOT_ENOUGH_MEMORY_FOUND.formatReason(context.getServiceInfo().getServiceName()));
+        report.setReason(AbstractedErrorMessage.TRY_AFTER_SOMETIME.getReason());
+        report.setRecommendedFix(AbstractedErrorMessage.TRY_AFTER_SOMETIME.getMessage());
         context.addReport(report);
     }
 
     @Override
     public String describe() {
-        return "service is killed by out of memory";
+        return "Cannot infer now try after some time";
     }
-
 }

@@ -98,7 +98,7 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
 
-       /* if (!CommandUtil.isInputValid(this)) {
+        if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
 
@@ -138,7 +138,7 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
             throw e;
         } finally {
             WorkflowLogger.footer();
-        }*/
+        }
 
         for (String serviceName : serviceList) {
             ServiceInfo serviceInfo = new ServiceInfo();

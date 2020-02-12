@@ -77,7 +77,7 @@ public class IsClusterFull extends ConditionNode<TroubleshootingContext> {
         }
 
         return eventList.stream().anyMatch(event -> {
-            return FAILED_SCHEDULING.equals(event.getReason()) && pattern.matcher(event.getMessage()).matches();
+            return FAILED_SCHEDULING.equals(event.getReason()) && pattern.matcher(event.getMessage()).find();
         });
     }
 

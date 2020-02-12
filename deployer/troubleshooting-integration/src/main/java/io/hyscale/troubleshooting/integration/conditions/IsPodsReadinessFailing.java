@@ -20,10 +20,10 @@ import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.model.PodStatus;
 import io.hyscale.deployer.services.util.K8sPodUtil;
 import io.hyscale.troubleshooting.integration.actions.FixCrashingApplication;
+import io.hyscale.troubleshooting.integration.actions.TryAfterSometimeAction;
 import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
 import io.hyscale.troubleshooting.integration.models.*;
 import io.hyscale.troubleshooting.integration.actions.FixHealthCheckAction;
-import io.hyscale.troubleshooting.integration.util.ConditionUtil;
 import io.kubernetes.client.models.V1Event;
 import io.kubernetes.client.models.V1Pod;
 import org.slf4j.Logger;
@@ -34,11 +34,9 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Component
-public class IsPodsReadinessFailing extends ConditionNode<TroubleshootingContext> {
+public class IsPodsReadinessFailing implements Node<TroubleshootingContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(IsPodsReadinessFailing.class);
 
@@ -48,10 +46,13 @@ public class IsPodsReadinessFailing extends ConditionNode<TroubleshootingContext
     private FixHealthCheckAction fixHealthCheckAction;
 
     @Autowired
+    private TryAfterSometimeAction tryAfterSometimeAction;
+
+    @Autowired
     private FixCrashingApplication fixCrashingApplication;
 
     @Override
-    public boolean decide(TroubleshootingContext context) throws HyscaleException {
+    public Node<TroubleshootingContext> next(TroubleshootingContext context) throws HyscaleException {
         List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos().get(ResourceKind.POD.getKind());
         DiagnosisReport report = new DiagnosisReport();
         if (resourceInfos == null || resourceInfos.isEmpty()) {
@@ -67,6 +68,12 @@ public class IsPodsReadinessFailing extends ConditionNode<TroubleshootingContext
         V1Pod unhealthyPod = null;
         if (obj != null) {
             unhealthyPod = (V1Pod) FailedResourceKey.UNREADY_POD.getKlazz().cast(obj);
+        }
+
+        Object restartsObj = context.getAttribute(FailedResourceKey.RESTARTS);
+        Boolean restartsObserved = false;
+        if (restartsObj != null) {
+            restartsObserved = (Boolean) FailedResourceKey.RESTARTS.getKlazz().cast(restartsObj);
         }
         // Get all the events of the unhealthy pod from previous conditionNode or fetch it from the existing
         // set of pods
@@ -90,9 +97,9 @@ public class IsPodsReadinessFailing extends ConditionNode<TroubleshootingContext
             report.setReason(AbstractedErrorMessage.CANNOT_FIND_EVENTS.formatReason(context.getServiceInfo().getServiceName()));
             report.setRecommendedFix(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getMessage());
             context.addReport(report);
-            return false;
+            return fixHealthCheckAction;
         }
-        return v1Events.stream().
+        boolean unhealthy = v1Events.stream().
                 anyMatch(each -> {
                     if (UNHEALTHY_REASON.equals(each.getReason())) {
                         context.addAttribute(FailedResourceKey.UNHEALTHY_POD_EVENT, each);
@@ -100,16 +107,11 @@ public class IsPodsReadinessFailing extends ConditionNode<TroubleshootingContext
                     }
                     return false;
                 });
-    }
-
-    @Override
-    public Node<TroubleshootingContext> onSuccess() {
-        return fixHealthCheckAction;
-    }
-
-    @Override
-    public Node<TroubleshootingContext> onFailure() {
-        return fixCrashingApplication;
+        if (unhealthy) {
+            return fixHealthCheckAction;
+        } else {
+            return restartsObserved ? fixCrashingApplication : tryAfterSometimeAction;
+        }
     }
 
     @Override

@@ -73,6 +73,7 @@ public class ArePodsReady extends ConditionNode<TroubleshootingContext> {
                 if (condition.getType().equals(PodCondition.READY.getPodCondition())) {
                     if (condition.getStatus().equals("False")) {
                         ready = false;
+                        context.addAttribute(FailedResourceKey.FAILED_POD, each);
                         context.addAttribute(FailedResourceKey.UNREADY_POD, each);
                         break;
                     }

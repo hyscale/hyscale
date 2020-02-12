@@ -26,7 +26,7 @@ public class DefaultAction extends ActionNode<TroubleshootingContext> {
     @Override
     public void process(TroubleshootingContext context) {
         DiagnosisReport report = new DiagnosisReport();
-        report.setRecommendedFix(AbstractedErrorMessage.CANNOT_INFER_ERROR.getMessage());
+        report.setReason(AbstractedErrorMessage.CANNOT_INFER_ERROR.getReason());
         context.addReport(report);
     }
 

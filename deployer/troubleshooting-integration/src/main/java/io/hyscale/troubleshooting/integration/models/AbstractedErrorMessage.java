@@ -19,23 +19,21 @@ public enum AbstractedErrorMessage implements IMessage, IReason {
 
     CONTACT_CLUSTER_ADMINISTRATOR("Please contact your cluster administrator.", "{}"),
     CANNOT_INFER_ERROR("Cannot determine cause of failure from existing state of deployment.", ""),
-    IMAGE_NOT_FOUND("Cannot find image {} ", "Please fix the image name"),
     IMAGEPULL_BACKOFF_ACTION("Issue can be due to invalid credentials of image registry in your hspec or it is not reachable to the cluster {}",
             "Please check them at {}"),
-    //TODO specify one of these
-    INVALID_STORAGE_CLASS("Invalid storage class defined for volumes for service {} in hspec.", "Please provide in one of these {} in your cluster"),
+    INVALID_STORAGE_CLASS("Invalid storage class defined for volumes for service {} in hspec.", "Please provide in one of these {} from your cluster"),
     NO_STORAGE_CLASS_FOUND("No storage class have been defined in your cluster ", "Please ask your cluster administrator to define storage class in your cluster"),
-    NOT_ENOUGH_MEMORY_FOUND("Not enough memory defined for {} to run", "Increase the memory limits of {} Eg: memory: 512Mi (equivalent to 512MB )"),
-    INVALID_STARTCOMMANDS_FOUND("{} should provide long running task for the container to run either in Dockerfile or startCommand of {} hspec","Provide a long running task for the container to run"),
+    NOT_ENOUGH_MEMORY_FOUND("Not enough memory defined for {} to run", "Increase the memory limits of {} Eg: memory: 512Mi (is equivalent to 512MB )"),
+    INVALID_STARTCOMMANDS_FOUND("{} should provide long running task for the container to run either in Dockerfile or startCommand of {} hspec", "Provide a long running task for the container to run"),
     APPLICATION_CRASH("Your service might be crashing due to invalid startup commands in hspec / invalid run commands in buildSpec of hspec / invalid CMD in Dockerfile", "{}"),
     LIVENESS_PROBE_FAILURE("Healthcheck defined for your service {} hspec might be invalid. {} ", "Possible fixes can be 1. App should listen on 0.0.0.0. 2. Fix healthcheck in hspec"),
-    CLUSTER_FULL("Cannot accomodate new services as cluster is full.", " Please contact your cluster administrator to provision a bigger cluster"),
+    CLUSTER_FULL("Cannot accomodate new services as cluster is full.", "Please contact your cluster administrator to provision a bigger cluster"),
     FIX_IMAGE_NAME("Image name /tag in {} hspec found to be invalid ", "Please fix the image name/tag in {} hspec"),
     INVALID_PULL_REGISTRY_CREDENTIALS("Image registry credentials found invalid at {} ", "Please verify them and update with the correct credentials of the registry"),
     DOCKERFILE_CMD_UNCERTAINITY("Cannot determine whether CMD is present in Dockerfile or not of service {}. With this uncertainty, the troubleshooted results are invalid if you find a missing CMD in Dockerfile.", "{}"),
-    OOMKILLED("Service failed due to insufficient memory .Please increase memory of your service {} in hspec with memory directive [Eg: memory:512Mi]", "{}"),
-    SERVICE_NOT_DEPLOYED("Service {} is deployed in this cluster", "{}"),
-    CANNOT_FIND_EVENTS("Cannot find kubernetes events in the cluster. The results might be inappropriate", "Please try to redeploy and troubleshoot the actual error");
+    SERVICE_NOT_DEPLOYED("Service {} is not deployed in this cluster", "Please provide a valid service name"),
+    CANNOT_FIND_EVENTS("Cannot find kubernetes events in the cluster. The results might be inappropriate", "Please try to redeploy and troubleshoot the actual error"),
+    TRY_AFTER_SOMETIME("Deployment is still in progress , service is not yet ready", "Try after sometime");
 
     private String message;
     private String reason;

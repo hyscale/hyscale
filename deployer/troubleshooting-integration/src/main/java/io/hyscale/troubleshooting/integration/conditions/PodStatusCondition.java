@@ -19,7 +19,6 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.HyscaleContextUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.model.PodStatusUtil;
-import io.hyscale.deployer.services.util.K8sPodUtil;
 import io.hyscale.troubleshooting.integration.actions.DefaultAction;
 import io.hyscale.troubleshooting.integration.actions.FixCrashingApplication;
 import io.hyscale.troubleshooting.integration.actions.ImagePullBackOffAction;
@@ -29,7 +28,6 @@ import io.hyscale.troubleshooting.integration.models.FailedResourceKey;
 import io.hyscale.troubleshooting.integration.models.Node;
 import io.hyscale.deployer.services.model.PodStatus;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
-import io.hyscale.troubleshooting.integration.util.TroubleshootContextValidator;
 import io.kubernetes.client.models.V1Pod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +70,7 @@ public class PodStatusCondition implements Node<TroubleshootingContext> {
             if (context.isTrace()) {
                 logger.debug("Cannot find any pods for the service {}", context.getServiceInfo().getServiceName());
             }
-            return defaultAction;
+            return serviceNotDeployedAction;
         }
         PodStatus effectivePodStatus = PodStatus.DEFAULT;
         for (TroubleshootingContext.ResourceInfo each : resourceInfos) {
@@ -121,7 +119,7 @@ public class PodStatusCondition implements Node<TroubleshootingContext> {
             case ERR_IMAGE_PULL:
                 return ImagePullBackOffAction.class;
             case CRASHLOOP_BACKOFF:
-                return ContainerStartCommandCheck.class;
+                return MissingCMDorStartCommandsCondition.class;
             case RUNNING:
                 return ArePodsReady.class;
             case OOMKILLED:

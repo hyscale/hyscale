@@ -32,7 +32,8 @@ public class ServiceNotDeployedAction extends ActionNode<TroubleshootingContext>
     @Override
     public void process(TroubleshootingContext context) {
         DiagnosisReport report = new DiagnosisReport();
-        report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatMessage(context.getServiceInfo().getServiceName()));
+        report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceInfo().getServiceName()));
+        report.setRecommendedFix(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.getMessage());
         context.addReport(report);
     }
 

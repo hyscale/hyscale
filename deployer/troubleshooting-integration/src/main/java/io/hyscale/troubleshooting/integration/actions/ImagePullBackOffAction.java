@@ -30,8 +30,10 @@ public class ImagePullBackOffAction extends ActionNode<TroubleshootingContext> {
     private static final String FAILED = "Failed";
     private static final String IMAGE_NOT_FOUND = "manifest for .* not found";
     private static final String INVALID_CREDENTIALS = ".* unauthorized: incorrect username or password";
+    private static final String AUTHORIZATION_REQUIRED = ".* unauthorized: authentication required";
     private static final Pattern imageNotFoundPattern = Pattern.compile(IMAGE_NOT_FOUND);
     private static final Pattern invalidCredentialsPattern = Pattern.compile(INVALID_CREDENTIALS);
+    private static final Pattern authorisationRequiredPattern = Pattern.compile(AUTHORIZATION_REQUIRED);
 
     @Override
     public void process(TroubleshootingContext context) {
@@ -46,13 +48,13 @@ public class ImagePullBackOffAction extends ActionNode<TroubleshootingContext> {
                         continue;
                     }
                     DiagnosisReport report = new DiagnosisReport();
-                    if (imageNotFoundPattern.matcher(event.getMessage()).matches()) {
+                    if (imageNotFoundPattern.matcher(event.getMessage()).find()) {
                         report.setReason(AbstractedErrorMessage.FIX_IMAGE_NAME.formatReason(context.getServiceInfo().getServiceName()));
                         report.setRecommendedFix(AbstractedErrorMessage.FIX_IMAGE_NAME.formatMessage(context.getServiceInfo().getServiceName()));
                         context.addReport(report);
                         actedOn = true;
                         break;
-                    } else if (invalidCredentialsPattern.matcher(event.getMessage()).matches()) {
+                    } else if (invalidCredentialsPattern.matcher(event.getMessage()).find() || authorisationRequiredPattern.matcher(event.getMessage()).find()) {
                         report.setReason(AbstractedErrorMessage.INVALID_PULL_REGISTRY_CREDENTIALS.formatReason(SetupConfig.getMountOfDockerConf(SetupConfig.USER_HOME_DIR + "/.docker/config")));
                         report.setRecommendedFix(AbstractedErrorMessage.INVALID_PULL_REGISTRY_CREDENTIALS.getMessage());
                         context.addReport(report);

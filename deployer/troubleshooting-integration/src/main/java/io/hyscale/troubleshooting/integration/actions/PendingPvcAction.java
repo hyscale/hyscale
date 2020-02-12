@@ -83,7 +83,7 @@ public class PendingPvcAction extends ActionNode<TroubleshootingContext> {
         AtomicReference<String> volume = null;
         boolean provsioningFailed = eventList.stream().anyMatch(each -> {
             volume.set(each.getMetadata().getName());
-            return PROVISIONING_FAILED.equals(each.getReason()) && pattern.matcher(each.getMessage()).matches();
+            return PROVISIONING_FAILED.equals(each.getReason()) && pattern.matcher(each.getMessage()).find();
         });
 
         List<TroubleshootingContext.ResourceInfo> storageClassResources = context.getResourceInfos().get(ResourceKind.STORAGE_CLASS.getKind());

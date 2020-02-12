@@ -27,7 +27,6 @@ import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
 import io.hyscale.troubleshooting.integration.models.*;
 import io.hyscale.troubleshooting.integration.actions.DockerfileCMDMissingAction;
-import io.hyscale.troubleshooting.integration.actions.FixCrashingApplication;
 import io.kubernetes.client.models.V1Pod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Predicate;
@@ -43,9 +41,9 @@ import java.util.stream.Collectors;
 
 //TODO JAVADOC
 @Component
-public class ContainerStartCommandCheck extends ConditionNode<TroubleshootingContext> {
+public class MissingCMDorStartCommandsCondition extends ConditionNode<TroubleshootingContext> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ContainerStartCommandCheck.class);
+    private static final Logger logger = LoggerFactory.getLogger(MissingCMDorStartCommandsCondition.class);
     private static final String DOCKER_INSTALLATION_NOTFOUND_MESSAGE = "Docker is not installed";
     private static final String IMAGE_NOT_FOUND_LOCALLY = "Image %s is not found locally to inspect";
 
@@ -88,7 +86,7 @@ public class ContainerStartCommandCheck extends ConditionNode<TroubleshootingCon
         V1Pod pod = (V1Pod) podsList.get(0);
 
         if (checkForStartCommands(pod)) {
-            return true;
+            return false;
         }
 
         String image = getImageFromPods(pod);
@@ -116,6 +114,7 @@ public class ContainerStartCommandCheck extends ConditionNode<TroubleshootingCon
             return false;
         }
 
+        // return true when CMD is Missing in Dockerfile
         return checkForDockerfileCMD(result.getCommandOutput());
     }
 

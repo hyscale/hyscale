@@ -19,20 +19,14 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
 import io.hyscale.troubleshooting.integration.models.*;
-import io.hyscale.troubleshooting.integration.actions.FixCrashingApplication;
-import io.hyscale.troubleshooting.integration.actions.FixImageNameAction;
-import io.hyscale.troubleshooting.integration.util.ConditionUtil;
 import io.kubernetes.client.models.V1Pod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 //TODO JAVADOC
@@ -42,14 +36,13 @@ public class MultipleContainerRestartsCondition extends ConditionNode<Troublesho
     private static final Logger logger = LoggerFactory.getLogger(MultipleContainerRestartsCondition.class);
 
     @Autowired
-    private FixImageNameAction fixImageNameAction;
+    private IsPodsReadinessFailing isPodsReadinessFailing;
 
     @Autowired
-    private FixCrashingApplication fixCrashingApplication;
+    private IsApplicationCrashing isApplicationCrashing;
 
     @Override
     public boolean decide(TroubleshootingContext context) throws HyscaleException {
-
         DiagnosisReport report = new DiagnosisReport();
         List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos().get(ResourceKind.POD.getKind());
         if (resourceInfos == null || resourceInfos.isEmpty()) {
@@ -79,6 +72,7 @@ public class MultipleContainerRestartsCondition extends ConditionNode<Troublesho
                 return pod.getStatus().getContainerStatuses().stream().anyMatch(containerStatus -> {
                     if (containerStatus.getRestartCount() > 0) {
                         // Passing the failed pod to the next nodes when it is not set in the context
+                        context.addAttribute(FailedResourceKey.RESTARTS, true);
                         if (obj == null) {
                             context.addAttribute(FailedResourceKey.FAILED_POD, pod);
                         }
@@ -91,16 +85,16 @@ public class MultipleContainerRestartsCondition extends ConditionNode<Troublesho
         });
     }
 
-
     @Override
     public Node<TroubleshootingContext> onSuccess() {
-        return fixCrashingApplication;
+        return isApplicationCrashing;
     }
 
     @Override
     public Node<TroubleshootingContext> onFailure() {
-        return fixImageNameAction;
+        return isPodsReadinessFailing;
     }
+
 
     @Override
     public String describe() {

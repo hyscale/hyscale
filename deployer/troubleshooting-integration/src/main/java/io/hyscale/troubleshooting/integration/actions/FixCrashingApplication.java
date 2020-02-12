@@ -19,13 +19,19 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.deployer.services.model.PodStatus;
 import io.hyscale.deployer.services.model.PodStatusUtil;
+import io.hyscale.troubleshooting.integration.conditions.IsPodsReadinessFailing;
 import io.hyscale.troubleshooting.integration.models.*;
 import io.kubernetes.client.models.V1Event;
 import io.kubernetes.client.models.V1Pod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class FixCrashingApplication extends ActionNode<TroubleshootingContext> {
+
+    private static final Logger logger = LoggerFactory.getLogger(FixCrashingApplication.class);
 
     @Override
     public void process(TroubleshootingContext context) {

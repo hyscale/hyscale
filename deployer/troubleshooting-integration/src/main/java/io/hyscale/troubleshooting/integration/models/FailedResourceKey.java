@@ -25,7 +25,8 @@ public enum FailedResourceKey {
     FAILED_POD(V1Pod.class),
     FAILED_POD_EVENTS(List.class),
     UNREADY_POD(V1Pod.class),
-    UNHEALTHY_POD_EVENT(V1Event.class);
+    UNHEALTHY_POD_EVENT(V1Event.class),
+    RESTARTS(Boolean.class);
 
     private Class klazz;
 
