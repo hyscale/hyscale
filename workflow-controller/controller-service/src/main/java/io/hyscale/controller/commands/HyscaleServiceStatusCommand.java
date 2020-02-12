@@ -126,9 +126,6 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
             logger.error("Error while getting status for app: {}, in namespace: {}", appName, namespace);
             WorkflowLogger.error(ControllerActivity.ERROR_WHILE_FETCHING_STATUS, e.toString());
             throw e;
-        } catch(Exception e) { 
-            e.printStackTrace();
-            throw e;
         }
         finally {
             WorkflowLogger.footer();
