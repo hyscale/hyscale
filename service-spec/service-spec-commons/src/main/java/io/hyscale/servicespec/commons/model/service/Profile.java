@@ -20,50 +20,39 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.utils.ObjectMapperFactory;
-import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 import io.hyscale.servicespec.commons.json.parser.JsonTreeParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-/**
- * Defines {@link ServiceSpec} as tree of JsonNode
- *
- * @see <a href="https://github.com/hyscale/hspec/blob/master/docs/hyscale-spec-reference.md">Spec Reference</a>
- *
- */
-public final class ServiceSpec implements HyscaleSpec {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(HyscaleSpec.class);
-
+public class Profile implements HyscaleSpec {
     private JsonNode root;
 
-    public ServiceSpec(JsonNode root) {
+    public Profile(JsonNode root) {
         this.root = root;
     }
 
-    public ServiceSpec(String serviceSpec) throws HyscaleException {
+    public Profile(String profilePath) throws HyscaleException {
         ObjectMapper mapper = ObjectMapperFactory.yamlMapper();
         try {
-            this.root = mapper.readTree(serviceSpec);
+            this.root = mapper.readTree(profilePath);
         } catch (IOException e) {
-            LOGGER.error(e.getMessage());
-            throw new HyscaleException(e,ServiceSpecErrorCodes.SERVICE_SPEC_PARSE_ERROR);
+            throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_PROFILE_PARSE_ERROR);
         }
     }
 
+    @Override
     public JsonNode get(String path) {
         return JsonTreeParser.get(root, path);
     }
 
+    @Override
     public <T> T get(String path, Class<T> klass) throws HyscaleException {
         return JsonTreeParser.get(root, path, klass);
     }
 
+    @Override
     public <T> T get(String path, TypeReference<T> typeReference) throws HyscaleException {
         return JsonTreeParser.get(root, path, typeReference);
     }

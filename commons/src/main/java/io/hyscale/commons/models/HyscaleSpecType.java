@@ -13,23 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.servicespec.commons.builder;
+package io.hyscale.commons.models;
 
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
-import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+public enum HyscaleSpecType {
+    SERVICE("service name"),
+    PROFILE("profile name");
+    private String resourceName;
 
-public class ServiceSpecBuilderUtil {
+    HyscaleSpecType(String resourceName) {
+        this.resourceName = resourceName;
+    }
 
-	public static String updateProfile(String profileSpecification) {
-
-		DocumentContext doc = JsonPath.parse(profileSpecification);
-		// Environment information
-		doc.delete(HyscaleSpecFields.getPath(HyscaleSpecFields.environment));
-		// Override information
-		doc.delete(HyscaleSpecFields.getPath(HyscaleSpecFields.overrides));
-
-		return doc.jsonString();
-	}
-
+    public String getResourceName() {
+        return resourceName;
+    }
 }

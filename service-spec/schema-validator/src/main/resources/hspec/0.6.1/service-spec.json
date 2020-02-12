@@ -16,10 +16,6 @@
           "type": "string",
           "default": "Dockerfile"
         },
-        "target": {
-          "description": "defines the target to build, optional if not given final stage will be built.",
-          "type": "string"
-        },
         "args": {
           "description": "args is the list of build arguments to be passed during container image build. should be given in this format <key>=<value> ",
           "items": {
@@ -36,16 +32,6 @@
         "name": {
           "description": "defines the name of the artifacti. should be unique",
           "type": "string"
-        },
-        "provider": {
-          "description": "defines provider any of local, http, ssh",
-          "type": "string",
-          "enum": [
-            "local",
-            "ssh",
-            "http"
-          ],
-          "default": "local"
         },
         "source": {
           "description": "defines the source path of the artifact. should be relative path if provider is local. full remote url if http is given, file path to the artifact in the remote ssh",
@@ -77,7 +63,7 @@
           },
           "type": "array"
         },
-        "configScript": {
+        "configCommandsScript": {
           "description": "defines a script containing configuration commands. script execution happens at the time of image build",
           "type": "string"
         },
@@ -85,7 +71,7 @@
           "description": "defines configuration commands. execution happens at the time of image build",
           "type": "string"
         },
-        "runScript": {
+        "runCommandsScript": {
           "description": "defines a script containing run commands. Gets executed at the time of container start",
           "type": "string"
         },
@@ -95,8 +81,7 @@
         }
       },
       "required": [
-        "stackImage",
-        "artifacts"
+        "stackImage"
       ],
       "type": "object"
     },
@@ -114,7 +99,7 @@
         "registry": {
           "description": "docker registry url along with namespace",
           "type": "string",
-          "default": "docker.io/library"
+          "default": "registry.hub.docker.com"
         },
         "dockerfile": {
           "$ref": "#/definitions/io.hyscale.api.image.Dockerfile",
@@ -129,14 +114,71 @@
         "name"
       ],
       "type": "object"
+    },
+    "io.hyscale.api.props.PropsVolumePath": {
+      "description": "Defines the absolute path to where the props have to be mounted in the container",
+      "type": "string"
+    },
+    "io.hyscale.api.secrets.SecretsVolumePath": {
+      "description": "Defines the absolute path to where the secrets have to be mounted in the container",
+      "type": "string"
+    },
+    "io.hyscale.api.map.string": {
+      "description": "Describes the key-value pair of any attribute",
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "integer"
+        ]
+      }
+    },
+    "io.hyscale.api.list.string": {
+      "description": "Defines the keys of any attribute the service",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "string key"
+      }
+    },
+    "io.hyscale.api.replicas.Replicas": {
+      "description": "Defines the replicas of the service",
+      "type": "object",
+      "properties": {
+        "min": {
+          "type": "integer",
+          "description": "specifies the min no.of replicas required for this service ",
+          "default": 1
+        },
+        "max": {
+          "type": "integer",
+          "description": "specifies the max no.of replicas required for this service "
+        },
+        "cpuThreshold": {
+          "type": "string",
+          "pattern": "\\d+%",
+          "description": "specifies the cpu threshold in percentage for the replicas to scale "
+        }
+      },
+      "required": [
+        "max",
+        "cpuThreshold"
+      ]
     }
   },
   "required": [
     "name",
-    "image",
-    "ports"
+    "image"
   ],
   "properties": {
+    "hspecVersion": {
+      "description": "Defines the hspec version",
+      "type": "string",
+      "enum": [
+        "0.5",
+        "0.6"
+      ]
+    },
     "name": {
       "description": "name of service spec, also used as endpoint",
       "type": "string"
@@ -146,7 +188,14 @@
       "$ref": "#/definitions/io.hyscale.api.image.Image"
     },
     "replicas": {
-      "type": "integer",
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "$ref": "#/definitions/io.hyscale.api.replicas.Replicas"
+        }
+      ],
       "description": "number of replicas of this service",
       "default": 1
     },
@@ -172,27 +221,36 @@
             "type": "string",
             "description": "size of volume",
             "default": "1g"
+          },
+          "storageClass": {
+            "type": "string",
+            "description": "defines the class for storage provider of your cluster volumes"
           }
         }
       }
     },
     "secrets": {
-      "type": "array",
-      "description": "declares all secrets key names",
-      "items": {
-        "type": "string",
-        "description": "secret key"
-      }
+      "description": "defines all secrets",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/io.hyscale.api.list.string"
+        },
+        {
+          "$ref": "#/definitions/io.hyscale.api.map.string"
+        }
+      ]
     },
     "props": {
-      "additionalProperties": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
       "description": "props is an unstructured key value map",
-      "type": "object"
+      "$ref": "#/definitions/io.hyscale.api.map.string"
+    },
+    "propsVolumePath": {
+      "description": "Defines the absolute path to where the props have to be mounted in the container",
+      "$ref": "#/definitions/io.hyscale.api.props.PropsVolumePath"
+    },
+    "external": {
+      "description": "Exposes the service externally ",
+      "type": "boolean"
     },
     "ports": {
       "type": "array",
@@ -217,114 +275,91 @@
                 "description": "describes httpPath of http healthcheck"
               }
             }
-          },
-          "external": {
-            "type": "boolean",
-            "description": "defines external service",
-            "default": false
-          },
-          "lbMappings": {
-            "type": "array",
-            "description": "defines lb mappings",
-            "items": {
-              "type": "object",
-              "description": "",
-              "required": [
-                "path"
-              ],
-              "properties": {
-                "host": {
-                  "type": "string",
-                  "description": "defines the host"
-                },
-                "tls": {
-                  "type": "boolean",
-                  "description": "defines ssl settings",
-                  "default": false
-                },
-                "path": {
-                  "type": "string",
-                  "description": "The Path Schema"
-                },
-                "httpHeaders": {
-                  "additionalProperties": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  },
-                  "description": "props is an unstructured key value map",
-                  "type": "object"
-                }
-              }
-            }
           }
         }
       }
     },
+    "secretsVolumePath": {
+      "description": "Defines the absolute path to where the secrets have to be mounted in the container",
+      "$ref": "#/definitions/io.hyscale.api.secrets.SecretsVolumePath"
+    },
+    "memory": {
+      "description": "Defines the range of memory the service has to use in the container",
+      "type": "string",
+      "pattern": "(\\d+(Ki|Mi|Gi|Ti|Pi|Ei|[numkMGTPE]|))+(-\\d+(Ki|Mi|Gi|Ti|Pi|Ei|[numkMGTPE]|))*"
+    },
+    "cpu": {
+      "description": "Defines the range of cpu the service has to use in the container",
+      "type": "string",
+      "pattern": "([\\d.\\d]+m)+(-[\\d.\\d]+m)*"
+    },
+    "startCommand": {
+      "description": "Defines the command which gets executed at the time of container start",
+      "type": "string",
+      "pattern": "[\\w,]*"
+    },
     "agents": {
-      "type": "array",
-      "description": "defines sidecars creation and attachment",
+      "description": "Describes the list of sidecars to be attached to the service",
       "items": {
         "type": "object",
-        "required": [
-          "name",
-          "image",
-          "props",
-          "volumes"
-        ],
         "properties": {
-          "name": {
-            "type": "string",
-            "description": "defines the name of sidecar"
-          },
           "image": {
             "type": "string",
-            "description": "sidecar full image name"
+            "description": "Describes the sidecar image"
+          },
+          "name": {
+            "type": "string",
+            "description": "Describes the name of the sidecar"
           },
           "props": {
-            "additionalProperties": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "description": "props is an unstructured key value map",
-            "type": "object"
+            "$ref": "#/definitions/io.hyscale.api.map.string",
+            "description": "Describes the properties of the service as key-value pairs "
+          },
+          "propsVolumePath": {
+            "$ref": "#/definitions/io.hyscale.api.props.PropsVolumePath",
+            "description": "Describes the properties volume of the service"
+          },
+          "secrets": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/io.hyscale.api.list.string"
+              },
+              {
+                "$ref": "#/definitions/io.hyscale.api.map.string"
+              }
+            ],
+            "description": "Describes the secrets of the service as an array"
+          },
+          "secretsVolumePath": {
+            "$ref": "#/definitions/io.hyscale.api.secrets.SecretsVolumePath",
+            "description": "Describes the secrets volume of the service."
           },
           "volumes": {
             "type": "array",
-            "description": "defines volumes attachment for sidecar",
+            "description": "Describes the shared volumes of the service",
             "items": {
               "type": "object",
-              "description": "The Items Schema",
-              "required": [
-                "path",
-                "name"
-              ],
+              "description": "Describes the volumes for agents",
               "properties": {
-                "path": {
+                "attach": {
                   "type": "string",
-                  "description": "mount path inside sidecar"
+                  "description": "Defines the volume name of the service that has to be attached to the sidecar."
                 },
-                "name": {
+                "mountPath": {
                   "type": "string",
-                  "description": "volume name can be a shared volume if it matches any of main container volume"
+                  "description": "Defines the mount path that volume has to be mounted on the sidecar"
                 }
-              }
+              },
+              "required": [
+                "attach",
+                "mountPath"
+              ]
             }
           }
-        }
-      }
-    },
-    "profiles": {
-      "type": "array",
-      "description": "list of profiles",
-      "items": {
-        "type": "object",
-        "description": "The Items Schema",
-        "properties": {}
-      }
+        },
+        "description": "defines the agent with its properties"
+      },
+      "type": "array"
     }
   }
 }

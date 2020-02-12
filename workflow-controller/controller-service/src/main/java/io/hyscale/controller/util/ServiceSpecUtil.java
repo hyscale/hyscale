@@ -15,23 +15,40 @@
  */
 package io.hyscale.controller.util;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.hyscale.commons.constants.ToolConstants;
+import io.hyscale.commons.exception.CommonErrorCode;
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
+import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
 
 public class ServiceSpecUtil {
-    
-    private static final String DOT_REGEX = "\\.";
 
-    /**
-     * 
-     * @param serviceSpecPath .../<service-name>.hspec.yaml
-     * @return
-     */
-    public static String getServiceNameFromPath(String serviceSpecPath) {
-        if (StringUtils.isBlank(serviceSpecPath)) {
+    private static final Logger logger = LoggerFactory.getLogger(ServiceSpecUtil.class);
+
+    public static String getServiceName(File serviceFile) throws HyscaleException{
+        if (serviceFile == null) {
             return null;
         }
-        String serviceSpec = FilenameUtils.getBaseName(serviceSpecPath);
-        return serviceSpec.split(DOT_REGEX)[0];
+        try {
+            ServiceSpec serviceSpec = new ServiceSpec(FileUtils.readFileToString(serviceFile, ToolConstants.CHARACTER_ENCODING));
+            JsonNode serviceNodeValue = serviceSpec.get(HyscaleSpecFields.name);
+            if (serviceNodeValue == null) {
+                HyscaleException hyscaleException = new HyscaleException(ServiceSpecErrorCodes.MISSING_FIELD_IN_SERVICE_FILE,HyscaleSpecFields.name);
+                logger.error(hyscaleException.getMessage());
+                throw hyscaleException;
+            }
+            return serviceNodeValue.asText();
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+            throw new HyscaleException(CommonErrorCode.FAILED_TO_READ_FILE, serviceFile.getPath());
+        }
     }
 }
