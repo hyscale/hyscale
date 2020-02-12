@@ -18,7 +18,6 @@ package io.hyscale.generator.services.plugins;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.ConfigTemplate;
-import io.hyscale.commons.models.Manifest;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
 import io.hyscale.generator.services.constants.ManifestGenConstants;

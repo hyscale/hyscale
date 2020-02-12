@@ -24,8 +24,6 @@ import io.hyscale.commons.models.Manifest;
 import io.hyscale.commons.models.YAMLManifest;
 import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.util.Yaml;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Utility for generic kubernetes resource

@@ -24,7 +24,6 @@ import io.hyscale.generator.services.constants.ManifestGenConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -34,8 +33,6 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.generator.services.model.ManifestGeneratorActivity;
-import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;

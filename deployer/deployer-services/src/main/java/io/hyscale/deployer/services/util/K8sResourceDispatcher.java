@@ -19,9 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.hyscale.commons.models.AnnotationKey;
-import io.hyscale.commons.utils.TimeStampProvider;
 import io.hyscale.deployer.services.broker.K8sResourceBroker;
 import io.hyscale.deployer.services.builder.NamespaceBuilder;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
@@ -29,7 +27,6 @@ import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.manager.AnnotationsUpdateManager;
 import io.hyscale.deployer.services.model.DeployerActivity;
-import io.hyscale.deployer.services.model.ResourceUpdatePolicy;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
