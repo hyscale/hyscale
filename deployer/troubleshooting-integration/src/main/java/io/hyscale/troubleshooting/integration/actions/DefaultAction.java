@@ -23,10 +23,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class DefaultAction extends ActionNode<TroubleshootingContext> {
 
+    private static final String KUBERNETES_ERROR_MESSAGE = "Kubernetes error message follows: \\n %s";
+
     @Override
     public void process(TroubleshootingContext context) {
+        Object obj = context.getAttribute(FailedResourceKey.OBSERVED_POD_STATUS);
+        String errorMessage = null;
+        if (obj != null && obj instanceof String) {
+            errorMessage = String.format(KUBERNETES_ERROR_MESSAGE, (String) FailedResourceKey.OBSERVED_POD_STATUS.getKlazz().cast(obj));
+        }
+
         DiagnosisReport report = new DiagnosisReport();
         report.setReason(AbstractedErrorMessage.CANNOT_INFER_ERROR.getReason());
+        report.setRecommendedFix(AbstractedErrorMessage.CANNOT_INFER_ERROR.formatMessage(errorMessage));
         context.addReport(report);
     }
 

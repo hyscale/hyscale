@@ -89,7 +89,7 @@ public class PendingPvcAction extends ActionNode<TroubleshootingContext> {
         List<TroubleshootingContext.ResourceInfo> storageClassResources = context.getResourceInfos().get(ResourceKind.STORAGE_CLASS.getKind());
         if ((storageClassResources == null || storageClassResources.isEmpty()) && provsioningFailed) {
             report.setReason(AbstractedErrorMessage.NO_STORAGE_CLASS_FOUND.getReason());
-            report.setRecommendedFix(AbstractedErrorMessage.INVALID_STORAGE_CLASS.getMessage());
+            report.setRecommendedFix(AbstractedErrorMessage.NO_STORAGE_CLASS_FOUND.getMessage());
             return;
         }
         if (provsioningFailed) {

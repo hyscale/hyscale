@@ -35,7 +35,7 @@ public class FixHealthCheckAction extends ActionNode<TroubleshootingContext> {
         }
 
         DiagnosisReport report = new DiagnosisReport();
-        report.setReason(AbstractedErrorMessage.LIVENESS_PROBE_FAILURE.formatReason(context.getServiceInfo().getServiceName(),eventMessage));
+        report.setReason(AbstractedErrorMessage.LIVENESS_PROBE_FAILURE.getReason());
         report.setRecommendedFix(AbstractedErrorMessage.LIVENESS_PROBE_FAILURE.getMessage());
         context.addReport(report);
     }

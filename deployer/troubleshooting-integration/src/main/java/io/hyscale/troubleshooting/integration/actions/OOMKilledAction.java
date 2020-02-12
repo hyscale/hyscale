@@ -27,7 +27,7 @@ public class OOMKilledAction extends ActionNode<TroubleshootingContext> {
     @Override
     public void process(TroubleshootingContext context) {
         DiagnosisReport report = new DiagnosisReport();
-        report.setRecommendedFix(AbstractedErrorMessage.NOT_ENOUGH_MEMORY_FOUND.formatMessage(context.getServiceInfo().getServiceName()));
+        report.setRecommendedFix(AbstractedErrorMessage.NOT_ENOUGH_MEMORY_FOUND.getMessage());
         report.setReason(AbstractedErrorMessage.NOT_ENOUGH_MEMORY_FOUND.formatReason(context.getServiceInfo().getServiceName()));
         context.addReport(report);
     }

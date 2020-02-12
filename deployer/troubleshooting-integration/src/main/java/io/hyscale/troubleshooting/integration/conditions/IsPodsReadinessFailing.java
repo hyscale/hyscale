@@ -94,7 +94,7 @@ public class IsPodsReadinessFailing implements Node<TroubleshootingContext> {
         }
 
         if (v1Events == null && v1Events.isEmpty()) {
-            report.setReason(AbstractedErrorMessage.CANNOT_FIND_EVENTS.formatReason(context.getServiceInfo().getServiceName()));
+            report.setReason(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getReason());
             report.setRecommendedFix(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getMessage());
             context.addReport(report);
             return fixHealthCheckAction;

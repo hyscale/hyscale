@@ -30,6 +30,7 @@ import io.hyscale.deployer.services.util.KubernetesResourceUtil;
 import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
 import io.hyscale.troubleshooting.integration.models.ServiceInfo;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
+import io.hyscale.troubleshooting.integration.spring.TroubleshootingConfig;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1StorageClass;
@@ -46,7 +47,6 @@ import java.util.stream.Collectors;
 
 
 //TODO JAVADOC
-// Exception Handling
 @Component
 public class TroubleshootingContextCollector {
 
@@ -55,13 +55,16 @@ public class TroubleshootingContextCollector {
     @Autowired
     private K8sClientProvider k8sClientProvider;
 
+    @Autowired
+    private TroubleshootingConfig troubleshootingConfig;
+
     public TroubleshootingContext build(@NonNull ServiceInfo serviceInfo, @NonNull K8sAuthorisation k8sAuthorisation, @NonNull String namespace) throws HyscaleException {
         TroubleshootingContext context = new TroubleshootingContext();
         try {
             ApiClient apiClient = k8sClientProvider.get(k8sAuthorisation);
 
             context.setServiceInfo(serviceInfo);
-            context.setTrace(true);
+            context.setTrace(troubleshootingConfig.isTrace());
             long start = System.currentTimeMillis();
             context.setResourceInfos(getResources(serviceInfo, apiClient, namespace));
             if (context.isTrace()) {

@@ -54,9 +54,6 @@ public class PodStatusCondition implements Node<TroubleshootingContext> {
     @Autowired
     private ServiceNotDeployedAction serviceNotDeployedAction;
 
-    @Autowired
-    private DefaultAction defaultAction;
-
     @Override
     public Node<TroubleshootingContext> next(TroubleshootingContext context) throws HyscaleException {
         DiagnosisReport report = new DiagnosisReport();
@@ -92,6 +89,7 @@ public class PodStatusCondition implements Node<TroubleshootingContext> {
                    First encountered  Pod that is failed
                  */
                 if (effectivePodStatus.isFailed()) {
+                    context.addAttribute(FailedResourceKey.OBSERVED_POD_STATUS, effectivePodStatus.getStatus());
                     if (context.isTrace()) {
                         logger.debug("Observed failed pod {} and status {}", v1Pod.getMetadata().getName(), effectivePodStatus.getStatus());
                     }

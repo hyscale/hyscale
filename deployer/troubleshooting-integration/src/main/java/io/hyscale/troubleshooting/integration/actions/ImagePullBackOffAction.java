@@ -55,8 +55,8 @@ public class ImagePullBackOffAction extends ActionNode<TroubleshootingContext> {
                         actedOn = true;
                         break;
                     } else if (invalidCredentialsPattern.matcher(event.getMessage()).find() || authorisationRequiredPattern.matcher(event.getMessage()).find()) {
-                        report.setReason(AbstractedErrorMessage.INVALID_PULL_REGISTRY_CREDENTIALS.formatReason(SetupConfig.getMountOfDockerConf(SetupConfig.USER_HOME_DIR + "/.docker/config")));
-                        report.setRecommendedFix(AbstractedErrorMessage.INVALID_PULL_REGISTRY_CREDENTIALS.getMessage());
+                        report.setReason(AbstractedErrorMessage.INVALID_PULL_REGISTRY_CREDENTIALS.getMessage());
+                        report.setRecommendedFix(AbstractedErrorMessage.INVALID_PULL_REGISTRY_CREDENTIALS.formatMessage(SetupConfig.getMountOfDockerConf(SetupConfig.USER_HOME_DIR + "/.docker/config")));
                         context.addReport(report);
                         actedOn = true;
                         break;
