@@ -61,8 +61,8 @@ public class ServiceSpecMapper {
         ObjectMapper mapper = ObjectMapperFactory.yamlMapper();
         if (profileFile != null) {
             profileData = HyscaleFilesUtil.readFileData(profileFile);
-            String profileName = ServiceProfileUtil.getProfileName(profileFile.getName());
-            String serviceName = ServiceSpecUtil.getServiceNameFromPath(serviceSpecFile.getName());
+            String profileName = ServiceProfileUtil.getProfileName(profileFile);
+            String serviceName = ServiceSpecUtil.getServiceName(serviceSpecFile);
             if (StringUtils.isNotBlank(profileData)) {
                 WorkflowLogger.startActivity(ControllerActivity.APPLYING_PROFILE_FOR_SERVICE, profileName, serviceName);
                 logger.debug("Merging profile {} for service {}", profileName, serviceName);

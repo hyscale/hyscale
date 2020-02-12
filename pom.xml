@@ -59,6 +59,7 @@
 		<copyright.year>2019</copyright.year>
 		<copyright.company>Pramati Prism, Inc.</copyright.company>
 		<release.name>First Light</release.name>
+		<hspec.supported.version>0.6.1</hspec.supported.version>
 	</properties>
 
 	<dependencies>
@@ -179,6 +180,7 @@
 									<encoding.reporting>UTF-8</encoding.reporting>
 									<hyscale.build.time>${maven.build.timestamp}</hyscale.build.time>
 									<hyscale.release.name>${release.name}</hyscale.release.name>
+									<hspec.version>${hspec.supported.version}</hspec.version>
 								</additionalProperties>
 							</configuration>
 						</execution>
