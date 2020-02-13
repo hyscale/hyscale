@@ -89,7 +89,7 @@ public class PodStatusCondition implements Node<TroubleshootingContext> {
                    First encountered  Pod that is failed
                  */
                 if (effectivePodStatus.isFailed()) {
-                    context.addAttribute(FailedResourceKey.OBSERVED_POD_STATUS, effectivePodStatus.getStatus());
+                    context.addAttribute(FailedResourceKey.OBSERVED_POD_STATUS, aggregatedStatus);
                     if (context.isTrace()) {
                         logger.debug("Observed failed pod {} and status {}", v1Pod.getMetadata().getName(), effectivePodStatus.getStatus());
                     }

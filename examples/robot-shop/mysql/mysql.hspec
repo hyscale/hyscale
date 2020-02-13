@@ -22,7 +22,7 @@ props:
     MYSQL_DATABASE: cities
     MYSQL_USER: shipping
     CHARACTER-SET-SERVER: UTF8
-    MYSQL_ALLOW_EMPTY_PASSWORD: yes
+    MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
 
 secrets:
    MYSQL_PASSWORD: secret
