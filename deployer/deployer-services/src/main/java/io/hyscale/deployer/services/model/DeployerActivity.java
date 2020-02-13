@@ -41,6 +41,7 @@ public enum DeployerActivity implements Activity {
 	DELETING_NAMESPACE("Deleting namespace "),
 	DELETING_PERSISTENT_VOLUME_CLAIMS("Deleting Persistent Volume Claims "),
     DELETING_HORIZONTAL_POD_AUTOSCALER("Deleting HorizontalPodAutoScaler "),
+    LATEST_DEPLOYMENT_NOT_IDENTIFIABLE("Unable to identify latest deployment, displaying all replicas"),
 	NO_RESOURCES_TO_UNDEPLOY("No resources to undeploy "),
 	STALE_VOLUME_DELETION(
 			"Volumes {} seems to have been removed in your hspec. These volumes are retained in your namespace {} as pvc {} for review and manual deletion"),

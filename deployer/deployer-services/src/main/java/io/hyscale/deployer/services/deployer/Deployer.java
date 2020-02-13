@@ -24,6 +24,7 @@ import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.deployer.core.model.DeploymentStatus;
+import io.hyscale.deployer.core.model.ReplicaInfo;
 import io.hyscale.deployer.services.model.Pod;
 import io.hyscale.deployer.services.model.ResourceStatus;
 import io.hyscale.deployer.services.model.ServiceAddress;
@@ -90,6 +91,22 @@ public interface Deployer {
 	 */
 	public List<DeploymentStatus> getDeploymentStatus(DeploymentContext deploymentContext) throws HyscaleException;
 
+
+	/**
+	 * Get replicas info based on pods
+	 * isFilter restricts which pods for which replica info is required
+	 * 
+	 * @param authConfig
+	 * @param appName
+	 * @param serviceName
+	 * @param namespace
+	 * @param isFilter TODO Enable predicate based filter
+	 * @return List of {@link ReplicaInfo} based on pods fetched
+	 * @throws HyscaleException
+	 */
+	public List<ReplicaInfo> getReplicas(AuthConfig authConfig, String appName, String serviceName, String namespace, 
+	        boolean isFilter) throws HyscaleException;
+	
 	/**
 	 * Get Service logs from Pods
 	 * tail logs or read specific number of lines
@@ -102,7 +119,6 @@ public interface Deployer {
 	/**
 	 * Get logs of a specific Pod of a Service
 	 * tail logs or read specific number of lines
-	 * @param deploymentContext
 	 * @return Input Stream with logs
 	 * @throws HyscaleException
 	 */
@@ -128,6 +144,7 @@ public interface Deployer {
 	default ResourceStatus status(String namespace, Manifest manifest, AuthConfig authConfig) throws Exception {
 		return ResourceStatus.STABLE;
 	}
-
+	
 	List<Pod> getPods(String namespace, String appName, String serviceName, K8sAuthorisation k8sAuthorisation) throws Exception;
+
 }

@@ -96,7 +96,7 @@ public class K8sResourceDispatcher {
         for (Manifest manifest : manifests) {
             try {
                 KubernetesResource k8sResource = KubernetesResourceUtil.getKubernetesResource(manifest, namespace);
-                AnnotationsUpdateManager.update(k8sResource, AnnotationKey.LAST_UPDATED_AT.LAST_UPDATED_AT,
+                AnnotationsUpdateManager.update(k8sResource, AnnotationKey.LAST_UPDATED_AT,
                         DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
                 ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(k8sResource.getKind());
                 if (lifeCycleHandler != null && k8sResource != null && k8sResource.getResource() != null && k8sResource.getV1ObjectMeta() != null) {

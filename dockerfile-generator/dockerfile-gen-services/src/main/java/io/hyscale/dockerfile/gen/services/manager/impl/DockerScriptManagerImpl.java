@@ -35,7 +35,7 @@ import io.hyscale.servicespec.commons.model.service.BuildSpec;
 import io.hyscale.commons.models.ConfigTemplate;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
 import io.hyscale.dockerfile.gen.services.model.DockerfileGenContext;
-import io.hyscale.dockerfile.gen.core.models.CommandType;
+import io.hyscale.dockerfile.gen.services.model.CommandType;
 import io.hyscale.commons.models.FileSpec;
 import io.hyscale.commons.models.SupportingFile;
 import io.hyscale.dockerfile.gen.services.config.DockerfileGenConfig;
@@ -100,7 +100,7 @@ public class DockerScriptManagerImpl implements DockerfileEntityManager {
 
 				return supportingFile;
 			} else {
-				fileSpec.setContent(getConfigureCmdScript(commands));
+				fileSpec.setContent(getScript(commandType,commands));
 				fileSpec.setName(DockerfileGenConfig.CONFIGURE_SCRIPT);
 			}
 			break;
@@ -109,7 +109,7 @@ public class DockerScriptManagerImpl implements DockerfileEntityManager {
 				supportingFile.setFile(new File(SetupConfig.getAbsolutePath(script)));
 				return supportingFile;
 			} else {
-				fileSpec.setContent(getRunCmdScript(commands));
+				fileSpec.setContent(getScript(commandType,commands));
 				fileSpec.setName(DockerfileGenConfig.RUN_SCRIPT);
 			}
 			break;
@@ -125,7 +125,18 @@ public class DockerScriptManagerImpl implements DockerfileEntityManager {
 		return supportingFile;
 	}
 
-	public String getRunCmdScript(String runCommand) throws HyscaleException {
+	public String getScript(CommandType commandType, String commands) throws HyscaleException {
+		if (StringUtils.isBlank(commands)) {
+			return null;
+		}
+		ConfigTemplate configTemplate = templateProvider.getTemplateFor(commandType);
+		Map<String, Object> configureCmdContext = new HashMap<String, Object>();
+		configureCmdContext.put(commandType.getTemplateField(), commands);
+
+		return templateResolver.resolveTemplate(configTemplate.getTemplatePath(), configureCmdContext);
+	}
+
+	/*public String getRunCmdScript(String runCommand) throws HyscaleException {
 		if (StringUtils.isBlank(runCommand)) {
 			return null;
 		}
@@ -148,7 +159,7 @@ public class DockerScriptManagerImpl implements DockerfileEntityManager {
 
 		return templateResolver.resolveTemplate(configTemplate.getTemplatePath(), configureCmdContext);
 
-	}
+	}*/
 
 	public String getScriptFile(String scriptFile, CommandType commandType) {
 		if (StringUtils.isNotBlank(scriptFile)) {

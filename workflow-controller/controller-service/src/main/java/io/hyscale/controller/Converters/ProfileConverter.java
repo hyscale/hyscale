@@ -68,7 +68,7 @@ public class ProfileConverter extends Converter {
         profileNameBuilder.append(ServiceProfileUtil.getProfileName(profileFile)).append(ToolConstants.DASH).append(ServiceProfileUtil.getServiceNameFromProfile(profileFile));
         if (!profileFileName.equals(profileNameBuilder.toString())) {
             logger.warn(ServiceSpecActivity.PROFILE_NAME_MISMATCH.getActivityMessage(), profileFile.getName());
-            WorkflowLogger.warn(ServiceSpecActivity.PROFILE_NAME_MISMATCH, profileFile.getName());
+            WorkflowLogger.persist(ServiceSpecActivity.PROFILE_NAME_MISMATCH, profileFile.getName());
             return false;
         }
         return true;

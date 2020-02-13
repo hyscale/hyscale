@@ -18,12 +18,16 @@ package io.hyscale.deployer.services.util;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
 import io.hyscale.commons.constants.K8SRuntimeConstants;
 import io.hyscale.deployer.services.model.PodCondition;
 import io.kubernetes.client.models.V1ContainerStatus;
+import io.kubernetes.client.models.V1OwnerReference;
 import io.kubernetes.client.models.V1Pod;
 import io.kubernetes.client.models.V1PodCondition;
 
@@ -33,7 +37,7 @@ import io.kubernetes.client.models.V1PodCondition;
  * 
  */
 public class K8sPodUtil {
-
+    
 	/**
 	 * Gets aggregate status from Init containers - empty if init containers are ready
 	 * If init container status not found gets aggregated status from containers
@@ -114,7 +118,7 @@ public class K8sPodUtil {
 		}
 		String aggregateStatus = null;
 		for (V1ContainerStatus each : containerStatuses) {
-			if (each.getLastState() != null) {
+			if (!each.isReady() && each.getLastState() != null) {
 				if (each.getLastState().getTerminated() != null) {
 					aggregateStatus = each.getLastState().getTerminated().getReason();
 					break;
@@ -278,4 +282,139 @@ public class K8sPodUtil {
 		}
 		return initContainerStatus;
 	}
+	
+	/**
+	 * 
+	 * @param podList
+	 * @return pod owner kind if all pods have same owner, else null
+	 */
+	
+	public static String getPodsUniqueOwner(List<V1Pod> podList) {
+	    if (podList == null || podList.isEmpty()) {
+	        return null;
+	    }
+	    
+	    String podOwner = getPodOwner(podList.get(0));
+	    if (StringUtils.isBlank(podOwner)) {
+	        return null;
+	    }
+	    
+	    for (V1Pod pod: podList) {
+	        if (!podOwner.equals(getPodOwner(pod))) {
+	            return null;
+	        }
+	    }
+	    
+	    return podOwner;
+	}
+	
+	/**
+	 * 
+	 * @param pod
+	 * @return pod owner kind
+	 */
+	public static String getPodOwner(V1Pod pod) {
+        if (pod == null) {
+            return null;
+        }
+        V1OwnerReference podOwner =  getOwnerReference(pod);
+        
+        return podOwner != null ? podOwner.getKind() : null;
+    }
+    
+    /**
+     * 
+     * @param podList
+     * @param filter predicate used for filtering
+     * @return filtered pods
+     */
+    public static List<V1Pod> filterPods(List<V1Pod> podList, Predicate filter){
+        if (podList == null || podList.isEmpty() || filter == null) {
+            return podList;
+        }
+        
+        return podList.stream().filter(pod -> filter.test(pod))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 
+     * @param podList
+     * @param filter condition and value
+     * @param filterValue - value used for filtering
+     * @return
+     */
+    public static List<V1Pod> filterPods(List<V1Pod> podList, BiPredicate filter, Object filterValue){
+        if (podList == null || podList.isEmpty() || filter == null || filterValue == null) {
+            return podList;
+        }
+        
+        return podList.stream().filter(pod -> filter.test(pod, filterValue))
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Check if pods contains passed labels(key as well as value)
+     * @param pod
+     * @param labels
+     * @return true if pod contains passed labels, else false
+     */
+    public static boolean checkPodLabels(V1Pod pod, Map<String, String> labels) {
+        if (pod == null) {
+            return false;
+        }
+        if (labels == null || labels.isEmpty()) {
+            return true;
+        }
+        Map<String, String> podLabels = pod.getMetadata().getLabels();
+        
+        if (podLabels == null) {
+            return false;
+        }
+        
+        return podLabels.entrySet().containsAll(labels.entrySet());
+    }
+    
+    /**
+     * Pods are ambiguous if pods have different owner kinds, or same owner with different uid
+     * @param podList
+     * @return whether all pods belong to same owner
+     */
+    public static boolean checkForPodAmbiguity(List<V1Pod> podList) {
+        if (podList == null || podList.size() < 2) {
+            return false;
+        }
+        V1OwnerReference ownerReference = getOwnerReference(podList.get(0));
+        if (ownerReference == null) {
+            return true;
+        }
+        String podOwner = ownerReference.getKind();
+        String ownerUID = ownerReference.getUid();
+        
+        if (StringUtils.isBlank(podOwner) || StringUtils.isBlank(ownerUID)) {
+            return true;
+        }
+        
+        for (V1Pod pod : podList) {
+            ownerReference = getOwnerReference(pod);
+            if (ownerReference == null) {
+                return true;
+            }
+            if (!podOwner.equals(ownerReference.getKind()) || !ownerUID.equals(ownerReference.getUid())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private static V1OwnerReference getOwnerReference(V1Pod pod) {
+        if (pod == null) {
+            return null;
+        }
+        List<V1OwnerReference> ownerReferences = pod.getMetadata().getOwnerReferences();
+        if (ownerReferences == null || ownerReferences.size() < 1) {
+            return null;
+        }
+        return ownerReferences.get(0);
+    }
 }

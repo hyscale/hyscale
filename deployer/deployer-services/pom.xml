@@ -11,6 +11,9 @@
 
 	<artifactId>deployer-services</artifactId>
 	<packaging>jar</packaging>
+<properties>
+          <main.basedir>../../</main.basedir>
+        </properties>	
 
 	<dependencies>
 		<dependency>

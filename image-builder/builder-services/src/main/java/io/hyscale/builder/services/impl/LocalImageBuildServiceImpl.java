@@ -17,7 +17,7 @@ package io.hyscale.builder.services.impl;
 
 import java.io.File;
 
-import io.hyscale.builder.services.command.ImageCommandGenerator;
+import io.hyscale.commons.commands.provider.ImageCommandProvider;
 import io.hyscale.builder.services.config.LocalImageBuildCondition;
 import io.hyscale.builder.services.util.DockerImageUtil;
 import io.hyscale.builder.services.util.ImageLogUtil;
@@ -51,7 +51,7 @@ public class LocalImageBuildServiceImpl implements ImageBuildService {
     private static final Logger logger = LoggerFactory.getLogger(LocalImageBuildServiceImpl.class);
 
     @Autowired
-    private ImageCommandGenerator imageCommandGenerator;
+    private ImageCommandProvider imageCommandProvider;
 
     @Autowired
     private DockerImageUtil dockerImageUtil;
@@ -89,7 +89,7 @@ public class LocalImageBuildServiceImpl implements ImageBuildService {
         String tag = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.tag),
                 String.class);
         String dockerfilePath = getDockerfilePath(userDockerfile, context);
-        String dockerBuildCommand = imageCommandGenerator.dockerBuildCommand(appName, serviceName, tag, dockerfilePath,
+        String dockerBuildCommand = imageCommandProvider.dockerBuildCommand(appName, serviceName, tag, dockerfilePath,
                 userDockerfile != null ? userDockerfile.getArgs() : null);
 
         logger.debug("Docker build command {}", dockerBuildCommand);
@@ -117,7 +117,7 @@ public class LocalImageBuildServiceImpl implements ImageBuildService {
 		}
         
         DockerImage dockerImage = new DockerImage();
-        dockerImage.setName(imageCommandGenerator.getBuildImageName(appName, serviceName));
+        dockerImage.setName(imageCommandProvider.getBuildImageName(appName, serviceName));
         dockerImage.setTag(tag);
         context.setDockerImage(dockerImage);
 

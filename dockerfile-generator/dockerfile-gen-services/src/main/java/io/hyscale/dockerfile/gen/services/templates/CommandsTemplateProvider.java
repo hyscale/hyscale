@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.Maps;
 
 import io.hyscale.commons.models.ConfigTemplate;
-import io.hyscale.dockerfile.gen.core.models.CommandType;
+import io.hyscale.dockerfile.gen.services.model.CommandType;
 
 @Component
 public class CommandsTemplateProvider {

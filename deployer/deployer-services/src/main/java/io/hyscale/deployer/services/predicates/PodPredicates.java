@@ -19,6 +19,9 @@ import io.hyscale.deployer.services.model.PodCondition;
 import io.hyscale.deployer.services.util.K8sPodUtil;
 import io.kubernetes.client.models.V1Pod;
 
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 /**
@@ -37,5 +40,17 @@ public class PodPredicates {
 
 	public static Predicate<V1Pod> isPodCreated() {
 		return pod -> K8sPodUtil.checkForPodCreation(pod);
+	}
+	
+	/**
+	 * Pods are ambiguous if pods have different owner kinds, or same owner with different uid
+	 * @return {@link Predicate} which checks for ambiguity condition
+	 */
+	public static Predicate<List<V1Pod>> isPodAmbiguous() {
+	     return podList -> K8sPodUtil.checkForPodAmbiguity(podList);
+	}
+	
+	public static BiPredicate<V1Pod, Map<String, String>> podContainsLabel(){
+	    return (pod, labels) -> K8sPodUtil.checkPodLabels(pod, labels);
 	}
 }
