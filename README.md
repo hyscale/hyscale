@@ -172,3 +172,7 @@ For all possible commands, see the [command reference](docs/hyscale-commands-ref
 ### Contributing
 
 If you wish to contribute, see the architecture & contributor documentation [here](docs/contributor-guide.md).
+
+### Connect with us
+We would love to know your experiences with HyScale. Write to us at connect@hyscale.io if you have any questions or issues and we will respond as quickly as we can. Suggestions are welcome too!
+You can also follow us on [Twitter](https://twitter.com/hyscaleio) and [Medium](https://medium.com/@teamhyscale) to keep a tab on interesting developments from the team 

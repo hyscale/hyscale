@@ -1,3 +1,13 @@
+# v0.9.3 Release
+
+This is a minor release to support schema validation, replica logs & troubleshooting.
+
+### Features:
+
+* Support for service & profile spec schema validators 
+* Support for fetching & tailing specific replica logs of a service.
+* Beta release to support troubleshooting k8s errors.
+
 # v0.9.2 Release
 
 This is a minor release to support profiles , 1.14 cluster support
