@@ -9,7 +9,8 @@
       "additionalProperties": {
         "type": [
           "string",
-          "integer"
+          "number",
+          "boolean"
         ]
       }
     },
@@ -17,12 +18,15 @@
       "description": "Describes the keys of any attribute",
       "type": "array",
       "items": {
-        "type": "string",
+        "type": [
+        	"string",
+        	"number"
+        	],
         "description": "string key"
       }
     },
     "io.hyscale.api.replicas.Replicas": {
-      "description": "Defines the secrets of the service",
+      "description": "Defines the replicas of the service",
       "required": [
         "max",
         "cpuThreshold"
@@ -124,7 +128,7 @@
           },
           "props": {
             "$ref": "#/definitions/io.hyscale.api.map.string",
-            "description": "Describes the properties of the service as key-value pairs "
+            "description": "Describes the properties of the service sidecar as key-value pairs "
           },
           "secrets": {
             "anyOf": [

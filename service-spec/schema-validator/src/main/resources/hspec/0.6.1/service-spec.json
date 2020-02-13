@@ -27,7 +27,7 @@
       "description": "Describes artifact source and destination inside container.",
       "properties": {
         "name": {
-          "description": "defines the name of the artifacti. should be unique",
+          "description": "defines the name of the artifact. should be unique",
           "type": "string"
         },
         "source": {
@@ -83,15 +83,23 @@
       "type": "object"
     },
     "io.hyscale.api.image.Image": {
-      "description": "Describes container Image could be from dockerfile or buildSpec",
+      "description": "Describes container Image, could be from dockerfile or buildSpec",
       "properties": {
         "name": {
           "description": "Name of final Image",
           "type": "string"
         },
         "tag": {
-          "description": "tag defines the final image tag",
-          "type": "string"
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "description": "tag defines the final image tag"
         },
         "registry": {
           "description": "docker registry url along with namespace",
@@ -264,7 +272,14 @@
         ],
         "properties": {
           "port": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "description": "defines port number along with type. default type is tcp."
           },
           "healthCheck": {
@@ -314,7 +329,7 @@
           },
           "props": {
             "$ref": "#/definitions/io.hyscale.api.map.string",
-            "description": "Describes the properties of the service as key-value pairs "
+            "description": "Describes the properties of the service sidecar as key-value pairs "
           },
           "propsVolumePath": {
             "$ref": "#/definitions/io.hyscale.api.props.PropsVolumePath",
