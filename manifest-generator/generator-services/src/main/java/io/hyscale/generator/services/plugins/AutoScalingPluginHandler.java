@@ -102,7 +102,7 @@ public class AutoScalingPluginHandler implements ManifestHandler {
         appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
         ManifestResource podSpecOwner = null;
         podSpecOwner = ManifestResource.fromString((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
-        context.put(TARGET_KIND, podSpecOwner);
+        context.put(TARGET_KIND, podSpecOwner.getKind());
         context.put(TARGET_APIVERSION, podSpecOwner.getApiVersion());
         context.put(TARGET_NAME, podSpecOwner.getName(appMetaData));
         context.put(MIN_REPLICAS, replicas.getMin());

@@ -115,7 +115,7 @@
     "cpu": {
       "description": "Defines the range of cpu the service has to use in the container for this environment",
       "type": "string",
-      "pattern": "([\\d.\\d]+m)+(-[\\d.\\d]+m)*"
+        "pattern": "([\\d.\\d]+m)+(-[\\d.\\d]+m)*"
     },
     "agents": {
       "description": "Describes the list of sidecars to be attached to the service",
