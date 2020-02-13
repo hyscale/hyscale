@@ -67,7 +67,7 @@ import javax.validation.constraints.Pattern;
  * @option profiles list of profiles for services
  * @option verbose  prints the verbose output of the deployment
  *
- *  Eg: hyscale deploy service -f s1.hspec.yaml -f s2.hspec.yaml -p p1-s1.hprof.yaml -n dev -a sample
+ *  Eg: hyscale deploy service -f svca.hspec -f svcb.hspec -p dev-svca.hprof -n dev -a sample
  *
  *
  *  Responsible for deploying a service with the given 'hspec' to

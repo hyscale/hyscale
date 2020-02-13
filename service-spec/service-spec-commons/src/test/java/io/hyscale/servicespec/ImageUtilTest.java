@@ -38,9 +38,9 @@ public class ImageUtilTest {
 
 
     public static Stream<Arguments> input() {
-        return Stream.of(Arguments.of("/servicespecs/myservice.hspec.yaml", "x.y.z/myServiceImage:1.2.3"),
-                Arguments.of("/servicespecs/test1.hspec.yaml", "x.y.z/myServiceImage"),
-                Arguments.of("/servicespecs/test2.hspec.yaml", "myServiceImage"));
+        return Stream.of(Arguments.of("/servicespecs/myservice.hspec", "x.y.z/myServiceImage:1.2.3"),
+                Arguments.of("/servicespecs/test1.hspec", "x.y.z/myServiceImage"),
+                Arguments.of("/servicespecs/test2.hspec", "myServiceImage"));
     }
 
     @ParameterizedTest

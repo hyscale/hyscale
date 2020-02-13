@@ -34,7 +34,7 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 @Component
 public class BuildSpecUpdateTestHandler implements IServiceSpecUpdateTestHandler<BuildSpec> {
 
-    private static final String buildSpecUpdateSpec = "/servicespecs/buildSpec_update.hspec.yaml";
+    private static final String buildSpecUpdateSpec = "/servicespecs/buildSpec_update.hspec";
 
     private static final String JSON_PATH = HyscaleSpecFields.getPath(HyscaleSpecFields.image,
             HyscaleSpecFields.buildSpec);

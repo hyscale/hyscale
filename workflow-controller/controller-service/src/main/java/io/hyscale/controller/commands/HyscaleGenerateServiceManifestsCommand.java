@@ -56,7 +56,7 @@ import javax.validation.constraints.Pattern;
  * @option serviceSpecs  list of service specs
  * @option profiles  list of profiles for services
  *
- * Eg: hyscale generate service manifests -f s1.hspec.yaml -f s2.hspec.yaml -p p1-s1.hprof.yaml -a sample
+ * Eg: hyscale generate service manifests -f svc.hspec -f svcb.hspec -p dev-svc.hprof -a sample
  *
  * Generates the manifests from the given hspec and writes the manifests
  * to <USER.HOME/hyscale/apps/[<appName]/[serviceName]/generated-files/manifests/
