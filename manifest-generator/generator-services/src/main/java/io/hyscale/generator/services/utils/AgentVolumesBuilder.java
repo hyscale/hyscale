@@ -48,10 +48,10 @@ import java.util.List;
 public class AgentVolumesBuilder extends AgentHelper implements AgentBuilder {
     @Autowired
     AgentManifestNameGenerator agentManifestNameGenerator;
-
+    
     @Override
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException, HyscaleException {
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         List<ManifestSnippet> volumeSnippets = new ArrayList<ManifestSnippet>();
         List<Agent> agents = getAgents(serviceSpec);
         String serviceName = serviceSpec.get(HyscaleSpecFields.name,String.class);

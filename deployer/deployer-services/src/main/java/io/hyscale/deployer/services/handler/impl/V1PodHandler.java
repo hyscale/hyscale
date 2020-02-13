@@ -266,7 +266,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 			throws HyscaleException {
 		return getLogs(apiClient, name, namespace, null, name, readLines);
 	}
-	
+
 	public InputStream getLogs(ApiClient apiClient, String serviceName, String namespace, String podName, String containerName, Integer readLines)
 			throws HyscaleException {
 		if(podName == null) {

@@ -40,7 +40,6 @@ public class KubernetesResourceUtil {
         if (manifest == null) {
             return null;
         }
-
         KubernetesResource resource = new KubernetesResource();
         YAMLManifest yamlManifest = (YAMLManifest) manifest;
         Object obj = Yaml.load(yamlManifest.getYamlManifest());
@@ -55,7 +54,6 @@ public class KubernetesResourceUtil {
         resource.setKind(kind);
         resource.setResource(obj);
         return resource;
-
     }
 
     public static V1ObjectMeta getObjectMeta(Object object) throws NoSuchMethodException, SecurityException,

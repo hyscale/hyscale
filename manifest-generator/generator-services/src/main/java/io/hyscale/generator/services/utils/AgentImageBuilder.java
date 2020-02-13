@@ -18,8 +18,6 @@ package io.hyscale.generator.services.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
-import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.model.service.Agent;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
@@ -45,7 +43,7 @@ public class AgentImageBuilder extends AgentHelper implements AgentBuilder {
 
     @Override
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         List<ManifestSnippet> podSnippets = new ArrayList<ManifestSnippet>();
         List<Agent> agents = getAgents(serviceSpec);
         if(agents == null){

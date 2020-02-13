@@ -88,8 +88,7 @@ public class KubernetesDeployer implements Deployer {
         K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(clientProvider.get((K8sAuthorisation) context.getAuthConfig()));
         try {
             resourceDispatcher.waitForReadiness(context.isWaitForReadiness());
-            resourceDispatcher.withNamespace(context.getNamespace()).withUpdatePolicy(deployerConfig.getUpdatePolicy())
-                    .apply(context.getManifests());
+            resourceDispatcher.withNamespace(context.getNamespace()).apply(context.getManifests());
 
         } catch (HyscaleException e) {
             logger.error("Error while deploying service {} in namespace {} , error {} ", context.getServiceName(),

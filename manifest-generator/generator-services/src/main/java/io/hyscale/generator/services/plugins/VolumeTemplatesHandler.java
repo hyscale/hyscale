@@ -69,7 +69,8 @@ public class VolumeTemplatesHandler implements ManifestHandler {
         TypeReference<List<Volume>> volumesList = new TypeReference<List<Volume>>() {
         };
         List<Volume> volumes = serviceSpec.get(HyscaleSpecFields.volumes, volumesList);
-        if (!validateVolumes(volumes, manifestContext)) {
+        String podSpecOwner = (String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER);
+        if (!validateVolumes(volumes, manifestContext) || !(podSpecOwner.equals(ManifestResource.DEPLOYMENT.getKind()) || podSpecOwner.equals(ManifestResource.STATEFUL_SET.getKind()))) {
             logger.debug("Validation for volume templates failed.");
             return null;
         }
@@ -87,7 +88,6 @@ public class VolumeTemplatesHandler implements ManifestHandler {
             // Creating a manifest snippet for volumeClaimTemplates
             snippetList.add(buildVolumeClaimSnippet(volumes, appMetaData));
             snippetList.add(getServiceNameSnippet(appMetaData.getServiceName()));
-
         } catch (JsonProcessingException e) {
             logger.error("Error while serializing volumes snippet ", e);
         }

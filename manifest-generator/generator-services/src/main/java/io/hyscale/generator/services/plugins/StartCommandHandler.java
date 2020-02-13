@@ -21,8 +21,6 @@ import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
-import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -42,7 +40,6 @@ public class StartCommandHandler implements ManifestHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(StartCommandHandler.class);
 
-
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         String startCommand = serviceSpec.get(HyscaleSpecFields.startCommand, String.class);
@@ -50,7 +47,7 @@ public class StartCommandHandler implements ManifestHandler {
             logger.debug("Found empty start command.");
             return null;
         }
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         return getCommandAndArgsSnippet(startCommand, podSpecOwner);
     }
 

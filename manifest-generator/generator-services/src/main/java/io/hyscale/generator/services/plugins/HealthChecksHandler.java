@@ -21,8 +21,6 @@ import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -108,7 +106,7 @@ public class HealthChecksHandler implements ManifestHandler {
             v1Probe.setTimeoutSeconds(DEFAULT_TIMEOUT_IN_SECONDS);
             v1Probe.setFailureThreshold(DEFAULT_FAILURE_THRESHOLD_IN_SECONDS);
             try {
-                String podSpecOwner = ((ManifestResource) context.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+                String podSpecOwner = ((String) context.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
                 manifestSnippetList.add(buildReadinessProbe(v1Probe, podSpecOwner));
                 manifestSnippetList.add(buildLiveinessProbe(v1Probe, podSpecOwner));
                 logger.debug("Processing HealthChecks done.");

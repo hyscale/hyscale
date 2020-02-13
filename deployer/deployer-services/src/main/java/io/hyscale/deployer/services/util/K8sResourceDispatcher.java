@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import io.hyscale.commons.models.AnnotationKey;
-import io.hyscale.commons.utils.TimeStampProvider;
 import io.hyscale.deployer.services.broker.K8sResourceBroker;
 import io.hyscale.deployer.services.builder.NamespaceBuilder;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
@@ -28,7 +27,6 @@ import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.manager.AnnotationsUpdateManager;
 import io.hyscale.deployer.services.model.DeployerActivity;
-import io.hyscale.deployer.services.model.ResourceUpdatePolicy;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -52,7 +50,6 @@ public class K8sResourceDispatcher {
 
     private static final Logger logger = LoggerFactory.getLogger(K8sResourceDispatcher.class);
 
-    private ResourceUpdatePolicy updatePolicy;
     private K8sResourceBroker resourceBroker;
     private ApiClient apiClient;
     private String namespace;
@@ -62,18 +59,12 @@ public class K8sResourceDispatcher {
         this.apiClient = apiClient;
         this.namespace = K8SRuntimeConstants.DEFAULT_NAMESPACE;
         this.waitForReadiness = true;
-        this.updatePolicy = ResourceUpdatePolicy.PATCH;
         this.resourceBroker = new K8sResourceBroker(apiClient);
     }
 
     public K8sResourceDispatcher withNamespace(String namespace) {
         this.namespace = namespace;
         this.resourceBroker.withNamespace(namespace);
-        return this;
-    }
-
-    public K8sResourceDispatcher withUpdatePolicy(ResourceUpdatePolicy updatePolicy) {
-        this.updatePolicy = updatePolicy;
         return this;
     }
 
@@ -112,7 +103,7 @@ public class K8sResourceDispatcher {
                     try {
                         String name = k8sResource.getV1ObjectMeta().getName();
                         if (resourceBroker.get(lifeCycleHandler, name) != null) {
-                            resourceBroker.update(lifeCycleHandler, k8sResource, updatePolicy);
+                            resourceBroker.update(lifeCycleHandler, k8sResource, lifeCycleHandler.getUpdatePolicy());
                         } else {
                             resourceBroker.create(lifeCycleHandler, k8sResource.getResource());
                         }

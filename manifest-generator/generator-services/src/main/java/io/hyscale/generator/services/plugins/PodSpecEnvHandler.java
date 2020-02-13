@@ -54,7 +54,7 @@ public class PodSpecEnvHandler implements ManifestHandler {
         appMetaData.setAppName(manifestContext.getAppName());
         appMetaData.setEnvName(manifestContext.getEnvName());
         appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
 
         List<V1EnvVar> envVarList = new DecoratedArrayList<V1EnvVar>();
         try {

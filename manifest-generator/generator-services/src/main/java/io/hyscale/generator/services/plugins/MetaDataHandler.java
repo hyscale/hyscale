@@ -28,7 +28,6 @@ import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
-import io.kubernetes.client.models.V1ObjectMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -66,8 +65,8 @@ public class MetaDataHandler implements ManifestHandler {
                 }
 
             }
-            context.addGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER, ManifestPredicates.getVolumesPredicate().test(serviceSpec) ? ManifestResource.STATEFUL_SET :
-                    ManifestResource.DEPLOYMENT);
+            context.addGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER, ManifestPredicates.getVolumesPredicate().test(serviceSpec) ? ManifestResource.STATEFUL_SET.getKind() :
+                    ManifestResource.DEPLOYMENT.getKind());
         } catch (JsonProcessingException e) {
             logger.error("Error while serializing metadata snippet.", e);
         }

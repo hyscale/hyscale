@@ -21,9 +21,7 @@ import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
-import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.model.AppMetaData;
-import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -50,7 +48,7 @@ public class PodSpecLabels implements ManifestHandler {
         appMetaData.setEnvName(manifestContext.getEnvName());
         appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
         List<ManifestSnippet> snippetList = new ArrayList<>();
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         try {
             ManifestSnippet metaDataSnippet = new ManifestSnippet();
             metaDataSnippet.setPath("spec.template.metadata");
