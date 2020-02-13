@@ -72,7 +72,7 @@ public class K8sDeployerUtil {
             return new ArrayList<V1Pod>();
         }
 
-        String revision = v1DeploymentHandler.getDeploymentRevision(deploymentList.get(0));
+        String revision = V1DeploymentHandler.getDeploymentRevision(deploymentList.get(0));
 
         if (StringUtils.isBlank(revision)) {
             return podList;

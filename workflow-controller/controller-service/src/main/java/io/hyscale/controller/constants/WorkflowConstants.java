@@ -58,5 +58,11 @@ public class WorkflowConstants {
 	public static final String PUSH_LOGS = "PUSH_LOGS";
 
 	public static final String IMAGE_SHA_SUM = "IMAGE_SHA_SUM";
+	
+	public static final String DEPLOYMENT_STATUS_LIST = "DEPLOYMENT_STATUS_LIST";
+	
+	public static final String DEPLOYMENT_STATUS = "DEPLOYMENT_STATUS";
+	
+	public static final String TROUBLESHOOT_MESSAGE = "TROUBLESHOOT_MESSAGE";
 
 }

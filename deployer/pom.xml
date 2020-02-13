@@ -1,18 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<parent>
-		<artifactId>hyscale</artifactId>
-		<groupId>io.hyscale</groupId>
-		<version>0.9.3</version>
-	</parent>
-	<modelVersion>4.0.0</modelVersion>
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>hyscale</artifactId>
+        <groupId>io.hyscale</groupId>
+        <version>0.9.3</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
 
-	<artifactId>deployer</artifactId>
-	<packaging>pom</packaging>
-	<modules>
-		<module>deployer-core</module>
-		<module>deployer-services</module>
-	</modules>
+    <artifactId>deployer</artifactId>
+    <packaging>pom</packaging>
+    <properties>
+          <main.basedir>../</main.basedir>
+        </properties>
+
+    <modules>
+        <module>deployer-core</module>
+        <module>deployer-services</module>
+        <module>troubleshooting-integration</module>
+    </modules>
 </project>

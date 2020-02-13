@@ -118,7 +118,7 @@ public class K8sPodUtil {
 		}
 		String aggregateStatus = null;
 		for (V1ContainerStatus each : containerStatuses) {
-			if (each.getLastState() != null) {
+			if (!each.isReady() && each.getLastState() != null) {
 				if (each.getLastState().getTerminated() != null) {
 					aggregateStatus = each.getLastState().getTerminated().getReason();
 					break;

@@ -77,7 +77,7 @@ import javax.validation.constraints.Pattern;
  *
  */
 @CommandLine.Command(name = "service", aliases = {"services"},
-        description = "Deploys the service to kubernetes cluster")
+        description = "Deploys the service to kubernetes cluster",exitCodeOnInvalidInput = 223,exitCodeOnExecutionException = 123)
 @Component
 public class HyscaleDeployServiceCommand implements Callable<Integer> {
 

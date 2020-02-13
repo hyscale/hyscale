@@ -116,7 +116,7 @@ public class WorkflowLogger {
     }
 
     private static String getFormattedMessage(Activity activity, String... args) {
-        if (activity == null) {
+        if (activity == null || activity.getActivityMessage() == null) {
             return "";
         }
         return args != null && args.length != 0 ? String.format(getActivity(activity), args)
