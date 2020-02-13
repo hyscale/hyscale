@@ -41,9 +41,7 @@ public class TroubleshootUtil {
             String reason = each.getReason();
             if (StringUtils.isNotBlank(reason)) {
                 message.append(reason);
-                if (!reason.endsWith(ToolConstants.COMMA) || !reason.endsWith(ToolConstants.DOT)) {
-                    message.append(ToolConstants.COMMA).append(ToolConstants.SPACE);
-                }
+                message.append(ToolConstants.SPACE);
             }
             message.append(each.getRecommendedFix());
             message.append(ToolConstants.NEW_LINE);
