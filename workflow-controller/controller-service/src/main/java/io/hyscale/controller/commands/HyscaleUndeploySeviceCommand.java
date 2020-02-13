@@ -76,7 +76,7 @@ public class HyscaleUndeploySeviceCommand implements Callable<Integer> {
 	@Option(names = { "-a", "--app" }, required = true, description = "Application name")
 	private String appName;
 
-	@Option(names = { "-s", "--service" }, required = true, description = "Service names")
+	@Option(names = { "-s", "--service" }, required = true, description = "Service names", split = ",")
 	private List<
 	@Pattern(regexp = ValidationConstants.SERVICE_NAME_REGEX, message = ValidationConstants.INVALID_SERVICE_NAME_MSG)
 	String> serviceList;
