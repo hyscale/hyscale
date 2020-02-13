@@ -31,10 +31,12 @@
       "properties": {
         "min": {
           "type": "integer",
+          "minimum": 1,
           "description": "specifies the min no.of replicas required for this service "
         },
         "max": {
           "type": "integer",
+          "minimum": 1,
           "description": "specifies the max no.of replicas required for this service "
         },
         "cpuThreshold": {
@@ -53,7 +55,8 @@
     "replicas": {
       "anyOf": [
         {
-          "type": "integer"
+          "type": "integer",
+          "minimum": 1
         },
         {
           "$ref": "#/definitions/io.hyscale.api.replicas.Replicas"
