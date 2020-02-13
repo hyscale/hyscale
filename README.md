@@ -82,7 +82,7 @@ Usage:
 For commands refer [here](https://github.com/hyscale/hyscale/blob/master/docs/hyscale-commands-reference.md) by replacing `hyscale` with `java command`.  
 
 ```
-Example :  java -jar </path/to/hyscale.jar> deploy service -f myservice.hspec.yaml -n my-namespace -a my-app
+Example :  java -jar </path/to/hyscale.jar> deploy service -f myservice.hspec -n my-namespace -a my-app
 ```
 
 Verified on CentOS, Ubuntu and Debian Linux,Mac .  Windows installer coming soon!

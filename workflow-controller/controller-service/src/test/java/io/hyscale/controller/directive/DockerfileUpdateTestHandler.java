@@ -36,7 +36,7 @@ public class DockerfileUpdateTestHandler implements IServiceSpecUpdateTestHandle
     private static final String JSON_PATH = HyscaleSpecFields.getPath(HyscaleSpecFields.image,
             HyscaleSpecFields.dockerfile);
 
-    private static final String dockerfileUpdateSpec = "/servicespecs/dockerfile_update.hspec.yaml";
+    private static final String dockerfileUpdateSpec = "/servicespecs/dockerfile_update.hspec";
 
     @Autowired
     private DockerfileJsonHandler dockerfileHandler;

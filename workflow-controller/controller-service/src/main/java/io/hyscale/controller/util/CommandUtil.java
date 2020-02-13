@@ -15,7 +15,6 @@
  */
 package io.hyscale.controller.util;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -39,12 +38,7 @@ import io.hyscale.controller.constants.WorkflowConstants;
  */
 public class CommandUtil {
 
-	/**
-	 * Get environment name for labels in resources
-	 * @param profile in format .../<profile-name>-<service-name>.hprof.yaml
-	 * @return environment name
-	 */
-	public static String getEnvName(String profile) throws HyscaleException {
+	public static String getEnvName(String profile){
 		if (StringUtils.isNotBlank(profile)) {
 			return profile;
 		}

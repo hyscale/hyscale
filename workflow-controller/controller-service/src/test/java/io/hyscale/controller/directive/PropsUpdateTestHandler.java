@@ -36,7 +36,7 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 @Component
 public class PropsUpdateTestHandler implements IServiceSpecUpdateTestHandler<Map<String, String>> {
 
-    private static final String propsUpdateSpec = "/servicespecs/props_update.hspec.yaml";
+    private static final String propsUpdateSpec = "/servicespecs/props_update.hspec";
     
     private static final String JSON_PATH = HyscaleSpecFields.getPath(HyscaleSpecFields.props);
     

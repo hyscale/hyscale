@@ -41,8 +41,8 @@ public class ManifestValidatorTest {
 
     public static Stream<Arguments> input() {
         return Stream.of(Arguments.of(null, HyscaleException.class),
-                Arguments.of("/servicespecs/invalid_vol.hspec.yaml", HyscaleException.class),
-                Arguments.of("/servicespecs/invalid_ports.hspec.yaml", HyscaleException.class));
+                Arguments.of("/servicespecs/invalid_vol.hspec", HyscaleException.class),
+                Arguments.of("/servicespecs/invalid_ports.hspec", HyscaleException.class));
     }
 
     @ParameterizedTest
@@ -65,7 +65,7 @@ public class ManifestValidatorTest {
     public void validManifest() {
         WorkflowContext context = new WorkflowContext();
         try {
-            context.setServiceSpec(ServiceSpecTestUtil.getServiceSpec("/servicespecs/myservice.hspec.yaml"));
+            context.setServiceSpec(ServiceSpecTestUtil.getServiceSpec("/servicespecs/myservice.hspec"));
         } catch (IOException e) {
             fail();
         }

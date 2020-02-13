@@ -41,8 +41,8 @@ public class BuildSpecValidatorTest {
 
     public static Stream<Arguments> input() {
         return Stream.of(Arguments.of(null, HyscaleException.class),
-                Arguments.of("/servicespecs/invalid_buildSpec1.hspec.yaml", HyscaleException.class),
-                Arguments.of("/servicespecs/invalid_buildSpec2.hspec.yaml", HyscaleException.class));
+                Arguments.of("/servicespecs/invalid_buildSpec1.hspec", HyscaleException.class),
+                Arguments.of("/servicespecs/invalid_buildSpec2.hspec", HyscaleException.class));
     }
 
     @ParameterizedTest
@@ -66,7 +66,7 @@ public class BuildSpecValidatorTest {
         WorkflowContext context = new WorkflowContext();
         ServiceSpec serviceSpec = null;
         try {
-            serviceSpec = ServiceSpecTestUtil.getServiceSpec("/servicespecs/myservice.hspec.yaml");
+            serviceSpec = ServiceSpecTestUtil.getServiceSpec("/servicespecs/myservice.hspec");
         } catch (IOException e1) {
             fail();
         }
