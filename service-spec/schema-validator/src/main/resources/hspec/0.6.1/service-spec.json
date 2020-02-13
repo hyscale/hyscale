@@ -272,7 +272,14 @@
         ],
         "properties": {
           "port": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "description": "defines port number along with type. default type is tcp."
           },
           "healthCheck": {
