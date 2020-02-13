@@ -9,7 +9,8 @@
       "additionalProperties": {
         "type": [
           "string",
-          "integer"
+          "number",
+          "boolean"
         ]
       }
     },
@@ -17,7 +18,10 @@
       "description": "Describes the keys of any attribute",
       "type": "array",
       "items": {
-        "type": "string",
+        "type": [
+        	"string",
+        	"number"
+        	],
         "description": "string key"
       }
     },
