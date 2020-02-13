@@ -30,7 +30,7 @@ public enum AbstractedErrorMessage implements IMessage, IReason {
     FIX_IMAGE_NAME("Invalid Image name / tag provided", "Recheck the image name / tag  in hpsec"),
     INVALID_PULL_REGISTRY_CREDENTIALS("Invalid target registry credentials for {}", "Check them at {} "),
     DOCKERFILE_CMD_UNCERTAINITY("Service observed to be crashing.Possible errors in ENTRYPOINT/ CMD in Dockerfile or missing ENTRYPOINT", ""),
-    SERVICE_NOT_DEPLOYED("No such service found in this cluster", "Ensure you are querying for the correct service name in the correct namespace and cluster"),
+    SERVICE_NOT_DEPLOYED("No such service found in this cluster", "Ensure you are querying for the correct service name & app name in the correct namespace and cluster"),
     CANNOT_FIND_EVENTS("Cannot determine cause of failure since this service deployment is older than 60 minutes.", " Try redeploying to troubleshoot."),
     TRY_AFTER_SOMETIME("Deployment is still in progress , service is not yet ready", "Try querying after sometime");
 

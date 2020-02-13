@@ -69,7 +69,7 @@ public enum ControllerActivity implements Activity {
     EMPTY_FILE_PATH("Empty file path given"),
     EMPTY_FILE_FOUND("Empty file {} cannot be processed."),
     INVALID_FILE_INPUT("Given input {} is not a file.Expecting file input."),
-    DIRECTORY_INPUT_FOUND("Found directory {} instead of file");
+    DIRECTORY_INPUT_FOUND("Found directory {} instead of file"),
     WAITING_FOR_SERVICE_STATUS("It might take some time as it runs diagnosis for services"),
     TROUBLESHOOT("{}");
 

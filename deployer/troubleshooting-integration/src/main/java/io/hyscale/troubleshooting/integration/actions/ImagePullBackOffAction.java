@@ -78,8 +78,8 @@ public class ImagePullBackOffAction extends ActionNode<TroubleshootingContext> {
 
     private DiagnosisReport getDefaultReport() {
         DiagnosisReport report = new DiagnosisReport();
-        report.setRecommendedFix(AbstractedErrorMessage.IMAGEPULL_BACKOFF_ACTION.getMessage());
-        report.setReason(AbstractedErrorMessage.IMAGEPULL_BACKOFF_ACTION.formatReason(SetupConfig.getMountOfDockerConf(SetupConfig.USER_HOME_DIR + "/.docker/config")));
+        report.setRecommendedFix(AbstractedErrorMessage.IMAGEPULL_BACKOFF_ACTION.formatMessage(SetupConfig.getMountOfDockerConf(SetupConfig.USER_HOME_DIR + "/.docker/config")));
+        report.setReason(AbstractedErrorMessage.IMAGEPULL_BACKOFF_ACTION.getReason());
         return report;
     }
 

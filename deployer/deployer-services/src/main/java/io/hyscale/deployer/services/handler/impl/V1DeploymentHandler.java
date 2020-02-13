@@ -280,7 +280,7 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deploymen
         return ResourceStatus.STABLE;
     }
     
-    public String getDeploymentRevision(V1Deployment deployment) {
+    public static String getDeploymentRevision(V1Deployment deployment) {
         if (deployment == null) {
             return null;
         }

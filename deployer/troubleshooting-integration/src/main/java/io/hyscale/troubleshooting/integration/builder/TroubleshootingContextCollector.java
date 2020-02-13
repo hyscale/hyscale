@@ -15,7 +15,9 @@
  */
 package io.hyscale.troubleshooting.integration.builder;
 
+import io.hyscale.commons.constants.K8SRuntimeConstants;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.ResourceFieldSelectorKey;
 import io.hyscale.commons.utils.FieldSelectorUtil;
@@ -23,6 +25,7 @@ import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
+import io.hyscale.deployer.services.handler.impl.V1DeploymentHandler;
 import io.hyscale.deployer.services.handler.impl.V1EventHandler;
 import io.hyscale.deployer.services.handler.impl.V1StorageClassHandler;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
@@ -32,8 +35,8 @@ import io.hyscale.troubleshooting.integration.models.ServiceInfo;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
 import io.hyscale.troubleshooting.integration.spring.TroubleshootingConfig;
 import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1StorageClass;
+import io.kubernetes.client.models.*;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +45,6 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
@@ -66,7 +68,7 @@ public class TroubleshootingContextCollector {
             context.setServiceInfo(serviceInfo);
             context.setTrace(troubleshootingConfig.isTrace());
             long start = System.currentTimeMillis();
-            context.setResourceInfos(getResources(serviceInfo, apiClient, namespace));
+            context.setResourceInfos(filter(getResources(serviceInfo, apiClient, namespace)));
             if (context.isTrace()) {
                 logger.debug("Time taken to build the context for service  {} is {}", serviceInfo.getServiceName(), System.currentTimeMillis() - start);
             }
@@ -75,6 +77,76 @@ public class TroubleshootingContextCollector {
             throw e;
         }
         return context;
+    }
+
+    // Get only the latest or current deployed pods
+    private Map<String, List<TroubleshootingContext.ResourceInfo>> filter(Map<String, List<TroubleshootingContext.ResourceInfo>> resources) {
+        if (resources == null || resources.isEmpty()) {
+            return resources;
+        }
+
+        /*  Incase of statefulset deployments , pods are always upto date
+            with the deployment because it does RollingUpdate in the reverse order.
+            During deployment update with patch if any pod is in failing state pods are
+            delete and recreated so statefulset always contain the latest deployed pods*/
+
+        List<TroubleshootingContext.ResourceInfo> statefulSetResourceInfos = resources.get(ResourceKind.STATEFUL_SET.getKind());
+        List<TroubleshootingContext.ResourceInfo> deploymentResourceInfos = resources.get(ResourceKind.DEPLOYMENT.getKind());
+        if (statefulSetResourceInfos != null && !statefulSetResourceInfos.isEmpty()) {
+            return resources;
+        }
+        if (deploymentResourceInfos != null && !deploymentResourceInfos.isEmpty()) {
+            List<TroubleshootingContext.ResourceInfo> replicaSetResourceInfos = resources.get(ResourceKind.REPLICA_SET.getKind());
+            List<TroubleshootingContext.ResourceInfo> podResourceInfos = resources.get(ResourceKind.POD.getKind());
+            List<TroubleshootingContext.ResourceInfo> filteredPodResourceInfos = new ArrayList<>();
+            deploymentResourceInfos.stream().filter(each -> {
+                return each != null && each.getResource() != null && each.getResource() instanceof V1Deployment;
+            }).forEach(each -> {
+                String deploymentRevision = V1DeploymentHandler.getDeploymentRevision((V1Deployment) each.getResource());
+                if (StringUtils.isNotBlank(deploymentRevision)) {
+                    V1ReplicaSet replicaSet = filterReplicaSetByrevision(replicaSetResourceInfos, deploymentRevision);
+                    if (replicaSet != null) {
+                        String podTemplateHash = replicaSet.getMetadata().getLabels().get(K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH);
+                        filteredPodResourceInfos.addAll(filterPodsByHash(podResourceInfos, podTemplateHash));
+                    }
+                }
+            });
+            resources.remove(ResourceKind.POD.getKind());
+            resources.put(ResourceKind.POD.getKind(), filteredPodResourceInfos);
+            return resources;
+        }
+        return resources;
+    }
+
+    private Collection<? extends TroubleshootingContext.ResourceInfo> filterPodsByHash(List<TroubleshootingContext.ResourceInfo> podResourceInfos, String podTemplateHash) {
+        if ((podResourceInfos == null && podResourceInfos.isEmpty()) || StringUtils.isBlank(podTemplateHash)) {
+            return null;
+        }
+        List<TroubleshootingContext.ResourceInfo> result = new ArrayList<>();
+        for (TroubleshootingContext.ResourceInfo podResource : podResourceInfos) {
+            if (podResource != null && podResource.getResource() != null) {
+                V1Pod pod = (V1Pod) podResource.getResource();
+                if (pod.getMetadata().getLabels().get(K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH).equals(podTemplateHash)) {
+                    result.add(podResource);
+                }
+            }
+        }
+        return result;
+    }
+
+    private V1ReplicaSet filterReplicaSetByrevision(List<TroubleshootingContext.ResourceInfo> replicaSetResourceInfos, String deploymentRevision) {
+        if (replicaSetResourceInfos == null && replicaSetResourceInfos.isEmpty()) {
+            return null;
+        }
+        V1ReplicaSet replicaSet = null;
+        for (TroubleshootingContext.ResourceInfo eachReplicaSet : replicaSetResourceInfos) {
+            replicaSet = (V1ReplicaSet) eachReplicaSet.getResource();
+            if (replicaSet != null && deploymentRevision.equals(replicaSet.getMetadata().getAnnotations().
+                    get(AnnotationKey.K8S_DEPLOYMENT_REVISION.getAnnotation()))) {
+                break;
+            }
+        }
+        return replicaSet;
     }
 
     private Map<String, List<TroubleshootingContext.ResourceInfo>> getResources(@NonNull ServiceInfo serviceInfo, @NonNull ApiClient apiClient, @NonNull String namespace) throws HyscaleException {

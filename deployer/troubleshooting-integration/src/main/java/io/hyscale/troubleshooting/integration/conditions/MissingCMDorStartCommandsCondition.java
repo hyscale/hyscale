@@ -99,7 +99,6 @@ public class MissingCMDorStartCommandsCondition extends ConditionNode<Troublesho
 
         String dockerInstallCommand = commandProvider.getDockerInstalledCommand();
         if (!CommandExecutor.execute(dockerInstallCommand)) {
-            report.setReason(AbstractedErrorMessage.DOCKERFILE_CMD_UNCERTAINITY.getReason());
             report.setRecommendedFix(DOCKER_INSTALLATION_NOTFOUND_MESSAGE);
             context.addReport(report);
             return false;
@@ -108,7 +107,6 @@ public class MissingCMDorStartCommandsCondition extends ConditionNode<Troublesho
 
         CommandResult result = CommandExecutor.executeAndGetResults(commandProvider.getImageInspectCommand(image));
         if (result == null || StringUtils.isEmpty(result.getCommandOutput()) || result.getExitCode() != 0) {
-            report.setReason(AbstractedErrorMessage.DOCKERFILE_CMD_UNCERTAINITY.getReason());
             report.setRecommendedFix(String.format(IMAGE_NOT_FOUND_LOCALLY, image));
             context.addReport(report);
             return false;

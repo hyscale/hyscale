@@ -11,23 +11,16 @@
     <packaging>jar</packaging>
     <name>controller-service</name>
 
-    <
-    <
-    <
-    <
-    <
-    <
-    < HEAD
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
-        <dependency>
+       <!-- <dependency>
             <groupId>org.springframework.integration</groupId>
             <artifactId>spring-integration-file</artifactId>
             <version>5.1.7.RELEASE</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>io.hyscale</groupId>
             <artifactId>controller-core</artifactId>
@@ -57,6 +50,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>info.picocli</groupId>

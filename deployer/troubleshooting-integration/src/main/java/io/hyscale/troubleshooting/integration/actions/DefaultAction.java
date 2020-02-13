@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class DefaultAction extends ActionNode<TroubleshootingContext> {
 
-    private static final String KUBERNETES_ERROR_MESSAGE = "Kubernetes error message follows: \\n %s";
+    private static final String KUBERNETES_ERROR_MESSAGE = "Kubernetes error message follows: \n %s";
 
     @Override
     public void process(TroubleshootingContext context) {
