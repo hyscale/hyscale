@@ -26,7 +26,7 @@
       }
     },
     "io.hyscale.api.replicas.Replicas": {
-      "description": "Defines the secrets of the service",
+      "description": "Defines the replicas of the service",
       "required": [
         "max",
         "cpuThreshold"
@@ -128,7 +128,7 @@
           },
           "props": {
             "$ref": "#/definitions/io.hyscale.api.map.string",
-            "description": "Describes the properties of the service as key-value pairs "
+            "description": "Describes the properties of the service sidecar as key-value pairs "
           },
           "secrets": {
             "anyOf": [

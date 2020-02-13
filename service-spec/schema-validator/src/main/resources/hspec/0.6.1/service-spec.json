@@ -27,7 +27,7 @@
       "description": "Describes artifact source and destination inside container.",
       "properties": {
         "name": {
-          "description": "defines the name of the artifacti. should be unique",
+          "description": "defines the name of the artifact. should be unique",
           "type": "string"
         },
         "source": {
@@ -83,7 +83,7 @@
       "type": "object"
     },
     "io.hyscale.api.image.Image": {
-      "description": "Describes container Image could be from dockerfile or buildSpec",
+      "description": "Describes container Image, could be from dockerfile or buildSpec",
       "properties": {
         "name": {
           "description": "Name of final Image",
@@ -329,7 +329,7 @@
           },
           "props": {
             "$ref": "#/definitions/io.hyscale.api.map.string",
-            "description": "Describes the properties of the service as key-value pairs "
+            "description": "Describes the properties of the service sidecar as key-value pairs "
           },
           "propsVolumePath": {
             "$ref": "#/definitions/io.hyscale.api.props.PropsVolumePath",
