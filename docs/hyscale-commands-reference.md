@@ -1,7 +1,5 @@
 # HyScale Tool Command Reference
 
-> Version 0.9.2 <br />
-
 ---
 
 ## deploy
