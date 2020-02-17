@@ -43,7 +43,7 @@ import io.hyscale.commons.utils.LogProcessor;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
-import io.hyscale.controller.core.exception.ControllerErrorCodes;
+import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.hooks.K8SResourcesCleanUpHook;
 import io.hyscale.controller.hooks.VolumeCleanUpHook;
 import io.hyscale.controller.hooks.VolumeValidatorHook;

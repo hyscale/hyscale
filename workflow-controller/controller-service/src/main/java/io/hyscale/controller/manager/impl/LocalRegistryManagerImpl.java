@@ -26,6 +26,8 @@ import io.hyscale.commons.models.*;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.ImageRegistryBuilder;
 import io.hyscale.controller.config.ControllerConfig;
+import io.hyscale.controller.exception.ControllerErrorCodes;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +39,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.ObjectMapperFactory;
-import io.hyscale.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.controller.manager.RegistryManager;
 
 /**

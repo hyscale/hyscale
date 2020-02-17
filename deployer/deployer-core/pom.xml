@@ -11,15 +11,14 @@
 
 	<artifactId>deployer-core</artifactId>
 	<packaging>jar</packaging>
-        <properties>
-          <main.basedir>../../</main.basedir>
-        </properties>
+	<properties>
+		<main.basedir>../../</main.basedir>
+	</properties>
 
 	<dependencies>
 		<dependency>
-			<groupId>io.hyscale</groupId>
-			<artifactId>commons</artifactId>
-			<version>${project.version}</version>
+			<groupId>joda-time</groupId>
+			<artifactId>joda-time</artifactId>
 		</dependency>
 	</dependencies>
 </project>

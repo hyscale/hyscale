@@ -26,11 +26,8 @@ module dockerfilegenservices {
 	requires service_spec_commons;
 	requires dockerfilegencore;
 	requires commons;
-	requires org.apache.commons.io;
 	requires spring.beans;
-	requires spring.context;
 	requires java.annotation;
-	requires spring.boot;
 	requires spring.core;
 	requires slf4j.api;
 	requires com.google.common;

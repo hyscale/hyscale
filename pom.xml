@@ -19,7 +19,6 @@
 		<module>dockerfile-generator</module>
 		<module>service-spec</module>
 		<module>packaging</module>
-
 	</modules>
 
 	<name>hyscale</name>
@@ -29,30 +28,34 @@
 		<hyscale.max.lb.ready.timeout>90000</hyscale.max.lb.ready.timeout>
 		<jdk.version>11</jdk.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<kubernetes.client.version>6.0.1</kubernetes.client.version>
 		<slfj.log.version>1.7.26</slfj.log.version>
-		<commons-io.version>2.6</commons-io.version>
-		<commons-cli.version>1.4</commons-cli.version>
-		<commons-codec.version>1.12</commons-codec.version>
 		<jackson.version>2.10.0</jackson.version>
 		<javax.validation-api.version>2.0.1.Final</javax.validation-api.version>
 		<javax.el-api.version>3.0.0</javax.el-api.version>
 		<glassfish.web.javax.el-api.version>2.2.6</glassfish.web.javax.el-api.version>
 		<javax.annotation-api.version>1.3.2</javax.annotation-api.version>
-		<org.skyscreamer.jsonassert.version>1.5.0</org.skyscreamer.jsonassert.version>
 		<javax.json-api.version>1.1.4</javax.json-api.version>
+		<json.schema.validator.version>2.2.11</json.schema.validator.version>
+		<json-path-version>2.4.0</json-path-version>
 		<google.gson.version>2.6.2</google.gson.version>
+		<google.guava.version>28.2-jre</google.guava.version>
+		<kubernetes.client.version>6.0.1</kubernetes.client.version>
+		<apache.commons-lang3.version>3.9</apache.commons-lang3.version>
+		<commons-io.version>2.6</commons-io.version>
+		<commons-cli.version>1.4</commons-cli.version>
+		<commons-codec.version>1.12</commons-codec.version>
+		<joda.time.version>2.9.3</joda.time.version>
 		<flipkart.zjsonpatch.version>0.4.5</flipkart.zjsonpatch.version>
-		<picocli.spring-boot.version>4.0.1</picocli.spring-boot.version>
 		<spullara.mustache.compiler.version>0.9.6</spullara.mustache.compiler.version>
+		<picocli.spring-boot.version>4.0.1</picocli.spring-boot.version>
 		<spring-boot.version>2.1.6.RELEASE</spring-boot.version>
 		<spring-boot-maven-plugin.version>2.1.6.RELEASE</spring-boot-maven-plugin.version>
-		<ocpsoft.prettytime.version>4.0.2.Final</ocpsoft.prettytime.version>
-		<json-path-version>2.4.0</json-path-version>
+		<spring.core.version>5.1.9.RELEASE</spring.core.version>
+		<hibernate-validator.version>6.0.17.Final</hibernate-validator.version>
+		<org.skyscreamer.jsonassert.version>1.5.0</org.skyscreamer.jsonassert.version>
 		<junit.version>5.4.2</junit.version>
 		<junit.platform.version>1.4.0</junit.platform.version>
-		<spring.core.version>5.1.9.RELEASE</spring.core.version>
-		<json.schema.validator.version>2.2.11</json.schema.validator.version>
+		<ocpsoft.prettytime.version>4.0.2.Final</ocpsoft.prettytime.version>
 		<main.basedir>.</main.basedir>
 		<main.dist.dir>${main.basedir}/_dist</main.dist.dir>
 		<maven.build.timestamp.format>EEE d MMM yyyy HH:mm:ss</maven.build.timestamp.format>
@@ -63,6 +66,46 @@
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${apache.commons-lang3.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${google.guava.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+			<version>${javax.annotation-api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-yaml</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slfj.log.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot</artifactId>
+			<version>${spring-boot.version}</version>
+		</dependency>
 		<!-- Test dependencies start -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -98,6 +141,7 @@
 			<groupId>org.junit.platform</groupId>
 			<artifactId>junit-platform-commons</artifactId>
 			<version>${junit.platform.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.platform</groupId>
@@ -106,42 +150,37 @@
 			<scope>test</scope>
 		</dependency>
 		<!-- Test dependencies end -->
-		<dependency>
-			<groupId>javax.annotation</groupId>
-			<artifactId>javax.annotation-api</artifactId>
-			<version>${javax.annotation-api.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-yaml</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>${slfj.log.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.kubernetes</groupId>
-			<artifactId>client-java</artifactId>
-			<version>${kubernetes.client.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot</artifactId>
-			<version>${spring-boot.version}</version>
-		</dependency>
 	</dependencies>
+    
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.kubernetes</groupId>
+                <artifactId>client-java-api</artifactId>
+                <version>${kubernetes.client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.skyscreamer</groupId>
+                <artifactId>jsonassert</artifactId>
+                <version>${org.skyscreamer.jsonassert.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>javax.json</artifactId>
+                <version>${javax.json-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.spullara.mustache.java</groupId>
+                <artifactId>compiler</artifactId>
+                <version>${spullara.mustache.compiler.version}</version>
+            </dependency>
+        </dependencies>            
+    </dependencyManagement>
 
 	<build>
 		<resources>

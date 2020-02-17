@@ -18,7 +18,7 @@ package io.hyscale.controller.hooks;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.component.InvokerHook;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.controller.core.exception.ControllerErrorCodes;
+import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;

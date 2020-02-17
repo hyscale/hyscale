@@ -25,20 +25,15 @@ module commons {
 	exports io.hyscale.commons.framework.patch;
 	exports io.hyscale.commons.commands.provider;
 
-	requires client.java.proto;
 	requires com.fasterxml.jackson.annotation;
-	requires protobuf.java;
 	requires client.java.api;
-	requires gson;
 	requires com.fasterxml.jackson.core;
 	requires com.fasterxml.jackson.databind;
 	requires slf4j.api;
 	requires spring.context;
-	requires org.apache.commons.lang3;
 	requires spring.beans;
+	requires org.apache.commons.lang3;
 	requires com.fasterxml.jackson.dataformat.yaml;
-	requires java.validation;
-	requires org.apache.commons.compress;
 	requires org.apache.commons.io;
 	requires com.github.mustachejava;
 	requires java.annotation;
