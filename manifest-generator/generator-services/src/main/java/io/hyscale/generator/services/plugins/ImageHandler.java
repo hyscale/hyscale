@@ -18,9 +18,7 @@ package io.hyscale.generator.services.plugins;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
-import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
-import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -57,7 +55,7 @@ public class ImageHandler implements ManifestHandler {
     private ManifestSnippet getImagePullPolicy(ServiceSpec serviceSpec, ManifestContext manifestContext) {
         ManifestSnippet manifestSnippet = new ManifestSnippet();
         manifestSnippet.setSnippet(ManifestGenConstants.DEFAULT_IMAGE_PULL_POLICY);
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         manifestSnippet.setKind(podSpecOwner);
         manifestSnippet.setPath("spec.template.spec.containers[0].imagePullPolicy");
         return manifestSnippet;
@@ -66,7 +64,6 @@ public class ImageHandler implements ManifestHandler {
     private ManifestSnippet getImageSnippet(ServiceSpec serviceSpec, ManifestContext manifestContext)
             throws HyscaleException {
         String imageShaId = (String) manifestContext.getGenerationAttribute(ManifestGenConstants.IMAGE_SHA_SUM);
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
         String image = null;
         if (StringUtils.isNotBlank(imageShaId)) {
             logger.debug("Preparing image with its digest.");
@@ -75,6 +72,7 @@ public class ImageHandler implements ManifestHandler {
             logger.debug("Preparing image directly from given tag.");
             image = ImageUtil.getImage(serviceSpec);
         }
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         ManifestSnippet imageSnippet = new ManifestSnippet();
         imageSnippet.setSnippet(image);
         imageSnippet.setPath("spec.template.spec.containers[0].image");

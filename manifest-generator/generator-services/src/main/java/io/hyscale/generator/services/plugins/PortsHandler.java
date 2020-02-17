@@ -26,7 +26,6 @@ import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.commons.utils.NormalizationUtil;
-import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -57,7 +56,7 @@ public class PortsHandler implements ManifestHandler {
         };
         List<Port> portList = serviceSpec.get(HyscaleSpecFields.ports, listTypeReference);
         List<ManifestSnippet> manifestSnippetList = null;
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         if (portList != null && !portList.isEmpty()) {
             logger.debug("Processing container and service ports");
             manifestSnippetList = Lists.newArrayList();

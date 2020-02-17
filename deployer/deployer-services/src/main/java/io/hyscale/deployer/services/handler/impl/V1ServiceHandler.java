@@ -15,12 +15,8 @@
  */
 package io.hyscale.deployer.services.handler.impl;
 
-import java.net.URL;
 import java.util.List;
-import java.util.Properties;
 
-import com.google.common.io.Resources;
-import io.hyscale.deployer.services.config.DeployerConfig;
 import io.hyscale.deployer.services.config.NonBeanDeployerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

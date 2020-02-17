@@ -53,7 +53,7 @@ public class AgentEnvBuilder extends AgentHelper implements AgentBuilder {
 
     @Override
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException, HyscaleException {
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         String serviceName = serviceSpec.get(HyscaleSpecFields.name,String.class);
         List<ManifestSnippet> envSnippets = new ArrayList<ManifestSnippet>();
         List<Agent> agents = getAgents(serviceSpec);

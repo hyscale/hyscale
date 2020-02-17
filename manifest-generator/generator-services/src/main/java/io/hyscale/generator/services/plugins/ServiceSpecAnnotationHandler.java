@@ -34,8 +34,6 @@ import org.springframework.stereotype.Component;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.ManifestContext;
-import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
@@ -51,7 +49,7 @@ public class ServiceSpecAnnotationHandler implements ManifestHandler {
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         ManifestSnippet manifestSnippet = new ManifestSnippet();
         manifestSnippet.setKind(podSpecOwner);
         manifestSnippet.setPath("metadata.annotations");

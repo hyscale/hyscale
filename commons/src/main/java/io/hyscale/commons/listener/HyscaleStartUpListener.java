@@ -15,17 +15,16 @@
  */
 package io.hyscale.commons.listener;
 
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import io.hyscale.commons.utils.HyscaleContextUtil;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 @Component
-public class HyscaleStartUpListener implements ApplicationContextAware {
+public class HyscaleStartUpListener implements ApplicationListener<ContextRefreshedEvent> {
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        HyscaleContextHelper.setContext(applicationContext);
+    public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
+        HyscaleContextUtil.setContext(contextRefreshedEvent.getApplicationContext());
     }
-
 }

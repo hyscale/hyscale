@@ -21,9 +21,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.builder.core.models.BuildContext;
-import io.hyscale.builder.services.command.ImageCommandGenerator;
 import io.hyscale.builder.services.processor.BuilderInterceptorProcessor;
 import io.hyscale.commons.commands.CommandExecutor;
+import io.hyscale.commons.commands.provider.ImageCommandProvider;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.Status;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
@@ -36,7 +36,7 @@ public class ImageCleanUpProcessor extends BuilderInterceptorProcessor {
     private static final Logger logger = LoggerFactory.getLogger(ImageCleanUpProcessor.class);
 
     @Autowired
-    private ImageCommandGenerator imageCommandGenerator;
+    private ImageCommandProvider imageCommandProvider;
 
     @Override
     protected void _preProcess(ServiceSpec serviceSpec, BuildContext context) throws HyscaleException {
@@ -54,7 +54,7 @@ public class ImageCleanUpProcessor extends BuilderInterceptorProcessor {
 
         String tag = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.tag),
                 String.class);
-        String cleanUpCommand = imageCommandGenerator.getImageCleanUpCommand(context.getAppName(), serviceName, tag);
+        String cleanUpCommand = imageCommandProvider.getImageCleanUpCommand(context.getAppName(), serviceName, tag);
         logger.debug("Starting image cleanup, command {}", cleanUpCommand);
         boolean success = CommandExecutor.execute(cleanUpCommand);
 

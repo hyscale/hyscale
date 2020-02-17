@@ -26,7 +26,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ConfigTemplate;
 import io.hyscale.commons.models.DecoratedArrayList;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
-import io.hyscale.dockerfile.gen.core.models.CommandType;
+import io.hyscale.dockerfile.gen.services.model.CommandType;
 import io.hyscale.dockerfile.gen.core.models.DockerfileContent;
 import io.hyscale.dockerfile.gen.services.config.DockerfileGenConfig;
 import io.hyscale.dockerfile.gen.services.constants.DockerfileGenConstants;

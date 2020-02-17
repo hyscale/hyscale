@@ -33,8 +33,6 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.generator.services.model.ManifestGeneratorActivity;
-import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
@@ -72,7 +70,7 @@ public class ResourceLimitsHandler implements ManifestHandler {
             logger.debug("Preparing cpu limits.");
             cpuRange = getRange(cpu, cpuRangePattern);
         }
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         try {
             manifestSnippetList.add(getResourceRequirements(memoryRange, cpuRange, podSpecOwner));

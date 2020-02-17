@@ -37,9 +37,6 @@ public class DeployerConfig {
 
 	private static final String SERVICE_LOG = "service.log";
 
-	@Value(("${hyscale.ctl.k8s.resource.update.policy:PATCH}"))
-	private String updatePolicyAsString;
-
 	@Value(("${hyscale.ctl.k8s.pod.log.tail.lines:100}"))
 	private int defaultTailLines;
 
@@ -48,17 +45,6 @@ public class DeployerConfig {
 
 	@Autowired
 	private SetupConfig setupConfig;
-
-	private ResourceUpdatePolicy updatePolicy;
-
-	@PostConstruct
-	public void init() {
-		updatePolicy = ResourceUpdatePolicy.valueOf(updatePolicyAsString);
-	}
-
-	public ResourceUpdatePolicy getUpdatePolicy() {
-		return updatePolicy;
-	}
 
 	public int getDefaultTailLines() {
 		return defaultTailLines;

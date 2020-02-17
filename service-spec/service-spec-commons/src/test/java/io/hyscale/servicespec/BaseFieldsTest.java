@@ -40,7 +40,7 @@ public class BaseFieldsTest {
     @BeforeAll
     public static void beforeClass() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
-        String sampleSpec = "/servicespecs/myservice.hspec.yaml";
+        String sampleSpec = "/servicespecs/myservice.hspec";
         InputStream resourceAsStream = BaseFieldsTest.class.getResourceAsStream(sampleSpec);
         String testData = IOUtils.toString(resourceAsStream, "UTF-8");
         ObjectNode rootNode = (ObjectNode) objectMapper.readTree(testData);

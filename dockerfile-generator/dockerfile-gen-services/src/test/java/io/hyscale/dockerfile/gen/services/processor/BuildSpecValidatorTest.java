@@ -37,8 +37,8 @@ public class BuildSpecValidatorTest {
 
     public static Stream<Arguments> input() {
         return Stream.of(Arguments.of(null, HyscaleException.class),
-                Arguments.of("/servicespecs/invalid_buildSpec1.hspec.yaml", HyscaleException.class),
-                Arguments.of("/servicespecs/invalid_buildSpec2.hspec.yaml", HyscaleException.class));
+                Arguments.of("/servicespecs/invalid_buildSpec1.hspec", HyscaleException.class),
+                Arguments.of("/servicespecs/invalid_buildSpec2.hspec", HyscaleException.class));
     }
 
     @ParameterizedTest
@@ -54,7 +54,7 @@ public class BuildSpecValidatorTest {
     public void validBuildSpec() {
         try {
             buildSpecValidatorProcessor.preProcess(
-                    ServiceSpecTestUtil.getServiceSpec("/servicespecs/myservice.hspec.yaml"),
+                    ServiceSpecTestUtil.getServiceSpec("/servicespecs/myservice.hspec"),
                     new DockerfileGenContext());
         } catch (IOException | HyscaleException e) {
             fail();

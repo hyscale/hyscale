@@ -55,7 +55,7 @@ public class PluginTemplateProvider {
 
     public enum PluginTemplateType {
         HPA("hpa.yaml.tpl");
-
+    			
         String templateFile;
 
         PluginTemplateType(String tplFile) {

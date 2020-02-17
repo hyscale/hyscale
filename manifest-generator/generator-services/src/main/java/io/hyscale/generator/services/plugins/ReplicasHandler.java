@@ -20,7 +20,6 @@ import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -42,19 +41,18 @@ public class ReplicasHandler implements ManifestHandler {
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         Replicas replicas = serviceSpec.get(HyscaleSpecFields.replicas, Replicas.class);
-        ManifestResource podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
-        if (replicas == null || !(podSpecOwner.equals(ManifestResource.DEPLOYMENT) || podSpecOwner.equals(ManifestResource.STATEFUL_SET))) {
+        String podSpecOwner = (String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER);
+        if (replicas == null || !(podSpecOwner.equals(ManifestResource.DEPLOYMENT.getKind()) || podSpecOwner.equals(ManifestResource.STATEFUL_SET.getKind()))) {
             logger.debug("Cannot handle replicas as the field is not declared");
             return null;
         }
         // If user does not specify replicas field in hspec, by default we consider a single replica
         int replicaCount = replicas.getMin() > 0 ? replicas.getMin() : 1;
-
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         ManifestSnippet replicaSnippet = new ManifestSnippet();
         replicaSnippet.setSnippet(String.valueOf(replicaCount));
         replicaSnippet.setPath("spec.replicas");
-        replicaSnippet.setKind(podSpecOwner.getKind());
+        replicaSnippet.setKind(podSpecOwner);
 
         manifestSnippetList.add(replicaSnippet);
         return manifestSnippetList;

@@ -19,8 +19,6 @@ import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
-import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -40,10 +38,8 @@ public class ContainerNameHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
-
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         ManifestSnippet containerNameSnippet = new ManifestSnippet();
-
         containerNameSnippet.setKind(podSpecOwner);
         containerNameSnippet.setPath("spec.template.spec.containers[0].name");
         containerNameSnippet.setSnippet(serviceSpec.get(HyscaleSpecFields.name, String.class));

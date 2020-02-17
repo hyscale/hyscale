@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package io.hyscale.deployer.services.handler.impl;
+
 import com.google.common.collect.Lists;
 import com.google.gson.JsonSyntaxException;
 import io.hyscale.commons.exception.HyscaleException;
@@ -35,17 +36,11 @@ import io.kubernetes.client.apis.AppsV1Api;
 import io.kubernetes.client.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.kubernetes.client.apis.AppsV1beta2Api;
 import io.kubernetes.client.models.V1DeleteOptions;
-import io.kubernetes.client.models.V1beta2Deployment;
-import io.kubernetes.client.models.V1beta2DeploymentList;
-import io.kubernetes.client.models.V1beta2DeploymentStatus;
 import io.kubernetes.client.custom.V1Patch;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.hyscale.commons.utils.ObjectMapperFactory;
-
 import java.util.List;
+import java.util.Map;
 
 public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deployment> {
     private static final Logger LOGGER = LoggerFactory.getLogger(V1DeploymentHandler.class);
@@ -62,6 +57,7 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deploymen
         try {
             resource.getMetadata().putAnnotationsItem(
                     AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
+
             v1Deployment = appsV1Api.createNamespacedDeployment(namespace, resource, TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
@@ -77,7 +73,7 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deploymen
 
     @Override
     public boolean update(ApiClient apiClient, V1Deployment resource, String namespace) throws HyscaleException {
-        if(resource==null){
+        if (resource == null) {
             LOGGER.debug("Cannot update null Deployment");
             return false;
         }
@@ -260,7 +256,7 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deploymen
     }
 
     @Override
-    public ResourceStatus status(V1Deployment deployment){
+    public ResourceStatus status(V1Deployment deployment) {
         V1DeploymentStatus deploymentStatus = deployment.getStatus();
         if (deploymentStatus == null) {
             return ResourceStatus.FAILED;
@@ -282,5 +278,18 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deploymen
             return ResourceStatus.PENDING;
         }
         return ResourceStatus.STABLE;
+    }
+    
+    public static String getDeploymentRevision(V1Deployment deployment) {
+        if (deployment == null) {
+            return null;
+        }
+        Map<String, String> annotations = deployment.getMetadata().getAnnotations();
+        
+        if (annotations == null) {
+            return null;
+        }
+        
+        return annotations.get(AnnotationKey.K8S_DEPLOYMENT_REVISION.getAnnotation());
     }
 }

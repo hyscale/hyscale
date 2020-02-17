@@ -30,6 +30,7 @@ import io.hyscale.commons.models.Status;
 import io.hyscale.commons.utils.ThreadPoolUtil;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.model.ResourceStatus;
+import io.hyscale.deployer.services.model.ResourceUpdatePolicy;
 import io.kubernetes.client.ApiClient;
 import io.kubernetes.client.models.V1DeleteOptions;
 
@@ -215,6 +216,15 @@ public interface ResourceLifeCycleHandler<T> {
      */
     default ResourceStatus status(T liveObject) {
         return ResourceStatus.STABLE;
+    }
+
+    /**
+     * Get Update policy from resource
+     *
+     * @return {@link ResourceUpdatePolicy}
+     */
+    default ResourceUpdatePolicy getUpdatePolicy() {
+        return ResourceUpdatePolicy.PATCH;
     }
 
 }

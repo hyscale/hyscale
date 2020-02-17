@@ -31,7 +31,6 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
 import io.kubernetes.client.models.V1ConfigMapVolumeSource;
 import io.kubernetes.client.models.V1SecretVolumeSource;
-import io.kubernetes.client.models.V1StatefulSet;
 import io.kubernetes.client.models.V1Volume;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,8 +52,7 @@ public class VolumesHandler implements ManifestHandler {
         appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
         appMetaData.setEnvName(manifestContext.getEnvName());
         appMetaData.setAppName(manifestContext.getAppName());
-
-        String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         List<ManifestSnippet> snippetList = new ArrayList<>();
         try {
             snippetList.add(buildVolumeSnippet(serviceSpec, appMetaData, podSpecOwner));

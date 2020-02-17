@@ -36,7 +36,7 @@ public class ServiceSpecMapperTest {
     @Autowired
     private ServiceSpecMapper serviceSpecMapper;
 
-	private static final String FILEPATH = "/servicespecs/myservice.hspec.yaml";
+	private static final String FILEPATH = "/servicespecs/myservice.hspec";
 
 	private static String ABS_FILE_PATH;
 

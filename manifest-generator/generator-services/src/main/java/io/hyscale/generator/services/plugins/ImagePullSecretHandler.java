@@ -25,11 +25,9 @@ import io.hyscale.commons.models.DockerConfig;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.model.ManifestGeneratorActivity;
 import io.hyscale.generator.services.builder.DefaultLabelBuilder;
-import io.hyscale.generator.services.model.ManifestGeneratorActivity;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.model.AppMetaData;
 import io.hyscale.generator.services.model.ResourceName;
-import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.generator.services.generator.MetadataManifestSnippetGenerator;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -102,7 +100,7 @@ public class ImagePullSecretHandler implements ManifestHandler {
             });
             // Adding the secret to pod
             logger.debug("Prepared image pull secret manifest for registry.");
-            String podSpecOwner = ((ManifestResource) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)).getKind();
+            String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
             manifestSnippetList.add(getImagePullSecretName(name, podSpecOwner));
 
         } catch (JsonProcessingException e) {

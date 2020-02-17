@@ -26,6 +26,8 @@ public class ToolConstants {
     public static final String DOUBLE_COLON = "::";
 
     public static final String COMMA = ",";
+    
+    public static final String DOT = ".";
 
     public static final String DASH = "-";
 
@@ -36,6 +38,8 @@ public class ToolConstants {
     public static final String QUOTES = "\"";
 
     public static final String SPACE = " ";
+    
+    public static final String NEW_LINE = "\n";
     
     public static final String LINUX_FILE_SEPARATOR = "/";
 
@@ -61,5 +65,18 @@ public class ToolConstants {
     
     public static final Integer HYSCALE_ERROR_CODE = 11;
 
+    public static final Integer SCHEMA_VALIDATION_FAILURE_ERROR_CODE = 22;
+
     public static final Integer INVALID_INPUT_ERROR_CODE = 2;
+
+    public static final Integer HYSCALE_SUCCESS_CODE = 0;
+
+    public static final Integer HYSCALE_FAILURE_CODE = 1;
+
+    public static final String HSPEC_VERSION = "hspec.version";
+
+    public static final String NASHORNS_ARGS = "nashorn.args";
+
+    public static final String NASHORNS_DEPRECATION_WARNING_FLAG = "--no-deprecation-warning";
+
 }

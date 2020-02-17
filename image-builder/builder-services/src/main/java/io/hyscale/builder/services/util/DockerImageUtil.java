@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.builder.services.command.ImageCommandGenerator;
+import io.hyscale.commons.commands.provider.ImageCommandProvider;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
 import io.hyscale.commons.commands.CommandExecutor;
 import io.hyscale.commons.exception.HyscaleException;
@@ -33,7 +33,7 @@ public class DockerImageUtil {
     private static final Logger logger = LoggerFactory.getLogger(DockerImageUtil.class);
 
     @Autowired
-    private ImageCommandGenerator commandGenerator;
+    private ImageCommandProvider commandGenerator;
 
     /**
      * Test if docker is installed and docker daemon is running

@@ -42,6 +42,7 @@ import io.hyscale.commons.models.YAMLManifest;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.commons.utils.ThreadPoolUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
+import io.hyscale.deployer.core.model.ReplicaInfo;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.config.DeployerConfig;
 import io.hyscale.deployer.services.deployer.Deployer;
@@ -57,7 +58,9 @@ import io.hyscale.deployer.services.processor.impl.K8SResourcesCleanUpProcessor;
 import io.hyscale.deployer.services.processor.impl.UndeployStaleVolumeProcessor;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.hyscale.deployer.services.util.DeploymentStatusUtil;
+import io.hyscale.deployer.services.util.K8sDeployerUtil;
 import io.hyscale.deployer.services.util.K8sPodUtil;
+import io.hyscale.deployer.services.util.K8sReplicaUtil;
 import io.hyscale.deployer.services.util.K8sResourceDispatcher;
 import io.hyscale.deployer.services.util.KubernetesResourceUtil;
 import io.kubernetes.client.ApiClient;
@@ -82,7 +85,7 @@ public class KubernetesDeployer implements Deployer {
 
     @Autowired
     private K8sClientProvider clientProvider;
-
+    
     @Override
     @ComponentInterceptor(processors = {K8SResourcesCleanUpProcessor.class, DeployStaleVolumeProcessor.class})
     public void deploy(DeploymentContext context) throws HyscaleException {
@@ -91,8 +94,7 @@ public class KubernetesDeployer implements Deployer {
         K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(clientProvider.get((K8sAuthorisation) context.getAuthConfig()));
         try {
             resourceDispatcher.waitForReadiness(context.isWaitForReadiness());
-            resourceDispatcher.withNamespace(context.getNamespace()).withUpdatePolicy(deployerConfig.getUpdatePolicy())
-                    .apply(context.getManifests());
+            resourceDispatcher.withNamespace(context.getNamespace()).apply(context.getManifests());
 
         } catch (HyscaleException e) {
             logger.error("Error while deploying service {} in namespace {} , error {} ", context.getServiceName(),
@@ -222,23 +224,22 @@ public class KubernetesDeployer implements Deployer {
             throw new HyscaleException(DeployerErrorCodes.APPLICATION_REQUIRED);
         }
 
-        if (context != null && StringUtils.isBlank(context.getServiceName())) {
+        String serviceName = context.getServiceName();
+        if (context != null && StringUtils.isBlank(serviceName)) {
             throw new HyscaleException(DeployerErrorCodes.SERVICE_REQUIRED);
         }
 
         List<V1Pod> v1PodList = null;
-        DeploymentStatus deploymentStatus = new DeploymentStatus();
-        deploymentStatus.setServiceName(context.getServiceName());
         try {
             ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
             V1PodHandler v1PodHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
-            String selector = ResourceSelectorUtil.getServiceSelector(context.getAppName(), context.getServiceName());
+            String selector = ResourceSelectorUtil.getServiceSelector(context.getAppName(), serviceName);
             v1PodList = v1PodHandler.getBySelector(apiClient, selector, true, context.getNamespace());
-            deploymentStatus = getPodDeploymentStatus(context, v1PodList);
         } catch (HyscaleException e) {
-            return DeploymentStatusUtil.getNotDeployedStatus(context.getServiceName());
+            return DeploymentStatusUtil.getNotDeployedStatus(serviceName);
         }
-        return deploymentStatus;
+        
+        return getPodDeploymentStatus(context, v1PodList);
     }
 
     /**
@@ -285,10 +286,10 @@ public class KubernetesDeployer implements Deployer {
             return DeploymentStatusUtil.getNotDeployedStatus(context.getServiceName());
         }
         DeploymentStatus deploymentStatus = new DeploymentStatus();
+        deploymentStatus.setServiceName(context.getServiceName());
         deploymentStatus.setAge(DeploymentStatusUtil.getAge(v1PodList));
         deploymentStatus.setMessage(DeploymentStatusUtil.getMessage(v1PodList));
         deploymentStatus.setStatus(DeploymentStatusUtil.getStatus(v1PodList));
-        deploymentStatus.setServiceName(context.getServiceName());
 
         try {
             ServiceAddress serviceAddress = getServiceAddress(context);
@@ -434,4 +435,59 @@ public class KubernetesDeployer implements Deployer {
         } catch (InterruptedException e) {
         }
     }
+    
+    /**
+     * Get Replica info for pods
+     * Implementation:
+     * <p>
+     * isFilter if disabled return replica info for all pods fetched based on selector
+     * if enabled,
+     * 1. If owner kind for pods is different, warn user and return replica info for all pods
+     * 2. If owner kind is {@link ResourceKind #DEPLOYMENT} or {@link ResourceKind #REPLICA_SET},
+     *     Get Revision from deployment, get replicas set with this revision,
+     *     filter pods based on pod-template-hash from replica set
+     *     return replica info for filtered pods
+     * 3. Else return replica info for all pods
+     * </p>
+     */
+    @Override
+    public List<ReplicaInfo> getReplicas(AuthConfig authConfig, String appName, String serviceName, String namespace, 
+            boolean isFilter) throws HyscaleException {
+        V1PodHandler v1PodHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
+        String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
+        ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
+        List<V1Pod> podList = v1PodHandler.getBySelector(apiClient, selector, true, namespace);
+        
+        if (podList == null || podList.isEmpty()) {
+            return null;
+        }
+        
+        if (!isFilter) {
+            return K8sReplicaUtil.getReplicaInfo(podList);
+        }
+        
+        if (!PodPredicates.isPodAmbiguous().test(podList)) {
+            return K8sReplicaUtil.getReplicaInfo(podList);
+        }
+        String podOwner = K8sPodUtil.getPodsUniqueOwner(podList);
+        ResourceKind podOwnerKind = ResourceKind.fromString(podOwner);
+        
+        // Unknown parent
+        if (StringUtils.isBlank(podOwner)) {
+            logger.debug("Unable to determine latest deployment, displaying all replicas");
+            WorkflowLogger.warn(DeployerActivity.LATEST_DEPLOYMENT_NOT_IDENTIFIABLE);
+            return K8sReplicaUtil.getReplicaInfo(podList);
+        }
+        
+        // Deployment
+        if (ResourceKind.REPLICA_SET.equals(podOwnerKind) || ResourceKind.DEPLOYMENT.equals(podOwnerKind)) {
+            // Get deployment, get revision, get RS with the revision, get all labels and filter pods
+            return K8sReplicaUtil.getReplicaInfo(K8sDeployerUtil.filterPodsByDeployment(apiClient, appName, serviceName, namespace, podList));
+        }
+        
+        // TODO do we need to handle STS cases ??
+        logger.debug("Replicas info:: unhandled case, pod owner: {}", podOwner);
+        return K8sReplicaUtil.getReplicaInfo(podList);
+    }
+    
 }

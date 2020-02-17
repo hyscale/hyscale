@@ -15,6 +15,7 @@
  */
 package io.hyscale.controller.initializer;
 
+import io.hyscale.controller.exception.ParameterExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,10 +57,14 @@ public class HyscaleInitializer implements CommandLineRunner {
     
     @Autowired
     private ExceptionHandler exceptionHandler;
-    
+
+    @Autowired
+    private ParameterExceptionHandler parameterExceptionHandler;
+
     static {
         System.setProperty(ImageBuilderConfig.IMAGE_BUILDER_PROP, ImageBuilder.LOCAL.name());
         System.setProperty(ToolConstants.HYSCALECTL_LOGS_DIR_PROPERTY, SetupConfig.getToolLogDir());
+        System.setProperty(ToolConstants.NASHORNS_ARGS,ToolConstants.NASHORNS_DEPRECATION_WARNING_FLAG);
     }
 
     public static void main(String[] args) {
@@ -73,6 +78,7 @@ public class HyscaleInitializer implements CommandLineRunner {
             Runtime.getRuntime().addShutdownHook(new ShutdownHook());
             CommandLine commandLine = new CommandLine(new HyscaleCommand(), factory);
             commandLine.setExecutionExceptionHandler(exceptionHandler);
+            commandLine.setParameterExceptionHandler(parameterExceptionHandler);
             exitCode = commandLine.execute(args);
         } catch (ParameterException e) {
             logger.error("Error while processing command, error {}", ControllerErrorCodes.INVALID_COMMAND.getErrorMessage(), e);

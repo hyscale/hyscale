@@ -1,0 +1,35 @@
+name: mysql
+
+image:
+     registry: registry.hub.docker.com  
+     name: {{username}}/mysql # replace with your dockerhub username for {{username}}
+     tag: 1.0
+     buildSpec:
+       stackImage: mysql:5.7.20
+       artifacts:
+           - name: mysql_source
+             source: mysql_source.tar 
+             destination: /tmp/
+
+       configCommands: |-
+            mkdir -p /tmp/mysql_source 
+            tar -xvf /tmp/mysql_source.tar -C /tmp/mysql_source
+            cp /tmp/mysql_source/config.sh /root/
+            bash /root/config.sh
+            cp /tmp/mysql_source/scripts/* /docker-entrypoint-initdb.d/
+
+props:
+    MYSQL_DATABASE: cities
+    MYSQL_USER: shipping
+    CHARACTER-SET-SERVER: UTF8
+    MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+
+secrets:
+   MYSQL_PASSWORD: secret
+   MYSQL_ROOT_PASSWORD: pramati
+
+ports:
+   - port: 3306/tcp
+     healthCheck: {}
+
+memory: 512Mi
