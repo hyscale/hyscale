@@ -73,7 +73,7 @@ curl -sSL http://get.hyscale.io | bash
 Usage Pre-Requisites:
 
 * JDK version 11 and above
-* Download the [hyscale jar](https://github.com/hyscale/hyscale/releases/download/v0.9.1/hyscale.jar) to your local machine
+* Download the [hyscale jar](https://github.com/hyscale/hyscale/releases/latest/download/hyscale.jar) to your local machine
 
 Usage:
 
