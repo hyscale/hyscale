@@ -203,6 +203,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
                 coreV1Api.deleteNamespacedConfigMap(name, namespace, TRUE,deleteOptions, null, null, null, null);
             } catch (JsonSyntaxException e) {
                 // K8s end exception ignore
+                logger.debug("Ignoring delete {} JsonSyntaxException", getKind());
             }
             List<String> configmapList = Lists.newArrayList();
             configmapList.add(name);

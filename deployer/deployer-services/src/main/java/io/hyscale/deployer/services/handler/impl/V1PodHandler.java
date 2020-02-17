@@ -191,7 +191,8 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 		    try {
 				coreV1Api.deleteNamespacedPod(name, namespace, TRUE,deleteOptions, null, null, null, null);
 		    } catch (JsonSyntaxException e) {
-			// K8s end exception ignore
+		        // K8s end exception ignore
+		        logger.debug("Ignoring delete {} JsonSyntaxException", getKind());
 		    } 
 			List<String> podList = Lists.newArrayList();
 			podList.add(name);

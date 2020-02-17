@@ -198,7 +198,7 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
             try {
                 autoscalingV1Api.deleteNamespacedHorizontalPodAutoscaler(name, namespace, TRUE,deleteOptions, null, null, null, null);
             } catch (JsonSyntaxException e) {
-                logger.debug("Ignoring delete HorizontalPodAutoScaler exception");
+                logger.debug("Ignoring delete {} JsonSyntaxException", getKind());
             }
             List<String> pendingHPAs = Lists.newArrayList();
             pendingHPAs.add(name);

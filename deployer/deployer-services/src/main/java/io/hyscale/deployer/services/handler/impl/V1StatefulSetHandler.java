@@ -214,6 +214,7 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1Stateful
                 appsV1Api.deleteNamespacedStatefulSet(name, namespace, TRUE, deleteOptions, null, null, null, null);
             } catch (JsonSyntaxException e) {
                 // K8s end exception ignore
+                logger.debug("Ignoring delete {} JsonSyntaxException", getKind());
             }
             if (wait) {
                 List<String> pendingStatefulSets = Lists.newArrayList();

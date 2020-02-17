@@ -195,7 +195,8 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 		    try {
 				coreV1Api.deleteNamespacedSecret(name, namespace, TRUE, deleteOptions, null, null, null, null);
 		    } catch (JsonSyntaxException e) {
-			// K8s end exception ignore
+		        // K8s end exception ignore
+		        logger.debug("Ignoring delete {} JsonSyntaxException", getKind());
 		    }
 			List<String> secretList = Lists.newArrayList();
 			secretList.add(name);

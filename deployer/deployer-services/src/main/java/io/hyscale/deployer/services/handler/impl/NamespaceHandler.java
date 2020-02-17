@@ -100,6 +100,7 @@ public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
                 coreV1Api.deleteNamespace(name,TRUE,deleteOptions,null,null,null,null);
             } catch (JsonSyntaxException e) {
                 // K8s end exception ignore
+                logger.debug("Ignoring delete {} JsonSyntaxException", getKind());
             }
             List<String> namespaceList = Lists.newArrayList();
             namespaceList.add(name);

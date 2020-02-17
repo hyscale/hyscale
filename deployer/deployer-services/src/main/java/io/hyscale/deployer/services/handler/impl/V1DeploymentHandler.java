@@ -195,6 +195,7 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deploymen
                 appsV1Api.deleteNamespacedDeployment(name, namespace, TRUE, deleteOptions, null, null, null, null);
             } catch (JsonSyntaxException e) {
                 // K8s end exception ignore
+                logger.debug("Ignoring delete {} JsonSyntaxException", getKind());
             }
             List<String> pendingDeployments = Lists.newArrayList();
             pendingDeployments.add(name);

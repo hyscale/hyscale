@@ -120,6 +120,7 @@ public class V1PersistentVolumeClaimHandler implements ResourceLifeCycleHandler<
 				coreV1Api.deleteNamespacedPersistentVolumeClaim(name, namespace, TRUE, deleteOptions, null, null, null, null);
 		    } catch (JsonSyntaxException e) {
 			// K8s Exception ignore
+		        logger.debug("Ignoring delete {} JsonSyntaxException", getKind());
 		    }
 			List<String> persistentVolumeClaims = Lists.newArrayList();
 			persistentVolumeClaims.add(name);

@@ -51,7 +51,7 @@
 		<json-path-version>2.4.0</json-path-version>
 		<junit.version>5.4.2</junit.version>
 		<junit.platform.version>1.4.0</junit.platform.version>
-		<spring.core.version>5.1.8.RELEASE</spring.core.version>
+		<spring.core.version>5.1.9.RELEASE</spring.core.version>
 		<json.schema.validator.version>2.2.11</json.schema.validator.version>
 		<aspectj.aspectjweaver.version>1.9.4</aspectj.aspectjweaver.version>
 		<main.basedir>.</main.basedir>

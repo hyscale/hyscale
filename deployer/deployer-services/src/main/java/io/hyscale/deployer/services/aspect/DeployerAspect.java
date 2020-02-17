@@ -28,8 +28,8 @@ import org.springframework.context.annotation.Configuration;
 import io.hyscale.commons.annotations.ComponentInterceptor;
 import io.hyscale.commons.component.IInterceptorProcessor;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.listener.HyscaleContextHelper;
 import io.hyscale.commons.models.DeploymentContext;
+import io.hyscale.commons.utils.HyscaleContextUtil;
 import io.hyscale.deployer.services.processor.DeployerInterceptorProcessor;
 
 @Aspect
@@ -99,7 +99,7 @@ public class DeployerAspect {
     }
 
     private DeployerInterceptorProcessor validateAndGetProcessorBean(Class<? extends IInterceptorProcessor> processor) {
-        IInterceptorProcessor processorBean = HyscaleContextHelper.getSpringBean(processor);
+        IInterceptorProcessor processorBean = HyscaleContextUtil.getSpringBean(processor);
         if (processorBean == null) {
             logger.debug("Bean not found for Processor {}, ignoring processing", processor.getCanonicalName());
             return null;

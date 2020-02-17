@@ -202,7 +202,8 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 	    try {
 			coreV1Api.deleteNamespacedService(name, namespace, TRUE, deleteOptions, null, null, null, null);
 	    } catch (JsonSyntaxException e) {
-		// K8s end exception ignore
+	        // K8s end exception ignore
+	        logger.debug("Ignoring delete {} JsonSyntaxException", getKind());
 	    }
 	    List<String> serviceList = Lists.newArrayList();
 	    serviceList.add(name);
