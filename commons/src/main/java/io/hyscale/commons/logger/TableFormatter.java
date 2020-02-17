@@ -75,7 +75,7 @@ public class TableFormatter {
 	}
 	
 	private String getformatPadString(int padding) {
-		return "$-" + padding + "s";
+		return "$-" + padding + "s\t";
 	}
 	
 	

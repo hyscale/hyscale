@@ -97,12 +97,7 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
         
         WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
 
-        TableFormatter table = new TableFormatter.Builder()
-                .addField(TableFields.SERVICE.getFieldName(), TableFields.SERVICE.getLength())
-                .addField(TableFields.STATUS.getFieldName())
-                .addField(TableFields.AGE.getFieldName(), TableFields.AGE.getLength())
-                .addField(TableFields.SERVICE_ADDRESS.getFieldName(), TableFields.SERVICE_ADDRESS.getLength())
-                .addField(TableFields.MESSAGE.getFieldName(), TableFields.MESSAGE.getLength()).build();
+        TableFormatter table =StatusUtil.getStatusTable(false);
 
         WorkflowContext context = new WorkflowContext();
         context.setAppName(appName);
@@ -114,9 +109,10 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
             for (String serviceName : services) {
                 context.setServiceName(serviceName);
                 statusComponentInvoker.execute(context);
-                DeploymentStatus serviceStatus = (DeploymentStatus) context.getAttribute(
+                Object statusAttr = context.getAttribute(
                         WorkflowConstants.DEPLOYMENT_STATUS);
-                if (serviceStatus != null) {
+                if (statusAttr != null) {
+                    DeploymentStatus serviceStatus = (DeploymentStatus) statusAttr;
                     String[] tableRow = StatusUtil.getRowData(serviceStatus);
                     table.addRow(tableRow);
                     WorkflowLogger.logTableRow(table, tableRow);
