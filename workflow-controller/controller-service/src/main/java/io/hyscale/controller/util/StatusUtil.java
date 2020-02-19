@@ -18,6 +18,9 @@ package io.hyscale.controller.util;
 import org.joda.time.DateTime;
 import org.ocpsoft.prettytime.PrettyTime;
 
+import io.hyscale.commons.logger.TableFields;
+import io.hyscale.commons.logger.TableFormatter;
+import io.hyscale.commons.logger.TableFormatter.Builder;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ReplicaInfo;
 
@@ -37,6 +40,18 @@ public class StatusUtil {
                 deploymentStatus.getMessage()};
         return rowData;
     }
+	
+	public static TableFormatter getStatusTable(boolean isLarge) {
+	    TableFormatter table  = new TableFormatter.Builder()
+                .addField(TableFields.SERVICE.getFieldName(), TableFields.SERVICE.getLength())
+                .addField(TableFields.STATUS.getFieldName(), TableFields.STATUS.getLength())
+                .addField(TableFields.AGE.getFieldName(), TableFields.AGE.getLength())
+                .addField(TableFields.SERVICE_ADDRESS.getFieldName(), 
+                        isLarge ? TableFields.SERVICE_ADDRESS_LARGE.getLength() :TableFields.SERVICE_ADDRESS.getLength())
+                .addField(TableFields.MESSAGE.getFieldName(), TableFields.MESSAGE.getLength()).build();
+	    
+	    return table;
+	}
 	
 	public static String[] getReplicasData(ReplicaInfo replicaInfo) {
 	    if (replicaInfo == null) {

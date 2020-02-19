@@ -15,6 +15,7 @@
  */
 package io.hyscale.controller.commands;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -26,6 +27,7 @@ import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.StatusUtil;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,31 +86,38 @@ public class HyscaleAppStatusCommand implements Callable<Integer> {
         
         WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
 
-        TableFormatter table = new TableFormatter.Builder()
-                .addField(TableFields.SERVICE.getFieldName(), TableFields.SERVICE.getLength())
-                .addField(TableFields.STATUS.getFieldName())
-                .addField(TableFields.AGE.getFieldName(), TableFields.AGE.getLength())
-                .addField(TableFields.SERVICE_ADDRESS.getFieldName(), TableFields.SERVICE_ADDRESS.getLength())
-                .addField(TableFields.MESSAGE.getFieldName(), TableFields.MESSAGE.getLength()).build();
-        
         WorkflowContext context = new WorkflowContext();
         context.setAppName(appName);
         context.setNamespace(namespace);
-
         try {
             statusComponentInvoker.execute(context);
-            List<DeploymentStatus> deploymentStatusList = (List<DeploymentStatus>) context.getAttribute(
+            
+            Object statusAttr = context.getAttribute(
                     WorkflowConstants.DEPLOYMENT_STATUS_LIST);
-        	
-            if (deploymentStatusList != null && !deploymentStatusList.isEmpty()) {
-                deploymentStatusList.stream().forEach(each -> {
-                	String[] tableRow = StatusUtil.getRowData(each);
-                    table.addRow(tableRow);
-                });
-                WorkflowLogger.logTable(table);
-            } else {
+            
+            if (statusAttr == null) {
                 WorkflowLogger.info(ControllerActivity.NO_SERVICE_DEPLOYED);
+                return 0;
             }
+            List<DeploymentStatus> deploymentStatusList = (List<DeploymentStatus>) statusAttr;
+
+            if (deploymentStatusList.isEmpty()) {
+                WorkflowLogger.info(ControllerActivity.NO_SERVICE_DEPLOYED);
+                return 0;
+            }
+        	
+            List<String[]> rowList = new ArrayList<String[]>();
+            boolean isLarge = false;
+            for (DeploymentStatus deploymentStatus : deploymentStatusList) {
+                if (StringUtils.isNotBlank(deploymentStatus.getServiceAddress())) {
+                    isLarge = isLarge ? isLarge : deploymentStatus.getServiceAddress().length() > TableFields.SERVICE_ADDRESS.getLength();
+                }
+                String[] tableRow = StatusUtil.getRowData(deploymentStatus);
+                rowList.add(tableRow);
+            }
+            TableFormatter table = StatusUtil.getStatusTable(isLarge);
+            rowList.forEach( each -> table.addRow(each));
+            WorkflowLogger.logTable(table);
         } catch (HyscaleException e) {
             WorkflowLogger.error(ControllerActivity.ERROR_WHILE_FETCHING_STATUS, e.toString());
             logger.error("Error while getting app {} status in namespace {}", appName, namespace, e);
@@ -116,8 +125,7 @@ public class HyscaleAppStatusCommand implements Callable<Integer> {
         } finally {
             WorkflowLogger.footer();
         }
-
         return 0;
     }
-
+    
 }
