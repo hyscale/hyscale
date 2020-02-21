@@ -111,7 +111,7 @@ volumes:
 replicas:
     min: 1
     max: 3
-    cpuThresold: 40%
+    cpuThreshold: 40%
  
 external: true
 ports:
