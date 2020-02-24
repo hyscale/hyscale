@@ -36,7 +36,7 @@ import io.hyscale.commons.utils.HyscaleFilesUtil;
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.commons.utils.WindowsUtil;
 import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.core.exception.ControllerErrorCodes;
+import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.servicespec.commons.builder.EffectiveServiceSpecBuilder;
 import io.hyscale.servicespec.commons.builder.MapFieldDataProvider;
 import io.hyscale.servicespec.commons.builder.ServiceInputType;

@@ -16,105 +16,68 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
-       <!-- <dependency>
-            <groupId>org.springframework.integration</groupId>
-            <artifactId>spring-integration-file</artifactId>
-            <version>5.1.7.RELEASE</version>
-        </dependency>-->
         <dependency>
             <groupId>io.hyscale</groupId>
             <artifactId>controller-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <!-- To avoid split package problem -->
-        <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
         </dependency>
         <!-- Validate Command input -->
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>javax.el</groupId>
             <artifactId>javax.el-api</artifactId>
-            <version>${javax.el-api.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.web</groupId>
             <artifactId>javax.el</artifactId>
-            <version>${glassfish.web.javax.el-api.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli-spring-boot-starter</artifactId>
-            <version>${picocli.spring-boot.version}</version>
         </dependency>
         <dependency>
             <groupId>io.hyscale</groupId>
             <artifactId>commons</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.hyscale</groupId>
             <artifactId>service-spec-commons</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.hyscale</groupId>
             <artifactId>deployer-services</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.hyscale</groupId>
             <artifactId>generator-services</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.hyscale</groupId>
             <artifactId>dockerfile-gen-services</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.hyscale</groupId>
             <artifactId>builder-services</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.hyscale</groupId>
             <artifactId>schema-validator</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.hyscale</groupId>
             <artifactId>troubleshooting-integration</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <!-- Status time formatting -->
         <dependency>
             <groupId>org.ocpsoft.prettytime</groupId>
             <artifactId>prettytime</artifactId>
-            <version>${ocpsoft.prettytime.version}</version>
         </dependency>
     </dependencies>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <build>
         <finalName>hyscale</finalName>

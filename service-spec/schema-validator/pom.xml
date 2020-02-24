@@ -13,20 +13,12 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>javax.validation</groupId>
-			<artifactId>validation-api</artifactId>
-			<version>${javax.validation-api.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>com.github.java-json-tools</groupId>
 			<artifactId>json-schema-validator</artifactId>
-			<version>${json.schema.validator.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.hyscale</groupId>
-			<artifactId>service-spec-commons</artifactId>
-			<version>${project.version}</version>
-			<scope>compile</scope>
+			<artifactId>commons</artifactId>
 		</dependency>
     </dependencies>
 </project>

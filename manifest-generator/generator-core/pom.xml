@@ -12,11 +12,4 @@
 	<artifactId>generator-core</artifactId>
 	<packaging>jar</packaging>
 
-	<dependencies>
-		<dependency>
-			<groupId>io.hyscale</groupId>
-			<artifactId>commons</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-	</dependencies>
 </project>

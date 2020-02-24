@@ -31,7 +31,7 @@ import io.hyscale.commons.exception.HyscaleErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.core.exception.ControllerErrorCodes;
+import io.hyscale.controller.exception.ControllerErrorCodes;
 
 /**
  * Controller level config details such as docker registry config, kube config
