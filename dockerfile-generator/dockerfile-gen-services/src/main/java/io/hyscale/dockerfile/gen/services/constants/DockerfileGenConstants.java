@@ -40,5 +40,9 @@ public class DockerfileGenConstants {
 	public static final String SCRIPT_DIR_FIELD = "SCRIPT_DIR";
 
 	public static final String PERMISSION_COMMAND_FIELD = "PERMISSION_COMMAND";
+	
+	public static final String WINDOWS_NEW_LINE_CHANGE_COMMAND = "sed -i 's/\\r$//'";
+	
+	public static final String PERMISSION_COMMAND = "chmod -R 755";
 
 }
