@@ -15,7 +15,7 @@
  */
 package io.hyscale.commons.models;
 
-import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.openapi.models.V1ObjectMeta;
 
 public class KubernetesResource {
 

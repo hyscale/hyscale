@@ -33,11 +33,11 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Status;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.ApiException;
-import io.kubernetes.client.apis.CoreV1Api;
-import io.kubernetes.client.models.V1DeleteOptions;
-import io.kubernetes.client.models.V1Namespace;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.apis.CoreV1Api;
+import io.kubernetes.client.openapi.models.V1DeleteOptions;
+import io.kubernetes.client.openapi.models.V1Namespace;
 
 /**
  * V1Namespace resource operations
@@ -97,7 +97,7 @@ public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
         try {
             WorkflowLogger.startActivity(activityContext);
             try {
-                coreV1Api.deleteNamespace(name,TRUE,deleteOptions,null,null,null,null);
+                coreV1Api.deleteNamespace(name, TRUE, null, null, null, null, deleteOptions);
             } catch (JsonSyntaxException e) {
                 // K8s end exception ignore
             }

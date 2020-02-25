@@ -16,8 +16,8 @@
 package io.hyscale.deployer.services.builder;
 
 import io.hyscale.deployer.core.model.ResourceKind;
-import io.kubernetes.client.models.V1Namespace;
-import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.openapi.models.V1Namespace;
+import io.kubernetes.client.openapi.models.V1ObjectMeta;
 
 /**
  * Create V1Namespace from name

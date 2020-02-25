@@ -16,7 +16,7 @@
 package io.hyscale.deployer.services.util;
 
 import io.hyscale.deployer.services.builder.NamespaceBuilder;
-import io.kubernetes.client.models.V1Namespace;
+import io.kubernetes.client.openapi.models.V1Namespace;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

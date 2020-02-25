@@ -28,11 +28,11 @@ import io.hyscale.deployer.core.model.ResourceOperation;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.util.ExceptionHelper;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.ApiException;
-import io.kubernetes.client.apis.AppsV1Api;
-import io.kubernetes.client.models.V1ReplicaSet;
-import io.kubernetes.client.models.V1ReplicaSetList;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.apis.AppsV1Api;
+import io.kubernetes.client.openapi.models.V1ReplicaSet;
+import io.kubernetes.client.openapi.models.V1ReplicaSetList;
 
 public class V1ReplicaSetHandler implements ResourceLifeCycleHandler<V1ReplicaSet> {
 
@@ -71,7 +71,7 @@ public class V1ReplicaSetHandler implements ResourceLifeCycleHandler<V1ReplicaSe
             String labelSelector = label ? selector : null;
             String fieldSelector = label ? null : selector;
 
-            V1ReplicaSetList v1DeploymentList = appsV1Api.listNamespacedReplicaSet(namespace, TRUE,
+            V1ReplicaSetList v1DeploymentList = appsV1Api.listNamespacedReplicaSet(namespace, TRUE, null, 
                     null, fieldSelector, labelSelector, null, null, null, null);
 
             v1ReplicaSets = v1DeploymentList != null ? v1DeploymentList.getItems() : null;

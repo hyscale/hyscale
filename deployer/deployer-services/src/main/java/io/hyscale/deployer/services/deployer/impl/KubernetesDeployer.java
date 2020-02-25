@@ -59,11 +59,11 @@ import io.hyscale.deployer.services.util.K8sPodUtil;
 import io.hyscale.deployer.services.util.K8sReplicaUtil;
 import io.hyscale.deployer.services.util.K8sResourceDispatcher;
 import io.hyscale.deployer.services.util.KubernetesResourceUtil;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.models.V1PersistentVolumeClaim;
-import io.kubernetes.client.models.V1Pod;
-import io.kubernetes.client.models.V1Volume;
-import io.kubernetes.client.models.V1VolumeMount;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.openapi.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1Volume;
+import io.kubernetes.client.openapi.models.V1VolumeMount;
 
 /**
  * {@link Deployer} implementation for K8s Cluster
@@ -416,8 +416,8 @@ public class KubernetesDeployer implements Deployer {
         VolumeMount volumeMount = new VolumeMount();
         volumeMount.setMountPath(v1VolumeMount.getMountPath());
         volumeMount.setName(v1VolumeMount.getName());
-        if (v1VolumeMount.isReadOnly() != null) {
-            volumeMount.setReadOnly(v1VolumeMount.isReadOnly());
+        if (v1VolumeMount.getReadOnly() != null) {
+            volumeMount.setReadOnly(v1VolumeMount.getReadOnly());
         }
         return volumeMount;
     }

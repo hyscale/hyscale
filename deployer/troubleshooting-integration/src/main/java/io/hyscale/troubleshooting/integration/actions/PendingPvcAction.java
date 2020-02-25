@@ -17,7 +17,7 @@ package io.hyscale.troubleshooting.integration.actions;
 
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.troubleshooting.integration.models.*;
-import io.kubernetes.client.models.*;
+import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

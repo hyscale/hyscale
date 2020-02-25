@@ -15,8 +15,8 @@
  */
 package io.hyscale.deployer.services.model;
 
-import io.kubernetes.client.models.V1ContainerStatus;
-import io.kubernetes.client.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1ContainerStatus;
+import io.kubernetes.client.openapi.models.V1Pod;
 
 import java.util.List;
 
@@ -55,7 +55,7 @@ public class PodStatusUtil {
         String aggregateStatus = null;
         for (V1ContainerStatus each : containerStatuses) {
             if (withLastState) {
-                if (!each.isReady() && each.getLastState() != null) {
+                if (!each.getReady() && each.getLastState() != null) {
                     if (each.getLastState().getTerminated() != null) {
                         aggregateStatus = each.getLastState().getTerminated().getReason();
                         break;
@@ -88,7 +88,7 @@ public class PodStatusUtil {
         }
         String initContainerStatus = null;
         for (V1ContainerStatus each : initContainerStatuses) {
-            if (each.getState().getTerminated() != null && each.isReady()) {
+            if (each.getState().getTerminated() != null && each.getReady()) {
                 continue;
             } else if (each.getState().getWaiting() != null) {
                 initContainerStatus = each.getState().getWaiting().getReason();

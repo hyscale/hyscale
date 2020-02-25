@@ -17,7 +17,7 @@ package io.hyscale.deployer.services.predicates;
 
 import io.hyscale.deployer.services.model.PodCondition;
 import io.hyscale.deployer.services.util.K8sPodUtil;
-import io.kubernetes.client.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1Pod;
 
 import java.util.List;
 import java.util.Map;

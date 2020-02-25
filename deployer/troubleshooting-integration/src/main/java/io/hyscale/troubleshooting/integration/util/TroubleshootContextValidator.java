@@ -17,7 +17,7 @@ package io.hyscale.troubleshooting.integration.util;
 
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
-import io.kubernetes.client.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1Pod;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

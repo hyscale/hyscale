@@ -17,8 +17,8 @@ package io.hyscale.deployer.services.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.hyscale.commons.utils.ObjectMapperFactory;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.models.*;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.models.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

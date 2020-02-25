@@ -36,13 +36,13 @@ import io.hyscale.deployer.services.model.ResourceStatus;
 import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.hyscale.deployer.services.util.K8sPodUtil;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.ApiException;
-import io.kubernetes.client.apis.AppsV1Api;
-import io.kubernetes.client.models.V1DeleteOptions;
-import io.kubernetes.client.models.V1Pod;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.apis.AppsV1Api;
+import io.kubernetes.client.openapi.models.V1DeleteOptions;
+import io.kubernetes.client.openapi.models.V1Pod;
 import io.kubernetes.client.custom.V1Patch;
-import io.kubernetes.client.models.*;
+import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.List;
@@ -138,7 +138,7 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1Stateful
         String fieldSelector = label ? null : selector;
         List<V1StatefulSet> statefulSets = null;
         try {
-            V1StatefulSetList statefulSetList = appsV1Api.listNamespacedStatefulSet(namespace, TRUE,
+            V1StatefulSetList statefulSetList = appsV1Api.listNamespacedStatefulSet(namespace, TRUE, null,
                     null, fieldSelector, labelSelector, null, null, null, null);
             statefulSets = statefulSetList != null ? statefulSetList.getItems() : null;
         } catch (ApiException e) {
@@ -211,7 +211,7 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1Stateful
         WorkflowLogger.startActivity(activityContext);
         try {
             try {
-                appsV1Api.deleteNamespacedStatefulSet(name, namespace, TRUE, deleteOptions, null, null, null, null);
+                appsV1Api.deleteNamespacedStatefulSet(name, namespace, TRUE, null, null, null, null, deleteOptions);
             } catch (JsonSyntaxException e) {
                 // K8s end exception ignore
             }

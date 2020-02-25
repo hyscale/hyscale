@@ -18,7 +18,7 @@ package io.hyscale.troubleshooting.integration.actions;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.troubleshooting.integration.models.*;
-import io.kubernetes.client.models.V1Event;
+import io.kubernetes.client.openapi.models.V1Event;
 import org.springframework.stereotype.Component;
 
 @Component

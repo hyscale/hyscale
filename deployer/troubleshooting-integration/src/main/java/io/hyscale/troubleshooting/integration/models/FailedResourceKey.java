@@ -15,8 +15,8 @@
  */
 package io.hyscale.troubleshooting.integration.models;
 
-import io.kubernetes.client.models.V1Event;
-import io.kubernetes.client.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1Event;
+import io.kubernetes.client.openapi.models.V1Pod;
 
 import java.util.List;
 
