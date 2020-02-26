@@ -43,15 +43,16 @@ public class ImageCommandProvider {
 	private static final String BUILD_ARGS = " --build-arg ";
 	private static final String REMOVE_IMAGE = "rmi";
 	private static final String PULL_COMMAND = "pull";
-	private static final String LABEL_ARGS="label";
-	private static final String IMAGE="image";
-	private static final String OWNER="owner";
-	private static final String HYSCALE="hyscale";
-	private static final String HYPHEN="-";
-	private static final String FLAG="f";
-	private static final String ALL="a";
-	private static final String QUIET="q";
-	private static final String FILTER="filter";
+	private static final String LABEL_ARGS = "label";
+	private static final String IMAGE = "image";
+	private static final String OWNER = "owner";
+	private static final String IMAGE_OWNER="imageowner";
+	private static final String HYSCALE = "hyscale";
+	private static final String HYPHEN = "-";
+	private static final String FLAG = "f";
+	private static final String ALL = "a";
+	private static final String QUIET = "q";
+	private static final String FILTER = "filter";
 
 	private static final boolean USE_SUDO = false;
 
@@ -64,7 +65,7 @@ public class ImageCommandProvider {
 	public String getBuildImageNameWithTag(String appName, String serviceName, String tag) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(HYSCALE_IO_URL).append(SLASH).append(appName).append(SLASH).append(serviceName);
-		if(StringUtils.isNotBlank(tag)) {
+		if (StringUtils.isNotBlank(tag)) {
 			sb.append(ToolConstants.COLON).append(tag);
 		}
 		return normalize(sb.toString());
@@ -79,7 +80,9 @@ public class ImageCommandProvider {
 			Map<String, String> buildArgs) {
 		StringBuilder buildCommand = new StringBuilder();
 		buildCommand.append(DOCKER_BUILD);
-		buildCommand.append(SPACE).append(HYPHEN).append(HYPHEN).append(LABEL_ARGS).append(SPACE).append(IMAGE).append(OWNER).append(EQUALS).append(HYSCALE);
+
+		buildCommand.append(SPACE).append(HYPHEN).append(HYPHEN).append(LABEL_ARGS).append(SPACE).append(IMAGE)
+				.append(OWNER).append(EQUALS).append(HYSCALE);
 		if (buildArgs != null && !buildArgs.isEmpty()) {
 			buildCommand.append(getBuildArgs(buildArgs));
 		}
@@ -160,8 +163,10 @@ public class ImageCommandProvider {
 		input = input.toLowerCase();
 		return input;
 	}
+
+
 	// docker rmi -f $(docker images -a -q)
-	// it will delete all images  which is owned by hyscale
+	// it will delete all images which is owned by hyscale
 	public String getAllImageDeleteCommand(Set<String> imageIds) {
 		StringBuilder deleteAllImageCommand = new StringBuilder(getDockerCommand());
 		deleteAllImageCommand.append(REMOVE_IMAGE).append(SPACE).append(HYPHEN).append(FLAG);
@@ -170,25 +175,33 @@ public class ImageCommandProvider {
 		}
 		return deleteAllImageCommand.toString();
 	}
-	
-	
+
+
 	// it will return all images id's which is owned by hyscale
 	// --label “imageowner=hyscale"
-	// docker images -f  label=imageowner=hyscale -q
+	// docker images --filter label=imageowner=hyscale -q
 	public String getAllImageCommand() {
-		StringBuilder deleteAllImageCommand = new StringBuilder(getDockerCommand());
-		deleteAllImageCommand.append(IMAGES).append(SPACE).append(HYPHEN).append(HYPHEN)
-				.append(FILTER).append(SPACE).append(LABEL_ARGS).append(EQUALS)
-				.append(IMAGE).append(OWNER).append(EQUALS).append(HYSCALE);
-		return deleteAllImageCommand.toString();
+		return getAllImageCommands().append(filter(IMAGE_OWNER, HYSCALE)).append(quiet()).toString();
 	}
-	
+
 	// docker images <imagename> --filter label=imageowner=hyscale -q
-	public String getAllImageCommandByImageName(String imageName) {
-		StringBuilder allImageCommandByImageName = new StringBuilder(getDockerCommand());
-		allImageCommandByImageName.append(IMAGES).append(SPACE).append(imageName).append(SPACE).append(HYPHEN)
-				.append(HYPHEN).append(FILTER).append(SPACE).append(LABEL_ARGS).append(EQUALS)
-				.append(IMAGE).append(OWNER).append(EQUALS).append(HYSCALE).append(SPACE).append(HYPHEN).append(QUIET);
-		return allImageCommandByImageName.toString();
+	public String getImageNameWithFilterCommand(String imageName) {
+		return getAllImageCommands().append(imageName).append(filter(IMAGE_OWNER, HYSCALE)).append(quiet()).toString();
+	}
+
+	// docker images
+	private StringBuilder getAllImageCommands() {
+		return new StringBuilder(getDockerCommand()).append(IMAGES);
+	}
+
+	// --filter label=key=value
+	private StringBuilder filter(String key, String value) {
+		return new StringBuilder().append(HYPHEN).append(HYPHEN).append(FILTER).append(SPACE).append(LABEL_ARGS)
+				.append(EQUALS).append(IMAGE_OWNER).append(key).append(EQUALS).append(value);
+	}
+
+	// -q
+	private StringBuilder quiet() {
+		return new StringBuilder().append(HYPHEN).append(QUIET);
 	}
 }

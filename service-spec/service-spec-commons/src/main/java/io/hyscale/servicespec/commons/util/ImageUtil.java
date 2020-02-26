@@ -15,15 +15,17 @@
  */
 package io.hyscale.servicespec.commons.util;
 
-import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
-import io.hyscale.servicespec.commons.model.service.Image;
-import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.service.Image;
+import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 
+@Component
 public class ImageUtil {
 
     private static final String DELIMITER = "/";

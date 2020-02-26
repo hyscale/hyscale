@@ -16,12 +16,14 @@
 package io.hyscale.builder.services.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
-
 
 import io.hyscale.commons.config.SetupConfig;
 
 @Component
+@PropertySource("classpath:config/image-builder.props")
 public class ImageBuilderConfig {
 
 	public static final String IMAGE_BUILDER_PROP = "hyscale.image.builder";
@@ -29,6 +31,19 @@ public class ImageBuilderConfig {
 	private static final String BUILD_LOG = "build.log";
 	@Autowired
 	private SetupConfig setupConfig;
+
+	@Value("${preserve_n_recently_used:3}")
+	private Integer startIndex;
+	
+	private String imageCleanUpPolicy=System.getenv("IMAGE_CLEANUP_POLICY");
+	
+	public String getImageCleanUpPolicy() {
+		return imageCleanUpPolicy;
+	}
+
+	public Integer getStartIndex() {
+		return startIndex;
+	}
 
 	public String getDockerBuildlog(String appName, String serviceName) {
 		StringBuilder sb = new StringBuilder(setupConfig.getLogsDir(appName, serviceName));

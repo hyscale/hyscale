@@ -29,21 +29,19 @@ import io.hyscale.builder.core.models.ImageCleanUpPolicy;
 public class ImageCleanupProcessorFactory {
 
 	@Autowired
-	private  DeleteAll deleteAll;
+	private DeleteAll deleteAll;
 	@Autowired
-	private  DeleteAfterBuild deleteAfterBuild;
+	private DeleteAfterBuild deleteAfterBuild;
 	@Autowired
-	private  PreserveLastNUsed preserve_Last_N_USED;
+	private PreserveLastNUsed preserve_Last_N_USED;
 	@Autowired
-	private  PreserveAll preserveAll;
+	private PreserveAll preserveAll;
 
-	public static final String IMAGE_PULL_POLICY = "IMAGE_PULL_POLICY";
-	public static final String DELETE_AFTER_BUILD = "DELETE_AFTER_BUILD"; // DELETE_AFTER_BUILD
-	public static final String PRESERVE_N_RECENTLY_USED = "PRESERVE_N_RECENTLY_USED";
-	public static final String PRESERVE_ALL = "PRESERVE_ALL";
-	public static final String DELETE_ALL = "DELETE_ALL";
+	public ImageCleanupProcessor getImageCleanupProcessor(String imageCleanUpPolicy) {
+		return getImageCleanupProcessor(ImageCleanUpPolicy.valueOf(imageCleanUpPolicy));
+	}
 
-	public  ImageCleanupProcessor getImageCleanupProcessor(ImageCleanUpPolicy policy) {
+	public ImageCleanupProcessor getImageCleanupProcessor(ImageCleanUpPolicy policy) {
 
 		switch (policy) {
 

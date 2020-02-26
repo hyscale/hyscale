@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 import io.hyscale.builder.cleanup.services.ImageCleanupProcessor;
 import io.hyscale.builder.core.models.BuildContext;
 import io.hyscale.builder.core.models.ImageBuilderActivity;
-import io.hyscale.builder.core.models.ImageCleanUpPolicy;
+import io.hyscale.builder.services.config.ImageBuilderConfig;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
 import io.hyscale.builder.services.service.ImageBuildPushService;
 import io.hyscale.builder.services.util.ImageCleanupProcessorFactory;
@@ -49,6 +49,8 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
 
     @Autowired
     private LocalImagePushServiceImpl pushService;
+    @Autowired
+    private ImageBuilderConfig imageBuilderConfig;
 
     @Override
     public void buildAndPush(ServiceSpec serviceSpec, BuildContext context) throws HyscaleException {
@@ -56,9 +58,9 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
         if (validate(serviceSpec) && isImageBuildPushRequired(serviceSpec, context)) {
             context = buildService.build(serviceSpec, context);
             pushService.pushImage(serviceSpec, context);
-    		String imagePullPolicy = System.getenv(IMAGE_PULL_POLICY);
-			ImageCleanUpPolicy policy = ImageCleanUpPolicy.valueOf(imagePullPolicy);
-    		ImageCleanupProcessor imageCleanupProcessor=imageCleanupProcessorFactory.getImageCleanupProcessor(policy);
+
+    		String imagePullPolicy = imageBuilderConfig.getImageCleanUpPolicy();
+    		ImageCleanupProcessor imageCleanupProcessor=imageCleanupProcessorFactory.getImageCleanupProcessor(imagePullPolicy);
 			if (imageCleanupProcessor != null) {
 				imageCleanupProcessor.clean(serviceSpec);
 			}

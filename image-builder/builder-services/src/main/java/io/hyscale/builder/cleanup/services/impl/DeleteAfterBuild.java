@@ -17,16 +17,16 @@ package io.hyscale.builder.cleanup.services.impl;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.builder.cleanup.services.ImageCleanupProcessor;
-import io.hyscale.builder.services.util.DockerImageUtil;
 import io.hyscale.commons.commands.CommandExecutor;
 import io.hyscale.commons.commands.provider.ImageCommandProvider;
+import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+import io.hyscale.servicespec.commons.util.ImageUtil;
 
 @Component
 public class DeleteAfterBuild implements ImageCleanupProcessor {
@@ -35,21 +35,21 @@ public class DeleteAfterBuild implements ImageCleanupProcessor {
 	private ImageCommandProvider imageCommandProvider;
 	
 	@Autowired
-	private DockerImageUtil dockerImageUtil;
+
+	private ImageUtil imageUtil;
 
 	@Override
 	public void clean(ServiceSpec serviceSpec) {
-		String image=dockerImageUtil.getImageName(serviceSpec);
-		List<String> imageIds = Arrays
-				.asList(CommandExecutor.executeAndGetResults(imageCommandProvider.getAllImageCommandByImageName(image))
-						.getCommandOutput().split("\\s+"));
-		
-		CommandExecutor.execute(imageCommandProvider.getAllImageDeleteCommand(new HashSet<String>(imageIds)));
+		String image=null;
+		try {
+			image = imageUtil.getImage(serviceSpec);
+		} catch (HyscaleException e) {
+			e.printStackTrace();
+		}
+		String imageCommandByName = imageCommandProvider.getImageNameWithFilterCommand(image);
+		String[] imageIds = CommandExecutor.executeAndGetResults(imageCommandByName).getCommandOutput().split("\\s+");
+		String imageDeleteCommand = imageCommandProvider.getAllImageDeleteCommand(new HashSet<String>(Arrays.asList(imageIds)));
+		CommandExecutor.execute(imageDeleteCommand);
 
-	}
-	
-	public static void main(String args[]) {
-		ImageCommandProvider imageCommandProvider=new ImageCommandProvider();
-		
 	}
 }

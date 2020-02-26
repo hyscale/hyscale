@@ -22,41 +22,41 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.builder.cleanup.services.ImageCleanupProcessor;
-import io.hyscale.builder.services.util.DockerImageUtil;
+import io.hyscale.builder.services.config.ImageBuilderConfig;
 import io.hyscale.commons.commands.CommandExecutor;
 import io.hyscale.commons.commands.provider.ImageCommandProvider;
+import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+import io.hyscale.servicespec.commons.util.ImageUtil;
 
 @Component
-@PropertySource("classpath:config/image-builder.props")
 public class PreserveLastNUsed implements ImageCleanupProcessor {
 	private static final Logger logger = LoggerFactory.getLogger(PreserveLastNUsed.class);
 
 	@Autowired
 	private ImageCommandProvider imageCommandProvider;
 	@Autowired
-	private DockerImageUtil dockerImageUtil;
 
-	@Value("${preserve_n_recently_used:3}")
-	Integer startIndex;
-
+	private ImageUtil imageUtil;
+    @Autowired
+    private ImageBuilderConfig imageBuilderConfig;
 	@Override
 	public void clean(ServiceSpec serviceSpec) {
-		// TODO Auto-generated method stub
-		String image = null;
-		image = dockerImageUtil.getImageName(serviceSpec);
-		List<String> imageIds = Arrays
-				.asList(CommandExecutor.executeAndGetResults(imageCommandProvider.getAllImageCommandByImageName(image))
-						.getCommandOutput().split("\\s+"));
-		if (imageIds.size() > startIndex) {
-			CommandExecutor.execute(imageCommandProvider
-					.getAllImageDeleteCommand(new HashSet<String>(imageIds.subList(startIndex, imageIds.size()))));
+		String image=null;
+		try {
+			image = imageUtil.getImage(serviceSpec);
+		} catch (HyscaleException e) {
+			e.printStackTrace();
 		}
-
+		String imageCommandByName = imageCommandProvider.getImageNameWithFilterCommand(image);
+		String[] imgIds = CommandExecutor.executeAndGetResults(imageCommandByName).getCommandOutput().split("\\s+");
+		List<String> imageIds = Arrays.asList(imgIds);
+		if (imageIds.size() > imageBuilderConfig.getStartIndex()) {
+			CommandExecutor.execute(imageCommandProvider
+					.getAllImageDeleteCommand(new HashSet<String>(imageIds.subList(imageBuilderConfig.getStartIndex(), imageIds.size()))));
+		}
 	}
 }
