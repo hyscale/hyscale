@@ -111,14 +111,16 @@ public class ResourceLimitsHandler implements ManifestHandler {
     private ValueRange getRange(String value, Pattern pattern) throws HyscaleException {
         ValueRange range = new ValueRange();
         try {
-            if (pattern.matcher(value).matches()) {
-                int separatorIndex = value.indexOf("-");
-                if (separatorIndex == -1) {
-                    range.setMax(Quantity.fromString(value));
-                } else {
-                    range.setMin(Quantity.fromString(value.substring(0, separatorIndex)));
-                    range.setMax(Quantity.fromString(value.substring(separatorIndex + 1)));
-                }
+            if (!pattern.matcher(value).matches()) {
+                WorkflowLogger.persist(ManifestGeneratorActivity.INVALID_SIZE_FORMAT, value);
+                throw new HyscaleException(ManifestErrorCodes.INVALID_SIZE_FORMAT, value);
+            }
+            int separatorIndex = value.indexOf("-");
+            if (separatorIndex == -1) {
+                range.setMax(Quantity.fromString(value));
+            } else {
+                range.setMin(Quantity.fromString(value.substring(0, separatorIndex)));
+                range.setMax(Quantity.fromString(value.substring(separatorIndex + 1)));
             }
         } catch (QuantityFormatException e) {
             WorkflowLogger.persist(ManifestGeneratorActivity.INVALID_SIZE_FORMAT, value);
