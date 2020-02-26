@@ -48,12 +48,13 @@ import io.kubernetes.client.models.V1ResourceRequirements;
 public class ResourceLimitsHandler implements ManifestHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceLimitsHandler.class);
-    private static final String RANGE_REGEX = "(\\d+.*(Ki|Mi|Gi|Ti|Pi|Ei|[numkMGTPE]|))-(\\d+.*((Ki|Mi|Gi|Ti|Pi|Ei|[numkMGTPE]|)))";
-    private static final String CPU_REGEX = "(\\d+.*(([.][\\d])[m]|))-(\\d+.*(([.][\\d])[m]|))";
-    private static final Pattern cpuRangePattern = Pattern.compile(CPU_REGEX);
-    private static final Pattern rangePattern = Pattern.compile(RANGE_REGEX);
+    private static final String MEMORY_REGEX = "^\\d+(-\\d+)?$|^\\d+(E|P|T|G|M|K)(-\\d+(E|P|T|G|M|K))?$";
+    private static final String CPU_REGEX = "^((\\d+\\.)?\\d+(-(\\d+\\.)?\\d+)?)$|^((\\d+\\.)?\\d+[m])(-((\\d+\\.)?\\d)+[m])?$";
+    private static final Pattern cpuPattern = Pattern.compile(CPU_REGEX);
+    private static final Pattern memoryPattern = Pattern.compile(MEMORY_REGEX);
 
-    private static final String DEFAULT_MIN_MEMORY = "4Mi";
+    private static final String DEFAULT_MIN_MEMORY = "4M";
+    //mininimum cpu for k8s is 1m
     private static final String DEFAULT_MIN_CPU = "1m";
 
     @Override
@@ -64,11 +65,11 @@ public class ResourceLimitsHandler implements ManifestHandler {
         ValueRange cpuRange = null;
         if (StringUtils.isNotBlank(memory)) {
             logger.debug("Preparing memory limits.");
-            memoryRange = getRange(memory, rangePattern);
+            memoryRange = getRange(memory, memoryPattern);
         }
         if (StringUtils.isNotBlank(cpu)) {
             logger.debug("Preparing cpu limits.");
-            cpuRange = getRange(cpu, cpuRangePattern);
+            cpuRange = getRange(cpu, cpuPattern);
         }
         String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
@@ -112,10 +113,12 @@ public class ResourceLimitsHandler implements ManifestHandler {
         try {
             if (pattern.matcher(value).matches()) {
                 int separatorIndex = value.indexOf("-");
-                range.setMin(Quantity.fromString(value.substring(0, separatorIndex)));
-                range.setMax(Quantity.fromString(value.substring(separatorIndex + 1)));
-            } else {
-                range.setMax(Quantity.fromString(value));
+                if (separatorIndex == -1) {
+                    range.setMax(Quantity.fromString(value));
+                } else {
+                    range.setMin(Quantity.fromString(value.substring(0, separatorIndex)));
+                    range.setMax(Quantity.fromString(value.substring(separatorIndex + 1)));
+                }
             }
         } catch (QuantityFormatException e) {
             WorkflowLogger.persist(ManifestGeneratorActivity.INVALID_SIZE_FORMAT, value);

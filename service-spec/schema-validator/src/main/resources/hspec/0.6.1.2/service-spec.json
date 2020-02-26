@@ -18,10 +18,7 @@
         },
         "args": {
           "description": "args is the list of build arguments to be passed during container image build. should be given in this format <key>=<value> ",
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
+          "$ref": "#/definitions/io.hyscale.api.map.string"
         }
       },
       "type": "object"
@@ -30,7 +27,7 @@
       "description": "Describes artifact source and destination inside container.",
       "properties": {
         "name": {
-          "description": "defines the name of the artifacti. should be unique",
+          "description": "defines the name of the artifact. should be unique",
           "type": "string"
         },
         "source": {
@@ -86,15 +83,19 @@
       "type": "object"
     },
     "io.hyscale.api.image.Image": {
-      "description": "Describes container Image could be from dockerfile or buildSpec",
+      "description": "Describes container Image, could be from dockerfile or buildSpec",
       "properties": {
         "name": {
           "description": "Name of final Image",
           "type": "string"
         },
         "tag": {
-          "description": "tag defines the final image tag",
-          "type": "string"
+          "type": [
+            "number",
+            "string"
+          ],
+          "pattern": "^[\\w][\\w.-]{0,127}$",
+          "description": "tag defines the final image tag"
         },
         "registry": {
           "description": "docker registry url along with namespace",
@@ -129,7 +130,8 @@
       "additionalProperties": {
         "type": [
           "string",
-          "integer"
+          "number",
+          "boolean"
         ]
       }
     },
@@ -137,7 +139,10 @@
       "description": "Defines the keys of any attribute the service",
       "type": "array",
       "items": {
-        "type": "string",
+        "type": [
+          "string",
+          "number"
+        ],
         "description": "string key"
       }
     },
@@ -176,9 +181,7 @@
       "type": "string",
       "enum": [
         "0.5",
-        "0.6",
-        "0.6.1",
-        "0.6.1.1"
+        "0.6"
       ]
     },
     "name": {
@@ -220,7 +223,8 @@
             "type": "string"
           },
           "size": {
-            "type": "string",
+            "type": ["number","string"],
+            "pattern": "^(\\d+\\.)?\\d+(-(\\d+\\.)?\\d+)?$|^(\\d+\\.)?\\d+(E|P|T|G|M|K)(-(\\d+\\.)?\\d+(E|P|T|G|M|K))?$",
             "description": "size of volume",
             "default": "1g"
           },
@@ -265,7 +269,14 @@
         ],
         "properties": {
           "port": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
             "description": "defines port number along with type. default type is tcp."
           },
           "healthCheck": {
@@ -287,18 +298,18 @@
     },
     "memory": {
       "description": "Defines the range of memory the service has to use in the container",
-      "type": "string",
-      "pattern": "(\\d+(Ki|Mi|Gi|Ti|Pi|Ei|[numkMGTPE]|))+(-\\d+(Ki|Mi|Gi|Ti|Pi|Ei|[numkMGTPE]|))*"
+      "type": ["integer","string"],
+      "pattern": "^\\d+(-\\d+)?$|^\\d+(E|P|T|G|M|K)(-\\d+(E|P|T|G|M|K))?$"
     },
     "cpu": {
       "description": "Defines the range of cpu the service has to use in the container",
-      "type": "string",
-      "pattern": "([\\d.\\d]+m)+(-[\\d.\\d]+m)*"
+      "type": ["number","string"],
+      "pattern": "^((\\d+\\.)?\\d+(-(\\d+\\.)?\\d+)?)$|^((\\d+\\.)?\\d+[m])(-((\\d+\\.)?\\d)+[m])?$"
     },
     "startCommand": {
       "description": "Defines the command which gets executed at the time of container start",
       "type": "string",
-      "pattern": "[\\w,]*"
+      "pattern": "^[\\w,]*$"
     },
     "agents": {
       "description": "Describes the list of sidecars to be attached to the service",
@@ -315,7 +326,7 @@
           },
           "props": {
             "$ref": "#/definitions/io.hyscale.api.map.string",
-            "description": "Describes the properties of the service as key-value pairs "
+            "description": "Describes the properties of the service sidecar as key-value pairs "
           },
           "propsVolumePath": {
             "$ref": "#/definitions/io.hyscale.api.props.PropsVolumePath",

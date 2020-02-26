@@ -13,7 +13,7 @@ image:
 volumes:
    - name: mysql-data-dir
      path: /var/lib/mysql
-     size: 1Gi
+     size: 1G
 
 replicas: 1
 
@@ -24,4 +24,4 @@ ports:
    - port: 3306/tcp
      healthCheck: {}
 
-memory: 216Mi
+memory: 216M

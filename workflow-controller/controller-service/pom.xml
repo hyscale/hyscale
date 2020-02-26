@@ -67,6 +67,7 @@
         <dependency>
             <groupId>io.hyscale</groupId>
             <artifactId>schema-validator</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.hyscale</groupId>

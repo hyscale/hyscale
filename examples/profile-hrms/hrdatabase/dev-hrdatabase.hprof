@@ -4,4 +4,4 @@ overrides: hrdatabase
 secrets:
     MYSQL_ROOT_PASSWORD: pramati  # update secret value
     
-memory: 512Mi # update memory limit
+memory: 512M # update memory limit

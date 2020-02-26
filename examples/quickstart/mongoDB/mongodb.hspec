@@ -8,10 +8,10 @@ image:
 volumes:
    - name: mongodb-data-dir
      path: /data/db/
-     size: 1Gi
+     size: 1G
      
 ports:
    - port: 27017/tcp
      healthCheck: {}
 
-memory: 512Mi
+memory: 512M

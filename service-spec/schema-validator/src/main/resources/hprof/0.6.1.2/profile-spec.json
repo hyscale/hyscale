@@ -19,9 +19,9 @@
       "type": "array",
       "items": {
         "type": [
-        	"string",
-        	"number"
-        	],
+          "string",
+          "number"
+        ],
         "description": "string key"
       }
     },
@@ -81,7 +81,8 @@
             "description": "name of the volume"
           },
           "size": {
-            "type": "string",
+            "type": ["number","string"],
+            "pattern": "^(\\d+\\.)?\\d+(-(\\d+\\.)?\\d+)?$|^(\\d+\\.)?\\d+(E|P|T|G|M|K)(-(\\d+\\.)?\\d+(E|P|T|G|M|K))?$",
             "description": "size of volume",
             "default": "1g"
           },
@@ -109,13 +110,13 @@
     },
     "memory": {
       "description": "Defines the range of memory the service has to use in the container for this environment",
-      "type": "string",
-      "pattern": "(\\d+(Ki|Mi|Gi|Ti|Pi|Ei|[numkMGTPE]|))+(-\\d+(Ki|Mi|Gi|Ti|Pi|Ei|[numkMGTPE]|))*"
+      "type": ["integer","string"],
+      "pattern": "^\\d+(-\\d+)?$|^\\d+(E|P|T|G|M|K)(-\\d+(E|P|T|G|M|K))?$"
     },
     "cpu": {
       "description": "Defines the range of cpu the service has to use in the container for this environment",
-      "type": "string",
-      "pattern": "([\\d.\\d]+m)+(-[\\d.\\d]+m)*"
+      "type": ["number","string"],
+      "pattern": "^((\\d+\\.)?\\d+(-(\\d+\\.)?\\d+)?)$|^((\\d+\\.)?\\d+[m])(-((\\d+\\.)?\\d)+[m])?$"
     },
     "agents": {
       "description": "Describes the list of sidecars to be attached to the service",

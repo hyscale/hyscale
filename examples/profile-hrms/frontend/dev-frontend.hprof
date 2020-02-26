@@ -9,7 +9,7 @@ replicas:   # enable auto scaling
 
 volumes:
   - name: tomcat-logs # change volume size
-    size: 2Gi
+    size: 2G
     
 props:
     REGION: Delhi # update props value

@@ -8,7 +8,7 @@ image:
 volumes:
    - name: mysql-data-dir
      path: /var/lib/mysql
-     size: 1Gi
+     size: 1G
 
 secrets:
    MYSQL_ROOT_PASSWORD: hyscale

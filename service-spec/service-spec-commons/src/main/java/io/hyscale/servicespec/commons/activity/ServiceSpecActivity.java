@@ -18,6 +18,7 @@ package io.hyscale.servicespec.commons.activity;
 import io.hyscale.commons.models.Activity;
 
 public enum ServiceSpecActivity implements Activity {
+    SCHEMA_VALIDATION_ERROR("Invalid input spec {}\n {}"),
     FAILED_TO_DESERIALIZE_REPLICAS("Cannot process the field 'replicas' with error {} , deployment continued with min 1 replica"),
     SERVICE_NAME_MISMATCH("Service name mismatch with hspec file name convention as <service-name>.hspec"),
     PROFILE_NAME_MISMATCH("profile name mismatch with hprof file name convention as <environment-name>-<service-name>.hprof"),

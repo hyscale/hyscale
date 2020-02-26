@@ -14,4 +14,4 @@ ports:
    - port: 6379/tcp
      healthCheck: {}
 
-memory: 512Mi
+memory: 512M

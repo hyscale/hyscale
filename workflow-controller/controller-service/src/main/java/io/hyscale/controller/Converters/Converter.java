@@ -125,7 +125,7 @@ public abstract class Converter implements CommandLine.ITypeConverter<List<File>
             ProcessingMessage message = messageIterator.next();
             messageBuilder.append(message.toString());
         }
-        WorkflowLogger.error(ServiceSpecActivity.ERROR, messageBuilder.toString());
+        WorkflowLogger.error(ServiceSpecActivity.SCHEMA_VALIDATION_ERROR,specfile.getPath(),messageBuilder.toString());
         logger.error(messageBuilder.toString());
         throw new HyscaleException(ServiceSpecErrorCodes.INVALID_FORMAT, ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE, messageBuilder.toString());
     }

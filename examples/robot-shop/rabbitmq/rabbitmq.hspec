@@ -15,4 +15,4 @@ ports:
      healthCheck: {}
    - port: 25672/tcp
 
-memory: 512Mi
+memory: 512M

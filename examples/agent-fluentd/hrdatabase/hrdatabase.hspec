@@ -13,7 +13,7 @@ image:
 volumes:
    - name: mysql-data-dir
      path: /var/lib/mysql
-     size: 1Gi
+     size: 1G
 
 secrets:
    MYSQL_ROOT_PASSWORD: pramati
@@ -22,5 +22,5 @@ ports:
    - port: 3306/tcp
      healthCheck: {}
 
-memory: 512Mi
+memory: 512M
 

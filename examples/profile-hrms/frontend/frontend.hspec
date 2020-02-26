@@ -10,14 +10,14 @@ image:
              source: artifacts/hrms.war
              destination: /usr/local/tomcat/webapps/
 
-memory: 2048Mi
+memory: 2048M
 
 replicas: 2
  
 volumes:
   - name: tomcat-logs
     path: /usr/local/content/tomcat/current/logs
-    size: 1Gi
+    size: 1G
 
 props:
     MAX_NO_OF_CONNECTIONS: 20
