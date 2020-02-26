@@ -15,17 +15,19 @@
  */
 package io.hyscale.builder.services.util;
 
-import io.hyscale.builder.core.models.ImageBuilderActivity;
-import io.hyscale.commons.logger.WorkflowLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.commons.commands.provider.ImageCommandProvider;
+import io.hyscale.builder.core.models.ImageBuilderActivity;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
 import io.hyscale.commons.commands.CommandExecutor;
+import io.hyscale.commons.commands.provider.ImageCommandProvider;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @Component
 public class DockerImageUtil {
@@ -73,6 +75,23 @@ public class DockerImageUtil {
         if (!success) {
             throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_PULL_IMAGE, imageName);
         }
+    }
+    
+    public String getImageName(ServiceSpec serviceSpec) {
+    	String image=null;
+    	String registry=null;
+    	try {
+			image = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.name),
+					String.class);
+			registry=serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.registry),
+					String.class);
+			if (image == null || registry==null) {
+				throw new HyscaleException(ImageBuilderErrorCodes.CANNOT_RESOLVE_IMAGE_NAME);
+			}
+		} catch (HyscaleException e) {
+            logger.error("Failed to delete docker image");
+		}
+		return registry+"/"+image;
     }
 
 }

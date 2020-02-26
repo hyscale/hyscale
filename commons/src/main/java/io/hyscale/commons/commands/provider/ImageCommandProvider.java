@@ -16,6 +16,7 @@
 package io.hyscale.commons.commands.provider;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -42,6 +43,15 @@ public class ImageCommandProvider {
 	private static final String BUILD_ARGS = " --build-arg ";
 	private static final String REMOVE_IMAGE = "rmi";
 	private static final String PULL_COMMAND = "pull";
+	private static final String LABEL_ARGS="label";
+	private static final String IMAGE="image";
+	private static final String OWNER="owner";
+	private static final String HYSCALE="hyscale";
+	private static final String HYPHEN="-";
+	private static final String FLAG="f";
+	private static final String ALL="a";
+	private static final String QUIET="q";
+	private static final String FILTER="filter";
 
 	private static final boolean USE_SUDO = false;
 
@@ -64,10 +74,12 @@ public class ImageCommandProvider {
 		return dockerBuildCommand(appName, serviceName, tag, dockerFilePath, null);
 	}
 
+	// --label “imageowner=hyscale"
 	public String dockerBuildCommand(String appName, String serviceName, String tag, String dockerFilePath,
 			Map<String, String> buildArgs) {
 		StringBuilder buildCommand = new StringBuilder();
 		buildCommand.append(DOCKER_BUILD);
+		buildCommand.append(SPACE).append(HYPHEN).append(HYPHEN).append(LABEL_ARGS).append(SPACE).append(IMAGE).append(OWNER).append(EQUALS).append(HYSCALE);
 		if (buildArgs != null && !buildArgs.isEmpty()) {
 			buildCommand.append(getBuildArgs(buildArgs));
 		}
@@ -147,5 +159,36 @@ public class ImageCommandProvider {
 		input = input.replaceAll(" ", "");
 		input = input.toLowerCase();
 		return input;
+	}
+	// docker rmi -f $(docker images -a -q)
+	// it will delete all images  which is owned by hyscale
+	public String getAllImageDeleteCommand(Set<String> imageIds) {
+		StringBuilder deleteAllImageCommand = new StringBuilder(getDockerCommand());
+		deleteAllImageCommand.append(REMOVE_IMAGE).append(SPACE).append(HYPHEN).append(FLAG);
+		for (String imageId : imageIds) {
+			deleteAllImageCommand.append(SPACE).append(imageId);
+		}
+		return deleteAllImageCommand.toString();
+	}
+	
+	
+	// it will return all images id's which is owned by hyscale
+	// --label “imageowner=hyscale"
+	// docker images -f  label=imageowner=hyscale -q
+	public String getAllImageCommand() {
+		StringBuilder deleteAllImageCommand = new StringBuilder(getDockerCommand());
+		deleteAllImageCommand.append(IMAGES).append(SPACE).append(HYPHEN).append(HYPHEN)
+				.append(FILTER).append(SPACE).append(LABEL_ARGS).append(EQUALS)
+				.append(IMAGE).append(OWNER).append(EQUALS).append(HYSCALE);
+		return deleteAllImageCommand.toString();
+	}
+	
+	// docker images <imagename> --filter label=imageowner=hyscale -q
+	public String getAllImageCommandByImageName(String imageName) {
+		StringBuilder allImageCommandByImageName = new StringBuilder(getDockerCommand());
+		allImageCommandByImageName.append(IMAGES).append(SPACE).append(imageName).append(SPACE).append(HYPHEN)
+				.append(HYPHEN).append(FILTER).append(SPACE).append(LABEL_ARGS).append(EQUALS)
+				.append(IMAGE).append(OWNER).append(EQUALS).append(HYSCALE).append(SPACE).append(HYPHEN).append(QUIET);
+		return allImageCommandByImageName.toString();
 	}
 }
