@@ -15,6 +15,7 @@
  */
 package io.hyscale.deployer.services.util;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.hyscale.deployer.services.model.PodCondition;
@@ -23,8 +24,12 @@ import org.joda.time.DateTime;
 
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.utils.HyscaleStringUtil;
+import io.hyscale.commons.utils.ResourceLabelUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.kubernetes.client.openapi.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1StatefulSet;
+import io.kubernetes.client.openapi.models.V1Deployment;
+import io.kubernetes.client.openapi.models.V1ObjectMeta;
 
 /**
  * 
@@ -38,13 +43,70 @@ public class DeploymentStatusUtil {
 	 * @return DeploymentStatus
 	 */
     public static DeploymentStatus getNotDeployedStatus(String serviceName) {
+        if (StringUtils.isBlank(serviceName)) {
+            return null;
+        }
         DeploymentStatus status = new DeploymentStatus();
         status.setServiceName(serviceName);
         status.setStatus(DeploymentStatus.Status.NOT_DEPLOYED);
         status.setAge(null);
         return status;
     }
-
+    
+    public static List<DeploymentStatus> getDeployListNotRunningStatus(List<V1Deployment> deploymentList) {
+        if (deploymentList == null) {
+            return null;
+        }
+        List<DeploymentStatus> statuses = new ArrayList<DeploymentStatus>();
+        deploymentList.stream().forEach(each -> {
+            DeploymentStatus deployStatus = getDeployNotRunningStatus(each);
+            if (deployStatus != null) {
+                statuses.add(deployStatus);
+            }
+        });
+        return statuses;
+    }
+    
+    public static DeploymentStatus getDeployNotRunningStatus(V1Deployment deployment) {
+        if (deployment == null) {
+            return null;
+        }
+        return getNotRunningStatusFromMetadata(deployment.getMetadata());
+    }
+    
+    public static List<DeploymentStatus> getSTSsNotRunningStatus(List<V1StatefulSet> statefulSetList) {
+        if (statefulSetList == null) {
+            return null;
+        }
+        List<DeploymentStatus> statuses = new ArrayList<DeploymentStatus>();
+        statefulSetList.stream().forEach(each -> {
+            DeploymentStatus deployStatus = getSTSNotRunningStatus(each);
+            if (deployStatus != null) {
+                statuses.add(deployStatus);
+            }
+        });
+        return statuses;
+    }
+    
+    public static DeploymentStatus getSTSNotRunningStatus(V1StatefulSet statefulSet) {
+        if (statefulSet == null) {
+            return null;
+        }
+        return getNotRunningStatusFromMetadata(statefulSet.getMetadata());
+    }
+    
+    private static DeploymentStatus getNotRunningStatusFromMetadata(V1ObjectMeta metadata) {
+        if (metadata == null) {
+            return null;
+        }
+        DeploymentStatus status = new DeploymentStatus();
+        String serviceName = ResourceLabelUtil.getServiceName(metadata.getLabels());
+        status.setServiceName(serviceName);
+        status.setStatus(DeploymentStatus.Status.NOT_RUNNING);
+        status.setAge(metadata.getCreationTimestamp());
+        return status;
+    }
+    
     /**
      * Message from pods not in ready state
      * @param v1PodList
@@ -104,8 +166,9 @@ public class DeploymentStatusUtil {
             return null;
         }
         DateTime dateTime = null;
-        dateTime = v1PodList.get(0).getStatus().getStartTime();
-        return dateTime;
+        V1Pod v1Pod = v1PodList.get(0);
+        dateTime = v1Pod.getStatus().getStartTime();
+        return dateTime != null ? dateTime : v1Pod.getMetadata().getCreationTimestamp();
     }
 
 }

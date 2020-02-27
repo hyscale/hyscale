@@ -21,9 +21,6 @@ import io.hyscale.troubleshooting.integration.models.*;
 import io.hyscale.troubleshooting.integration.actions.ContactClusterAdministratorAction;
 import io.hyscale.troubleshooting.integration.actions.PendingPvcAction;
 import io.hyscale.troubleshooting.integration.constants.TroubleshootConstants;
-import io.hyscale.troubleshooting.integration.util.ConditionUtil;
-import io.hyscale.troubleshooting.integration.util.TroubleshootContextValidator;
-import io.kubernetes.client.openapi.models.V1Event;
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
 import io.kubernetes.client.openapi.models.V1Pod;
 import org.slf4j.Logger;
@@ -32,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -89,7 +85,7 @@ public class AnyPendingPVCCondition extends ConditionNode<TroubleshootingContext
                 }).collect(Collectors.toList());
 
                 // Since there are no pvc's found for the service, there's not pending pvc
-                if (pvcList != null || pvcList.isEmpty()) {
+                if (pvcList != null && pvcList.isEmpty()) {
                     logger.debug("PVC List if found empty for service {}", context.getServiceInfo().getServiceName());
                     return false;
                 }

@@ -16,6 +16,7 @@
 package io.hyscale.deployer.services.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,16 +27,20 @@ import org.slf4j.LoggerFactory;
 
 import io.hyscale.commons.constants.K8SRuntimeConstants;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
+import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.impl.V1DeploymentHandler;
 import io.hyscale.deployer.services.handler.impl.V1ReplicaSetHandler;
+import io.hyscale.deployer.services.handler.impl.V1StatefulSetHandler;
 import io.hyscale.deployer.services.predicates.PodPredicates;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.models.V1Deployment;
 import io.kubernetes.client.openapi.models.V1Pod;
 import io.kubernetes.client.openapi.models.V1ReplicaSet;
+import io.kubernetes.client.openapi.models.V1StatefulSet;
 
 public class K8sDeployerUtil {
 
@@ -103,5 +108,60 @@ public class K8sDeployerUtil {
 
         return K8sPodUtil.filterPods(podList, PodPredicates.podContainsLabel(), searchLabel);
 
+    }
+    
+    /**
+     * Fetch service status from pod parent, called in case pods are not present
+     * @param context
+     * @return Not running status if pod owner found else not deployed(when service name provided)
+     */
+    public static List<DeploymentStatus> getOwnerDeploymentStatus(ApiClient apiClient, DeploymentContext context) {
+        if (context == null) {
+            return null;
+        }
+        logger.debug("No pods found, getting status from pods owner");
+        String serviceName = context.getServiceName();
+        String selector = ResourceSelectorUtil.getServiceSelector(context.getAppName(), serviceName);
+        
+        Map<String, DeploymentStatus> serviceVsDeploymentStatus = new HashMap<String, DeploymentStatus>();
+        // Deployment
+        V1DeploymentHandler deploymentHandler = (V1DeploymentHandler)ResourceHandlers
+                .getHandlerOf(ResourceKind.DEPLOYMENT.getKind());
+        List<V1Deployment> deploymentList = null;
+        String namespace = context.getNamespace();
+        try {
+            deploymentList = deploymentHandler.getBySelector(apiClient, selector, true, namespace);
+        } catch (HyscaleException e) {
+            logger.error("Error while fetching Deployment with selector {} in namespace {}", selector, namespace);
+        }
+        List<DeploymentStatus> deploymentStatus = DeploymentStatusUtil.getDeployListNotRunningStatus(deploymentList);
+        if (deploymentStatus != null && !deploymentStatus.isEmpty()) {
+            logger.debug("Getting status from Deployments");
+            deploymentStatus.stream().forEach(status -> {
+                serviceVsDeploymentStatus.put(status.getServiceName(), status);
+            });
+        }
+        // StatefulSet
+        V1StatefulSetHandler stsHandler = (V1StatefulSetHandler)ResourceHandlers
+                .getHandlerOf(ResourceKind.STATEFUL_SET.getKind());
+        
+        List<V1StatefulSet> stsList = null;
+        try {
+            stsList = stsHandler.getBySelector(apiClient, selector, true, namespace);
+        } catch (HyscaleException e) {
+            logger.error("Error while fetching StatefulSet with selector {} in namespace {}", selector, namespace);
+        }
+        deploymentStatus = DeploymentStatusUtil.getSTSsNotRunningStatus(stsList);
+        if (deploymentStatus != null && !deploymentStatus.isEmpty()) {
+            logger.debug("Getting status from StatefulSet");
+            deploymentStatus.stream().forEach(status -> {
+                serviceVsDeploymentStatus.put(status.getServiceName(), status);
+            });
+        }
+        if (serviceVsDeploymentStatus.isEmpty()) {
+            return serviceName != null ? Arrays.asList(DeploymentStatusUtil.getNotDeployedStatus(serviceName)): null;
+        }
+        
+        return new ArrayList(serviceVsDeploymentStatus.values());
     }
 }
