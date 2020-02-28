@@ -50,6 +50,5 @@ public class DeleteAfterBuild implements ImageCleanupProcessor {
 		String[] imageIds = CommandExecutor.executeAndGetResults(imageCommandByName).getCommandOutput().split("\\s+");
 		String imageDeleteCommand = imageCommandProvider.getAllImageDeleteCommand(new HashSet<String>(Arrays.asList(imageIds)));
 		CommandExecutor.execute(imageDeleteCommand);
-
 	}
 }

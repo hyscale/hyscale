@@ -55,8 +55,8 @@ public class PreserveLastNUsed implements ImageCleanupProcessor {
 		String[] imgIds = CommandExecutor.executeAndGetResults(imageCommandByName).getCommandOutput().split("\\s+");
 		List<String> imageIds = Arrays.asList(imgIds);
 		if (imageIds.size() > imageBuilderConfig.getStartIndex()) {
-			CommandExecutor.execute(imageCommandProvider
-					.getAllImageDeleteCommand(new HashSet<String>(imageIds.subList(imageBuilderConfig.getStartIndex(), imageIds.size()))));
+			CommandExecutor.execute(imageCommandProvider.getAllImageDeleteCommand(
+					new HashSet<String>(imageIds.subList(imageBuilderConfig.getStartIndex(), imageIds.size()))));
 		}
 	}
 }

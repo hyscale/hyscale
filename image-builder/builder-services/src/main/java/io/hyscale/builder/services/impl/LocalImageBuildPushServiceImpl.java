@@ -58,9 +58,8 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
         if (validate(serviceSpec) && isImageBuildPushRequired(serviceSpec, context)) {
             context = buildService.build(serviceSpec, context);
             pushService.pushImage(serviceSpec, context);
-
-    		String imagePullPolicy = imageBuilderConfig.getImageCleanUpPolicy();
-    		ImageCleanupProcessor imageCleanupProcessor=imageCleanupProcessorFactory.getImageCleanupProcessor(imagePullPolicy);
+    		String imageCleanUpPolicy = imageBuilderConfig.getImageCleanUpPolicy();
+    		ImageCleanupProcessor imageCleanupProcessor=imageCleanupProcessorFactory.getImageCleanupProcessor(imageCleanUpPolicy);
 			if (imageCleanupProcessor != null) {
 				imageCleanupProcessor.clean(serviceSpec);
 			}

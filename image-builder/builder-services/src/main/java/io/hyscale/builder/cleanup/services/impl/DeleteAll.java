@@ -34,7 +34,6 @@ public class DeleteAll implements ImageCleanupProcessor {
 
 	@Override
 	public void clean(ServiceSpec serviceSpec) {
-
 		String getAllimageCommand = imageCommandProvider.getAllImageCommand();
 		String[] imageIds = CommandExecutor.executeAndGetResults(getAllimageCommand).getCommandOutput().split("\\s+");
 		String allImageDeleteCommand = imageCommandProvider

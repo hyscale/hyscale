@@ -186,7 +186,7 @@ public class ImageCommandProvider {
 
 	// docker images <imagename> --filter label=imageowner=hyscale -q
 	public String getImageNameWithFilterCommand(String imageName) {
-		return getAllImageCommands().append(imageName).append(filter(IMAGE_OWNER, HYSCALE)).append(quiet()).toString();
+		return getAllImageCommands().append(SPACE).append(imageName).append(filter(IMAGE_OWNER, HYSCALE)).append(quiet()).toString();
 	}
 
 	// docker images
@@ -196,12 +196,12 @@ public class ImageCommandProvider {
 
 	// --filter label=key=value
 	private StringBuilder filter(String key, String value) {
-		return new StringBuilder().append(HYPHEN).append(HYPHEN).append(FILTER).append(SPACE).append(LABEL_ARGS)
-				.append(EQUALS).append(IMAGE_OWNER).append(key).append(EQUALS).append(value);
+		return new StringBuilder().append(SPACE).append(HYPHEN).append(HYPHEN).append(FILTER).append(SPACE).append(LABEL_ARGS)
+				.append(EQUALS).append(key).append(EQUALS).append(value);
 	}
 
 	// -q
 	private StringBuilder quiet() {
-		return new StringBuilder().append(HYPHEN).append(QUIET);
+		return new StringBuilder().append(SPACE).append(HYPHEN).append(QUIET);
 	}
 }
