@@ -96,17 +96,7 @@ public class DockerfileContentGenImpl implements DockerfileContentGenerator {
 		if (configScriptAvailable || runScriptAvailable) {
 		    StringBuilder command = new StringBuilder();
 		    if (WindowsUtil.isHostWindows()) {
-		        logger.debug("Updating script files as OS is Windows");
-		        Object runScript = dockerfileContext.get(DockerfileGenConstants.RUN_SCRIPT_FILE_FIELD);
-		        if (runScript != null) {
-		            command.append(dockerScriptHelper.getScriptUpdateCommand(scriptDestinationDir + runScript.toString()));
-		            command.append(ToolConstants.SPACE).append(ToolConstants.COMMAND_SEPARATOR).append(ToolConstants.SPACE);
-		        }
-		        Object configScript = dockerfileContext.get(DockerfileGenConstants.CONFIGURE_SCRIPT_FILE_FIELD);
-		        if (configScript != null) {
-                    command.append(dockerScriptHelper.getScriptUpdateCommand(scriptDestinationDir + configScript.toString()));
-                    command.append(ToolConstants.SPACE).append(ToolConstants.COMMAND_SEPARATOR).append(ToolConstants.SPACE);
-                }
+		        command.append(getUpdateScriptCommand(dockerfileContext, scriptDestinationDir));
 		    }
 		    command.append(DockerfileGenConstants.PERMISSION_COMMAND).append(ToolConstants.SPACE).append(scriptDestinationDir);
 			dockerfileContext.put(DockerfileGenConstants.PERMISSION_COMMAND_FIELD, command);
@@ -119,6 +109,30 @@ public class DockerfileContentGenImpl implements DockerfileContentGenerator {
 		dockerfileContent.setContent(content);
 
 		return dockerfileContent;
+	}
+	
+	/**
+	 * Building an image with a script created in windows does not work due to LF-styles in windows i.e. (\r\n)
+	 * whereas in linux it is (“\n”)
+	 * This method provides the command to update scripts to work with linux containers
+	 * @param dockerfileContext
+	 * @param scriptDestinationDir
+	 * @return script update command
+	 */
+	private String getUpdateScriptCommand(Map<String, Object> dockerfileContext, String scriptDestinationDir) {
+	    StringBuilder command = new StringBuilder();
+	    logger.debug("Updating script files as OS is Windows");
+        Object runScript = dockerfileContext.get(DockerfileGenConstants.RUN_SCRIPT_FILE_FIELD);
+        if (runScript != null) {
+            command.append(dockerScriptHelper.getScriptUpdateCommand(scriptDestinationDir + runScript.toString()));
+            command.append(ToolConstants.SPACE).append(ToolConstants.COMMAND_SEPARATOR).append(ToolConstants.SPACE);
+        }
+        Object configScript = dockerfileContext.get(DockerfileGenConstants.CONFIGURE_SCRIPT_FILE_FIELD);
+        if (configScript != null) {
+            command.append(dockerScriptHelper.getScriptUpdateCommand(scriptDestinationDir + configScript.toString()));
+            command.append(ToolConstants.SPACE).append(ToolConstants.COMMAND_SEPARATOR).append(ToolConstants.SPACE);
+        }
+        return command.toString();
 	}
 	
 }

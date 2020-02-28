@@ -185,6 +185,12 @@ public class DockerScriptManagerImpl implements DockerfileEntityManager {
 		return true;
 	}
 	
+	/**
+	 * Update script command to remove windows carriage return in scripts
+	 * sed -i 's/\r$//' #scriptfile
+	 * @param scriptFile
+	 * @return script update command
+	 */
 	public String getScriptUpdateCommand(String scriptFile) {
 	    if (StringUtils.isBlank(scriptFile)) {
 	        return scriptFile;

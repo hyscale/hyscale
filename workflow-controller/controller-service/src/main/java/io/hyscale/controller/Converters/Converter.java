@@ -23,6 +23,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.HyscaleSpecType;
 import io.hyscale.commons.utils.DataFormatConverter;
+import io.hyscale.commons.utils.WindowsUtil;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.schema.validator.SchemaValidator;
 import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
@@ -73,6 +74,9 @@ public abstract class Converter implements CommandLine.ITypeConverter<List<File>
      */
     @Override
     public List<File> convert(String inputFilePath) throws Exception {
+        if (WindowsUtil.isHostWindows()) {
+            inputFilePath = WindowsUtil.updateToUnixFileSeparator(inputFilePath);
+        }
         ProcessingReport processingReport;
         List<File> inputFiles = new ArrayList<File>();
 
