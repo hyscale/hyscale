@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Pramati Prism, Inc.
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -64,6 +64,10 @@ public class PreserveLastNUsed implements ImageCleanupProcessor {
             // Fetch the image id's to be deleted of the service image which are labelled by imageowner=hyscale
             String[] imgIds = CommandExecutor.executeAndGetResults(imageCommandProvider.dockerImageByNameFilterByImageOwner(image)).
                     getCommandOutput().split("\\s+");
+            if (imgIds == null || imgIds.length == 0) {
+                logger.debug("No images found to clean from the host machine");
+                return;
+            }
             // Need to preserve the order of output ,hence a LinkedHashset
             Set<String> imageIds = new LinkedHashSet<>(Arrays.asList(imgIds));
             // delete those image id's which are older than 'n' (imageBuilderConfig.getNoOfPreservedImages())

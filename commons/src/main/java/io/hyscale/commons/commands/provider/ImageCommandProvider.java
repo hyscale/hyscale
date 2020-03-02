@@ -49,11 +49,10 @@ public class ImageCommandProvider {
     private static final String IMAGE_OWNER = "imageowner";
     private static final String HYSCALE = "hyscale";
     private static final String HYPHEN = "-";
-    private static final String FLAG = "f";
+    private static final String FORCE_FLAG = "f";
     private static final String ALL = "a";
     private static final String QUIET = "q";
     private static final String FILTER = "filter";
-
     private static final boolean USE_SUDO = false;
 
     public String getBuildImageName(String appName, String serviceName) {
@@ -165,8 +164,11 @@ public class ImageCommandProvider {
 
     // docker rmi <id1> <id2> <id3>
     public String removeDockerImages(Set<String> imageIds) {
+        if (imageIds == null || imageIds.isEmpty()) {
+            return null;
+        }
         StringBuilder removeDockerImages = new StringBuilder(docker());
-        removeDockerImages.append(REMOVE_IMAGE).append(SPACE).append(HYPHEN).append(FLAG);
+        removeDockerImages.append(REMOVE_IMAGE).append(SPACE).append(HYPHEN).append(FORCE_FLAG);
         for (String imageId : imageIds) {
             System.out.println(imageId);
             removeDockerImages.append(SPACE).append(imageId);
@@ -176,8 +178,11 @@ public class ImageCommandProvider {
 
     // docker rmi <id1> <id2> <id3>
     public String removeDockerImages(String[] imageIds) {
+        if (imageIds == null || imageIds.length == 0) {
+            return null;
+        }
         StringBuilder removeDockerImages = new StringBuilder(docker());
-        removeDockerImages.append(REMOVE_IMAGE).append(SPACE).append(HYPHEN).append(FLAG);
+        removeDockerImages.append(REMOVE_IMAGE).append(SPACE).append(HYPHEN).append(FORCE_FLAG);
         for (String imageId : imageIds) {
             removeDockerImages.append(SPACE).append(imageId);
         }

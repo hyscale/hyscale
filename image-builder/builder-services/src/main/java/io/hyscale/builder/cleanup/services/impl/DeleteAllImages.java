@@ -48,6 +48,10 @@ public class DeleteAllImages implements ImageCleanupProcessor {
         logger.debug("Cleaning up all images");
         // Fetch the image id's to be deleted which are labelled by imageowner=hyscale
         String[] imageIds = CommandExecutor.executeAndGetResults(imageCommandProvider.dockerImagesFilterByImageOwner()).getCommandOutput().split("\\s+");
+        if (imageIds == null || imageIds.length == 0) {
+            logger.debug("No images found to clean from the host machine");
+            return;
+        }
         // Remove the image id's using 'docker rmi' command
         CommandExecutor.execute(imageCommandProvider
                 .removeDockerImages(imageIds));
