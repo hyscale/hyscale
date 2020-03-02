@@ -15,6 +15,7 @@
  */
 package io.hyscale.controller.activity;
 
+import io.hyscale.commons.constants.HyscaleColourCodes;
 import io.hyscale.commons.models.Activity;
 
 /**
@@ -37,7 +38,7 @@ public enum ControllerActivity implements Activity {
     UNDEPLOYMENT_DONE(" Undeployment completed "),
     UNDEPLOYMENT_FAILED(" UNDEPLOYMENT FAILED {} "),
     SERVICE_NAME("SERVICE: {}"),
-    SERVICE_URL("Service IP : {}"),
+    SERVICE_URL(HyscaleColourCodes.ANSI_CYAN +"Service IP : "+HyscaleColourCodes.ANSI_RESET+HyscaleColourCodes.CYAN_UNDERLINED+"{}"+HyscaleColourCodes.ANSI_RESET),
     CHECK_SERVICE_STATUS("Check service status for more information"),
     FAILED_TO_STREAM_SERVICE_LOGS("Unable to fetch service logs "),
     SERVICE_NOT_CREATED("Service is not created "),

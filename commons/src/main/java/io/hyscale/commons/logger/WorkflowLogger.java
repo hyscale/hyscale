@@ -15,6 +15,7 @@
  */
 package io.hyscale.commons.logger;
 
+import io.hyscale.commons.constants.HyscaleColourCodes;
 import io.hyscale.commons.models.Activity;
 import io.hyscale.commons.models.Status;
 import org.apache.commons.lang3.StringUtils;
@@ -37,7 +38,7 @@ public class WorkflowLogger {
 
     public static void header(Activity activity, String... args) {
         System.out.println();
-        System.out.println(STARS + getPaddedHeader(String.format(getActivity(activity), args)) + STARS);
+        System.out.println(STARS +HyscaleColourCodes.ANSI_RESET_BOLD+getPaddedHeader(String.format(getActivity(activity), args))+ HyscaleColourCodes.ANSI_RESET+STARS);
         System.out.println();
     }
 
@@ -72,7 +73,9 @@ public class WorkflowLogger {
 
     public static void startActivity(Activity activity, String... args) {
         StringBuilder sb = new StringBuilder();
+        sb.append(LoggerTags.ACTION.getAnsiColour());
         sb.append(LoggerTags.ACTION.getTag()).append(ALIGNEMENT_SPACES);
+        sb.append(HyscaleColourCodes.ANSI_RESET);
         sb.append(getLeftAlignedActivity(getFormattedMessage(activity, args)));
         System.out.print(sb.toString());
     }
@@ -83,9 +86,11 @@ public class WorkflowLogger {
 
     public static void endActivity(Status status, String... args) {
         StringBuilder sb = new StringBuilder();
+        sb.append(status.getColourCode());
         sb.append(ALIGNEMENT_SPACES).append(START_BRACES);
         sb.append(String.format(status.getMessage(), args));
         sb.append(END_BRACES);
+        sb.append(HyscaleColourCodes.ANSI_RESET);
         System.out.println(sb.toString());
     }
 
@@ -104,10 +109,20 @@ public class WorkflowLogger {
     private static String getActivityMessage(Activity activity, LoggerTags tag, String... args) {
         StringBuilder sb = new StringBuilder();
         if (tag != null) {
+            sb.append(tag.getAnsiColour());
             sb.append(tag.getTag());
             sb.append(ALIGNEMENT_SPACES);
+            sb.append(HyscaleColourCodes.ANSI_RESET);
+            if(tag == LoggerTags.WARN){
+                sb.append(HyscaleColourCodes.ANSI_YELLOW);
+            }else if(tag == LoggerTags.ERROR){
+                sb.append(HyscaleColourCodes.ANSI_RED);
+            }else{
+                sb.append(HyscaleColourCodes.ANSI_RESET);
+            }
         }
         sb.append(getFormattedMessage(activity, args));
+        sb.append(HyscaleColourCodes.ANSI_RESET);
         return sb.toString();
     }
 
@@ -141,7 +156,6 @@ public class WorkflowLogger {
             sb.append(" ");
             sb.insert(0, ' ');
         }
-
         return sb.toString();
     }
 
@@ -162,7 +176,9 @@ public class WorkflowLogger {
         if (context != null) {
             context.setStartTime(System.currentTimeMillis());
             StringBuilder sb = new StringBuilder();
+            sb.append(LoggerTags.ACTION.getAnsiColour());
             sb.append(LoggerTags.ACTION.getTag()).append(ALIGNEMENT_SPACES);
+            sb.append(HyscaleColourCodes.ANSI_RESET);
             sb.append(getFormattedMessage(context.getStartActivity(), args));
             System.out.print(sb.toString());
         }

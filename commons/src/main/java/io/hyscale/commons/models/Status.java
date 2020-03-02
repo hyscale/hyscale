@@ -15,17 +15,29 @@
  */
 package io.hyscale.commons.models;
 
+import io.hyscale.commons.constants.HyscaleColourCodes;
+
 public enum Status {
 
-	DONE("DONE"), SKIPPING("SKIPPED"), FAILED("FAILED"), NOT_FOUND("NOT FOUND");
+	DONE("DONE", HyscaleColourCodes.GREEN_BRIGHT), SKIPPING("SKIPPED",HyscaleColourCodes.YELLOW_BRIGHT), FAILED("FAILED",HyscaleColourCodes.
+			RED_BRIGHT), NOT_FOUND("NOT FOUND",HyscaleColourCodes.RED_BRIGHT);
 
 	private String message;
+	private String colourCode;
 
 	private Status(String message) {
+		this.message = message;
+	}
+	private Status(String message,String colourCode){
+		this.colourCode = colourCode;
 		this.message = message;
 	}
 
 	public String getMessage() {
 		return message;
+	}
+
+	public String getColourCode() {
+		return colourCode;
 	}
 }

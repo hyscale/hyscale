@@ -15,18 +15,28 @@
  */
 package io.hyscale.commons.logger;
 
-public enum LoggerTags {
+import io.hyscale.commons.constants.HyscaleColourCodes;
 
-	USER_INFO_TAG("[INFO]"), ERROR("[ERROR]"), WARN("[WARN]"), VERBOSE("[VERBOSE]"), DEBUG("[DEBUG]"),
-	ACTION("[ACTION]");
+public enum LoggerTags {
+	USER_INFO_TAG("[INFO]", HyscaleColourCodes.GREEN_BRIGHT), ERROR("[ERROR]",HyscaleColourCodes.RED_BRIGHT), WARN("[WARN]",HyscaleColourCodes.YELLOW_BRIGHT), VERBOSE("[VERBOSE]",HyscaleColourCodes.YELLOW_BRIGHT), DEBUG("[DEBUG]",HyscaleColourCodes.BLUE_BRIGHT),
+	ACTION("[ACTION]",HyscaleColourCodes.BLUE_BRIGHT);
 
 	private String tag;
+	private String ansiColour;
 
 	LoggerTags(String s) {
 		this.tag = s;
 	}
+	LoggerTags(String tag,String colour){
+		this.tag = tag;
+		this.ansiColour = colour;
+	}
 
 	public String getTag() {
 		return tag;
+	}
+
+	public String getAnsiColour() {
+		return ansiColour;
 	}
 }
