@@ -101,7 +101,7 @@ public class LocalImagePushServiceImpl implements ImagePushService {
         String appName = buildContext.getAppName();
         String serviceName = buildContext.getServiceName();
         boolean verbose = buildContext.isVerbose();
-        String pushImageCommand = commandGenerator.getImagePushCommand(imageFullPath);
+        String pushImageCommand = commandGenerator.dockerPush(imageFullPath);
         String logFilePath = imageBuilderConfig.getDockerPushLogDir(appName, serviceName);
         File logFile = new File(logFilePath);
         buildContext.setPushLogs(logFilePath);
@@ -111,7 +111,7 @@ public class LocalImagePushServiceImpl implements ImagePushService {
             WorkflowLogger.endActivity(Status.FAILED);
             logger.error("Failed to push docker image");
         } else {
-            String inspectCommand = commandGenerator.getImageInspectCommand(ImageUtil.getImage(serviceSpec));
+            String inspectCommand = commandGenerator.dockerInspect(ImageUtil.getImage(serviceSpec));
             CommandResult result = CommandExecutor.executeAndGetResults(inspectCommand);
             buildContext.setImageShaSum(getImageDigest(result));
             WorkflowLogger.endActivity(Status.DONE);

@@ -15,12 +15,13 @@
  */
 package io.hyscale.builder.services.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.builder.cleanup.services.ImageCleanupProcessor;
 import io.hyscale.builder.cleanup.services.impl.DeleteAfterBuild;
-import io.hyscale.builder.cleanup.services.impl.DeleteAll;
+import io.hyscale.builder.cleanup.services.impl.DeleteAllImages;
 import io.hyscale.builder.cleanup.services.impl.PreserveAll;
 import io.hyscale.builder.cleanup.services.impl.PreserveLastNUsed;
 import io.hyscale.builder.core.models.ImageCleanUpPolicy;
@@ -28,37 +29,43 @@ import io.hyscale.builder.core.models.ImageCleanUpPolicy;
 @Component
 public class ImageCleanupProcessorFactory {
 
-	@Autowired
-	private DeleteAll deleteAll;
-	@Autowired
-	private DeleteAfterBuild deleteAfterBuild;
-	@Autowired
-	private PreserveLastNUsed preserve_Last_N_USED;
-	@Autowired
-	private PreserveAll preserveAll;
+    @Autowired
+    private DeleteAllImages deleteAllImages;
+    @Autowired
+    private DeleteAfterBuild deleteAfterBuild;
+    @Autowired
+    private PreserveLastNUsed preserve_Last_N_USED;
+    @Autowired
+    private PreserveAll preserveAll;
 
-	public ImageCleanupProcessor getImageCleanupProcessor(String imageCleanUpPolicy) {
-		return getImageCleanupProcessor(ImageCleanUpPolicy.valueOf(imageCleanUpPolicy));
-	}
+    public ImageCleanupProcessor getImageCleanupProcessor(String imageCleanUpPolicy) {
+        ImageCleanUpPolicy cleanUpPolicy = null;
+        if (StringUtils.isBlank(imageCleanUpPolicy)) {
+            cleanUpPolicy = ImageCleanUpPolicy.PRESERVE_N_RECENTLY_USED;
+        } else {
+            cleanUpPolicy = ImageCleanUpPolicy.valueOf(imageCleanUpPolicy);
+        }
+        return getImageCleanupProcessor(cleanUpPolicy);
+    }
 
-	public ImageCleanupProcessor getImageCleanupProcessor(ImageCleanUpPolicy policy) {
+    private ImageCleanupProcessor getImageCleanupProcessor(ImageCleanUpPolicy policy) {
 
-		switch (policy) {
+        switch (policy) {
 
-		case DELETE_AFTER_BUILD:
-			return deleteAfterBuild;
+            case DELETE_AFTER_BUILD:
+                return deleteAfterBuild;
 
-		case PRESERVE_N_RECENTLY_USED:
-			return preserve_Last_N_USED;
+            case PRESERVE_N_RECENTLY_USED:
+                return preserve_Last_N_USED;
 
-		case PRESERVE_ALL:
-			return preserveAll;
+            case PRESERVE_ALL:
+                return preserveAll;
 
-		case DELETE_ALL:
-			return deleteAll;
+            case DELETE_ALL:
+                return deleteAllImages;
 
-		default:
-			return deleteAfterBuild;
-		}
-	}
+            default:
+                return deleteAfterBuild;
+        }
+    }
 }

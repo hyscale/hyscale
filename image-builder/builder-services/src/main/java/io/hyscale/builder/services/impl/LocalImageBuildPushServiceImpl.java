@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Pramati Prism, Inc.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,11 +39,11 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalImageBuildPushServiceImpl.class);
-    private static final String IMAGE_PULL_POLICY="IMAGE_PULL_POLICY";
+    private static final String IMAGE_PULL_POLICY = "IMAGE_PULL_POLICY";
 
     @Autowired
-    private LocalImageBuildServiceImpl buildService; 
-    
+    private LocalImageBuildServiceImpl buildService;
+
     @Autowired
     private ImageCleanupProcessorFactory imageCleanupProcessorFactory;
 
@@ -58,11 +58,12 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
         if (validate(serviceSpec) && isImageBuildPushRequired(serviceSpec, context)) {
             context = buildService.build(serviceSpec, context);
             pushService.pushImage(serviceSpec, context);
-    		String imageCleanUpPolicy = imageBuilderConfig.getImageCleanUpPolicy();
-    		ImageCleanupProcessor imageCleanupProcessor=imageCleanupProcessorFactory.getImageCleanupProcessor(imageCleanUpPolicy);
-			if (imageCleanupProcessor != null) {
-				imageCleanupProcessor.clean(serviceSpec);
-			}
+            String imageCleanUpPolicy = imageBuilderConfig.getImageCleanUpPolicy();
+            logger.debug("Image clean up policy for {}", imageCleanUpPolicy);
+            ImageCleanupProcessor imageCleanupProcessor = imageCleanupProcessorFactory.getImageCleanupProcessor(imageCleanUpPolicy);
+            if (imageCleanupProcessor != null) {
+                imageCleanupProcessor.clean(serviceSpec);
+            }
 
         } else {
             WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_BUILD_PUSH);
