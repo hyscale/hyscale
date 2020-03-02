@@ -2,7 +2,7 @@ name: hrdatabase
 
 image:
      registry: registry.hub.docker.com  
-     name: madhavik/hrdatabase # replace with your dockerhub username for {{username}}
+     name: {{username}}/hrdatabase # replace with your dockerhub username for {{username}}
      tag: 4.0.1
      buildSpec:
        stackImage: mysql:5.6
