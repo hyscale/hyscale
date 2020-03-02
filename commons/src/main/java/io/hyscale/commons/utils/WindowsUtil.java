@@ -16,10 +16,10 @@
 package io.hyscale.commons.utils;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
 
 /**
@@ -39,10 +39,11 @@ public class WindowsUtil {
 	 * @return true if HYSCALE_HOST_FS property is that of windows
 	 */
 	public static boolean isHostWindows() {
-		if (WINDOWS_FS_MATCHER.equals(HYSCALE_HOST_FS)) {
-			logger.debug("The Host operating system is windows");
-			return true;
-		}
+	    
+	    if (SystemUtils.IS_OS_WINDOWS || WINDOWS_FS_MATCHER.equals(HYSCALE_HOST_FS)) {
+	        logger.debug("The Host operating system is windows");
+	        return true;
+	    }
 		return false;
 	}
 
@@ -54,10 +55,10 @@ public class WindowsUtil {
 		if (StringUtils.isBlank(filepath)) {
 			return filepath;
 		}
-		if (!isHostWindows()) {
-			return filepath;
+		if (isHostWindows()) {
+		    return filepath.replaceAll(ToolConstants.LINUX_FILE_SEPARATOR, WINDOWS_FS_MATCHER);
 		}
-		return filepath.replaceAll(ToolConstants.FILE_SEPARATOR, WINDOWS_FS_MATCHER);
+		return filepath;
 	}
 	
 	/**

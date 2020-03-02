@@ -51,7 +51,7 @@ public class ServiceSpecConverter extends Converter {
     }
 
     @Override
-    public boolean validateData(File serviceSpecFile) throws HyscaleException{
+    public boolean validateData(File serviceSpecFile) throws HyscaleException {
         String serviceFileName = serviceSpecFile.getName();
         String serviceName =  serviceFileName.split("\\.")[0];
         if(!serviceName.equals(ServiceSpecUtil.getServiceName(serviceSpecFile))){
