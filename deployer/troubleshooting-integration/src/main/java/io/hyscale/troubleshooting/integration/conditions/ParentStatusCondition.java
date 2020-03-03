@@ -26,7 +26,7 @@ import io.hyscale.troubleshooting.integration.actions.ParentFailureAction;
 import io.hyscale.troubleshooting.integration.actions.ServiceNotDeployedAction;
 import io.hyscale.troubleshooting.integration.models.Node;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
-import io.hyscale.troubleshooting.integration.util.PodParentTroubleshootUtil;
+import io.hyscale.troubleshooting.integration.util.ConditionUtil;
 
 @Component
 public class ParentStatusCondition implements Node<TroubleshootingContext> {
@@ -45,7 +45,7 @@ public class ParentStatusCondition implements Node<TroubleshootingContext> {
             return serviceNotDeployedAction;
         }
         
-        ResourceKind podParent = PodParentTroubleshootUtil.getPodParent(context);
+        ResourceKind podParent = ConditionUtil.getPodParent(context);
         if (context.isTrace()) {
             logger.debug(describe() + ", pod parent {}", podParent);
         }

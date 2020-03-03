@@ -32,7 +32,7 @@ public enum AbstractedErrorMessage implements IMessage, IReason {
     DOCKERFILE_CMD_UNCERTAINITY("Service observed to be crashing. Possible errors in ENTRYPOINT/ CMD in Dockerfile or missing ENTRYPOINT.", ""),
     SERVICE_NOT_DEPLOYED("No such service found in this cluster.", "Ensure you are querying for the correct service name & app name in the correct namespace and cluster"),
     CANNOT_FIND_EVENTS("Cannot determine cause of failure since this service deployment is older than 60 minutes.", "Try redeploying to troubleshoot."),
-    INVALID_VOLUME_NAME("Volume name provided in service spec is invalid.", "Volume name must be less than 63 characters and follow the regex [a-z0-9][a-z0-9.-]."),
+    INVALID_VOLUME_NAME("Volume name provided in service spec is invalid.", "Volume name must be less than 63 characters and follows the regex [a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*."),
     INVALID_RESOURCE_NAME("{} available in cluster is invalid.", "Fix the resource name and redeploy"),
     TRY_AFTER_SOMETIME("Deployment is still in progress, service is not yet ready.", "Try querying after sometime.");
 

@@ -53,60 +53,6 @@ public class DeploymentStatusUtil {
         return status;
     }
     
-    public static List<DeploymentStatus> getDeployListNotRunningStatus(List<V1Deployment> deploymentList) {
-        if (deploymentList == null) {
-            return null;
-        }
-        List<DeploymentStatus> statuses = new ArrayList<DeploymentStatus>();
-        deploymentList.stream().forEach(each -> {
-            DeploymentStatus deployStatus = getDeployNotRunningStatus(each);
-            if (deployStatus != null) {
-                statuses.add(deployStatus);
-            }
-        });
-        return statuses;
-    }
-    
-    public static DeploymentStatus getDeployNotRunningStatus(V1Deployment deployment) {
-        if (deployment == null) {
-            return null;
-        }
-        return getNotRunningStatusFromMetadata(deployment.getMetadata());
-    }
-    
-    public static List<DeploymentStatus> getSTSsNotRunningStatus(List<V1StatefulSet> statefulSetList) {
-        if (statefulSetList == null) {
-            return null;
-        }
-        List<DeploymentStatus> statuses = new ArrayList<DeploymentStatus>();
-        statefulSetList.stream().forEach(each -> {
-            DeploymentStatus deployStatus = getSTSNotRunningStatus(each);
-            if (deployStatus != null) {
-                statuses.add(deployStatus);
-            }
-        });
-        return statuses;
-    }
-    
-    public static DeploymentStatus getSTSNotRunningStatus(V1StatefulSet statefulSet) {
-        if (statefulSet == null) {
-            return null;
-        }
-        return getNotRunningStatusFromMetadata(statefulSet.getMetadata());
-    }
-    
-    private static DeploymentStatus getNotRunningStatusFromMetadata(V1ObjectMeta metadata) {
-        if (metadata == null) {
-            return null;
-        }
-        DeploymentStatus status = new DeploymentStatus();
-        String serviceName = ResourceLabelUtil.getServiceName(metadata.getLabels());
-        status.setServiceName(serviceName);
-        status.setStatus(DeploymentStatus.Status.NOT_RUNNING);
-        status.setAge(metadata.getCreationTimestamp());
-        return status;
-    }
-    
     /**
      * Message from pods not in ready state
      * @param v1PodList

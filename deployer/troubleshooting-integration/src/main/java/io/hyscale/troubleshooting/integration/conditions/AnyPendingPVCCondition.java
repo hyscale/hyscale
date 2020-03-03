@@ -85,7 +85,7 @@ public class AnyPendingPVCCondition extends ConditionNode<TroubleshootingContext
                 }).collect(Collectors.toList());
 
                 // Since there are no pvc's found for the service, there's not pending pvc
-                if (pvcList != null && pvcList.isEmpty()) {
+                if (pvcList == null || pvcList.isEmpty()) {
                     logger.debug("PVC List if found empty for service {}", context.getServiceInfo().getServiceName());
                     return false;
                 }

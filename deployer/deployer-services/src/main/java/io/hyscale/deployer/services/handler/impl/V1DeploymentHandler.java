@@ -22,9 +22,12 @@ import io.hyscale.commons.logger.ActivityContext;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.Status;
+import io.hyscale.commons.utils.ResourceLabelUtil;
+import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
+import io.hyscale.deployer.services.handler.PodParentHelper;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.model.ResourceStatus;
@@ -37,12 +40,15 @@ import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.kubernetes.client.openapi.models.V1DeleteOptions;
+
 import io.kubernetes.client.custom.V1Patch;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deployment> {
+public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deployment>, PodParentHelper<V1Deployment>{
     private static final Logger LOGGER = LoggerFactory.getLogger(V1DeploymentHandler.class);
 
     @Override
@@ -291,5 +297,58 @@ public class V1DeploymentHandler implements ResourceLifeCycleHandler<V1Deploymen
         }
         
         return annotations.get(AnnotationKey.K8S_DEPLOYMENT_REVISION.getAnnotation());
+    }
+
+    public List<String> getServiceNames(ApiClient apiClient, String selector, boolean label, String namespace)
+            throws HyscaleException {
+        return getServiceNames(getBySelector(apiClient, selector, label, namespace));
+    }
+
+    /**
+     * @param deploymentList
+     * @return list of service names from label of deployment
+     */
+    public List<String> getServiceNames(List<V1Deployment> deploymentList) {
+        if (deploymentList == null) {
+            return null;
+        }
+        return deploymentList.stream().filter(each -> {
+            return each != null && each.getMetadata() != null;
+        }).map(each -> ResourceLabelUtil.getServiceName(each.getMetadata().getLabels())).collect(Collectors.toList());
+    }
+    
+    @Override
+    public List<DeploymentStatus> getNotRunningStatusList(ApiClient apiClient, String selector, boolean label,
+            String namespace) {
+        try {
+            return getNotRunningStatusList(getBySelector(apiClient, selector, label, namespace));
+        } catch (HyscaleException e) {
+            logger.error("Error while fetching Deployment with selector {} in namespace {}, error {}", selector,
+                    namespace, e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public DeploymentStatus getNotRunnnigStatus(V1Deployment deployment) {
+        if (deployment == null) {
+            return null;
+        }
+        return getNotRunningStatusFromMetadata(deployment.getMetadata());
+    }
+
+    @Override
+    public List<DeploymentStatus> getNotRunningStatusList(List<V1Deployment> deploymentList) {
+        if (deploymentList == null) {
+            return null;
+        }
+        List<DeploymentStatus> statuses = new ArrayList<DeploymentStatus>();
+        deploymentList.stream().forEach(each -> {
+            DeploymentStatus deployStatus = getNotRunnnigStatus(each);
+            if (deployStatus != null) {
+                statuses.add(deployStatus);
+            }
+        });
+        return statuses;
     }
 }

@@ -15,6 +15,8 @@
  */
 package io.hyscale.troubleshooting.integration.actions;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -27,9 +29,9 @@ import io.hyscale.troubleshooting.integration.models.AbstractedErrorMessage;
 import io.hyscale.troubleshooting.integration.models.ActionNode;
 import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
-import io.hyscale.troubleshooting.integration.util.PodParentTroubleshootUtil;
 import io.kubernetes.client.openapi.models.V1Event;
 import io.kubernetes.client.openapi.models.V1ObjectReference;
+import io.hyscale.troubleshooting.integration.util.ConditionUtil;
 
 /**
  * Action node handles case when pods are not available but pod owner is available
@@ -44,18 +46,21 @@ public class ParentFailureAction extends ActionNode<TroubleshootingContext> {
     public static final String NORMAL_EVENT = "Normal";
 
     public static final String FAILED_CREATE_EVENT = "FailedCreate";
+    
+    private static final String INVALID_VOLUME_NAME = "metadata\\.name: Invalid value";
 
-    private static final String INVALID_VOLUME_NAME = "spec\\.volumes\\[\\d\\]\\.name";
+    private static final String INVALID_VOLUME_NAME_LENGTH = "spec\\.volumes\\[\\d\\]\\.name";
 
     private static final String INVALID_RESOURCE_NAME = "metadata\\.labels: Invalid value";
 
-    private static final Pattern invalidVolumeNamePattern = Pattern.compile(INVALID_VOLUME_NAME);
+    private static final List<Pattern> invalidVolumeNamePattern = Arrays
+            .asList(Pattern.compile(INVALID_VOLUME_NAME_LENGTH), Pattern.compile(INVALID_VOLUME_NAME));
 
     private static final Pattern invalidResourceNamePattern = Pattern.compile(INVALID_RESOURCE_NAME);
 
     @Override
     public void process(TroubleshootingContext context) {
-        ResourceKind podParent = PodParentTroubleshootUtil.getPodParent(context);
+        ResourceKind podParent = ConditionUtil.getPodParent(context);
         if (podParent == null) {
             return;
         }
@@ -79,7 +84,7 @@ public class ParentFailureAction extends ActionNode<TroubleshootingContext> {
             return;
         }
         DiagnosisReport report = new DiagnosisReport();
-        if (invalidVolumeNamePattern.matcher(event.getMessage()).find()) {
+        if (invalidVolumeNamePattern.stream().anyMatch(pattern -> pattern.matcher(event.getMessage()).find())) {
             report.setReason(AbstractedErrorMessage.INVALID_VOLUME_NAME.getReason());
             report.setRecommendedFix(AbstractedErrorMessage.INVALID_VOLUME_NAME.getMessage());
             context.addReport(report);

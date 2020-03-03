@@ -24,10 +24,13 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.ResourceLabelKey;
 import io.hyscale.commons.models.Status;
+import io.hyscale.commons.utils.ResourceLabelUtil;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
+import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
+import io.hyscale.deployer.services.handler.PodParentHelper;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.model.DeployerActivity;
@@ -45,14 +48,17 @@ import io.kubernetes.client.custom.V1Patch;
 import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author tushart
  *
  */
 
-public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1StatefulSet> {
+public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1StatefulSet>, PodParentHelper<V1StatefulSet> {
     private static final Logger LOGGER = LoggerFactory.getLogger(V1StatefulSetHandler.class);
 
     @Override
@@ -311,5 +317,59 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1Stateful
     @Override
     public int getWeight() {
         return ResourceKind.STATEFUL_SET.getWeight();
+    }
+    
+    public List<String> getServiceNames(ApiClient apiClient, String selector, boolean label, String namespace)
+            throws HyscaleException {
+        return getServiceNames(getBySelector(apiClient, selector, label, namespace));
+    }
+
+    /**
+     * 
+     * @param statefulSetList
+     * @return list of service names from label of statefulset
+     */
+    public List<String> getServiceNames(List<V1StatefulSet> statefulSetList) {
+        if (statefulSetList == null) {
+            return null;
+        }
+        return statefulSetList.stream().filter(each -> {
+            return each != null && each.getMetadata() != null;
+        }).map(each -> ResourceLabelUtil.getServiceName(each.getMetadata().getLabels())).collect(Collectors.toList());
+    }
+    
+    @Override
+    public List<DeploymentStatus> getNotRunningStatusList(ApiClient apiClient, String selector, boolean label,
+            String namespace) {
+        try {
+            return getNotRunningStatusList(getBySelector(apiClient, selector, label, namespace));
+        } catch (HyscaleException e) {
+            logger.error("Error while fetching StatefulSet with selector {} in namespace {}, error {}", selector,
+                    namespace, e.getMessage());
+        }
+        return null;
+    }
+    
+    @Override
+    public DeploymentStatus getNotRunnnigStatus(V1StatefulSet statefulSet) {
+        if (statefulSet == null) {
+            return null;
+        }
+        return getNotRunningStatusFromMetadata(statefulSet.getMetadata());
+    }
+
+    @Override
+    public List<DeploymentStatus> getNotRunningStatusList(List<V1StatefulSet> statefulSetList) {
+        if (statefulSetList == null) {
+            return null;
+        }
+        List<DeploymentStatus> statuses = new ArrayList<DeploymentStatus>();
+        statefulSetList.stream().forEach(each -> {
+            DeploymentStatus deployStatus = getNotRunnnigStatus(each);
+            if (deployStatus != null) {
+                statuses.add(deployStatus);
+            }
+        });
+        return statuses;
     }
 }

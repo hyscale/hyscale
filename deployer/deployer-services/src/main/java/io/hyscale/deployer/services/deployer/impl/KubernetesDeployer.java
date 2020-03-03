@@ -248,30 +248,14 @@ public class KubernetesDeployer implements Deployer {
     @Override
     public List<DeploymentStatus> getDeploymentStatus(DeploymentContext context) throws HyscaleException {
         List<DeploymentStatus> deploymentStatusList = new ArrayList<>();
-        List<V1Pod> v1PodList = null;
         try {
             ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
-            V1PodHandler v1PodHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
-            String selector = ResourceSelectorUtil.getServiceSelector(context.getAppName(), context.getServiceName());
-            v1PodList = v1PodHandler.getBySelector(apiClient, selector, true, context.getNamespace());
-            if (v1PodList == null || v1PodList.isEmpty()) {
-                // Getting status from parent
-                return K8sDeployerUtil.getOwnerDeploymentStatus(apiClient, context);
+            
+            Set<String> services = K8sDeployerUtil.getDeployedServices(apiClient, context);
+            for (String serviceName: services) {
+                context.setServiceName(serviceName);
+                deploymentStatusList.add(getServiceDeploymentStatus(context));
             }
-            Map<String, List<V1Pod>> servicePodsMap = new HashMap<String, List<V1Pod>>();
-
-            v1PodList.stream().forEach(v1Pod -> {
-                String serviceName = v1Pod.getMetadata().getLabels().get(ResourceLabelKey.SERVICE_NAME.getLabel());
-                if (servicePodsMap.get(serviceName) == null) {
-                    servicePodsMap.put(serviceName, new ArrayList<V1Pod>());
-                }
-                servicePodsMap.get(serviceName).add(v1Pod);
-            });
-
-            servicePodsMap.entrySet().stream().forEach(each -> {
-                context.setServiceName(each.getKey());
-                deploymentStatusList.add(getPodDeploymentStatus(context, each.getValue()));
-            });
         } catch (HyscaleException e) {
             logger.error("Error while fetching status {} ", e);
             throw e;
@@ -279,7 +263,7 @@ public class KubernetesDeployer implements Deployer {
         }
         return deploymentStatusList;
     }
-
+    
     private DeploymentStatus getPodDeploymentStatus(DeploymentContext context, List<V1Pod> v1PodList) {
 
         if (v1PodList == null || v1PodList.isEmpty()) {

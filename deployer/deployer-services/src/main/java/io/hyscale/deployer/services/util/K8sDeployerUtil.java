@@ -18,8 +18,10 @@ package io.hyscale.deployer.services.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -40,7 +42,6 @@ import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.models.V1Deployment;
 import io.kubernetes.client.openapi.models.V1Pod;
 import io.kubernetes.client.openapi.models.V1ReplicaSet;
-import io.kubernetes.client.openapi.models.V1StatefulSet;
 
 public class K8sDeployerUtil {
 
@@ -121,20 +122,14 @@ public class K8sDeployerUtil {
         }
         logger.debug("No pods found, getting status from pods owner");
         String serviceName = context.getServiceName();
+        String namespace = context.getNamespace();
         String selector = ResourceSelectorUtil.getServiceSelector(context.getAppName(), serviceName);
         
         Map<String, DeploymentStatus> serviceVsDeploymentStatus = new HashMap<String, DeploymentStatus>();
         // Deployment
         V1DeploymentHandler deploymentHandler = (V1DeploymentHandler)ResourceHandlers
                 .getHandlerOf(ResourceKind.DEPLOYMENT.getKind());
-        List<V1Deployment> deploymentList = null;
-        String namespace = context.getNamespace();
-        try {
-            deploymentList = deploymentHandler.getBySelector(apiClient, selector, true, namespace);
-        } catch (HyscaleException e) {
-            logger.error("Error while fetching Deployment with selector {} in namespace {}", selector, namespace);
-        }
-        List<DeploymentStatus> deploymentStatus = DeploymentStatusUtil.getDeployListNotRunningStatus(deploymentList);
+        List<DeploymentStatus> deploymentStatus = deploymentHandler.getNotRunningStatusList(apiClient, selector, true, namespace);
         if (deploymentStatus != null && !deploymentStatus.isEmpty()) {
             logger.debug("Getting status from Deployments");
             deploymentStatus.stream().forEach(status -> {
@@ -145,13 +140,7 @@ public class K8sDeployerUtil {
         V1StatefulSetHandler stsHandler = (V1StatefulSetHandler)ResourceHandlers
                 .getHandlerOf(ResourceKind.STATEFUL_SET.getKind());
         
-        List<V1StatefulSet> stsList = null;
-        try {
-            stsList = stsHandler.getBySelector(apiClient, selector, true, namespace);
-        } catch (HyscaleException e) {
-            logger.error("Error while fetching StatefulSet with selector {} in namespace {}", selector, namespace);
-        }
-        deploymentStatus = DeploymentStatusUtil.getSTSsNotRunningStatus(stsList);
+        deploymentStatus = stsHandler.getNotRunningStatusList(apiClient, selector, true, namespace);
         if (deploymentStatus != null && !deploymentStatus.isEmpty()) {
             logger.debug("Getting status from StatefulSet");
             deploymentStatus.stream().forEach(status -> {
@@ -164,4 +153,39 @@ public class K8sDeployerUtil {
         
         return new ArrayList(serviceVsDeploymentStatus.values());
     }
+    
+    /**
+     * Get list of services deployed for the given app
+     * Fetch it from owners instead of pods as pods might not be created in some cases
+     * @param apiClient
+     * @param context
+     * @return List of deployed services
+     * @throws HyscaleException 
+     */
+    public static Set<String> getDeployedServices(ApiClient apiClient, DeploymentContext context) throws HyscaleException {
+        if (context == null) {
+            return null;
+        }
+        Set<String> services = new HashSet<String>();
+        if (StringUtils.isNotBlank(context.getServiceName())) {
+            services.add(context.getServiceName());
+            return services;
+        }
+        String namespace = context.getNamespace();
+        String selector = ResourceSelectorUtil.getSelector(context.getAppName());
+
+        // StatefulSet
+        V1StatefulSetHandler stsHandler = (V1StatefulSetHandler) ResourceHandlers
+                .getHandlerOf(ResourceKind.STATEFUL_SET.getKind());
+
+        services.addAll(stsHandler.getServiceNames(apiClient, selector, true, namespace));
+        // Deployment
+        V1DeploymentHandler deploymentHandler = (V1DeploymentHandler) ResourceHandlers
+                .getHandlerOf(ResourceKind.DEPLOYMENT.getKind());
+        services.addAll(deploymentHandler.getServiceNames(apiClient, selector, true, namespace));
+
+        logger.debug("Found services {} for app {}", services, context.getAppName());
+        return services;
+    }
+
 }
