@@ -150,7 +150,7 @@ public class CommandExecutor {
         if (StringUtils.isBlank(dir) || dir.equals(".")) {
             dir = SetupConfig.CURRENT_WORKING_DIR;
         }
-        logger.debug("Executing command in dir {}", dir);
+        logger.debug("Executing command {} in dir {}", command, dir);
         processBuilder.command(command.split(" "));
         processBuilder.redirectErrorStream(true);
         if (file != null) {
@@ -189,7 +189,7 @@ public class CommandExecutor {
     private static boolean copyOutput(Process process, StringWriter strWriter) {
         return ThreadPoolUtil.getInstance().execute(() -> {
             try {
-                do{
+                do {
                     IOUtils.copy(process.getInputStream(), strWriter, StandardCharsets.UTF_8);
                 } while (process.isAlive());
             } catch (IOException e) {
@@ -208,7 +208,7 @@ public class CommandExecutor {
      * @throws HyscaleException
      */
     private static void handleStandardInput(Process process, String command, String stdInput) throws HyscaleException {
-        if (StringUtils.isBlank(stdInput)){
+        if (StringUtils.isBlank(stdInput)) {
             return;
         }
         try (OutputStream processStdin = process.getOutputStream()) {

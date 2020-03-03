@@ -16,30 +16,43 @@
 package io.hyscale.builder.services.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
-
 
 import io.hyscale.commons.config.SetupConfig;
 
 @Component
+@PropertySource("classpath:config/image-builder.props")
 public class ImageBuilderConfig {
 
-	public static final String IMAGE_BUILDER_PROP = "hyscale.image.builder";
-	private static final String PUSH_LOG = "push.log";
-	private static final String BUILD_LOG = "build.log";
-	@Autowired
-	private SetupConfig setupConfig;
+    public static final String IMAGE_BUILDER_PROP = "hyscale.image.builder";
+    private static final String PUSH_LOG = "push.log";
+    private static final String BUILD_LOG = "build.log";
+    @Autowired
+    private SetupConfig setupConfig;
 
-	public String getDockerBuildlog(String appName, String serviceName) {
-		StringBuilder sb = new StringBuilder(setupConfig.getLogsDir(appName, serviceName));
-		sb.append(BUILD_LOG);	
-		return sb.toString();
-	}
+    @Value("${preserve_n_recently_used:3}")
+    private Integer noOfPreservedImages;
 
-	public String getDockerPushLogDir(String appName, String serviceName) {
-		StringBuilder sb = new StringBuilder(setupConfig.getLogsDir(appName, serviceName));
-		sb.append(PUSH_LOG);
-		return sb.toString();
-	}
+    public String getImageCleanUpPolicy() {
+        return System.getenv("IMAGE_CLEANUP_POLICY");
+    }
+
+    public Integer getNoOfPreservedImages() {
+        return noOfPreservedImages;
+    }
+
+    public String getDockerBuildlog(String appName, String serviceName) {
+        StringBuilder sb = new StringBuilder(setupConfig.getLogsDir(appName, serviceName));
+        sb.append(BUILD_LOG);
+        return sb.toString();
+    }
+
+    public String getDockerPushLogDir(String appName, String serviceName) {
+        StringBuilder sb = new StringBuilder(setupConfig.getLogsDir(appName, serviceName));
+        sb.append(PUSH_LOG);
+        return sb.toString();
+    }
 
 }

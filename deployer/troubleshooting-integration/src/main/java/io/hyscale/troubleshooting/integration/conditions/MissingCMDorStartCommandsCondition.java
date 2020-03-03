@@ -97,7 +97,7 @@ public class MissingCMDorStartCommandsCondition extends ConditionNode<Troublesho
             throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
         }
 
-        String dockerInstallCommand = commandProvider.getDockerInstalledCommand();
+        String dockerInstallCommand = commandProvider.dockerVersion();
         if (!CommandExecutor.execute(dockerInstallCommand)) {
             report.setRecommendedFix(DOCKER_INSTALLATION_NOTFOUND_MESSAGE);
             context.addReport(report);
@@ -105,7 +105,7 @@ public class MissingCMDorStartCommandsCondition extends ConditionNode<Troublesho
         }
 
 
-        CommandResult result = CommandExecutor.executeAndGetResults(commandProvider.getImageInspectCommand(image));
+        CommandResult result = CommandExecutor.executeAndGetResults(commandProvider.dockerInspect(image));
         if (result == null || StringUtils.isEmpty(result.getCommandOutput()) || result.getExitCode() != 0) {
             report.setRecommendedFix(String.format(IMAGE_NOT_FOUND_LOCALLY, image));
             context.addReport(report);
