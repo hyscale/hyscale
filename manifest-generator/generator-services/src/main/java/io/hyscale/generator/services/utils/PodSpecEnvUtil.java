@@ -20,10 +20,10 @@ import io.hyscale.servicespec.commons.model.PropType;
 import io.hyscale.servicespec.commons.model.service.Props;
 import io.hyscale.servicespec.commons.model.service.Secrets;
 import io.hyscale.servicespec.commons.model.service.*;
-import io.kubernetes.client.models.V1ConfigMapKeySelector;
-import io.kubernetes.client.models.V1EnvVar;
-import io.kubernetes.client.models.V1EnvVarSource;
-import io.kubernetes.client.models.V1SecretKeySelector;
+import io.kubernetes.client.openapi.models.V1ConfigMapKeySelector;
+import io.kubernetes.client.openapi.models.V1EnvVar;
+import io.kubernetes.client.openapi.models.V1EnvVarSource;
+import io.kubernetes.client.openapi.models.V1SecretKeySelector;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

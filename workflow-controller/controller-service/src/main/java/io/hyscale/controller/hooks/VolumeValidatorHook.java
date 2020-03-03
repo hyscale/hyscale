@@ -54,11 +54,11 @@ import io.hyscale.deployer.services.util.KubernetesVolumeUtil;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.hyscale.servicespec.commons.model.service.Volume;
-import io.kubernetes.client.ApiClient;
+import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.V1PersistentVolumeClaim;
-import io.kubernetes.client.models.V1ResourceRequirements;
-import io.kubernetes.client.models.V1StorageClass;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.openapi.models.V1ResourceRequirements;
+import io.kubernetes.client.openapi.models.V1StorageClass;
 
 /**
  * Validate Volumes:

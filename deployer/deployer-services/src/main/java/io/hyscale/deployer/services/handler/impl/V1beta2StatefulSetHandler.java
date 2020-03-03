@@ -45,14 +45,14 @@ import io.hyscale.commons.models.Status;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.ApiException;
-import io.kubernetes.client.apis.AppsV1beta2Api;
-import io.kubernetes.client.models.V1DeleteOptions;
-import io.kubernetes.client.models.V1Pod;
-import io.kubernetes.client.models.V1beta2StatefulSet;
-import io.kubernetes.client.models.V1beta2StatefulSetList;
-import io.kubernetes.client.models.V1beta2StatefulSetStatus;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.apis.AppsV1beta2Api;
+import io.kubernetes.client.openapi.models.V1DeleteOptions;
+import io.kubernetes.client.openapi.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1beta2StatefulSet;
+import io.kubernetes.client.openapi.models.V1beta2StatefulSetList;
+import io.kubernetes.client.openapi.models.V1beta2StatefulSetStatus;
 import io.kubernetes.client.custom.V1Patch;
 
 /**
@@ -148,7 +148,7 @@ public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1bet
 		String fieldSelector = label ? null : selector;
 		List<V1beta2StatefulSet> statefulSets = null;
 		try {
-			V1beta2StatefulSetList statefulSetList = appsV1beta2Api.listNamespacedStatefulSet(namespace, TRUE,
+			V1beta2StatefulSetList statefulSetList = appsV1beta2Api.listNamespacedStatefulSet(namespace, TRUE, null, 
 					null, fieldSelector, labelSelector, null, null, null, null);
 			statefulSets = statefulSetList != null ? statefulSetList.getItems() : null;
 		} catch (ApiException e) {
@@ -249,7 +249,7 @@ public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1bet
 		WorkflowLogger.startActivity(activityContext);
 		try {
 			try {
-			    appsV1beta2Api.deleteNamespacedStatefulSet(name, namespace, TRUE, deleteOptions, null, null, null, null);
+			    appsV1beta2Api.deleteNamespacedStatefulSet(name, namespace, TRUE, null, null, null, null, deleteOptions);
 			} catch (JsonSyntaxException e) {
 			    // K8s end exception ignore
 			}

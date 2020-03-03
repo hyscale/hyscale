@@ -21,7 +21,7 @@ import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.model.AppMetaData;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
-import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.openapi.models.V1ObjectMeta;
 
 public class MetadataManifestSnippetGenerator {
 

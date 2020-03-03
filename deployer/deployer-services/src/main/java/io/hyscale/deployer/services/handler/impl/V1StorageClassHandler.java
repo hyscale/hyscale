@@ -26,11 +26,11 @@ import org.slf4j.LoggerFactory;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.ApiException;
-import io.kubernetes.client.apis.StorageV1Api;
-import io.kubernetes.client.models.V1StorageClass;
-import io.kubernetes.client.models.V1StorageClassList;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.apis.StorageV1Api;
+import io.kubernetes.client.openapi.models.V1StorageClass;
+import io.kubernetes.client.openapi.models.V1StorageClassList;
 
 public class V1StorageClassHandler implements ResourceLifeCycleHandler<V1StorageClass> {
 
@@ -115,7 +115,7 @@ public class V1StorageClassHandler implements ResourceLifeCycleHandler<V1Storage
 		StorageV1Api storageV1Api = new StorageV1Api(apiClient);
 		List<V1StorageClass> v1StorageList = null;
 		try {
-			V1StorageClassList v1StorageClassList = storageV1Api.listStorageClass(TRUE, null, null, null, null,
+			V1StorageClassList v1StorageClassList = storageV1Api.listStorageClass(TRUE, null, null, null, null, null,
 					null, null, null);
 
 			v1StorageList = v1StorageClassList != null ? v1StorageClassList.getItems() : null;

@@ -29,12 +29,12 @@ import io.hyscale.commons.utils.ResourceLabelUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.impl.V1PodHandler;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.models.V1PersistentVolumeClaim;
-import io.kubernetes.client.models.V1PersistentVolumeClaimVolumeSource;
-import io.kubernetes.client.models.V1Pod;
-import io.kubernetes.client.models.V1PodSpec;
-import io.kubernetes.client.models.V1Volume;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimVolumeSource;
+import io.kubernetes.client.openapi.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1PodSpec;
+import io.kubernetes.client.openapi.models.V1Volume;
 
 /**
  * Utility to get volume related information from resource

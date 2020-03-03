@@ -43,8 +43,8 @@ import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.hyscale.deployer.services.util.KubernetesResourceUtil;
 import io.hyscale.deployer.services.util.KubernetesVolumeUtil;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
 
 /**
  * Hook to clean up stale volumes on the cluster

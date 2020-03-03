@@ -28,7 +28,7 @@ import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Agent;
 import io.hyscale.servicespec.commons.model.service.AgentVolume;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
-import io.kubernetes.client.models.V1VolumeMount;
+import io.kubernetes.client.openapi.models.V1VolumeMount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

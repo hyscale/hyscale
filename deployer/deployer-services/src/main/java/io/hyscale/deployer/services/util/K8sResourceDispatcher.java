@@ -40,8 +40,8 @@ import io.hyscale.commons.models.Manifest;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.handler.impl.NamespaceHandler;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.models.V1Namespace;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.models.V1Namespace;
 
 /**
  * Handles generic resource level operation such as apply, undeploy among others

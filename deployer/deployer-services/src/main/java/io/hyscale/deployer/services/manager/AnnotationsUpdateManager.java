@@ -17,7 +17,7 @@ package io.hyscale.deployer.services.manager;
 
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.KubernetesResource;
-import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.openapi.models.V1ObjectMeta;
 
 import java.util.HashMap;
 

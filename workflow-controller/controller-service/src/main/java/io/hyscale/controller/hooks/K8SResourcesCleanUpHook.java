@@ -45,8 +45,8 @@ import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.hyscale.deployer.services.util.KubernetesResourceUtil;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.models.V1ObjectMeta;
 
 /**
  * Hook to remove stale resources from K8s cluster

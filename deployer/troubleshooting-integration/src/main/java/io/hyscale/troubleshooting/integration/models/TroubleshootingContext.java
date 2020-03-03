@@ -15,7 +15,7 @@
  */
 package io.hyscale.troubleshooting.integration.models;
 
-import io.kubernetes.client.models.V1Event;
+import io.kubernetes.client.openapi.models.V1Event;
 
 import java.util.*;
 

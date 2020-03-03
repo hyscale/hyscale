@@ -36,12 +36,12 @@ import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.Status;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.ApiException;
-import io.kubernetes.client.apis.CoreV1Api;
-import io.kubernetes.client.models.V1ConfigMap;
-import io.kubernetes.client.models.V1ConfigMapList;
-import io.kubernetes.client.models.V1DeleteOptions;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.apis.CoreV1Api;
+import io.kubernetes.client.openapi.models.V1ConfigMap;
+import io.kubernetes.client.openapi.models.V1ConfigMapList;
+import io.kubernetes.client.openapi.models.V1DeleteOptions;
 import io.kubernetes.client.custom.V1Patch;
 
 public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap> {
@@ -132,7 +132,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
             String labelSelector = label ? selector : null;
             String fieldSelector = label ? null : selector;
 
-            V1ConfigMapList configMapList = coreV1Api.listNamespacedConfigMap(namespace, TRUE, null,
+            V1ConfigMapList configMapList = coreV1Api.listNamespacedConfigMap(namespace, TRUE, null, null,
                     fieldSelector, labelSelector, null, null, null, null);
             configMaps = configMapList != null ? configMapList.getItems() : null;
         } catch (ApiException e) {
@@ -200,7 +200,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         WorkflowLogger.startActivity(activityContext);
         try {
             try {
-                coreV1Api.deleteNamespacedConfigMap(name, namespace, TRUE,deleteOptions, null, null, null, null);
+                coreV1Api.deleteNamespacedConfigMap(name, namespace, TRUE, null, null, null, null, deleteOptions);
             } catch (JsonSyntaxException e) {
                 // K8s end exception ignore
             }

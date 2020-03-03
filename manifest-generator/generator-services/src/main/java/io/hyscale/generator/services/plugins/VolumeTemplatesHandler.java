@@ -49,10 +49,10 @@ import io.hyscale.servicespec.commons.model.service.Volume;
 import io.hyscale.plugin.framework.util.GsonSnippetConvertor;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.custom.QuantityFormatException;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1PersistentVolumeClaim;
-import io.kubernetes.client.models.V1PersistentVolumeClaimSpec;
-import io.kubernetes.client.models.V1ResourceRequirements;
+import io.kubernetes.client.openapi.models.V1ObjectMeta;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimSpec;
+import io.kubernetes.client.openapi.models.V1ResourceRequirements;
 
 @Component
 @ManifestPlugin(name = "VolumeTemplatesHandler")

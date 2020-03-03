@@ -45,7 +45,7 @@ public class ToolConstants {
     
     public static final String LINUX_FILE_SEPARATOR = "/";
 
-    public static final String HYSCALE = "Hyscale";
+    public static final String HYSCALE = "HyScale";
 
     public static final String VERSION_KEY = "Version";
 

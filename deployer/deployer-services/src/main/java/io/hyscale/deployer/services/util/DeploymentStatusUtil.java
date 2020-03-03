@@ -24,7 +24,7 @@ import org.joda.time.DateTime;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.utils.HyscaleStringUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
-import io.kubernetes.client.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1Pod;
 
 /**
  * 

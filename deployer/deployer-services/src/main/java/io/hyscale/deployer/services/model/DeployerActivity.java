@@ -32,7 +32,7 @@ public enum DeployerActivity implements Activity {
 	POD_INITIALIZED("Pod initialization "),
 	POD_CREATION("Pod creation "),
 	POD_READINESS("Pod readiness "),
-	WAITING_FOR_SERVICE_IP("Waiting for service IP..."),
+	WAITING_FOR_SERVICE_IP("Waiting for service IP ..."),
 	DELETING_CONFIG_MAP("Deleting ConfigMap "),
 	DELETING_SECRETS("Deleting Secret "),
 	DELETING_SERVICE("Deleting Service "),

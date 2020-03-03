@@ -33,12 +33,12 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Status;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.ApiException;
-import io.kubernetes.client.apis.CoreV1Api;
-import io.kubernetes.client.models.V1DeleteOptions;
-import io.kubernetes.client.models.V1PersistentVolumeClaim;
-import io.kubernetes.client.models.V1PersistentVolumeClaimList;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.apis.CoreV1Api;
+import io.kubernetes.client.openapi.models.V1DeleteOptions;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimList;
 
 public class V1PersistentVolumeClaimHandler implements ResourceLifeCycleHandler<V1PersistentVolumeClaim> {
 
@@ -87,7 +87,7 @@ public class V1PersistentVolumeClaimHandler implements ResourceLifeCycleHandler<
 			String fieldSelector = label ? null : selector;
 
 			V1PersistentVolumeClaimList v1PersistentVolumeClaimList = coreV1Api.listNamespacedPersistentVolumeClaim(
-					namespace, TRUE, null, fieldSelector, labelSelector, null, null, null, null);
+					namespace, TRUE, null, null, fieldSelector, labelSelector, null, null, null, null);
 			v1PersistentVolumeClaims = v1PersistentVolumeClaimList != null ? v1PersistentVolumeClaimList.getItems()
 					: null;
 		} catch (ApiException e) {
@@ -117,7 +117,7 @@ public class V1PersistentVolumeClaimHandler implements ResourceLifeCycleHandler<
 		WorkflowLogger.startActivity(activityContext);
 		try {
 		    try {
-				coreV1Api.deleteNamespacedPersistentVolumeClaim(name, namespace, TRUE, deleteOptions, null, null, null, null);
+				coreV1Api.deleteNamespacedPersistentVolumeClaim(name, namespace, TRUE, null, null, null, null, deleteOptions);
 		    } catch (JsonSyntaxException e) {
 			// K8s Exception ignore
 		    }

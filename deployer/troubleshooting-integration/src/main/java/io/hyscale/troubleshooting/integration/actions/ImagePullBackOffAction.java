@@ -17,7 +17,7 @@ package io.hyscale.troubleshooting.integration.actions;
 
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.troubleshooting.integration.models.*;
-import io.kubernetes.client.models.V1Event;
+import io.kubernetes.client.openapi.models.V1Event;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

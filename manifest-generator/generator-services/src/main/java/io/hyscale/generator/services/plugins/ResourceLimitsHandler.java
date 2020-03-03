@@ -41,7 +41,7 @@ import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.custom.QuantityFormatException;
-import io.kubernetes.client.models.V1ResourceRequirements;
+import io.kubernetes.client.openapi.models.V1ResourceRequirements;
 
 @Component
 @ManifestPlugin(name = "ResourceLimitsHandler")

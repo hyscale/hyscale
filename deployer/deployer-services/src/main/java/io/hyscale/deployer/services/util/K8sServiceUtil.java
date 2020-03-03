@@ -19,9 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.hyscale.deployer.services.model.ServiceAddress;
-import io.kubernetes.client.models.V1LoadBalancerIngress;
-import io.kubernetes.client.models.V1Service;
-import io.kubernetes.client.models.V1ServicePort;
+import io.kubernetes.client.openapi.models.V1LoadBalancerIngress;
+import io.kubernetes.client.openapi.models.V1Service;
+import io.kubernetes.client.openapi.models.V1ServicePort;
 
 /**
  * Utility to process information from {@link V1Service}

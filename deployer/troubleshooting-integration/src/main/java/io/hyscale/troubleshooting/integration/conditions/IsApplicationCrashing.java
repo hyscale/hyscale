@@ -23,7 +23,7 @@ import io.hyscale.troubleshooting.integration.models.ConditionNode;
 import io.hyscale.troubleshooting.integration.models.FailedResourceKey;
 import io.hyscale.troubleshooting.integration.models.Node;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
-import io.kubernetes.client.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1Pod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -20,7 +20,7 @@ import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
 import io.hyscale.troubleshooting.integration.models.*;
 import io.hyscale.troubleshooting.integration.actions.ClusterFullAction;
-import io.kubernetes.client.models.V1Event;
+import io.kubernetes.client.openapi.models.V1Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

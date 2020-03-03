@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import io.hyscale.deployer.core.model.ReplicaInfo;
-import io.kubernetes.client.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1Pod;
 
 public class K8sReplicaUtil {
 

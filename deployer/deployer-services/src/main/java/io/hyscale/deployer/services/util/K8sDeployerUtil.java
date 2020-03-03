@@ -32,10 +32,10 @@ import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.impl.V1DeploymentHandler;
 import io.hyscale.deployer.services.handler.impl.V1ReplicaSetHandler;
 import io.hyscale.deployer.services.predicates.PodPredicates;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.models.V1Deployment;
-import io.kubernetes.client.models.V1Pod;
-import io.kubernetes.client.models.V1ReplicaSet;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.models.V1Deployment;
+import io.kubernetes.client.openapi.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1ReplicaSet;
 
 public class K8sDeployerUtil {
 

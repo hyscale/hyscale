@@ -17,7 +17,7 @@ package io.hyscale.deployer.services.provider;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.K8sAuthorisation;
-import io.kubernetes.client.ApiClient;
+import io.kubernetes.client.openapi.ApiClient;
 
 public interface K8sClientProvider {
 

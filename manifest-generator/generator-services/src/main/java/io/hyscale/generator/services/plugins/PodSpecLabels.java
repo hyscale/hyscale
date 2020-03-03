@@ -27,7 +27,7 @@ import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
-import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
