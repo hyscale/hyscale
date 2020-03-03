@@ -129,7 +129,7 @@ public class K8sDeployerUtil {
         // Deployment
         V1DeploymentHandler deploymentHandler = (V1DeploymentHandler)ResourceHandlers
                 .getHandlerOf(ResourceKind.DEPLOYMENT.getKind());
-        List<DeploymentStatus> deploymentStatus = deploymentHandler.getNotRunningStatusList(apiClient, selector, true, namespace);
+        List<DeploymentStatus> deploymentStatus = deploymentHandler.getStatus(apiClient, selector, true, namespace);
         if (deploymentStatus != null && !deploymentStatus.isEmpty()) {
             logger.debug("Getting status from Deployments");
             deploymentStatus.stream().forEach(status -> {
@@ -140,7 +140,7 @@ public class K8sDeployerUtil {
         V1StatefulSetHandler stsHandler = (V1StatefulSetHandler)ResourceHandlers
                 .getHandlerOf(ResourceKind.STATEFUL_SET.getKind());
         
-        deploymentStatus = stsHandler.getNotRunningStatusList(apiClient, selector, true, namespace);
+        deploymentStatus = stsHandler.getStatus(apiClient, selector, true, namespace);
         if (deploymentStatus != null && !deploymentStatus.isEmpty()) {
             logger.debug("Getting status from StatefulSet");
             deploymentStatus.stream().forEach(status -> {

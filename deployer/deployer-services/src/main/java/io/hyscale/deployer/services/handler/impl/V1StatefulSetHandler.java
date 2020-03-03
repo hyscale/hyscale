@@ -30,7 +30,7 @@ import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
-import io.hyscale.deployer.services.handler.PodParentHelper;
+import io.hyscale.deployer.services.handler.PodParentHandler;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.model.DeployerActivity;
@@ -58,7 +58,7 @@ import java.util.stream.Collectors;
  *
  */
 
-public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1StatefulSet>, PodParentHelper<V1StatefulSet> {
+public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implements ResourceLifeCycleHandler<V1StatefulSet> {
     private static final Logger LOGGER = LoggerFactory.getLogger(V1StatefulSetHandler.class);
 
     @Override
@@ -339,10 +339,10 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1Stateful
     }
     
     @Override
-    public List<DeploymentStatus> getNotRunningStatusList(ApiClient apiClient, String selector, boolean label,
+    public List<DeploymentStatus> getStatus(ApiClient apiClient, String selector, boolean label,
             String namespace) {
         try {
-            return getNotRunningStatusList(getBySelector(apiClient, selector, label, namespace));
+            return buildStatus(getBySelector(apiClient, selector, label, namespace));
         } catch (HyscaleException e) {
             logger.error("Error while fetching StatefulSet with selector {} in namespace {}, error {}", selector,
                     namespace, e.getMessage());
@@ -351,21 +351,21 @@ public class V1StatefulSetHandler implements ResourceLifeCycleHandler<V1Stateful
     }
     
     @Override
-    public DeploymentStatus getNotRunnnigStatus(V1StatefulSet statefulSet) {
+    public DeploymentStatus buildStatus(V1StatefulSet statefulSet) {
         if (statefulSet == null) {
             return null;
         }
-        return getNotRunningStatusFromMetadata(statefulSet.getMetadata());
+        return buildStatusFromMetadata(statefulSet.getMetadata(), DeploymentStatus.Status.NOT_RUNNING);
     }
 
     @Override
-    public List<DeploymentStatus> getNotRunningStatusList(List<V1StatefulSet> statefulSetList) {
+    public List<DeploymentStatus> buildStatus(List<V1StatefulSet> statefulSetList) {
         if (statefulSetList == null) {
             return null;
         }
         List<DeploymentStatus> statuses = new ArrayList<DeploymentStatus>();
         statefulSetList.stream().forEach(each -> {
-            DeploymentStatus deployStatus = getNotRunnnigStatus(each);
+            DeploymentStatus deployStatus = buildStatus(each);
             if (deployStatus != null) {
                 statuses.add(deployStatus);
             }

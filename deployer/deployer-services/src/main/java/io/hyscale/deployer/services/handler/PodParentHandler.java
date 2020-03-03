@@ -22,24 +22,24 @@ import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 
-public interface PodParentHelper<T> {
+public abstract class PodParentHandler<T> {
 
-    public List<DeploymentStatus> getNotRunningStatusList(ApiClient apiClient, String selector, boolean label,
+    public abstract List<DeploymentStatus> getStatus(ApiClient apiClient, String selector, boolean label,
             String namespace);
 
-    public DeploymentStatus getNotRunnnigStatus(T t);
+    public abstract DeploymentStatus buildStatus(T t);
 
-    public List<DeploymentStatus> getNotRunningStatusList(List<T> t);
+    public abstract List<DeploymentStatus> buildStatus(List<T> t);
 
-    default DeploymentStatus getNotRunningStatusFromMetadata(V1ObjectMeta metadata) {
+    public DeploymentStatus buildStatusFromMetadata(V1ObjectMeta metadata, DeploymentStatus.Status status) {
         if (metadata == null) {
             return null;
         }
-        DeploymentStatus status = new DeploymentStatus();
+        DeploymentStatus deploymentStatus = new DeploymentStatus();
         String serviceName = ResourceLabelUtil.getServiceName(metadata.getLabels());
-        status.setServiceName(serviceName);
-        status.setStatus(DeploymentStatus.Status.NOT_RUNNING);
-        status.setAge(metadata.getCreationTimestamp());
-        return status;
+        deploymentStatus.setServiceName(serviceName);
+        deploymentStatus.setStatus(status);
+        deploymentStatus.setAge(metadata.getCreationTimestamp());
+        return deploymentStatus;
     }
 }
