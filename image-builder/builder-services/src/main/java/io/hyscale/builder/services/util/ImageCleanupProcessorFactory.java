@@ -15,7 +15,6 @@
  */
 package io.hyscale.builder.services.util;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -34,16 +33,15 @@ public class ImageCleanupProcessorFactory {
     @Autowired
     private DeleteAfterBuild deleteAfterBuild;
     @Autowired
-    private PreserveLastNUsed preserve_Last_N_USED;
+    private PreserveLastNUsed preserve_Last_N_Used;
     @Autowired
     private PreserveAll preserveAll;
 
     public ImageCleanupProcessor getImageCleanupProcessor(String imageCleanUpPolicy) {
-        ImageCleanUpPolicy cleanUpPolicy = null;
-        if (StringUtils.isBlank(imageCleanUpPolicy)) {
+        ImageCleanUpPolicy cleanUpPolicy = ImageCleanUpPolicy.fromString(imageCleanUpPolicy);
+        
+        if (cleanUpPolicy == null) {
             cleanUpPolicy = ImageCleanUpPolicy.PRESERVE_N_RECENTLY_USED;
-        } else {
-            cleanUpPolicy = ImageCleanUpPolicy.valueOf(imageCleanUpPolicy);
         }
         return getImageCleanupProcessor(cleanUpPolicy);
     }
@@ -56,7 +54,7 @@ public class ImageCleanupProcessorFactory {
                 return deleteAfterBuild;
 
             case PRESERVE_N_RECENTLY_USED:
-                return preserve_Last_N_USED;
+                return preserve_Last_N_Used;
 
             case PRESERVE_ALL:
                 return preserveAll;
