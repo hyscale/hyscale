@@ -32,7 +32,7 @@ Some useful things you can achieve in just a few lines with HyScale's app-centri
 + Override or add different configurations for different environments using profiles.
 
 
-**App-centric troubleshooting** (in the works)
+**App-centric troubleshooting**
 
 Deployment failures at Kubernetes are cryptic and not intuitive for debugging. Users have to refer many things to identify the root cause of the failure like pod status, describe pod , statuses of other kinds etc. When issues occur abstraction is needed to simplify troubleshooting. So instead of presenting users with an error like "CrashLoopBackOff", HyScale executes a troubleshooting flowchart that will basically try to figure out the possible causes and inform the user in plain terms. 
 Hyscale abstracts Kubernetes errors to an app-centric model eg.: a "Pending" state may mean one of many things such as "New services cannot be accommodated as cluster capacity is full" or "Specified volume cannot be attached to the service"
