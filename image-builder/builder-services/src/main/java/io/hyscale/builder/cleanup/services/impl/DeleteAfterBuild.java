@@ -56,8 +56,9 @@ public class DeleteAfterBuild implements ImageCleanupProcessor {
         }
         if (StringUtils.isNotBlank(image)) {
             // Fetch the image id's to be deleted of the service image which are labelled by imageowner=hyscale
-            String[] imageIds = CommandExecutor.executeAndGetResults(imageCommandProvider.dockerImageByNameFilterByImageOwner(image))
-                    .getCommandOutput().split("\\s+");
+            String existingImageIds = CommandExecutor.executeAndGetResults(imageCommandProvider.dockerImageByNameFilterByImageOwner(image))
+                    .getCommandOutput();
+            String[] imageIds = StringUtils.isNotBlank(existingImageIds)? existingImageIds.split("\\s+") : null;
             if (imageIds == null || imageIds.length == 0) {
                 logger.debug("No images found to clean from the host machine");
                 return;

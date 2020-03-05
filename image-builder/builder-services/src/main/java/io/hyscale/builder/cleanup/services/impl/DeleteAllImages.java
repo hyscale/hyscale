@@ -15,6 +15,7 @@
  */
 package io.hyscale.builder.cleanup.services.impl;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,13 +48,14 @@ public class DeleteAllImages implements ImageCleanupProcessor {
     public void clean(ServiceSpec serviceSpec) {
         logger.debug("Cleaning up all images");
         // Fetch the image id's to be deleted which are labelled by imageowner=hyscale
-        String[] imageIds = CommandExecutor.executeAndGetResults(imageCommandProvider.dockerImagesFilterByImageOwner()).getCommandOutput().split("\\s+");
+        String existingImageIds = CommandExecutor.executeAndGetResults(
+                imageCommandProvider.dockerImagesFilterByImageOwner()).getCommandOutput();
+        String[] imageIds = StringUtils.isNotBlank(existingImageIds) ? existingImageIds.split("\\s+") : null;
         if (imageIds == null || imageIds.length == 0) {
             logger.debug("No images found to clean from the host machine");
             return;
         }
         // Remove the image id's using 'docker rmi' command
-        CommandExecutor.execute(imageCommandProvider
-                .removeDockerImages(imageIds));
+        CommandExecutor.execute(imageCommandProvider.removeDockerImages(imageIds));
     }
 }

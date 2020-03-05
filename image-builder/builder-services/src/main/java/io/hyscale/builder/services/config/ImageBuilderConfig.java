@@ -29,6 +29,8 @@ public class ImageBuilderConfig {
     public static final String IMAGE_BUILDER_PROP = "hyscale.image.builder";
     private static final String PUSH_LOG = "push.log";
     private static final String BUILD_LOG = "build.log";
+    private static final String IMAGE_CLEAN_UP_POLICY_PROPERTY = "IMAGE_CLEANUP_POLICY";
+    
     @Autowired
     private SetupConfig setupConfig;
 
@@ -36,7 +38,7 @@ public class ImageBuilderConfig {
     private Integer noOfPreservedImages;
 
     public String getImageCleanUpPolicy() {
-        return System.getenv("IMAGE_CLEANUP_POLICY");
+        return System.getenv(IMAGE_CLEAN_UP_POLICY_PROPERTY);
     }
 
     public Integer getNoOfPreservedImages() {

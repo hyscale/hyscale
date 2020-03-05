@@ -44,13 +44,10 @@ public class ImageCommandProvider {
     private static final String REMOVE_IMAGE = "rmi";
     private static final String PULL_COMMAND = "pull";
     private static final String LABEL_ARGS = "label";
-    private static final String IMAGE = "image";
-    private static final String OWNER = "owner";
     private static final String IMAGE_OWNER = "imageowner";
     private static final String HYSCALE = "hyscale";
     private static final String HYPHEN = "-";
     private static final String FORCE_FLAG = "f";
-    private static final String ALL = "a";
     private static final String QUIET = "q";
     private static final String FILTER = "filter";
     private static final boolean USE_SUDO = false;
