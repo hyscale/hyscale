@@ -48,7 +48,6 @@ import io.hyscale.controller.hooks.K8SResourcesCleanUpHook;
 import io.hyscale.controller.hooks.VolumeCleanUpHook;
 import io.hyscale.controller.hooks.VolumeValidatorHook;
 import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.util.LoggerUtility;
 import io.hyscale.controller.util.TroubleshootUtil;
 import io.hyscale.deployer.services.config.DeployerConfig;
 import io.hyscale.deployer.services.deployer.Deployer;
@@ -70,9 +69,6 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
 
     @Autowired
     private Deployer deployer;
-
-    @Autowired
-    private LoggerUtility loggerUtility;
 
     @Autowired
     private K8sAuthConfigBuilder authConfigBuilder;
@@ -166,9 +162,6 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
             writeDeployLogs(context, deploymentContext);
         }
         context.addAttribute(WorkflowConstants.OUTPUT, true);
-        if (verbose) {
-            loggerUtility.deploymentLogs(context);
-        }
 
         Boolean external = serviceSpec.get(HyscaleSpecFields.external, Boolean.class);
         external = external == null ? false : external;

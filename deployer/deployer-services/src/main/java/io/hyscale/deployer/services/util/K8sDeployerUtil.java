@@ -26,11 +26,13 @@ import org.slf4j.LoggerFactory;
 
 import io.hyscale.commons.constants.K8SRuntimeConstants;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.impl.V1DeploymentHandler;
 import io.hyscale.deployer.services.handler.impl.V1ReplicaSetHandler;
+import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.predicates.PodPredicates;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.models.V1Deployment;
@@ -40,6 +42,37 @@ import io.kubernetes.client.openapi.models.V1ReplicaSet;
 public class K8sDeployerUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(K8sDeployerUtil.class);
+
+    public static List<V1Pod> filterPods(ApiClient apiClient, String appName, String serviceName,
+            String namespace, List<V1Pod> podList) {
+        
+        if (podList == null || podList.isEmpty()) {
+            return podList;
+        }
+        
+        if (!PodPredicates.isPodAmbiguous().test(podList)) {
+            return podList;
+        }
+        String podOwner = K8sPodUtil.getPodsUniqueOwner(podList);
+        ResourceKind podOwnerKind = ResourceKind.fromString(podOwner);
+
+        // Unknown parent
+        if (StringUtils.isBlank(podOwner)) {
+            logger.debug("Unable to determine latest deployment, displaying all replicas");
+            WorkflowLogger.warn(DeployerActivity.LATEST_DEPLOYMENT_NOT_IDENTIFIABLE);
+            return podList;
+        }
+
+        // Deployment
+        if (ResourceKind.REPLICA_SET.equals(podOwnerKind) || ResourceKind.DEPLOYMENT.equals(podOwnerKind)) {
+            // Get deployment, get revision, get RS with the revision, get all labels and filter pods
+            return K8sDeployerUtil.filterPodsByDeployment(apiClient, appName, serviceName, namespace, podList);
+        }
+
+        // TODO do we need to handle STS cases ??
+        logger.debug("Replicas info:: unhandled case, pod owner: {}", podOwner);
+        return podList;
+    }
 
     /**
      * Get {@link V1Deployment} from cluster based on namespace, appname and service name.

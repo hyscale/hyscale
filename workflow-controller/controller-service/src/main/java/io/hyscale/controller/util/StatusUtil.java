@@ -20,7 +20,6 @@ import org.ocpsoft.prettytime.PrettyTime;
 
 import io.hyscale.commons.logger.TableFields;
 import io.hyscale.commons.logger.TableFormatter;
-import io.hyscale.commons.logger.TableFormatter.Builder;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ReplicaInfo;
 

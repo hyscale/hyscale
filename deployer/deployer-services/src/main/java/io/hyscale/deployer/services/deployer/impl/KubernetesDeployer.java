@@ -459,28 +459,9 @@ public class KubernetesDeployer implements Deployer {
             return K8sReplicaUtil.getReplicaInfo(podList);
         }
         
-        if (!PodPredicates.isPodAmbiguous().test(podList)) {
-            return K8sReplicaUtil.getReplicaInfo(podList);
-        }
-        String podOwner = K8sPodUtil.getPodsUniqueOwner(podList);
-        ResourceKind podOwnerKind = ResourceKind.fromString(podOwner);
+        List<V1Pod> filteredPods = K8sDeployerUtil.filterPods(apiClient, appName, serviceName, namespace, podList);
         
-        // Unknown parent
-        if (StringUtils.isBlank(podOwner)) {
-            logger.debug("Unable to determine latest deployment, displaying all replicas");
-            WorkflowLogger.warn(DeployerActivity.LATEST_DEPLOYMENT_NOT_IDENTIFIABLE);
-            return K8sReplicaUtil.getReplicaInfo(podList);
-        }
-        
-        // Deployment
-        if (ResourceKind.REPLICA_SET.equals(podOwnerKind) || ResourceKind.DEPLOYMENT.equals(podOwnerKind)) {
-            // Get deployment, get revision, get RS with the revision, get all labels and filter pods
-            return K8sReplicaUtil.getReplicaInfo(K8sDeployerUtil.filterPodsByDeployment(apiClient, appName, serviceName, namespace, podList));
-        }
-        
-        // TODO do we need to handle STS cases ??
-        logger.debug("Replicas info:: unhandled case, pod owner: {}", podOwner);
-        return K8sReplicaUtil.getReplicaInfo(podList);
+        return K8sReplicaUtil.getReplicaInfo(filteredPods);
     }
     
 }

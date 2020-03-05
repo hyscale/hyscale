@@ -77,6 +77,9 @@ public class HyscaleServiceLogsCommand implements Callable<Integer> {
 	@Pattern(regexp = ValidationConstants.SERVICE_NAME_REGEX, message = ValidationConstants.INVALID_SERVICE_NAME_MSG)
 	@Option(names = { "-s", "--service" }, required = true, description = "Service name")
 	private String serviceName;
+	
+	@Option(names = { "-r", "--replica" }, required = false, description = "Replica name")
+    private String replicaName;
 
 	@Option(names = { "-t", "--tail" }, required = false, description = "Tail output of the service logs")
 	private boolean tail = false;
@@ -90,7 +93,7 @@ public class HyscaleServiceLogsCommand implements Callable<Integer> {
 	private LoggerUtility loggerUtility;
 
 	@Override
-	public Integer call() throws Exception{
+	public Integer call() throws Exception {
 		if (!CommandUtil.isInputValid(this)) {
 			return ToolConstants.INVALID_INPUT_ERROR_CODE;
 		}
@@ -102,6 +105,7 @@ public class HyscaleServiceLogsCommand implements Callable<Integer> {
 		workflowContext.setServiceName(serviceName);
 		workflowContext.addAttribute(WorkflowConstants.TAIL_LOGS, tail);
 		workflowContext.addAttribute(WorkflowConstants.LINES, line);
+		workflowContext.addAttribute(WorkflowConstants.REPLICA_NAME, replicaName);
 
 		loggerUtility.getLogs(workflowContext);
 
