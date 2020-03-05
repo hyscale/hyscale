@@ -43,6 +43,7 @@ import io.hyscale.servicespec.commons.util.ImageUtil;
 
 @Component
 public class PreserveLastNUsed implements ImageCleanupProcessor {
+    
     private static final Logger logger = LoggerFactory.getLogger(PreserveLastNUsed.class);
 
     @Autowired
@@ -62,14 +63,16 @@ public class PreserveLastNUsed implements ImageCleanupProcessor {
         }
         if (StringUtils.isNotBlank(image)) {
             // Fetch the image id's to be deleted of the service image which are labelled by imageowner=hyscale
-            String[] imgIds = CommandExecutor.executeAndGetResults(imageCommandProvider.dockerImageByNameFilterByImageOwner(image)).
-                    getCommandOutput().split("\\s+");
+            String existingImageIds = CommandExecutor.executeAndGetResults(imageCommandProvider.dockerImageByNameFilterByImageOwner(image)).
+                    getCommandOutput();
+            String[] imgIds = StringUtils.isNotBlank(existingImageIds)? existingImageIds.split("\\s+") : null;
             if (imgIds == null || imgIds.length == 0) {
                 logger.debug("No images found to clean from the host machine");
                 return;
             }
             // Need to preserve the order of output ,hence a LinkedHashset
             Set<String> imageIds = new LinkedHashSet<>(Arrays.asList(imgIds));
+            logger.debug("Removing images: {}", imageIds);
             // delete those image id's which are older than 'n' (imageBuilderConfig.getNoOfPreservedImages())
             if (imageIds.size() > imageBuilderConfig.getNoOfPreservedImages()) {
                 CommandExecutor.execute(imageCommandProvider.removeDockerImages(
