@@ -38,4 +38,5 @@ module commons {
 	requires com.github.mustachejava;
 	requires java.annotation;
 	requires java.json;
+	requires commons.exec;
 }
