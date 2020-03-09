@@ -15,6 +15,8 @@
  */
 package io.hyscale.troubleshooting.integration.conditions;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,14 +26,20 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.troubleshooting.integration.actions.ParentFailureAction;
 import io.hyscale.troubleshooting.integration.actions.ServiceNotDeployedAction;
+import io.hyscale.troubleshooting.integration.models.AbstractedErrorMessage;
+import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
+import io.hyscale.troubleshooting.integration.models.FailedResourceKey;
 import io.hyscale.troubleshooting.integration.models.Node;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
 import io.hyscale.troubleshooting.integration.util.ConditionUtil;
+import io.kubernetes.client.openapi.models.V1Event;
 
 @Component
 public class ParentStatusCondition implements Node<TroubleshootingContext> {
     
     private static final Logger logger = LoggerFactory.getLogger(ParentStatusCondition.class);
+    
+    public static final String FAILED_CREATE_EVENT = "FailedCreate";
     
     @Autowired
     private ServiceNotDeployedAction serviceNotDeployedAction;
@@ -52,7 +60,42 @@ public class ParentStatusCondition implements Node<TroubleshootingContext> {
         if (podParent == null) {
             return serviceNotDeployedAction;
         }
+        List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos()
+                .getOrDefault(podParent.getKind(), null);
+        if (resourceInfos == null || resourceInfos.isEmpty()) {
+            logger.debug("Pod owner {} not found in context", podParent);
+            return serviceNotDeployedAction;
+        }
+
+        // Only one resource of parent should exist
+        TroubleshootingContext.ResourceInfo parentInfo = resourceInfos.get(0);
+        DiagnosisReport report = new DiagnosisReport();
+        List<V1Event> events = parentInfo.getEvents();
+        if (events == null || events.isEmpty()) {
+            report.setReason(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getReason());
+            report.setRecommendedFix(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getMessage());
+            context.addReport(report);
+            logger.debug(podParent + " no events found");
+            return null;
+        }
+        V1Event event = getFilteredEvent(events);
+        if (event == null) {
+            logger.debug(podParent + " no failure event found to process");
+            return null;
+        }
+        
+        context.addAttribute(FailedResourceKey.FAILED_PARENT_EVENT, event);
         return parentFailureAction;
+    }
+    
+    private V1Event getFilteredEvent(List<V1Event> events) {
+        V1Event filteredEvent = null;
+        for (V1Event event : events) {
+            if (FAILED_CREATE_EVENT.equals(event.getReason())) {
+                filteredEvent = event;
+            }
+        }
+        return filteredEvent;
     }
 
     @Override

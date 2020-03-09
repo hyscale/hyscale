@@ -15,7 +15,6 @@
  */
 package io.hyscale.troubleshooting.integration.actions;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -24,14 +23,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.troubleshooting.integration.models.AbstractedErrorMessage;
 import io.hyscale.troubleshooting.integration.models.ActionNode;
 import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
+import io.hyscale.troubleshooting.integration.models.FailedResourceKey;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
 import io.kubernetes.client.openapi.models.V1Event;
 import io.kubernetes.client.openapi.models.V1ObjectReference;
-import io.hyscale.troubleshooting.integration.util.ConditionUtil;
 
 /**
  * Action node handles case when pods are not available but pod owner is available
@@ -43,50 +41,39 @@ public class ParentFailureAction extends ActionNode<TroubleshootingContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(ParentFailureAction.class);
 
-    public static final String NORMAL_EVENT = "Normal";
-
-    public static final String FAILED_CREATE_EVENT = "FailedCreate";
-    
     private static final String INVALID_VOLUME_NAME = "metadata\\.name: Invalid value";
 
     private static final String INVALID_VOLUME_NAME_LENGTH = "spec\\.volumes\\[\\d\\]\\.name";
+    
+    private static final String INVALID_PVC = "persistentvolumeclaims .* is forbidden";
 
     private static final String INVALID_RESOURCE_NAME = "metadata\\.labels: Invalid value";
 
     private static final List<Pattern> invalidVolumeNamePattern = Arrays
             .asList(Pattern.compile(INVALID_VOLUME_NAME_LENGTH), Pattern.compile(INVALID_VOLUME_NAME));
+    
+    private static final Pattern invalidPVCPattern = Pattern.compile(INVALID_PVC);
 
     private static final Pattern invalidResourceNamePattern = Pattern.compile(INVALID_RESOURCE_NAME);
-
+    
     @Override
     public void process(TroubleshootingContext context) {
-        ResourceKind podParent = ConditionUtil.getPodParent(context);
-        if (podParent == null) {
-            return;
-        }
-        List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos()
-                .getOrDefault(podParent.getKind(), null);
-        if (resourceInfos == null || resourceInfos.isEmpty()) {
-            logger.debug("Pod owner {} not found in context", podParent);
-            return;
-        }
-
-        // Only one resource of parent should exist
-        TroubleshootingContext.ResourceInfo parentInfo = resourceInfos.get(0);
-        List<V1Event> events = parentInfo.getEvents();
-        if (events == null || events.isEmpty()) {
-            logger.debug(podParent + " no events found");
-            return;
-        }
-        V1Event event = getFilteredEvent(events);
-        if (event == null) {
-            logger.debug(podParent + " no failure event found to process");
-            return;
-        }
         DiagnosisReport report = new DiagnosisReport();
+        Object eventObj = context.getAttribute(FailedResourceKey.FAILED_PARENT_EVENT);
+        if (eventObj == null) {
+            logger.debug("No failure event found to process");
+            return;
+        }
+        V1Event event = (V1Event) eventObj;
         if (invalidVolumeNamePattern.stream().anyMatch(pattern -> pattern.matcher(event.getMessage()).find())) {
             report.setReason(AbstractedErrorMessage.INVALID_VOLUME_NAME.getReason());
             report.setRecommendedFix(AbstractedErrorMessage.INVALID_VOLUME_NAME.getMessage());
+            context.addReport(report);
+            return;
+        }
+        if (invalidPVCPattern.matcher(event.getMessage()).find()) {
+            report.setReason(AbstractedErrorMessage.INVALID_VOLUME.getReason());
+            report.setRecommendedFix(AbstractedErrorMessage.INVALID_VOLUME.formatMessage(getErrorMessage(event.getMessage())));
             context.addReport(report);
             return;
         }
@@ -100,14 +87,14 @@ public class ParentFailureAction extends ActionNode<TroubleshootingContext> {
         }
     }
 
-    private V1Event getFilteredEvent(List<V1Event> events) {
-        V1Event filteredEvent = null;
-        for (V1Event event : events) {
-            if (FAILED_CREATE_EVENT.equals(event.getReason())) {
-                filteredEvent = event;
-            }
+    
+    private String getErrorMessage(String message) {
+        String startPoint = "Internal error occurred";
+        int index = message.indexOf(startPoint);
+        if (index < 0) {
+            return message;
         }
-        return filteredEvent;
+        return message.substring(index);
     }
 
     @Override
