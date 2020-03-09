@@ -167,7 +167,6 @@ public class ImageCommandProvider {
         StringBuilder removeDockerImages = new StringBuilder(docker());
         removeDockerImages.append(REMOVE_IMAGE).append(SPACE).append(HYPHEN).append(FORCE_FLAG);
         for (String imageId : imageIds) {
-            System.out.println(imageId);
             removeDockerImages.append(SPACE).append(imageId);
         }
         return removeDockerImages.toString();
