@@ -45,14 +45,14 @@ public class ParentFailureAction extends ActionNode<TroubleshootingContext> {
 
     private static final String INVALID_VOLUME_NAME_LENGTH = "spec\\.volumes\\[\\d\\]\\.name";
     
-    private static final String INVALID_PVC = "persistentvolumeclaims .* is forbidden";
-
+    private static final String MULTIPLE_DEFAULT_STORAGE_CLASS = "default StorageClasses were found";
+    
     private static final String INVALID_RESOURCE_NAME = "metadata\\.labels: Invalid value";
 
     private static final List<Pattern> invalidVolumeNamePattern = Arrays
             .asList(Pattern.compile(INVALID_VOLUME_NAME_LENGTH), Pattern.compile(INVALID_VOLUME_NAME));
     
-    private static final Pattern invalidPVCPattern = Pattern.compile(INVALID_PVC);
+    private static final Pattern multipleDefaultStorageClassPattern = Pattern.compile(MULTIPLE_DEFAULT_STORAGE_CLASS);
 
     private static final Pattern invalidResourceNamePattern = Pattern.compile(INVALID_RESOURCE_NAME);
     
@@ -71,9 +71,9 @@ public class ParentFailureAction extends ActionNode<TroubleshootingContext> {
             context.addReport(report);
             return;
         }
-        if (invalidPVCPattern.matcher(event.getMessage()).find()) {
-            report.setReason(AbstractedErrorMessage.INVALID_VOLUME.getReason());
-            report.setRecommendedFix(AbstractedErrorMessage.INVALID_VOLUME.formatMessage(getErrorMessage(event.getMessage())));
+        if (multipleDefaultStorageClassPattern.matcher(event.getMessage()).find()) {
+            report.setReason(AbstractedErrorMessage.MULTIPLE_DEFAULT_STORAGE_CLASS.getReason());
+            report.setRecommendedFix(AbstractedErrorMessage.MULTIPLE_DEFAULT_STORAGE_CLASS.getMessage());
             context.addReport(report);
             return;
         }
@@ -85,16 +85,6 @@ public class ParentFailureAction extends ActionNode<TroubleshootingContext> {
             context.addReport(report);
             return;
         }
-    }
-
-    
-    private String getErrorMessage(String message) {
-        String startPoint = "Internal error occurred";
-        int index = message.indexOf(startPoint);
-        if (index < 0) {
-            return message;
-        }
-        return message.substring(index);
     }
 
     @Override

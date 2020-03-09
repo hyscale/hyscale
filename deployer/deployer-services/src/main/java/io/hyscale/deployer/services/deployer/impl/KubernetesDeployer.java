@@ -362,7 +362,7 @@ public class KubernetesDeployer implements Deployer {
             }
             return podList;
         } catch (HyscaleException e) {
-            logger.error("Error while Pods, error {}", e.getMessage());
+            logger.error("Error while getting Pods, error {}", e.getMessage());
             throw e;
         }
     }

@@ -88,6 +88,7 @@ public class ParentStatusCondition implements Node<TroubleshootingContext> {
         return parentFailureAction;
     }
     
+    // TODO filter events wrt latest deployment
     private V1Event getFilteredEvent(List<V1Event> events) {
         V1Event filteredEvent = null;
         for (V1Event event : events) {
