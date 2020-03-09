@@ -15,12 +15,39 @@
  */
 package io.hyscale.troubleshooting.integration.util;
 
+import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
 
 import java.util.List;
 
 public class ConditionUtil {
 
+    /**
+     * Pod parent can be deployment or statefulset
+     * Preference is given to statefulset if both are present
+     * 
+     * @param context
+     * @return Pod parent kind
+     */
+    public static ResourceKind getPodParent(TroubleshootingContext context) {
 
+        if (context == null || context.getResourceInfos() == null) {
+            return null;
+        }
+        List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos()
+                .getOrDefault(ResourceKind.STATEFUL_SET.getKind(), null);
+
+        if (resourceInfos != null && !resourceInfos.isEmpty()) {
+            return ResourceKind.STATEFUL_SET;
+        }
+
+        resourceInfos = context.getResourceInfos().getOrDefault(ResourceKind.DEPLOYMENT.getKind(), null);
+
+        if (resourceInfos != null && !resourceInfos.isEmpty()) {
+            return ResourceKind.DEPLOYMENT;
+        }
+
+        return null;
+    }
 
 }

@@ -21,12 +21,6 @@ import java.util.concurrent.Callable;
 
 import javax.validation.constraints.Pattern;
 
-import io.hyscale.controller.constants.WorkflowConstants;
-import io.hyscale.controller.invoker.StatusComponentInvoker;
-import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.util.CommandUtil;
-import io.hyscale.controller.util.StatusUtil;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +33,11 @@ import io.hyscale.commons.logger.TableFields;
 import io.hyscale.commons.logger.TableFormatter;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.constants.WorkflowConstants;
+import io.hyscale.controller.invoker.StatusComponentInvoker;
+import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.controller.util.CommandUtil;
+import io.hyscale.controller.util.StatusUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -109,6 +108,9 @@ public class HyscaleAppStatusCommand implements Callable<Integer> {
             List<String[]> rowList = new ArrayList<String[]>();
             boolean isLarge = false;
             for (DeploymentStatus deploymentStatus : deploymentStatusList) {
+                if (deploymentStatus == null) {
+                    continue;
+                }
                 if (StringUtils.isNotBlank(deploymentStatus.getServiceAddress())) {
                     isLarge = isLarge ? isLarge : deploymentStatus.getServiceAddress().length() > TableFields.SERVICE_ADDRESS.getLength();
                 }
