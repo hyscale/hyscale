@@ -169,6 +169,113 @@ hyscale get service logs -s `<myservice>` -n `<my-namespace>` -a `<my-app-name>`
 
 For all possible commands, see the [command reference](docs/hyscale-commands-reference.md).
 
+### Hyscale version compatibility
+####  hspec
+<table>
+<tr>
+    <th class="tg-0lax">hspec-version ➝ </th>
+    <th class="tg-cly1">0.5</th>
+    <th class="tg-cly1">0.6</th>
+    <th class="tg-0lax">0.6.1</th>
+    <th class="tg-0lax">0.6.1.1</th>
+  </tr>
+  <tr>
+    <td class="tg-0lax">0.9</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-cly1">-️</td>
+    <td class="tg-0lax">-️</td>
+    <td class="tg-0lax">-️</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">0.9.1</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-0lax">-️</td>
+    <td class="tg-0lax">-️</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">0.9.2</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">-️</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">0.9.3</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">✔️</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">0.9.4</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">✔️</td>
+  </tr>
+  </table>
+  
+#### Kubernetes cluster 
+
+<table class="tg">
+  <tr>
+    <th class="tg-cly1">cluster-version ➝ </th>
+    <th class="tg-cly1">1.12</th>
+    <th class="tg-0lax">1.13</th>
+    <th class="tg-0lax">1.14</th>
+    <th class="tg-0lax">1.15</th>
+    <th class="tg-0lax">1.16</th>
+  </tr>
+  <tr>
+    <td class="tg-cly1">0.9</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-0lax">-</td>
+    <td class="tg-0lax">-</td>
+    <td class="tg-0lax">-</td>
+    <td class="tg-0lax">-</td>
+  </tr>
+  <tr>
+    <td class="tg-cly1">0.9.1</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-0lax">-</td>
+    <td class="tg-0lax">-</td>
+    <td class="tg-0lax">-</td>
+    <td class="tg-0lax">-</td>
+  </tr>
+  <tr>
+    <td class="tg-cly1">0.9.2</td>
+    <td class="tg-cly1">+</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">-</td>
+    <td class="tg-0lax">-</td>
+  </tr>
+  <tr>
+    <td class="tg-cly1">0.9.3</td>
+    <td class="tg-cly1">+</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">-</td>
+    <td class="tg-0lax">-</td>
+  </tr>
+  <tr>
+    <td class="tg-cly1">0.9.4</td>
+    <td class="tg-cly1">+</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">✔️</td>
+  </tr>
+</table>
+
+Key: 
+
+* `✔` Supported version 
+* `-` Unsupported version
+* `+` Backward compatible
+
+
 ### Contributing
 
 If you wish to contribute, see the architecture & contributor documentation [here](docs/contributor-guide.md).
@@ -176,3 +283,5 @@ If you wish to contribute, see the architecture & contributor documentation [her
 ### Connect with us
 We would love to know your experiences with HyScale. Write to us at connect@hyscale.io if you have any questions or issues and we will respond as quickly as we can. Suggestions are welcome too!
 You can also follow us on [Twitter](https://twitter.com/hyscaleio) and [Medium](https://medium.com/@teamhyscale) to keep a tab on interesting developments from the team 
+
+  
