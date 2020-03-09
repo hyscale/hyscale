@@ -15,6 +15,20 @@
  */
 package io.hyscale.builder.core.models;
 
+import org.apache.commons.lang3.StringUtils;
+
 public enum ImageCleanUpPolicy {
-	PRESERVE_N_RECENTLY_USED, DELETE_AFTER_BUILD, PRESERVE_ALL, DELETE_ALL
+	PRESERVE_N_RECENTLY_USED, DELETE_AFTER_BUILD, PRESERVE_ALL, DELETE_ALL;
+	
+	public static ImageCleanUpPolicy fromString(String kind) {
+        if (StringUtils.isBlank(kind)) {
+            return null;
+        }
+        for (ImageCleanUpPolicy cleanUpPolicy : ImageCleanUpPolicy.values()) {
+            if (cleanUpPolicy.toString().equalsIgnoreCase(kind)) {
+                return cleanUpPolicy;
+            }
+        }
+        return null;
+    }
 }

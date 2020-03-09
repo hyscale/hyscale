@@ -23,7 +23,6 @@ import io.hyscale.troubleshooting.integration.actions.DefaultAction;
 import io.hyscale.troubleshooting.integration.actions.FixCrashingApplication;
 import io.hyscale.troubleshooting.integration.actions.ImagePullBackOffAction;
 import io.hyscale.troubleshooting.integration.actions.ServiceNotDeployedAction;
-import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
 import io.hyscale.troubleshooting.integration.models.FailedResourceKey;
 import io.hyscale.troubleshooting.integration.models.Node;
 import io.hyscale.deployer.services.model.PodStatus;
@@ -53,21 +52,22 @@ public class PodStatusCondition implements Node<TroubleshootingContext> {
 
     @Autowired
     private ServiceNotDeployedAction serviceNotDeployedAction;
+    
+    @Autowired
+    private ParentStatusCondition parentStatusCondition;
 
     @Override
     public Node<TroubleshootingContext> next(TroubleshootingContext context) throws HyscaleException {
-        DiagnosisReport report = new DiagnosisReport();
         if (context.getResourceInfos() == null) {
             return serviceNotDeployedAction;
         }
 
         List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos().getOrDefault(ResourceKind.POD.getKind(), null);
         if (resourceInfos == null) {
-            // TODO redirect parent resource check
             if (context.isTrace()) {
                 logger.debug("Cannot find any pods for the service {}", context.getServiceInfo().getServiceName());
             }
-            return serviceNotDeployedAction;
+            return parentStatusCondition;
         }
         PodStatus effectivePodStatus = PodStatus.DEFAULT;
         for (TroubleshootingContext.ResourceInfo each : resourceInfos) {

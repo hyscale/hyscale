@@ -16,9 +16,12 @@
 package io.hyscale.deployer.services.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -27,12 +30,15 @@ import org.slf4j.LoggerFactory;
 import io.hyscale.commons.constants.K8SRuntimeConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
+import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.impl.V1DeploymentHandler;
 import io.hyscale.deployer.services.handler.impl.V1ReplicaSetHandler;
 import io.hyscale.deployer.services.model.DeployerActivity;
+import io.hyscale.deployer.services.handler.impl.V1StatefulSetHandler;
 import io.hyscale.deployer.services.predicates.PodPredicates;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.models.V1Deployment;
@@ -137,4 +143,82 @@ public class K8sDeployerUtil {
         return K8sPodUtil.filterPods(podList, PodPredicates.podContainsLabel(), searchLabel);
 
     }
+    
+    /**
+     * Fetch service status from pod parent, called in case pods are not present
+     * @param context
+     * @return Not running status if pod owner found else not deployed(when service name provided)
+     */
+    public static List<DeploymentStatus> getOwnerDeploymentStatus(ApiClient apiClient, DeploymentContext context) {
+        if (context == null) {
+            return null;
+        }
+        logger.debug("No pods found, getting status from pods owner");
+        String serviceName = context.getServiceName();
+        String namespace = context.getNamespace();
+        String selector = ResourceSelectorUtil.getServiceSelector(context.getAppName(), serviceName);
+        
+        Map<String, DeploymentStatus> serviceVsDeploymentStatus = new HashMap<String, DeploymentStatus>();
+        // Deployment
+        V1DeploymentHandler deploymentHandler = (V1DeploymentHandler)ResourceHandlers
+                .getHandlerOf(ResourceKind.DEPLOYMENT.getKind());
+        List<DeploymentStatus> deploymentStatus = deploymentHandler.getStatus(apiClient, selector, true, namespace);
+        if (deploymentStatus != null && !deploymentStatus.isEmpty()) {
+            logger.debug("Getting status from Deployments");
+            deploymentStatus.stream().forEach(status -> {
+                serviceVsDeploymentStatus.put(status.getServiceName(), status);
+            });
+        }
+        // StatefulSet
+        V1StatefulSetHandler stsHandler = (V1StatefulSetHandler)ResourceHandlers
+                .getHandlerOf(ResourceKind.STATEFUL_SET.getKind());
+        
+        deploymentStatus = stsHandler.getStatus(apiClient, selector, true, namespace);
+        if (deploymentStatus != null && !deploymentStatus.isEmpty()) {
+            logger.debug("Getting status from StatefulSet");
+            deploymentStatus.stream().forEach(status -> {
+                serviceVsDeploymentStatus.put(status.getServiceName(), status);
+            });
+        }
+        if (serviceVsDeploymentStatus.isEmpty()) {
+            return serviceName != null ? Arrays.asList(DeploymentStatusUtil.getNotDeployedStatus(serviceName)): null;
+        }
+        
+        return new ArrayList(serviceVsDeploymentStatus.values());
+    }
+    
+    /**
+     * Get list of services deployed for the given app
+     * Fetch it from owners instead of pods as pods might not be created in some cases
+     * @param apiClient
+     * @param context
+     * @return List of deployed services
+     * @throws HyscaleException 
+     */
+    public static Set<String> getDeployedServices(ApiClient apiClient, DeploymentContext context) throws HyscaleException {
+        if (context == null) {
+            return null;
+        }
+        Set<String> services = new HashSet<String>();
+        if (StringUtils.isNotBlank(context.getServiceName())) {
+            services.add(context.getServiceName());
+            return services;
+        }
+        String namespace = context.getNamespace();
+        String selector = ResourceSelectorUtil.getSelector(context.getAppName());
+
+        // StatefulSet
+        V1StatefulSetHandler stsHandler = (V1StatefulSetHandler) ResourceHandlers
+                .getHandlerOf(ResourceKind.STATEFUL_SET.getKind());
+
+        services.addAll(stsHandler.getServiceNames(apiClient, selector, true, namespace));
+        // Deployment
+        V1DeploymentHandler deploymentHandler = (V1DeploymentHandler) ResourceHandlers
+                .getHandlerOf(ResourceKind.DEPLOYMENT.getKind());
+        services.addAll(deploymentHandler.getServiceNames(apiClient, selector, true, namespace));
+
+        logger.debug("Found services {} for app {}", services, context.getAppName());
+        return services;
+    }
+
 }

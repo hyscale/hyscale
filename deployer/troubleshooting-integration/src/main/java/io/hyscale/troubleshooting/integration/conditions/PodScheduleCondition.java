@@ -26,9 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -59,7 +57,7 @@ public class PodScheduleCondition extends ConditionNode<TroubleshootingContext> 
             return (V1Pod) pod.getResource();
         }).collect(Collectors.toList());
 
-        if (podsList == null && podsList.isEmpty()) {
+        if (podsList == null || podsList.isEmpty()) {
             report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceInfo().getServiceName()));
             report.setRecommendedFix(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.getMessage());
             context.addReport(report);

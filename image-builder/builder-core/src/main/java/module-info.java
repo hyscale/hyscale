@@ -17,4 +17,5 @@ module builderCore {
 	exports io.hyscale.builder.core.models;
 
 	requires commons;
+    requires org.apache.commons.lang3;
 }

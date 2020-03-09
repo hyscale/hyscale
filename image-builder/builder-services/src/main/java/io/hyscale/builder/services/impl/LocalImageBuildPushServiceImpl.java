@@ -39,7 +39,6 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalImageBuildPushServiceImpl.class);
-    private static final String IMAGE_PULL_POLICY = "IMAGE_PULL_POLICY";
 
     @Autowired
     private LocalImageBuildServiceImpl buildService;
@@ -49,6 +48,7 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
 
     @Autowired
     private LocalImagePushServiceImpl pushService;
+    
     @Autowired
     private ImageBuilderConfig imageBuilderConfig;
 
@@ -59,8 +59,8 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
             context = buildService.build(serviceSpec, context);
             pushService.pushImage(serviceSpec, context);
             String imageCleanUpPolicy = imageBuilderConfig.getImageCleanUpPolicy();
-            logger.debug("Image clean up policy for {}", imageCleanUpPolicy);
             ImageCleanupProcessor imageCleanupProcessor = imageCleanupProcessorFactory.getImageCleanupProcessor(imageCleanUpPolicy);
+            logger.debug("Image clean up processor used {}", imageCleanupProcessor.getClass());
             if (imageCleanupProcessor != null) {
                 imageCleanupProcessor.clean(serviceSpec);
             }

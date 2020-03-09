@@ -15,7 +15,8 @@
  */
 package io.hyscale.builder.services.util;
 
-import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,22 +29,28 @@ import io.hyscale.builder.core.models.ImageCleanUpPolicy;
 
 @Component
 public class ImageCleanupProcessorFactory {
+    
+    private static final Logger logger = LoggerFactory.getLogger(ImageCleanupProcessorFactory.class);
 
     @Autowired
     private DeleteAllImages deleteAllImages;
+    
     @Autowired
     private DeleteAfterBuild deleteAfterBuild;
+    
     @Autowired
-    private PreserveLastNUsed preserve_Last_N_USED;
+    private PreserveLastNUsed preserveLastNUsed;
+    
     @Autowired
     private PreserveAll preserveAll;
 
     public ImageCleanupProcessor getImageCleanupProcessor(String imageCleanUpPolicy) {
-        ImageCleanUpPolicy cleanUpPolicy = null;
-        if (StringUtils.isBlank(imageCleanUpPolicy)) {
+        ImageCleanUpPolicy cleanUpPolicy = ImageCleanUpPolicy.fromString(imageCleanUpPolicy);
+        
+        logger.debug("Image cleanup Policy {}", cleanUpPolicy);
+        
+        if (cleanUpPolicy == null) {
             cleanUpPolicy = ImageCleanUpPolicy.PRESERVE_N_RECENTLY_USED;
-        } else {
-            cleanUpPolicy = ImageCleanUpPolicy.valueOf(imageCleanUpPolicy);
         }
         return getImageCleanupProcessor(cleanUpPolicy);
     }
@@ -56,7 +63,7 @@ public class ImageCleanupProcessorFactory {
                 return deleteAfterBuild;
 
             case PRESERVE_N_RECENTLY_USED:
-                return preserve_Last_N_USED;
+                return preserveLastNUsed;
 
             case PRESERVE_ALL:
                 return preserveAll;
