@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.Converters;
+package io.hyscale.controller.converters;
 
 import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;

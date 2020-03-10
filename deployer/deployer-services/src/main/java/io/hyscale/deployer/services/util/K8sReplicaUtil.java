@@ -15,7 +15,9 @@
  */
 package io.hyscale.deployer.services.util;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.hyscale.deployer.core.model.ReplicaInfo;
@@ -33,6 +35,20 @@ public class K8sReplicaUtil {
             return null;
         }
         return podList.stream().map(each -> getReplicaInfo(each)).collect(Collectors.toList());
+    }
+    
+    public static Map<Integer, ReplicaInfo> getIndexedReplicaInfo(List<V1Pod> podList) {
+        if (podList == null) {
+            return null;
+        }
+        List<ReplicaInfo> replicasInfo = getReplicaInfo(podList);
+        Map<Integer, ReplicaInfo> indexedReplicasInfo = new LinkedHashMap<Integer, ReplicaInfo>();
+        Integer replicaIndex = 1;
+        for (ReplicaInfo replicaInfo : replicasInfo ) {
+            indexedReplicasInfo.put(replicaIndex++, replicaInfo);
+        }
+        
+        return indexedReplicasInfo;
     }
     
     /**

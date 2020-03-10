@@ -36,6 +36,7 @@ import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.impl.V1DeploymentHandler;
+import io.hyscale.deployer.services.handler.impl.V1PodHandler;
 import io.hyscale.deployer.services.handler.impl.V1ReplicaSetHandler;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.handler.impl.V1StatefulSetHandler;
@@ -48,7 +49,15 @@ import io.kubernetes.client.openapi.models.V1ReplicaSet;
 public class K8sDeployerUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(K8sDeployerUtil.class);
+    
+    public static List<V1Pod> getExistingPods(ApiClient apiClient, String appName, String serviceName, String namespace)
+            throws HyscaleException {
 
+        V1PodHandler v1PodHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
+        String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
+        return v1PodHandler.getBySelector(apiClient, selector, true, namespace);
+    }
+    
     public static List<V1Pod> filterPods(ApiClient apiClient, String appName, String serviceName,
             String namespace, List<V1Pod> podList) {
         

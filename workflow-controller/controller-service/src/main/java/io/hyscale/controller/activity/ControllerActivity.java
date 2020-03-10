@@ -65,7 +65,7 @@ public enum ControllerActivity implements Activity {
     TOTAL_TIME("Total time : {}"),
     FAILED_TO_FETCH_DEPLOY_LOGS("Failed to fetch deploy logs {}"),
     INPUT_REPLICA_DETAIL("Enter replica index or name to continue..."),
-    INVALID_INPUT_RETRY("Input \"{}\" is invalid, please retry"),
+    INVALID_INPUT_RETRY("Input {} is invalid, please retry"),
     UNABLE_TO_PROCESS_INPUT("Error occured while processing given input {}"),
     EMPTY_FILE_PATH("Empty file path given"),
     EMPTY_FILE_FOUND("Empty file {} cannot be processed."),

@@ -15,10 +15,8 @@
  */
 package io.hyscale.controller.util;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,16 +36,12 @@ import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.utils.HyscaleInputReader;
 import io.hyscale.commons.utils.HyscaleStringUtil;
-import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.deployer.core.model.ReplicaInfo;
-import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
-import io.hyscale.deployer.services.handler.ResourceHandlers;
-import io.hyscale.deployer.services.handler.impl.V1PodHandler;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.hyscale.deployer.services.util.DeployerLogUtil;
 import io.hyscale.deployer.services.util.K8sDeployerUtil;
@@ -74,6 +68,9 @@ public class LoggerUtility {
 
     @Autowired
     private K8sClientProvider clientProvider;
+    
+    @Autowired
+    private ServiceLogsInputHandler serviceLogsInputHandler;
 
     public void getLogs(WorkflowContext workflowContext) throws HyscaleException {
         // Ignore image logs as they can be viewed at the directory
@@ -82,7 +79,13 @@ public class LoggerUtility {
     }
 
     /**
-     * Deployment logs 
+     * Deployment logs
+     * User can provide a replica for which he wants to see the logs,
+     * in which case if replica exists its logs are shown to the user.
+     * If the provided replica does not exist, available replicas are printed and the flow stops.
+     * In case user doesn't provide a replica, and there are more than 1 replica 
+     * user is prompted to choose from the available replicas.
+     * Chosen replica logs are shown to the user.
      * @param context
      * @throws HyscaleException
      */
@@ -99,7 +102,7 @@ public class LoggerUtility {
 
         String selectedPod = null;
         try {
-            selectedPod = getPodName(authConfig, appName, serviceName, replicaName, namespace);
+            selectedPod = validateAndGetPodName(authConfig, appName, serviceName, replicaName, namespace);
         } catch (HyscaleException e) {
             context.setFailed(true);
             throw e;
@@ -141,11 +144,12 @@ public class LoggerUtility {
      * @return replica name
      * @throws HyscaleException
      */
-    private String getPodName(AuthConfig authConfig, String appName, String serviceName, String replicaName,
+    private String validateAndGetPodName(AuthConfig authConfig, String appName, String serviceName, String replicaName,
             String namespace) throws HyscaleException {
+        ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
         List<V1Pod> existingPods = null;
         try {
-            existingPods = getExistingPods(authConfig, appName, serviceName, namespace);
+            existingPods = K8sDeployerUtil.getExistingPods(apiClient, appName, serviceName, namespace);
         } catch (HyscaleException ex) {
             WorkflowLogger.error(ControllerActivity.FAILED_TO_STREAM_SERVICE_LOGS, ex.getMessage());
             throw ex;
@@ -158,7 +162,7 @@ public class LoggerUtility {
         }
         
         if (replicaName != null) {
-            boolean isReplicaNameValid = existingPods.stream().anyMatch(each -> each.getMetadata().getName().equals(replicaName));
+            boolean isReplicaNameValid = serviceLogsInputHandler.isPodValid(existingPods, replicaName);
             if (!isReplicaNameValid) {
                 StringBuilder pods = new StringBuilder();
                 existingPods.forEach(each -> pods.append(each.getMetadata().getName() + ", "));
@@ -170,82 +174,28 @@ public class LoggerUtility {
             }
             return replicaName;
         }
-        
+        existingPods = K8sDeployerUtil.filterPods(apiClient, appName, serviceName, namespace, existingPods);
         if (existingPods.size() == 1) {
             return existingPods.get(0).getMetadata().getName();
         }
         
-        ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
-        existingPods = K8sDeployerUtil.filterPods(apiClient, appName, serviceName, namespace, existingPods);
-        return getPodFromUser(authConfig, appName, serviceName, namespace, existingPods);
-    }
+        Map<Integer, ReplicaInfo> indexedReplicasInfo = K8sReplicaUtil.getIndexedReplicaInfo(existingPods);
 
-    private List<V1Pod> getExistingPods(AuthConfig authConfig, String appName, String serviceName, String namespace)
-            throws HyscaleException {
-
-        V1PodHandler v1PodHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
-        String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
-        ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
-        return v1PodHandler.getBySelector(apiClient, selector, true, namespace);
-    }
-
-    /**
-     * 
-     * @param authConfig
-     * @param appName
-     * @param serviceName
-     * @param namespace
-     * @return pod name selected by user based on index or name
-     * @throws HyscaleException
-     */
-    private String getPodFromUser(AuthConfig authConfig, String appName, String serviceName, String namespace,
-            List<V1Pod> podList) throws HyscaleException {
-        
-        if (podList == null || podList.isEmpty()) {
-            return null;
-        }
-        
-        if (podList.size() == 1) {
-            return podList.get(0).getMetadata().getName();
-        }
-        
-        List<ReplicaInfo> replicasInfo = K8sReplicaUtil.getReplicaInfo(podList);
-        
-        List<String> replicas = replicasInfo.stream().map(each -> each.getName()).collect(Collectors.toList());
-        Map<Integer, ReplicaInfo> indexedReplicasInfo = new HashMap<Integer, ReplicaInfo>();
-
-        Integer replicaIndex = 1;
-        for (ReplicaInfo replicaInfo : replicasInfo) {
-            indexedReplicasInfo.put(replicaIndex++, replicaInfo);
-        }
         printReplicasInfo(indexedReplicasInfo);
-
+        
+        // Get input from user
         WorkflowLogger.action(ControllerActivity.INPUT_REPLICA_DETAIL);
         int inputAttempt = 0;
-
         do {
-            boolean isInvalidInput = false;
             inputAttempt++;
-            String input = HyscaleInputReader.readInput();
-            try {
-                replicaIndex = Integer.parseInt(input);
-                if (indexedReplicasInfo.containsKey(replicaIndex)) {
-                    return indexedReplicasInfo.get(replicaIndex).getName();
-                } else {
-                    isInvalidInput = true;
-                }
-            } catch (NumberFormatException e) {
-                if (replicas.contains(input)) {
-                    return input;
-                } else {
-                    isInvalidInput = true;
-                }
-            }
-            if (isInvalidInput && inputAttempt < HyscaleInputReader.MAX_RETRIES) {
-                WorkflowLogger.warn(ControllerActivity.INVALID_INPUT_RETRY, input);
+            replicaName = serviceLogsInputHandler.getPodFromUser(indexedReplicasInfo);
+            if (serviceLogsInputHandler.isPodValid(existingPods, replicaName)) {
+                return replicaName;
+            } else if (inputAttempt < HyscaleInputReader.MAX_RETRIES) {
+                WorkflowLogger.warn(ControllerActivity.INVALID_INPUT_RETRY, replicaName == null ? "Index" : replicaName);
             }
         } while (inputAttempt < HyscaleInputReader.MAX_RETRIES);
-
+        
         HyscaleException hex = new HyscaleException(CommonErrorCode.FAILED_TO_GET_VALID_INPUT);
         WorkflowLogger.error(ControllerActivity.INVALID_INPUT, hex.getMessage());
         WorkflowLogger.footer();
