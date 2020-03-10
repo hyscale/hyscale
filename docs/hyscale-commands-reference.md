@@ -21,6 +21,12 @@ Options:
 
 To deploy an application service which is defined in the hspec file, use the "deploy" command. The command requires hspec file, Kubernetes namespace and application name as inputs, additionally profile can also be provided for a service.  Multiple hspec files (-f `<serviceName1>`.hspec -f `<serviceName2>`.hspec -f `<serviceNameN>`.hspec or comma separated -f `<serviceName1>`.hspec,`<serviceName2>`.hspec) can be provided to deploy multiple services. Similarly profiles files (-p `<profileName1>-<serviceName1>`.hprof -p `<profileName2>-<serviceName2>`.hprof -p `<profileNameN>-<serviceNameN>`.hprof or comma separated -p `<profileName1>-<serviceName1>`.hprof,`<profileName2>-<serviceName2>`.hprof) can also be provided for services. At max one profile is allowed per service.
 
+Images that are built part of hyscale deploy are handled based on the IMAGE_CLEANUP_POLICY environment variable. Possible values of the policy are 
+* PRESERVE_N_RECENTLY_USED (default) , preserves the last 3 recently used images
+* DELETE_AFTER_BUILD, deletes the image immediately after the build.
+* PRESERVE_ALL, preserves the images
+
+
 ## service status
 
 ```markdown

@@ -66,10 +66,10 @@ If you do not have access to a kubernetes cluster and wish to deploy your applic
 Open your terminal and enter the following:
 
 ```sh
-curl -sSL http://get.hyscale.io | bash
+curl -sSL https://get.hyscale.io | bash
 ```
 
-#### Mac 
+#### Mac & Windows
 Usage Pre-Requisites:
 
 * JDK version 11 and above
@@ -85,7 +85,7 @@ For commands refer [here](https://github.com/hyscale/hyscale/blob/master/docs/hy
 Example :  java -jar </path/to/hyscale.jar> deploy service -f myservice.hspec -n my-namespace -a my-app
 ```
 
-Verified on CentOS, Ubuntu and Debian Linux,Mac .  Windows installer coming soon!
+Verified on CentOS, Ubuntu and Debian Linux, Mac, Windows.
 
 ## Deploying to K8s
 
@@ -169,15 +169,15 @@ hyscale get service logs -s `<myservice>` -n `<my-namespace>` -a `<my-app-name>`
 
 For all possible commands, see the [command reference](docs/hyscale-commands-reference.md).
 
-### Hyscale version compatibility
-####  hspec
+### HyScale version compatibility
+####  HyScale vs [hspec version](https://github.com/hyscale/hspec) 
 <table>
 <tr>
     <th class="tg-0lax">hspec-version ➝ </th>
-    <th class="tg-cly1">0.5</th>
-    <th class="tg-cly1">0.6</th>
-    <th class="tg-0lax">0.6.1</th>
-    <th class="tg-0lax">0.6.1.1</th>
+    <th class="tg-cly1"><a href="https://github.com/hyscale/hyscale/blob/v0.9/docs/hyscale-spec-reference.md">0.5</a></th>
+    <th class="tg-cly1"><a href="https://github.com/hyscale/hspec/blob/v0.6/docs/hyscale-spec-reference.md">0.6</a></th>
+    <th class="tg-0lax"><a href="https://github.com/hyscale/hspec/blob/v0.6.1/docs/hyscale-spec-reference.md">0.6.1</a></th>
+    <th class="tg-0lax"><a href="https://github.com/hyscale/hspec/blob/v0.6.1.1/docs/hyscale-spec-reference.md">0.6.1.1</a></th>
   </tr>
   <tr>
     <td class="tg-0lax">0.9</td>
@@ -216,7 +216,7 @@ For all possible commands, see the [command reference](docs/hyscale-commands-ref
   </tr>
   </table>
   
-#### Kubernetes cluster 
+#### HyScale vs Kubernetes cluster 
 
 <table class="tg">
   <tr>
