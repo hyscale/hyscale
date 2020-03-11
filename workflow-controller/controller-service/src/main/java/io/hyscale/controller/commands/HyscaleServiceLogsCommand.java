@@ -85,7 +85,6 @@ public class HyscaleServiceLogsCommand implements Callable<Integer> {
 	private boolean tail = false;
 
 	@Min(value = ValidationConstants.MIN_LOG_LINES, message = ValidationConstants.MIN_LOG_LINES_ERROR_MSG)
-	@Max(value = ValidationConstants.MAX_LOG_LINES, message = ValidationConstants.MAX_LOG_LINES_ERROR_MSG)
 	@Option(names = { "-l", "--line" }, required = false, description = "Number of lines of logs")
 	private Integer line = 100;
 
