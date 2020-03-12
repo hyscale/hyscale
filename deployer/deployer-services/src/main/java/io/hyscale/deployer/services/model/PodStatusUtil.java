@@ -15,10 +15,10 @@
  */
 package io.hyscale.deployer.services.model;
 
+import java.util.List;
+
 import io.kubernetes.client.openapi.models.V1ContainerStatus;
 import io.kubernetes.client.openapi.models.V1Pod;
-
-import java.util.List;
 
 public class PodStatusUtil {
 
@@ -99,5 +99,22 @@ public class PodStatusUtil {
         }
         return initContainerStatus;
     }
+    
+	public static V1ContainerStatus getLastState(V1Pod pod) {
+		List<V1ContainerStatus> v1ContainerStatus = pod.getStatus().getContainerStatuses();
+		for (V1ContainerStatus containerStatus : v1ContainerStatus) {
+			if (containerStatus.getState().getRunning() == null && containerStatus.getReady() != true) {
+				return containerStatus;
+			}
+		}
+		return null;
+	}
+
+	public static Integer getStatusCode(V1ContainerStatus v1ContainerStatus) {
+		if (v1ContainerStatus!=null && v1ContainerStatus.getState().getTerminated() != null) {
+			return v1ContainerStatus.getState().getTerminated().getExitCode();
+		}
+		return null;
+	}
 
 }
