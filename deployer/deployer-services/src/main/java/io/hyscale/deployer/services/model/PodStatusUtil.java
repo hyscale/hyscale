@@ -17,6 +17,7 @@ package io.hyscale.deployer.services.model;
 
 import java.util.List;
 
+import io.kubernetes.client.openapi.models.V1ContainerState;
 import io.kubernetes.client.openapi.models.V1ContainerStatus;
 import io.kubernetes.client.openapi.models.V1Pod;
 
@@ -100,19 +101,19 @@ public class PodStatusUtil {
         return initContainerStatus;
     }
     
-	public static V1ContainerStatus getLastState(V1Pod pod) {
+	public static V1ContainerState getLastState(V1Pod pod) {
 		List<V1ContainerStatus> v1ContainerStatus = pod.getStatus().getContainerStatuses();
 		for (V1ContainerStatus containerStatus : v1ContainerStatus) {
-			if (containerStatus.getState().getRunning() == null && containerStatus.getReady() != true) {
-				return containerStatus;
+			if (containerStatus.getState().getRunning() == null && !containerStatus.getReady()) {
+				return containerStatus.getLastState();
 			}
 		}
 		return null;
 	}
 
-	public static Integer getStatusCode(V1ContainerStatus v1ContainerStatus) {
-		if (v1ContainerStatus!=null && v1ContainerStatus.getState().getTerminated() != null) {
-			return v1ContainerStatus.getState().getTerminated().getExitCode();
+	public static Integer getExitCode(V1ContainerState v1ContainerState) {
+		if (v1ContainerState!=null && v1ContainerState.getTerminated() != null) {
+			return v1ContainerState.getTerminated().getExitCode();
 		}
 		return null;
 	}

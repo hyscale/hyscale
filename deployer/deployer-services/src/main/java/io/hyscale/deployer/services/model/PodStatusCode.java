@@ -15,40 +15,46 @@
  */
 package io.hyscale.deployer.services.model;
 
-import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PodStatusCode {
 	// System Signals
 	public static enum Signals {
-		SIGKILL(143), SIGTERM(15),FAILURE(1);
+		SIGKILL(137, "SIGKILL"), SIGTERM(143, "SIGTERM"), FAILURE(1, "FAILURE");
 
 		private Integer code = null;
+		private String signal;
 
-		private Signals(Integer code) {
+		private Signals(Integer code, String signal) {
 			this.code = code;
+			this.signal = signal;
 		}
+		
+		public String getSignal() {
+			return signal;
+		}
+
+		public Integer getCode() {
+			return code;
+		}
+
 
 		public Integer getStatusCode() {
 			return this.code;
 		}
 
 		public static Signals fromCode(Integer code) {
-			for (Signals type : values()) {
-				if (type.getStatusCode() == code) {
-					return type;
-				}
-			}
-			return null;
+			return statusCodeVsMessage.get(code);
 		}
 
-		public static EnumMap<Signals, String> statusCodeVsMessage = new EnumMap<Signals, String>(Signals.class);
-
-		static {
-			statusCodeVsMessage.put(PodStatusCode.Signals.SIGTERM, "SIGTERM");
-			statusCodeVsMessage.put(PodStatusCode.Signals.SIGKILL, "SIGKILL");
-			statusCodeVsMessage.put(PodStatusCode.Signals.FAILURE, "FAILURE");
+		 public static Map<Integer, Signals> statusCodeVsMessage = new HashMap<>();
 
 
-		}
+		 static {
+		        for (Signals each : Signals.values()) {
+		        	statusCodeVsMessage.put(each.getCode(), each);
+		        }
+		    }
 	}
 }

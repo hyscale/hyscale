@@ -27,8 +27,7 @@ import io.hyscale.troubleshooting.integration.models.ActionNode;
 import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
 import io.hyscale.troubleshooting.integration.models.FailedResourceKey;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
-
-import io.kubernetes.client.openapi.models.V1ContainerStatus;
+import io.kubernetes.client.openapi.models.V1ContainerState;
 import io.kubernetes.client.openapi.models.V1Pod;
 
 @Component
@@ -57,13 +56,13 @@ public class FixCrashingApplication extends ActionNode<TroubleshootingContext> {
 				report.setReason(AbstractedErrorMessage.INVALID_STARTCOMMANDS_FOUND.getReason());
 				report.setRecommendedFix(AbstractedErrorMessage.INVALID_STARTCOMMANDS_FOUND.getMessage());
 			} else {
-				V1ContainerStatus v1ContainerStatus = PodStatusUtil.getLastState(pod);
-				statusCode = PodStatusUtil.getStatusCode(v1ContainerStatus);
+				V1ContainerState v1ContainerState = PodStatusUtil.getLastState(pod);
+				statusCode = PodStatusUtil.getExitCode(v1ContainerState);
 				PodStatusCode.Signals singanls = PodStatusCode.Signals.fromCode(statusCode);
 				if (singanls != null) {
 					if (PodStatusCode.Signals.statusCodeVsMessage.get(singanls) != null)
 						report.setReason(AbstractedErrorMessage.SERVICE_COMMANDS_FAILURE
-								.formatReason(PodStatusCode.Signals.statusCodeVsMessage.get(singanls)));
+								.formatReason((PodStatusCode.Signals.fromCode(singanls.getCode())).getSignal()));
 				}
 				// report.setReason(AbstractedErrorMessage.APPLICATION_CRASH.getReason());
 				report.setRecommendedFix(AbstractedErrorMessage.APPLICATION_CRASH.getMessage());
