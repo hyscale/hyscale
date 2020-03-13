@@ -25,5 +25,6 @@ jobs:
     # Runs a single command using the runners shell
     - name: Run a one-line script
       run: |
-           docker build --pull -t gcr.io/hyscale-dev-env/hyscale/hyscale:test.$BUILD_NUMBER .
-           docker rmi -f gcr.io/hyscale-dev-env/hyscale/hyscale:test.$BUILD_NUMBER
+           echo "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+           #docker build --pull -t gcr.io/hyscale-dev-env/hyscale/hyscale:test.$BUILD_NUMBER .
+           #docker rmi -f gcr.io/hyscale-dev-env/hyscale/hyscale:test.$BUILD_NUMBER
