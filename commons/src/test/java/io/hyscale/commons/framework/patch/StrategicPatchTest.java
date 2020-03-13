@@ -40,7 +40,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.utils.HyscaleFilesUtil;
+import io.hyscale.commons.io.HyscaleFilesUtil;
 
 public class StrategicPatchTest {
 

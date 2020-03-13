@@ -35,7 +35,7 @@ import io.hyscale.commons.logger.TableFields;
 import io.hyscale.commons.logger.TableFormatter;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AuthConfig;
-import io.hyscale.commons.utils.HyscaleInputReader;
+import io.hyscale.commons.io.HyscaleInputReader;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
