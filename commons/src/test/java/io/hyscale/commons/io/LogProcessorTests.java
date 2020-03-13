@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.commons.utils;
+package io.hyscale.commons.io;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.handler.TailLogTestHandler;
+import io.hyscale.commons.io.LogProcessor;
+import io.hyscale.commons.io.TailLogFile;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -65,7 +68,7 @@ public class LogProcessorTests {
     public class WriteLogFileTests {
 
         @ParameterizedTest
-        @MethodSource("io.hyscale.commons.utils.LogProcessorTests#getNullInputsForWrite")
+        @MethodSource("io.hyscale.commons.io.LogProcessorTests#getNullInputsForWrite")
         public void testNullConditionsForWrite(InputStream inputStream, String logFilePath) {
             Assertions.assertThrows(HyscaleException.class, () -> {
                 logProcessor.writeLogFile(inputStream, logFilePath);
@@ -93,7 +96,7 @@ public class LogProcessorTests {
     public class ReadLogFileTests {
 
         @ParameterizedTest
-        @MethodSource("io.hyscale.commons.utils.LogProcessorTests#getNullInputsForRead")
+        @MethodSource("io.hyscale.commons.io.LogProcessorTests#getNullInputsForRead")
         public void testNullConditionsForRead(File readFile, OutputStream os, Integer lines) {
             if (readFile == null || !readFile.isDirectory() || !readFile.exists() || os == null) {
                 Assertions.assertThrows(HyscaleException.class, () -> {

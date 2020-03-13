@@ -26,7 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.utils.HyscaleFilesUtil;
+import io.hyscale.commons.io.HyscaleFilesUtil;
 
 /**
  * Generate Manifest File with yaml

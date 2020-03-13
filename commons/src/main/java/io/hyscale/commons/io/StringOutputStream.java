@@ -13,33 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.commons.handler;
+package io.hyscale.commons.io;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.io.OutputStream;
 
-import io.hyscale.commons.utils.TailHandler;
+public class StringOutputStream extends OutputStream {
 
-public class TailLogTestHandler implements TailHandler {
-
-    private static final String EOF_MARKER = "EXIT";
-
-    public List<String> getLines() {
-        return lines;
-    }
-
-    private List<String> lines = new ArrayList<>();
-
+    private StringBuilder data = new StringBuilder();
+    
     @Override
-    public void handleLine(String line) {
-            lines.add(line);
+    public synchronized void write(int b) throws IOException {
+        data.append((char) b);
+    }
+    
+    public String toString() {
+        return data.toString();
     }
 
-        @Override
-        public boolean handleEOF (String line){
-            if (line == null) {
-                return true;
-            }
-            return line.matches(EOF_MARKER);
-        }
-    }
+}

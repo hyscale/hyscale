@@ -31,8 +31,9 @@ import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.io.HyscaleFilesUtil;
+import io.hyscale.commons.io.StringOutputStream;
 import io.hyscale.commons.models.CommandResult;
-import io.hyscale.commons.utils.HyscaleFilesUtil;
 
 /**
  * Class to execute commands using apache commons exec {@link https://commons.apache.org/proper/commons-exec/}
@@ -144,6 +145,9 @@ public class CommandExecutor {
 
         Executor executor = new DefaultExecutor();
 
+        /*
+         * Stream closing is handled by executor itself
+         */
         // Output handler
         OutputStream outputStream = getOutputStream(outputFile);
 
@@ -154,11 +158,11 @@ public class CommandExecutor {
         PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream, outputStream, inputStream);
 
         // Timeout
-        ExecuteWatchdog watchDog = new ExecuteWatchdog(DEFAULT_TIMEOUT_IN_MILLIS);
+        // ExecuteWatchdog watchDog = new ExecuteWatchdog(DEFAULT_TIMEOUT_IN_MILLIS);
+        // executor.setWatchdog(watchDog);
 
         executor.setStreamHandler(streamHandler);
         executor.setWorkingDirectory(new File(dir));
-        executor.setWatchdog(watchDog);
         int exitCode = 1;
         try {
             exitCode = executor.execute(commandToExecute);
@@ -175,8 +179,8 @@ public class CommandExecutor {
     }
 
     private static String getCommandOutput(OutputStream outputStream) throws UnsupportedEncodingException {
-        if (outputStream != null && outputStream instanceof ByteArrayOutputStream) {
-            return ((ByteArrayOutputStream) outputStream).toString(ToolConstants.CHARACTER_ENCODING);
+        if (outputStream != null && outputStream instanceof StringOutputStream) {
+            return ((StringOutputStream) outputStream).toString();
         }
         return null;
     }
@@ -193,8 +197,7 @@ public class CommandExecutor {
             HyscaleFilesUtil.createEmptyFile(outputFile);
             return new FileOutputStream(outputFile);
         }
-        // Default output handler
-        return new ByteArrayOutputStream();
+        return new StringOutputStream();
     }
-
+    
 }

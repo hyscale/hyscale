@@ -24,9 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.io.HyscaleFilesUtil;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Status;
-import io.hyscale.commons.utils.HyscaleFilesUtil;
 import io.hyscale.dockerfile.gen.services.model.DockerfileGenContext;
 import io.hyscale.dockerfile.gen.core.models.DockerfileActivity;
 import io.hyscale.dockerfile.gen.core.models.DockerfileContent;
