@@ -15,6 +15,7 @@
  */
 package io.hyscale.troubleshooting.integration.actions;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -40,35 +41,37 @@ public class FixCrashingApplication extends ActionNode<TroubleshootingContext> {
 		Object obj = context.getAttribute(FailedResourceKey.FAILED_POD);
 		String lastState = null;
 		V1Pod pod = null;
-		Integer statusCode = null;
 		if (obj != null) {
 			pod = (V1Pod) FailedResourceKey.FAILED_POD.getKlazz().cast(obj);
 			lastState = pod != null ? PodStatusUtil.lastStateOf(pod) : null;
 		}
 
 		DiagnosisReport report = new DiagnosisReport();
-		if (lastState != null) {
-			if (lastState.equals(PodStatus.OOMKILLED.getStatus())) {
-				report.setReason(AbstractedErrorMessage.NOT_ENOUGH_MEMORY_FOUND
-						.formatReason(context.getServiceInfo().getServiceName()));
-				report.setRecommendedFix(AbstractedErrorMessage.NOT_ENOUGH_MEMORY_FOUND.getMessage());
-			} else if (lastState.equals(PodStatus.COMPLETED.getStatus())) {
-				report.setReason(AbstractedErrorMessage.INVALID_STARTCOMMANDS_FOUND.getReason());
-				report.setRecommendedFix(AbstractedErrorMessage.INVALID_STARTCOMMANDS_FOUND.getMessage());
-			} else {
-				V1ContainerState v1ContainerState = PodStatusUtil.getLastState(pod);
-				statusCode = PodStatusUtil.getExitCode(v1ContainerState);
-				PodStatusCode.Signals singanls = PodStatusCode.Signals.fromCode(statusCode);
-				if (singanls != null) {
-					if (PodStatusCode.Signals.statusCodeVsMessage.get(singanls) != null)
-						report.setReason(AbstractedErrorMessage.SERVICE_COMMANDS_FAILURE
-								.formatReason((PodStatusCode.Signals.fromCode(singanls.getCode())).getSignal()));
-				}
-				// report.setReason(AbstractedErrorMessage.APPLICATION_CRASH.getReason());
-				report.setRecommendedFix(AbstractedErrorMessage.APPLICATION_CRASH.getMessage());
-			}
-		} else {
+		if (lastState == null) {
 			report.setReason(AbstractedErrorMessage.APPLICATION_CRASH.getReason());
+			report.setRecommendedFix(AbstractedErrorMessage.APPLICATION_CRASH.getMessage());
+			context.addReport(report);
+			return;
+		}
+		
+		if (lastState.equals(PodStatus.OOMKILLED.getStatus())) {
+			report.setReason(AbstractedErrorMessage.NOT_ENOUGH_MEMORY_FOUND
+					.formatReason(context.getServiceInfo().getServiceName()));
+			report.setRecommendedFix(AbstractedErrorMessage.NOT_ENOUGH_MEMORY_FOUND.getMessage());
+		} else if (lastState.equals(PodStatus.COMPLETED.getStatus())) {
+			report.setReason(AbstractedErrorMessage.INVALID_STARTCOMMANDS_FOUND.getReason());
+			report.setRecommendedFix(AbstractedErrorMessage.INVALID_STARTCOMMANDS_FOUND.getMessage());
+		} else {
+			V1ContainerState v1ContainerState = PodStatusUtil.getLastState(pod);
+			Integer statusCode = PodStatusUtil.getExitCode(v1ContainerState);
+			PodStatusCode.Signals singnals = PodStatusCode.Signals.fromCode(statusCode);
+			if (singnals != null) {
+				report.setReason(AbstractedErrorMessage.SERVICE_COMMANDS_FAILURE
+						.formatReason(singnals.getSignal()));
+			}
+			if (StringUtils.isBlank(report.getReason())) {
+				report.setReason(AbstractedErrorMessage.APPLICATION_CRASH.getReason());
+			}
 			report.setRecommendedFix(AbstractedErrorMessage.APPLICATION_CRASH.getMessage());
 		}
 		context.addReport(report);
