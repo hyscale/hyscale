@@ -4,3 +4,4 @@
 #cd /var/jenkins_home/hyscale/$BUILD_NUMBER/hyscale-ctl/
 docker build --pull -t gcr.io/hyscale-dev-env/hyscale/hyscale:test.$BUILD_NUMBER .
 docker rmi -f gcr.io/hyscale-dev-env/hyscale/hyscale:test.$BUILD_NUMBER
+echo $BUILD_NUMBER
