@@ -29,6 +29,8 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.ActivityContext;
+import io.hyscale.commons.logger.TableFields;
+import io.hyscale.commons.logger.TableFormatter;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.models.DeploymentContext;
@@ -39,6 +41,7 @@ import io.hyscale.commons.models.Status;
 import io.hyscale.commons.models.YAMLManifest;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.commons.utils.ThreadPoolUtil;
+import io.hyscale.deployer.core.model.AppMetadata;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ReplicaInfo;
 import io.hyscale.deployer.core.model.ResourceKind;
@@ -483,6 +486,17 @@ public class KubernetesDeployer implements Deployer {
         // TODO do we need to handle STS cases ??
         logger.debug("Replicas info:: unhandled case, pod owner: {}", podOwner);
         return K8sReplicaUtil.getReplicaInfo(podList);
+    }
+
+    @Override
+    public List<AppMetadata> getAppsMetadata(AuthConfig authConfig) throws HyscaleException {
+        ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
+
+        V1PodHandler podHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
+        
+        List<V1Pod> podList  = podHandler.getPodsForAllNamespaces(apiClient);
+        
+        return K8sDeployerUtil.getAppMetadata(podList);
     }
     
 }

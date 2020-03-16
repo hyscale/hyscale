@@ -23,6 +23,7 @@ import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.Manifest;
+import io.hyscale.deployer.core.model.AppMetadata;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ReplicaInfo;
 import io.hyscale.deployer.services.model.Pod;
@@ -132,7 +133,16 @@ public interface Deployer {
 	 * @throws HyscaleException if service not found or failed to create cluster client
 	 */
 	public ServiceAddress getServiceAddress(DeploymentContext context) throws HyscaleException;
-
+	
+	
+	/**
+	 * 
+	 * @param authConfig
+	 * @return List of {@link AppMetadata} containing details of deployed apps
+	 * @throws HyscaleException
+	 */
+	public List<AppMetadata> getAppsMetadata(AuthConfig authConfig) throws HyscaleException;
+	
 	/**
 	 * Get resource status based on manifest
 	 * @param namespace

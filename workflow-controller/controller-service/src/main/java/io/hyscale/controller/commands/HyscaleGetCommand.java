@@ -34,7 +34,8 @@ import picocli.CommandLine.Command;
  * The sub-commands of are handled by @Command annotation
  *
  */
-@Command(name = "get", subcommands = {HyscaleGetServiceCommand.class, HyscaleGetAppCommand.class},
+@Command(name = "get", subcommands = {HyscaleGetServiceCommand.class, HyscaleGetAppCommand.class, 
+        HyscaleGetDeploymentsCommand.class},
         description = "Gets the specified resource.")
 @Component
 public class HyscaleGetCommand implements Callable<Integer> {
