@@ -26,6 +26,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.troubleshooting.integration.actions.ParentFailureAction;
 import io.hyscale.troubleshooting.integration.actions.ServiceNotDeployedAction;
+import io.hyscale.troubleshooting.integration.actions.TryAfterSometimeAction;
 import io.hyscale.troubleshooting.integration.models.AbstractedErrorMessage;
 import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
 import io.hyscale.troubleshooting.integration.models.FailedResourceKey;
@@ -46,6 +47,9 @@ public class ParentStatusCondition implements Node<TroubleshootingContext> {
     
     @Autowired
     private ParentFailureAction parentFailureAction;
+    
+    @Autowired
+    private TryAfterSometimeAction tryAfterSometimeAction;
 
     @Override
     public Node<TroubleshootingContext> next(TroubleshootingContext context) throws HyscaleException {
@@ -81,7 +85,7 @@ public class ParentStatusCondition implements Node<TroubleshootingContext> {
         V1Event event = getFilteredEvent(events);
         if (event == null) {
             logger.debug(podParent + " no failure event found to process");
-            return null;
+            return tryAfterSometimeAction;
         }
         
         context.addAttribute(FailedResourceKey.FAILED_PARENT_EVENT, event);
