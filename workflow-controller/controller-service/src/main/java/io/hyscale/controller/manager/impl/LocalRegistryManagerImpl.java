@@ -33,15 +33,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.hyscale.commons.config.SetupConfig;
-import io.hyscale.commons.exception.HyscaleErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.models.DockerConfig;
 import io.hyscale.commons.models.DockerCredHelper;
 import io.hyscale.commons.models.DockerHubAliases;
 import io.hyscale.commons.models.ImageRegistry;
-import io.hyscale.commons.models.K8sConfigFileAuth;
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.ImageRegistryBuilder;
@@ -100,9 +97,13 @@ public class LocalRegistryManagerImpl implements RegistryManager {
 			dockerConfig = mapper.readValue(new File(controllerConfig.getDefaultRegistryConf()),
 					dockerConfigTypeReference);
 		} catch (IOException e) {
-
+			    String dockerConfPath = SetupConfig.getMountOfDockerConf(controllerConfig.getDefaultRegistryConf());
+	            WorkflowLogger.error(ControllerActivity.ERROR_WHILE_READING, dockerConfPath, e.getMessage());
+	            HyscaleException ex = new HyscaleException(e, ControllerErrorCodes.DOCKER_CONFIG_NOT_FOUND, dockerConfPath);
+	            logger.error("Error while deserializing image registries {}", ex.toString());
+	            throw ex;
 		}
-		validate(controllerConfig.getDefaultRegistryConf(), false, ControllerErrorCodes.DOCKER_CONFIG_NOT_FOUND);
+		validate(controllerConfig.getDefaultRegistryConf());
 		return getImageRegistry(dockerConfig, registry);
 	}
     
@@ -160,13 +161,13 @@ public class LocalRegistryManagerImpl implements RegistryManager {
     
 
     
-    private void validate(String path, boolean kubeConf, HyscaleErrorCode hyscaleErrorCode) throws HyscaleException {
-        File conffile = new File(path);
-        if (conffile != null && !conffile.exists()) {
-            String confpath = kubeConf ? SetupConfig.getMountPathOfKubeConf(path) : SetupConfig.getMountOfDockerConf(path);
+    private void validate(String path) throws HyscaleException {
+        File confFile = new File(path);
+        if (confFile != null && !confFile.exists()) {
+            String confpath = SetupConfig.getMountOfDockerConf(path);
             WorkflowLogger.error(ControllerActivity.CANNOT_FIND_FILE,
                     confpath);
-            throw new HyscaleException(hyscaleErrorCode, confpath);
+            throw new HyscaleException(ControllerErrorCodes.DOCKER_CONFIG_NOT_FOUND, confpath);
         }
     }
 }

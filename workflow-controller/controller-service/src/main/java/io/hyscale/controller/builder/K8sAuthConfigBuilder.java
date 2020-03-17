@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.config.SetupConfig;
-import io.hyscale.commons.exception.HyscaleErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AuthConfig;
@@ -48,26 +47,26 @@ public class K8sAuthConfigBuilder {
      * @return {@link K8sConfigFileAuth}
      */
     public AuthConfig getAuthConfig() throws HyscaleException{
-    	validate(controllerConfig.getDefaultKubeConf(), true, ControllerErrorCodes.KUBE_CONFIG_NOT_FOUND);
+    	validate(controllerConfig.getDefaultKubeConf());
         K8sConfigFileAuth k8sAuth = new K8sConfigFileAuth();
         k8sAuth.setK8sConfigFile(new File(controllerConfig.getDefaultKubeConf()));
         return k8sAuth;
     }
     
     public AuthConfig getAuthConfig(String kubeConfigPath) throws HyscaleException{
-    	validate(kubeConfigPath, true, ControllerErrorCodes.KUBE_CONFIG_NOT_FOUND);
+    	validate(kubeConfigPath);
         K8sConfigFileAuth k8sAuth = new K8sConfigFileAuth();
         k8sAuth.setK8sConfigFile(new File(kubeConfigPath));
         return k8sAuth;
     }
     
-    private void validate(String path, boolean kubeConf, HyscaleErrorCode hyscaleErrorCode) throws HyscaleException {
-        File conffile = new File(path);
-        if (conffile != null && !conffile.exists()) {
-            String confpath = kubeConf ? SetupConfig.getMountPathOfKubeConf(path) : SetupConfig.getMountOfDockerConf(path);
+    private void validate(String path) throws HyscaleException {
+        File confFile = new File(path);
+        if (confFile != null && !confFile.exists()) {
+            String confpath = SetupConfig.getMountPathOfKubeConf(path) ;
             WorkflowLogger.error(ControllerActivity.CANNOT_FIND_FILE,
                     confpath);
-            throw new HyscaleException(hyscaleErrorCode, confpath);
+            throw new HyscaleException(ControllerErrorCodes.KUBE_CONFIG_NOT_FOUND, confpath);
         }
     }
    
