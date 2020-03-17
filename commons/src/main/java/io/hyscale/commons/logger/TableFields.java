@@ -15,11 +15,14 @@
  */
 package io.hyscale.commons.logger;
 
+import io.hyscale.commons.constants.ValidationConstants;
+
 public enum TableFields {
 
 	SERVICE("Service Name", 30), STATUS("Status", 15), AGE("Age"), REASON("Reason"), MESSAGE("Message"),
 	SERVICE_ADDRESS("Service Address", 40), SERVICE_ADDRESS_LARGE("Service Address", 75), REPLICA_NAME("Replica name", 50), 
-	INDEX("Index", 7), NAMESPACE("Namespace", 30), APPS("Apps", 30), SERVICES("Services", 40);
+	INDEX("Index", 7), NAMESPACE("Namespace", ValidationConstants.NAMESPACE_LENGTH_MAX), 
+	APPLICATION("Application", ValidationConstants.APP_NAME_LENGTH_MAX), SERVICES("Services", 40);
 
 	private TableFields(String fieldName, Integer length) {
 		this.fieldName = fieldName;

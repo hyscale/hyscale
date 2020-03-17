@@ -16,16 +16,20 @@
 package io.hyscale.controller.commands;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.constants.K8SRuntimeConstants;
+import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.TableFields;
 import io.hyscale.commons.logger.TableFormatter;
 import io.hyscale.commons.logger.TableFormatter.Builder;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.deployer.core.model.AppMetadata;
 import io.hyscale.deployer.services.deployer.Deployer;
@@ -47,7 +51,6 @@ import picocli.CommandLine.Option;
  *
  * Fetches all the apps and services deployed on the cluster.
  * If user selects wide option services are also shown else only namespace and apps
- * Only displays apps and services deployed through hyscale.
  * 
  * @author tushar
  *
@@ -70,26 +73,34 @@ public class HyscaleGetDeploymentsCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
+        List<AppMetadata> appInfoList = null;
+        try {
+            appInfoList = deployer.getAppsMetadata(authConfigBuilder.getAuthConfig());
+        } catch (HyscaleException e) {
+            WorkflowLogger.error(ControllerActivity.ERROR_WHILE_FETCHING_DEPLOYMENTS);
+            throw e;
+        }
 
-        List<AppMetadata> appInfoList = deployer.getAppsMetadata(authConfigBuilder.getAuthConfig());
-
+        if (appInfoList == null || appInfoList.isEmpty()) {
+            WorkflowLogger.info(ControllerActivity.NO_DEPLOYMENTS);
+        }
         Builder tableBuilder = new TableFormatter.Builder()
-                .addField(TableFields.NAMESPACE.getFieldName(), TableFields.NAMESPACE.getLength())
-                .addField(TableFields.APPS.getFieldName(), TableFields.APPS.getLength());
+                .addField(TableFields.APPLICATION.getFieldName(), TableFields.APPLICATION.getLength())
+                .addField(TableFields.NAMESPACE.getFieldName(), TableFields.NAMESPACE.getLength());
 
         if (wide) {
             tableBuilder.addField(TableFields.SERVICES.getFieldName(), TableFields.SERVICES.getLength());
         }
         TableFormatter table = tableBuilder.build();
 
-        appInfoList.stream().forEach(appInfo -> {
-            if (K8SRuntimeConstants.SYSTEM_NAMESPACE.contains(appInfo.getNamespace())) {
+        appInfoList.stream().filter(Objects::nonNull).forEach(appInfo -> {
+            if (StringUtils.isBlank(appInfo.getAppName())
+                    || K8SRuntimeConstants.SYSTEM_NAMESPACE.contains(appInfo.getNamespace())) {
                 return;
             }
-            String services = appInfo.getServices() == null ? null
-                    : appInfo.getServices().isEmpty() ? null
-                            : appInfo.getServices().toString().replace("[", "").replace("]", "");
-            String[] row = new String[] { appInfo.getNamespace(), appInfo.getAppName(), services };
+            String services = appInfo.getServices() == null || appInfo.getServices().isEmpty() ? null
+                    : appInfo.getServices().toString().replace("[", "").replace("]", "");
+            String[] row = new String[] { appInfo.getAppName(), appInfo.getNamespace(), services };
             table.addRow(row);
         });
         WorkflowLogger.logTable(table);

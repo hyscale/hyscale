@@ -133,7 +133,7 @@ HyScale abstracts the generation of Kubernetes manifests for deployments, howeve
 ```markdown
 Usage: hyscale get deployments [OPTIONS]
 
-Display Apps and Services deployed on the cluster namespace wise.
+Display application along with the namespace they are deployed in.
 
 Options:
 --wide                   `Optional` display additional information like services

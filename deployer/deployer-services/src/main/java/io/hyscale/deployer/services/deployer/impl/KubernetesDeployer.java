@@ -29,8 +29,6 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.ActivityContext;
-import io.hyscale.commons.logger.TableFields;
-import io.hyscale.commons.logger.TableFormatter;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.models.DeploymentContext;
@@ -45,6 +43,7 @@ import io.hyscale.deployer.core.model.AppMetadata;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ReplicaInfo;
 import io.hyscale.deployer.core.model.ResourceKind;
+import io.hyscale.deployer.services.builder.AppMetadataBuilder;
 import io.hyscale.deployer.services.config.DeployerConfig;
 import io.hyscale.deployer.services.deployer.Deployer;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
@@ -83,6 +82,9 @@ public class KubernetesDeployer implements Deployer {
 
     @Autowired
     private K8sClientProvider clientProvider;
+    
+    @Autowired
+    private AppMetadataBuilder appMetadataBuilder;
     
     @Override
     public void deploy(DeploymentContext context) throws HyscaleException {
@@ -496,7 +498,7 @@ public class KubernetesDeployer implements Deployer {
         
         List<V1Pod> podList  = podHandler.getPodsForAllNamespaces(apiClient);
         
-        return K8sDeployerUtil.getAppMetadata(podList);
+        return appMetadataBuilder.listApplications(podList);
     }
     
 }
