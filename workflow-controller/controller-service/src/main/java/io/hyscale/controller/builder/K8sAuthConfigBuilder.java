@@ -61,12 +61,15 @@ public class K8sAuthConfigBuilder {
     }
     
     private void validate(String path) throws HyscaleException {
+    	if(path==null) {
+    		throw new HyscaleException(ControllerErrorCodes.KUBE_CONFIG_PATH_EMPTY);
+    	}
         File confFile = new File(path);
         if (confFile != null && !confFile.exists()) {
-            String confpath = SetupConfig.getMountPathOfKubeConf(path) ;
+            String confPath = SetupConfig.getMountPathOfKubeConf(path) ;
             WorkflowLogger.error(ControllerActivity.CANNOT_FIND_FILE,
-                    confpath);
-            throw new HyscaleException(ControllerErrorCodes.KUBE_CONFIG_NOT_FOUND, confpath);
+                    confPath);
+            throw new HyscaleException(ControllerErrorCodes.KUBE_CONFIG_NOT_FOUND, confPath);
         }
     }
    

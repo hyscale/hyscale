@@ -28,6 +28,7 @@ public enum ControllerErrorCodes implements HyscaleErrorCode {
     MANIFEST_REQUIRED("Manifest required"),
     DOCKER_CONFIG_NOT_FOUND("Cannot find config.json at {}"),
     KUBE_CONFIG_NOT_FOUND("Cannot find kubeconfig(config) at {}"),
+    KUBE_CONFIG_PATH_EMPTY("Kube config path is empty"),
     SERVICE_SPEC_PROCESSING_FAILED("Failed to process service spec "),
     INVALID_PORTS_FOUND("Ports found to be invalid in service spec"),
     INVALID_VOLUMES_FOUND("Volumes found to be invalid in service spec"),
