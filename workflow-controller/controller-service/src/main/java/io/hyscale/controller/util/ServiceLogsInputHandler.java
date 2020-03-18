@@ -22,7 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.utils.HyscaleInputReader;
+import io.hyscale.commons.io.HyscaleInputReader;
 import io.hyscale.deployer.core.model.ReplicaInfo;
 import io.kubernetes.client.openapi.models.V1Pod;
 
