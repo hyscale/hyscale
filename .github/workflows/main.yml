@@ -40,7 +40,7 @@ jobs:
 
     - uses: mr-smithers-excellent/docker-build-push@v2
       with:
-        image: push registry.hyscale.io/hyscale/hyscale
+        image: registry.hyscale.io/hyscale/hyscale
         tag: test.$BUILD_NUMBER
         registry: registry.hyscale.io
         username: ${{ secrets.DOCKER_USERNAME }}
