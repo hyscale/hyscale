@@ -498,7 +498,7 @@ public class KubernetesDeployer implements Deployer {
         
         List<V1Pod> podList  = podHandler.getPodsForAllNamespaces(apiClient);
         
-        return appMetadataBuilder.listApplications(podList);
+        return appMetadataBuilder.build(podList);
     }
     
 }

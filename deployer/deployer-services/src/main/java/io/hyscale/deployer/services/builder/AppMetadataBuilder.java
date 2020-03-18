@@ -36,7 +36,7 @@ public class AppMetadataBuilder {
      * @param podList
      * @return List of {@link AppMetadata} containing details of deployed apps
      */
-    public List<AppMetadata> listApplications(List<V1Pod> podList) {
+    public List<AppMetadata> build(List<V1Pod> podList) {
         if (podList == null) {
             return null;
         }
@@ -52,14 +52,11 @@ public class AppMetadataBuilder {
                 appData.setNamespace(namespace);
                 mapping.put(namespace, appData);
             }
+            if (StringUtils.isBlank(appName) || StringUtils.isBlank(serviceName)) {
+                return;
+            }
             // One namespace can have only one app
-            if (StringUtils.isBlank(appName)) {
-                return;
-            }
             mapping.get(namespace).setAppName(appName);
-            if (StringUtils.isBlank(serviceName)) {
-                return;
-            }
             if (mapping.get(namespace).getServices() == null
                     || !mapping.get(namespace).getServices().contains(serviceName)) {
                 mapping.get(namespace).addServices(serviceName);

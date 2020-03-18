@@ -93,11 +93,13 @@ public class HyscaleGetDeploymentsCommand implements Callable<Integer> {
         }
         TableFormatter table = tableBuilder.build();
 
-        appInfoList.stream().filter(Objects::nonNull).forEach(appInfo -> {
-            if (StringUtils.isBlank(appInfo.getAppName())
+        appInfoList.stream().filter(appInfo -> {
+            if (appInfo == null || StringUtils.isBlank(appInfo.getAppName())
                     || K8SRuntimeConstants.SYSTEM_NAMESPACE.contains(appInfo.getNamespace())) {
-                return;
+                return false;
             }
+            return true;
+        }).forEach(appInfo -> {
             String services = appInfo.getServices() == null || appInfo.getServices().isEmpty() ? null
                     : appInfo.getServices().toString().replace("[", "").replace("]", "");
             String[] row = new String[] { appInfo.getAppName(), appInfo.getNamespace(), services };
