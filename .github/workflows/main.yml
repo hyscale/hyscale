@@ -30,19 +30,18 @@ jobs:
         prefix: client
 
     # Runs a single command using the runners shell
-    - name: Run a one-line script
-      run: |
-           #echo xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-           #echo $BUILD_NUMBER
-           docker build -t registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER .
-           #docker push registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER
-           docker rmi -f registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER
+    #- name: Run a one-line script
+    # run: |
+    #      #echo xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    #      #echo $BUILD_NUMBER
+    #      docker build -t registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER .
+    #      #docker push registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER
+    #      docker rmi -f registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER
 
     - uses: mr-smithers-excellent/docker-build-push@v2
       with:
         image: push registry.hyscale.io/hyscale/hyscale
         tag: test.$BUILD_NUMBER
         registry: registry.hyscale.io
-        dockerfile: .
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
