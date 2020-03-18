@@ -119,7 +119,7 @@ public class TroubleshootingContextCollector {
     }
 
     private Collection<? extends TroubleshootingContext.ResourceInfo> filterPodsByHash(List<TroubleshootingContext.ResourceInfo> podResourceInfos, String podTemplateHash) {
-        if ((podResourceInfos == null && podResourceInfos.isEmpty()) || StringUtils.isBlank(podTemplateHash)) {
+        if ((podResourceInfos == null || podResourceInfos.isEmpty()) || StringUtils.isBlank(podTemplateHash)) {
             return null;
         }
         List<TroubleshootingContext.ResourceInfo> result = new ArrayList<>();
