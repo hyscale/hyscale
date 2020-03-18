@@ -35,7 +35,7 @@ jobs:
            #echo xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
            #echo $BUILD_NUMBER
            docker build -t registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER .
-           docker push registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER
+           #docker push registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER
            docker rmi -f registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER
 
     - uses: mr-smithers-excellent/docker-build-push@v2
