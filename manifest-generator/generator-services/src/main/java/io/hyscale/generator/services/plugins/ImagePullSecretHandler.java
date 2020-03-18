@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Pramati Prism, Inc.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -100,8 +100,7 @@ public class ImagePullSecretHandler implements ManifestHandler {
             });
             // Adding the secret to pod
             logger.debug("Prepared image pull secret manifest for registry.");
-            String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
-            manifestSnippetList.add(getImagePullSecretName(name, podSpecOwner));
+            manifestContext.addGenerationAttribute(ManifestGenConstants.IMAGE_PULL_SECRET_NAME, NormalizationUtil.normalize(name));
 
         } catch (JsonProcessingException e) {
             logger.error("Error while generating image pull secret manifest {}", e);
@@ -109,17 +108,6 @@ public class ImagePullSecretHandler implements ManifestHandler {
         return manifestSnippetList;
     }
 
-    private ManifestSnippet getImagePullSecretName(String name, String podSpecOwner) throws JsonProcessingException {
-        List<ResourceName> resourceNameList = new ArrayList<>();
-        ResourceName resourceName = new ResourceName();
-        resourceName.setName(NormalizationUtil.normalize(name));
-        resourceNameList.add(resourceName);
-        ManifestSnippet imgPullSecretNamesnippet = new ManifestSnippet();
-        imgPullSecretNamesnippet.setKind(podSpecOwner);
-        imgPullSecretNamesnippet.setPath("spec.template.spec.imagePullSecrets");
-        imgPullSecretNamesnippet.setSnippet(JsonSnippetConvertor.serialize(resourceNameList));
-        return imgPullSecretNamesnippet;
-    }
 
     private ManifestSnippet getSecretTypeSnippet() {
         ManifestSnippet secretTypeSnippet = new ManifestSnippet();

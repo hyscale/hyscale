@@ -1,3 +1,4 @@
+io.hyscale.generator.services.plugins.ImagePullSecretHandler
 io.hyscale.generator.services.plugins.MetaDataHandler
 io.hyscale.generator.services.plugins.ConfigMapDataHandler
 io.hyscale.generator.services.plugins.SecretsDataHandler
@@ -5,7 +6,6 @@ io.hyscale.generator.services.plugins.ReplicasHandler
 io.hyscale.generator.services.plugins.SelectorLabelsHandler
 io.hyscale.generator.services.plugins.PodSpecLabels
 io.hyscale.generator.services.plugins.VolumesHandler
-io.hyscale.generator.services.plugins.ImagePullSecretHandler
 io.hyscale.generator.services.plugins.StartCommandHandler
 io.hyscale.generator.services.plugins.ContainerNameHandler
 io.hyscale.generator.services.plugins.ImageHandler
