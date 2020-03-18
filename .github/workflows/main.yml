@@ -43,6 +43,6 @@ jobs:
         image: push registry.hyscale.io/hyscale/hyscale
         tag: test.$BUILD_NUMBER
         registry: registry.hyscale.io
-        dockerfile: Dockerfile.ci
+        dockerfile: .
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
