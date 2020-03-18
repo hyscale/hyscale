@@ -37,7 +37,6 @@ jobs:
            docker build -t registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER .
            docker push registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER
            docker rmi -f registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER
-    - uses: actions/checkout@v1.0
 
     - uses: mr-smithers-excellent/docker-build-push@v2
       with:
