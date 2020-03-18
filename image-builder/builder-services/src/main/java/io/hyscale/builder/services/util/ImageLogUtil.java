@@ -18,6 +18,9 @@ package io.hyscale.builder.services.util;
 import java.io.File;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.io.LogProcessor;
+import io.hyscale.commons.io.TailLogFile;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +31,7 @@ import io.hyscale.builder.core.models.BuildContext;
 import io.hyscale.builder.core.models.ImageBuilderActivity;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.builder.services.handler.BuildLogHandler;
-import io.hyscale.commons.utils.LogProcessor;
 import io.hyscale.builder.services.handler.PushLogHandler;
-import io.hyscale.commons.utils.TailLogFile;
 import io.hyscale.builder.services.constants.DockerImageConstants;
 
 @Component

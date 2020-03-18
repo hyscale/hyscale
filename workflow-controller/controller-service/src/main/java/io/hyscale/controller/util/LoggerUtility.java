@@ -18,6 +18,7 @@ package io.hyscale.controller.util;
 import java.util.List;
 import java.util.Map;
 
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -34,7 +35,7 @@ import io.hyscale.commons.logger.TableFormatter;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.models.K8sAuthorisation;
-import io.hyscale.commons.utils.HyscaleInputReader;
+import io.hyscale.commons.io.HyscaleInputReader;
 import io.hyscale.commons.utils.HyscaleStringUtil;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;

@@ -35,7 +35,8 @@ public enum AbstractedErrorMessage implements IMessage, IReason {
     INVALID_VOLUME_NAME("Volume name provided in service spec is invalid.", "Volume name must be less than 63 characters and follows the regex [a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*."),
     MULTIPLE_DEFAULT_STORAGE_CLASS("Volume creation failed. More than 1 default storage class configured on cluster.","Please contact your cluster administrator to configure a single default storage class or provide a storage class in service spec."),
     INVALID_RESOURCE_NAME("{} available in cluster is invalid.", "Fix the resource name and redeploy"),
-    TRY_AFTER_SOMETIME("Deployment is still in progress, service is not yet ready.", "Try querying after sometime.");
+    TRY_AFTER_SOMETIME("Deployment is still in progress, service is not yet ready.", "Try querying after sometime."),
+    SERVICE_COMMANDS_FAILURE("Service startup commands failed with {}" , "Possible errors can be in startCommands of hspec or ENTRYPOINT/CMD in Dockerfile");
 
     private String message;
     private String reason;
