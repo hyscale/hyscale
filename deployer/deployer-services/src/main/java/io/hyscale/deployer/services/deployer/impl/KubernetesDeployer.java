@@ -15,24 +15,37 @@
  */
 package io.hyscale.deployer.services.deployer.impl;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import io.hyscale.deployer.services.model.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.hyscale.commons.commands.CommandExecutor;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.ActivityContext;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.models.DeploymentContext;
+import io.hyscale.commons.models.K8sAuthType;
 import io.hyscale.commons.models.K8sAuthorisation;
+import io.hyscale.commons.models.K8sBasicAuth;
+import io.hyscale.commons.models.K8sConfigFileAuth;
 import io.hyscale.commons.models.KubernetesResource;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.commons.models.Status;
@@ -52,9 +65,18 @@ import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.handler.impl.V1PersistentVolumeClaimHandler;
 import io.hyscale.deployer.services.handler.impl.V1PodHandler;
 import io.hyscale.deployer.services.handler.impl.V1ServiceHandler;
+import io.hyscale.deployer.services.model.Container;
+import io.hyscale.deployer.services.model.DeployerActivity;
+import io.hyscale.deployer.services.model.Pod;
+import io.hyscale.deployer.services.model.PodCondition;
+import io.hyscale.deployer.services.model.ResourceStatus;
+import io.hyscale.deployer.services.model.ServiceAddress;
+import io.hyscale.deployer.services.model.Volume;
+import io.hyscale.deployer.services.model.VolumeMount;
 import io.hyscale.deployer.services.predicates.PodPredicates;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.hyscale.deployer.services.util.DeploymentStatusUtil;
+import io.hyscale.deployer.services.util.ExecCommandUtil;
 import io.hyscale.deployer.services.util.K8sDeployerUtil;
 import io.hyscale.deployer.services.util.K8sPodUtil;
 import io.hyscale.deployer.services.util.K8sReplicaUtil;
@@ -65,6 +87,7 @@ import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
 import io.kubernetes.client.openapi.models.V1Pod;
 import io.kubernetes.client.openapi.models.V1Volume;
 import io.kubernetes.client.openapi.models.V1VolumeMount;
+import io.kubernetes.client.util.KubeConfig;
 
 /**
  * {@link Deployer} implementation for K8s Cluster
@@ -169,6 +192,36 @@ public class KubernetesDeployer implements Deployer {
         // TODO
         return false;
     }
+    
+    
+	@Override
+	public void exec(K8sAuthorisation k8sAuthorisation, String servicename, String appname, String namespace,
+			String replicaName) {
+
+		List<String> commands = null;
+		KubeConfig kubeConfig = null;
+		if (k8sAuthorisation != null && k8sAuthorisation.getK8sAuthType() == K8sAuthType.BASIC_AUTH) {
+			K8sBasicAuth k8sBasicAuth = (K8sBasicAuth) k8sAuthorisation;
+			commands = ExecCommandUtil.getExecCommand(replicaName, namespace, k8sBasicAuth);
+		} else if (k8sAuthorisation != null && k8sAuthorisation.getK8sAuthType() == K8sAuthType.KUBE_CONFIG_FILE) {
+			K8sConfigFileAuth k8sConfigFileAuth = (K8sConfigFileAuth) k8sAuthorisation;
+			kubeConfig = getKubeConfig(k8sConfigFileAuth);
+			if (kubeConfig.getAccessToken() != null) {
+				commands = ExecCommandUtil.getExecCommand(replicaName, namespace, kubeConfig.getAccessToken());
+				CommandExecutor.executeExec(commands);
+			}
+		}
+	}
+
+	private KubeConfig getKubeConfig(K8sConfigFileAuth k8sConfigFileAuth) {
+		InputStreamReader isr = null;
+		try {
+			isr = new FileReader(k8sConfigFileAuth.getK8sConfigFile());
+		} catch (FileNotFoundException e) {
+			logger.error("Error while reading kubeconfig file {}", e.toString());
+		}
+		return KubeConfig.loadKubeConfig(isr);
+	}
 
     @Override
     public InputStream logs(DeploymentContext deploymentContext) throws HyscaleException {

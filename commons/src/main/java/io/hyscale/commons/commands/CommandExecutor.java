@@ -15,12 +15,20 @@
  */
 package io.hyscale.commons.commands;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.lang3.StringUtils;
@@ -177,6 +185,7 @@ public class CommandExecutor {
         cmdResult.setExitCode(exitCode);
         return cmdResult;
     }
+   
 
     private static String getCommandOutput(OutputStream outputStream) throws UnsupportedEncodingException {
         if (outputStream != null && outputStream instanceof StringOutputStream) {
@@ -200,4 +209,18 @@ public class CommandExecutor {
         return new StringOutputStream();
     }
     
+    
+	public static void executeExec(List<String> commands) {
+			ProcessBuilder processBuilder = new ProcessBuilder(commands);
+			processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+			processBuilder.redirectInput(ProcessBuilder.Redirect.INHERIT);
+			processBuilder.redirectErrorStream(true);
+			Process process;
+			try {
+				process = processBuilder.start();
+				int exitcode = process.waitFor();
+			} catch (Exception e) {
+				logger.error("Error while exec into pod ", e.toString());
+			}
+    }
 }

@@ -108,6 +108,11 @@ public interface Deployer {
 	public List<ReplicaInfo> getReplicas(AuthConfig authConfig, String appName, String serviceName, String namespace, 
 	        boolean isFilter) throws HyscaleException;
 	
+	
+	
+	
+	 public void exec(K8sAuthorisation k8sAuthorisation, String servicename, String appname, String namespace, String replica);
+	
 	/**
 	 * Get Service logs from Pods
 	 * tail logs or read specific number of lines

@@ -42,7 +42,7 @@ import picocli.CommandLine.Command;
  */
 @Command(name = "hyscale", versionProvider = HyscaleVersionProvider.class, mixinStandardHelpOptions = true, subcommands = {
         HyscaleGetCommand.class, HyscaleDeployCommand.class, HyscaleUndeployCommand.class,
-        HyscaleGenerateCommand.class})
+        HyscaleGenerateCommand.class, HyscaleExecCommand.class})
 @Component
 public class HyscaleCommand implements Callable<Integer> {
 

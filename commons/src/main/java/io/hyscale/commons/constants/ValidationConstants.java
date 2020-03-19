@@ -27,6 +27,8 @@ public class ValidationConstants {
 
     public static final String APP_NAME_REGEX = "([a-z0-9-]){" + APP_NAME_LENGTH_MIN + "," + APP_NAME_LENGTH_MAX + "}";
     
+    public static final String REPLICA_NAME_REGEX = "[a-z]([-a-z0-9]*[a-z0-9])?";
+
     public static final String SERVICE_NAME_REGEX = "[a-z]([-a-z0-9]*[a-z0-9])?";
     
     public static final String SERVICE_SPEC_NAME_REGEX = "^" + SERVICE_NAME_REGEX + "(\\.hspec)$";
@@ -45,6 +47,10 @@ public class ValidationConstants {
             + "its length should be between " + APP_NAME_LENGTH_MIN + " and " + APP_NAME_LENGTH_MAX + "."
             + "(regex used for validation is '"
             + APP_NAME_REGEX + "')";
+    
+    public static final String INVALID_REPLICA_NAME_MSG = "Replica name \"{}\" is invalid. "
+            + "(regex used for validation is '"
+            + REPLICA_NAME_REGEX + "')";
 
     public static final String INVALID_SERVICE_NAME_MSG = "Service name \"{}\" is invalid. A service name must consist of lower case alphanumeric characters or '-',"
             + " start with an alphabetic character, and end with an alphanumeric character (e.g. 'my-name',  or 'abc-123', "
