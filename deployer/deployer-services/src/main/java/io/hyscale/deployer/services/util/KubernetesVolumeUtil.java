@@ -23,7 +23,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.ResourceLabelUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
@@ -81,9 +80,9 @@ public class KubernetesVolumeUtil {
 
 	/**
 	 * Get volume name from pvc
-	 * pvc name = volume_name-app_name-service_name-index
+	 * pvc name = volume_name-service_name-index
 	 * @param pvcName
-	 * @return volume_name
+	 * @return volumeName
 	 */
 	public static String getVolumeName(V1PersistentVolumeClaim pvc) {
 		if (pvc == null) {
@@ -98,9 +97,7 @@ public class KubernetesVolumeUtil {
 			return pvcName;
 		}
 
-		String suffix = appName + ToolConstants.DASH + serviceName;
-
-		int indexOfSuffix = pvcName.indexOf(suffix);
+		int indexOfSuffix = pvcName.indexOf(serviceName);
 		
 		if (indexOfSuffix > 0) {
 		    return pvcName.substring(0, indexOfSuffix - 1);
