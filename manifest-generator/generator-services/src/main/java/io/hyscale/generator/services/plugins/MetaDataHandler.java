@@ -22,7 +22,7 @@ import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.AppMetaData;
+import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.generator.services.generator.MetadataManifestSnippetGenerator;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
@@ -43,10 +43,10 @@ public class MetaDataHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext context) throws HyscaleException {
-        AppMetaData appMetaData = new AppMetaData();
-        appMetaData.setAppName(context.getAppName());
-        appMetaData.setEnvName(context.getEnvName());
-        appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
+        ServiceMetadata serviceMetadata = new ServiceMetadata();
+        serviceMetadata.setAppName(context.getAppName());
+        serviceMetadata.setEnvName(context.getEnvName());
+        serviceMetadata.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
         List<ManifestSnippet> snippetList = new ArrayList<>();
         try {
             for (ManifestResource manifestResource : ManifestResource.values()) {
@@ -57,10 +57,10 @@ public class MetaDataHandler implements ManifestHandler {
                     snippetList.add(MetadataManifestSnippetGenerator.getKind(manifestResource));
 
                     /* Snippet for apiVersion for each manifest */
-                    snippetList.add(MetadataManifestSnippetGenerator.getApiVersion(manifestResource, appMetaData));
+                    snippetList.add(MetadataManifestSnippetGenerator.getApiVersion(manifestResource, serviceMetadata));
 
                     /* Snippet for metadata for each manifest */
-                    snippetList.add(MetadataManifestSnippetGenerator.getMetaData(manifestResource, appMetaData));
+                    snippetList.add(MetadataManifestSnippetGenerator.getMetaData(manifestResource, serviceMetadata));
 
                 }
 

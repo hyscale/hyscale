@@ -15,6 +15,7 @@
  */
 package io.hyscale.controller.commands;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -99,7 +100,7 @@ public class HyscaleGetDeploymentsCommand implements Callable<Integer> {
                 return false;
             }
             return true;
-        }).forEach(appInfo -> {
+        }).sorted(Comparator.comparing(AppMetadata::getAppName)).forEach(appInfo -> {
             String services = appInfo.getServices() == null || appInfo.getServices().isEmpty() ? null
                     : appInfo.getServices().toString().replace("[", "").replace("]", "");
             String[] row = new String[] { appInfo.getAppName(), appInfo.getNamespace(), services };

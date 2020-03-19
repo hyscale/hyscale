@@ -17,7 +17,7 @@ package io.hyscale.generator.services.builder;
 
 import io.hyscale.commons.models.ResourceLabelKey;
 import io.hyscale.commons.utils.ResourceLabelBuilder;
-import io.hyscale.generator.services.model.AppMetaData;
+import io.hyscale.generator.services.model.ServiceMetadata;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,9 +25,9 @@ import java.util.stream.Collectors;
 //TODO Normaliza label as per regex (([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?
 public class DefaultLabelBuilder {
 
-    public static Map<String, String> build(AppMetaData appMetaData) {
-        Map<ResourceLabelKey, String> resourceLabelMap = ResourceLabelBuilder.build(appMetaData.getAppName(), appMetaData.getEnvName(),
-                appMetaData.getServiceName());
+    public static Map<String, String> build(ServiceMetadata serviceMetadata) {
+        Map<ResourceLabelKey, String> resourceLabelMap = ResourceLabelBuilder.build(serviceMetadata.getAppName(), serviceMetadata.getEnvName(),
+                serviceMetadata.getServiceName());
         if (resourceLabelMap != null && !resourceLabelMap.isEmpty()) {
             Map<String, String> defaultLabels = resourceLabelMap.entrySet().stream().filter(each -> {
                 return each != null;
