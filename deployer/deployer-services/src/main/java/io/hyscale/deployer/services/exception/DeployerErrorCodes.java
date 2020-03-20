@@ -43,11 +43,13 @@ public enum DeployerErrorCodes implements HyscaleErrorCode {
     FAILED_TO_INITIALIZE_POD("Failed to initialize pod"),
     POD_FAILED_READINESS("Pod Readiness failed"),
     FAILED_TO_CREATE_POD("Failed to create pod"),
+    FAILED_TO_EXEC_INTO_POD("Failed to exec into pod {} with exitCode {}"),
     OPERATION_NOT_SUPPORTED("Operation {} not supported for resource {}"),
     INVALID_STORAGE_CLASS_FOR_VOLUME("Storage class {} in your hspec is found to be invalid , allowed values from your cluster are {}"),
 	NO_STORAGE_CLASS_IN_K8S("No storage class defined in your kubernetes cluster. Please contact your cluster administrator"),
     MISSING_DEFAULT_STORAGE_CLASS("Missing default storage class from the cluster so kindly define storage class in your hspec volumes [{}] , allowed values are : {} "),
-    MISSING_UNIQUE_DEFAULT_STORAGE_CLASS("More than 1 default storage class found in cluster, either define single default storage class or specify a storage class in your hspec volumes [{}] , allowed values are : {} ");
+    MISSING_UNIQUE_DEFAULT_STORAGE_CLASS("More than 1 default storage class found in cluster, either define single default storage class or specify a storage class in your hspec volumes [{}] , allowed values are : {} "),
+    K8SAUTHORISATION_NOT_FOUND("K8sAuthorisation not found");
 
     private String message;
 

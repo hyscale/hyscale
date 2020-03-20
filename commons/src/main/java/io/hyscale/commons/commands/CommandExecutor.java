@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.exec.CommandLine;
@@ -210,17 +209,21 @@ public class CommandExecutor {
     }
     
     
-	public static void executeExec(List<String> commands) {
+	public static int executeWithParentIO(List<String> commands){
 			ProcessBuilder processBuilder = new ProcessBuilder(commands);
 			processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 			processBuilder.redirectInput(ProcessBuilder.Redirect.INHERIT);
 			processBuilder.redirectErrorStream(true);
 			Process process;
+			int exitCode=0;
 			try {
 				process = processBuilder.start();
-				int exitcode = process.waitFor();
+			    exitCode = process.waitFor();
 			} catch (Exception e) {
-				logger.error("Error while exec into pod ", e.toString());
+				 HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_EXECUTE_COMMAND);
+		         logger.error("Error while exec  into pod with error code {}, error {}", exitCode, ex);
+		         return exitCode;
 			}
+			return exitCode;
     }
 }

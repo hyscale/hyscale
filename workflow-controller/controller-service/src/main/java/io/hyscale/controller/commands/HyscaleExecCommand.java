@@ -15,7 +15,6 @@
  */
 package io.hyscale.controller.commands;
 
-import java.io.File;
 import java.util.concurrent.Callable;
 
 import javax.validation.constraints.Pattern;
@@ -25,7 +24,6 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
-import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.K8sConfigFileAuth;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.util.CommandUtil;
@@ -53,24 +51,18 @@ public class HyscaleExecCommand implements Callable<Integer> {
 	@Option(names = { "-n", "--namespace", "-ns" }, required = true, description = "Namespace of the service")
 	private String namespace;
 	
-	
+	@Autowired
+	private Deployer deployer;
 	 @Autowired
 	 private K8sAuthConfigBuilder authConfigBuilder;
-	 
-	 @Autowired
-	 private Deployer deployer;
 
 	@Override
 	public Integer call() throws Exception {
 		if (!CommandUtil.isInputValid(this)) {
 			return ToolConstants.INVALID_INPUT_ERROR_CODE;
 		}
-		authConfigBuilder.getAuthConfig();
-		K8sConfigFileAuth k8sConfigFileAuth=new K8sConfigFileAuth();
-		k8sConfigFileAuth.setK8sConfigFile(new File(System.getProperty("user.home") + "/.kube/config"));
-		K8sAuthorisation k8sAuthorisation=k8sConfigFileAuth;
-		deployer.exec(k8sAuthorisation,serviceName, appName, namespace, replicaName);
-		return null;
+		K8sConfigFileAuth k8sConfigFileAuth=(K8sConfigFileAuth) authConfigBuilder.getAuthConfig();
+		return deployer.exec(k8sConfigFileAuth,serviceName, appName, namespace, replicaName);
 	}
 
 }

@@ -15,10 +15,8 @@
  */
 package io.hyscale.deployer.services.deployer.impl;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -37,12 +35,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.commands.CommandExecutor;
+import io.hyscale.commons.commands.provider.DeployCommandProvider;
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.ActivityContext;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.models.DeploymentContext;
-import io.hyscale.commons.models.K8sAuthType;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.K8sBasicAuth;
 import io.hyscale.commons.models.K8sConfigFileAuth;
@@ -76,7 +75,6 @@ import io.hyscale.deployer.services.model.VolumeMount;
 import io.hyscale.deployer.services.predicates.PodPredicates;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.hyscale.deployer.services.util.DeploymentStatusUtil;
-import io.hyscale.deployer.services.util.ExecCommandUtil;
 import io.hyscale.deployer.services.util.K8sDeployerUtil;
 import io.hyscale.deployer.services.util.K8sPodUtil;
 import io.hyscale.deployer.services.util.K8sReplicaUtil;
@@ -108,6 +106,9 @@ public class KubernetesDeployer implements Deployer {
     
     @Autowired
     private AppMetadataBuilder appMetadataBuilder;
+    
+    @Autowired
+    private DeployCommandProvider deployCommandProvider;
     
     @Override
     public void deploy(DeploymentContext context) throws HyscaleException {
@@ -195,22 +196,41 @@ public class KubernetesDeployer implements Deployer {
     
     
 	@Override
-	public void exec(K8sAuthorisation k8sAuthorisation, String servicename, String appname, String namespace,
-			String replicaName) {
+	public int exec(K8sAuthorisation k8sAuthorisation, String servicename, String appname, String namespace,
+			String replicaName) throws HyscaleException {
 
+		if (k8sAuthorisation == null) {
+			throw new HyscaleException(DeployerErrorCodes.K8SAUTHORISATION_NOT_FOUND);
+		}
 		List<String> commands = null;
 		KubeConfig kubeConfig = null;
-		if (k8sAuthorisation != null && k8sAuthorisation.getK8sAuthType() == K8sAuthType.BASIC_AUTH) {
+		int exitCode = 0;
+
+		switch (k8sAuthorisation.getK8sAuthType()) {
+
+		case BASIC_AUTH:
 			K8sBasicAuth k8sBasicAuth = (K8sBasicAuth) k8sAuthorisation;
-			commands = ExecCommandUtil.getExecCommand(replicaName, namespace, k8sBasicAuth);
-		} else if (k8sAuthorisation != null && k8sAuthorisation.getK8sAuthType() == K8sAuthType.KUBE_CONFIG_FILE) {
+			commands = deployCommandProvider.getExecCommandByBasicAuth(replicaName, namespace, k8sBasicAuth);
+			break;
+
+		case KUBE_CONFIG_FILE:
 			K8sConfigFileAuth k8sConfigFileAuth = (K8sConfigFileAuth) k8sAuthorisation;
 			kubeConfig = getKubeConfig(k8sConfigFileAuth);
 			if (kubeConfig.getAccessToken() != null) {
-				commands = ExecCommandUtil.getExecCommand(replicaName, namespace, kubeConfig.getAccessToken());
-				CommandExecutor.executeExec(commands);
+				commands = deployCommandProvider.getExecCommandByAccessToken(replicaName, namespace,
+						kubeConfig.getAccessToken());
+				exitCode = CommandExecutor.executeWithParentIO(commands);
 			}
+			break;
+
+		default:
+			break;
 		}
+		if (exitCode != 0) {
+			throw new HyscaleException(DeployerErrorCodes.FAILED_TO_EXEC_INTO_POD, replicaName,
+					Integer.toString(exitCode));
+		}
+		return exitCode;
 	}
 
 	private KubeConfig getKubeConfig(K8sConfigFileAuth k8sConfigFileAuth) {

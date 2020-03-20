@@ -110,8 +110,17 @@ public interface Deployer {
 	
 	
 	
-	
-	 public void exec(K8sAuthorisation k8sAuthorisation, String servicename, String appname, String namespace, String replica);
+	/**
+	 * Exec into  Pods
+	 * @param k8sAuthorisation
+	 * @param servicename
+	 * @param appname
+	 * @param namespace
+	 * @param replica
+	 * @return exitCode
+	 * @throws HyscaleException
+	 */
+	 public int exec(K8sAuthorisation k8sAuthorisation, String servicename, String appname, String namespace, String replica) throws HyscaleException;
 	
 	/**
 	 * Get Service logs from Pods
