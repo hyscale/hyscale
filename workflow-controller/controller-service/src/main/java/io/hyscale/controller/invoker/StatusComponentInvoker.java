@@ -17,6 +17,8 @@ package io.hyscale.controller.invoker;
 
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +31,7 @@ import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
+import io.hyscale.controller.hooks.K8SClusterValidatorHook;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.TroubleshootUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
@@ -57,6 +60,14 @@ public class StatusComponentInvoker extends ComponentInvoker<WorkflowContext> {
     
     @Autowired
     private TroubleshootService troubleshootService;
+    
+    @Autowired
+    private K8SClusterValidatorHook k8SClusterValidatorHook;
+
+    @PostConstruct
+    public void init() {
+        super.addHook(k8SClusterValidatorHook);
+    }
     
     @Override
     protected void doExecute(WorkflowContext context) throws HyscaleException {
