@@ -1,0 +1,48 @@
+#!/bin/bash
+set -e
+
+# User who is running this script
+USER=$(id -un 2> /dev/null)
+
+DOCKER_MIN_VERSION=1.7
+HYS_DIR=$HOME/.hyscale
+HYSCALE=hyscale
+USER_DIR=$(pwd)
+DOCKER_CONF=$HOME/.docker/config.json
+KUBE_CONF=$HOME/.kube/config
+DOCKER_SOCK=/var/run/docker.sock
+ERROR_MSG="ERROR: "
+DOCKER_REPO_PATH=@@HYSCALE_DOCKER_REPO_PATH@@
+HYSCALE_BUILD_VERSION=@@HYSCALE_BUILD_VERSION@@
+HYSCALE_DATA_VOL=hyscale
+
+USER_MAP=""
+
+command_exists() {
+  command -v "$@" > /dev/null 2>&1
+}
+
+# TODO KUBECONFIG is append with multiple configs.
+if [ ! -z "$KUBECONFIG" ]; then
+   KUBE_CONF=$KUBECONFIG
+fi
+
+# create a directory for hyscale to generate files & logs
+mkdir -p $HYS_DIR/$HYSCALE_DATA_VOL 
+
+docker pull $DOCKER_REPO_PATH/$HYSCALE:$HYSCALE_BUILD_VERSION >/dev/null
+
+# TODO: generate a random string/number to add to name
+docker run \
+  --rm \
+  --label name=$HYSCALE \
+  -v ${USER_DIR}:/hyscale/app:ro \
+  -v ${KUBE_CONF}:/hyscale/.kube/config:ro \
+  -v ${DOCKER_CONF}:/hyscale/.docker/config.json:ro \
+  -v ${HYS_DIR}/${HYSCALE_DATA_VOL}:/hyscale/hyscale \
+  -e HYSCALECTL_HOME=$HYS_DIR \
+  -e HYSCALECTL_KUBECONF=$KUBE_CONF \
+  -e HYSCALECTL_DOCKERCONF=$DOCKER_CONF \
+  -e DOCKER_CONFIG=/hyscale/.docker \
+  -v $DOCKER_SOCK:$DOCKER_SOCK:ro \
+  $DOCKER_REPO_PATH/$HYSCALE:$HYSCALE_BUILD_VERSION $@

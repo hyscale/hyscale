@@ -1,0 +1,6 @@
+BUCKET_NAME=dev.downloads.hyscale.io
+OBJECT_NAME=hyscale/release/@@UPLOAD-TO-DIR@@/hyscale
+BINARY_NAME=@@BINARY-PATH@@
+TAG_KEY=hyscalepubliccontent
+TAG_VALUE=true
+HYSCALE_DOCKER_REPO_PATH=gcr.io/hyscale-dev-env/hyscale

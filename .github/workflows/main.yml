@@ -40,7 +40,7 @@ jobs:
 
     - uses: mr-smithers-excellent/docker-build-push@v2
       with:
-        image: registry.hyscale.io/hyscale/hyscale
+        image: hyscale/hyscale
         tag: test
         registry: registry.hyscale.io
         username: ${{ secrets.DOCKER_USERNAME }}

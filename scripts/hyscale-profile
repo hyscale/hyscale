@@ -1,0 +1,131 @@
+#!/bin/bash
+
+command_exists() {
+  command -v "$@" > /dev/null 2>&1
+}
+
+repo_name=$(basename $(pwd))
+repo_dir=$(pwd)
+
+
+tmp_repo_copy=$(mktemp -p '' -d ${repo_name}_XXXXXX)
+#trap "sudo rm -rf $tmp_repo_copy" EXIT
+
+/usr/bin/rsync -avz --recursive --links --delete-after --quiet \
+               --delay-updates --whole-file --safe-links \
+               --perms --times "${repo_dir}/" "${tmp_repo_copy}/"\
+               --include=.git
+args_options=$@
+
+if command_exists spruce; then
+	# merge profiles with the service specs
+        tuned_args_options=()
+	service_spec_files=()
+	while [[ $# -gt 0 ]]
+	do
+		option="$1"
+
+		case $option in
+		    -p|--profile)
+			    profile="$2"
+			    shift # past argument
+			    shift # past value
+			    ;;
+		    -f|--file)
+			    tuned_args_options+=("$1")
+                            tuned_args_options+=("$2")
+			    service_spec_files+=("$2")
+			    shift # past argument
+			    shift # past value
+			    ;;
+			    *)
+                            tuned_args_options+=("$1")
+    			    shift # past argument
+			    ;;
+		esac
+	done
+        args_options=$(IFS=$' '; echo "${tuned_args_options[*]}")
+
+	if [ ! -z ${profile} ]; then
+		current_directory=$(pwd)
+
+		if [ -f ${current_directory}/${profile} ]; then
+        		for service_spec_file in "${service_spec_files[@]}"
+		        do
+				spruce merge ${current_directory}/$service_spec_file ${current_directory}/${profile} > ${tmp_repo_copy}/${service_spec_file}
+			done
+		else
+			# Given a profile name
+			for service_spec_file in "${service_spec_files[@]}"
+			do
+				profile_file=${current_directory}/$(dirname $service_spec_file)/profiles/${profile}-${service_spec_file}
+	  			if [ -f $profile_file ]; then
+					spruce merge $service_spec_file $profile_file > ${tmp_repo_copy}/${service_spec_file}
+				fi
+			done
+		fi
+	fi
+fi
+
+# User who is running this script
+USER=$(id -un 2> /dev/null)
+
+DOCKER_MIN_VERSION=1.7
+HYS_DIR=$HOME/.hyscale
+HYSCALE=hyscale
+USER_DIR=$(pwd)
+DOCKER_CONF=$HOME/.docker/config.json
+KUBE_CONF=$HOME/.kube/config
+DOCKER_SOCK=/var/run/docker.sock
+ERROR_MSG="ERROR: " 
+DOCKER_REPO_PATH=gcr.io/wm-test-deployment-project/hyscale
+HYSCALE_BUILD_VERSION=@@HYSCALE_BUILD_VERSION@@
+
+USER_MAP=""
+
+# TODO KUBECONFIG is append with multiple configs.
+if [ ! -z "$KUBECONFIG" ]; then
+   KUBE_CONF=$KUBECONFIG
+fi
+
+if [ "$USER" != "root" ]; then
+
+        docker_socket_owner=$(stat -c "%U" "$DOCKER_SOCK")
+
+        if [ "$docker_socket_owner" == "root" ]; then
+
+                if [[ -n $(printf '%s\n' "$( echo `getent group docker` | tr ":" "\n" )" | grep -w $USER) ]]; then
+                        USER_MAP="-u $(id -u ${USER}):$(getent group docker |cut -d ':' -f3)"
+                else
+                        echo -e "Permission Denied while accessing docker socket located at /var/run/docker.sock.\nPlease either add $USER to docker group and retry in the new terminal or run hyscale with sudo."
+                        exit 1
+                fi
+
+        elif [ "$docker_socket_owner" == "$USER" ]; then
+                USER_MAP="-u $(id -u ${USER}):$(id -g ${USER})"
+        else
+                echo Docker socket is owned by $docker_socket_owner and not accessible to $USER. Please re-run with sudo.
+                exit 1
+        fi
+fi
+
+# create a directory for hyscale to generate files & logs
+mkdir -p $HYS_DIR/$HYSCALE 
+
+#docker pull $DOCKER_REPO_PATH/$HYSCALE:$HYSCALE_BUILD_VERSION >/dev/null
+
+# TODO: generate a random string/number to add to name
+docker run \
+  $USER_MAP \
+  --rm \
+  --label name=$HYSCALE \
+  -v ${tmp_repo_copy}:/hyscale/app:ro \
+  -v ${KUBE_CONF}:/hyscale/.kube/config:ro \
+  -v ${DOCKER_CONF}:/hyscale/.docker/config.json:ro \
+  -v ${HYS_DIR}/hyscale-ctl:/hyscale/hyscale-ctl \
+  -e HYSCALECTL_HOME=$HYS_DIR \
+  -e HYSCALECTL_KUBECONF=$KUBE_CONF \
+  -e HYSCALECTL_DOCKERCONF=$DOCKER_CONF \
+  -e DOCKER_CONFIG=/hyscale/.docker \
+  -v $DOCKER_SOCK:$DOCKER_SOCK:ro \
+  $DOCKER_REPO_PATH/$HYSCALE:$HYSCALE_BUILD_VERSION $args_options
