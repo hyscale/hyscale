@@ -21,7 +21,7 @@ import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.core.model.ResourceOperation;
-import io.kubernetes.client.ApiException;
+import io.kubernetes.client.openapi.ApiException;
 
 /**
  * Helper class for {@link HyscaleException}

@@ -13,36 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.generator.services.model;
+package io.hyscale.commons.io;
 
-public class AppMetaData {
+import java.io.IOException;
+import java.io.OutputStream;
 
-	private String serviceName;
-	private String appName;
-	private String envName;
+public class StringOutputStream extends OutputStream {
 
+    private StringBuilder data = new StringBuilder();
+    
+    @Override
+    public synchronized void write(int b) throws IOException {
+        data.append((char) b);
+    }
+    
+    public String toString() {
+        return data.toString();
+    }
 
-	public String getServiceName() {
-		return serviceName;
-	}
-
-	public void setServiceName(String serviceName) {
-		this.serviceName = serviceName;
-	}
-
-	public String getAppName() {
-		return appName;
-	}
-
-	public void setAppName(String appName) {
-		this.appName = appName;
-	}
-
-	public String getEnvName() {
-		return envName;
-	}
-
-	public void setEnvName(String envName) {
-		this.envName = envName;
-	}
 }

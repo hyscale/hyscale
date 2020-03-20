@@ -16,10 +16,7 @@
 package io.hyscale.generator.services.processor;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -107,7 +104,7 @@ public class PluginProcessor {
         if (manifestHandlerList == null || manifestHandlerList.isEmpty()) {
             return null;
         }
-        Map<ManifestMeta, ManifestNode> manifestMetavsNodeMap = new HashMap<>();
+        Map<ManifestMeta, ManifestNode> manifestMetavsNodeMap = new LinkedHashMap();
         manifestHandlerList.stream().filter(each -> {
             return each != null;
         }).forEach(each -> {

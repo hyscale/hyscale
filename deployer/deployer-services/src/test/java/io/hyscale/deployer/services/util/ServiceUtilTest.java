@@ -30,8 +30,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.deployer.services.model.ServiceAddress;
-import io.kubernetes.client.models.V1LoadBalancerIngress;
-import io.kubernetes.client.models.V1Service;
+import io.kubernetes.client.openapi.models.V1LoadBalancerIngress;
+import io.kubernetes.client.openapi.models.V1Service;
 
 public class ServiceUtilTest {
 

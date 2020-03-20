@@ -17,14 +17,13 @@ package io.hyscale.troubleshooting.integration.actions;
 
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.troubleshooting.integration.models.*;
-import io.kubernetes.client.models.*;
+import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -80,19 +79,20 @@ public class PendingPvcAction extends ActionNode<TroubleshootingContext> {
         }
 
         // ProvisioningFailed
-        AtomicReference<String> volume = null;
-        boolean provsioningFailed = eventList.stream().anyMatch(each -> {
-            volume.set(each.getMetadata().getName());
+        boolean provisioningFailed = eventList.stream().anyMatch(each -> {
             return PROVISIONING_FAILED.equals(each.getReason()) && pattern.matcher(each.getMessage()).find();
         });
 
+        logger.debug(describe() + ", provisioning failed: {}", provisioningFailed);
+        
         List<TroubleshootingContext.ResourceInfo> storageClassResources = context.getResourceInfos().get(ResourceKind.STORAGE_CLASS.getKind());
-        if ((storageClassResources == null || storageClassResources.isEmpty()) && provsioningFailed) {
+        if ((storageClassResources == null || storageClassResources.isEmpty()) && provisioningFailed) {
             report.setReason(AbstractedErrorMessage.NO_STORAGE_CLASS_FOUND.getReason());
             report.setRecommendedFix(AbstractedErrorMessage.NO_STORAGE_CLASS_FOUND.getMessage());
+            context.addReport(report);
             return;
         }
-        if (provsioningFailed) {
+        if (provisioningFailed) {
             report.setReason(AbstractedErrorMessage.INVALID_STORAGE_CLASS.formatReason(context.getServiceInfo().getServiceName()));
             report.setRecommendedFix(AbstractedErrorMessage.INVALID_STORAGE_CLASS.formatMessage(storageClassResources.stream().filter(each -> {
                         return each != null && each.getResource() != null && each.getResource() instanceof V1StorageClass;
@@ -101,6 +101,7 @@ public class PendingPvcAction extends ActionNode<TroubleshootingContext> {
                         return storageClass.getMetadata().getName();
                     }).collect(Collectors.joining(","))
             ));
+            context.addReport(report);
         }
     }
 

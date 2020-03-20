@@ -54,11 +54,11 @@ import io.hyscale.deployer.services.util.KubernetesVolumeUtil;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.hyscale.servicespec.commons.model.service.Volume;
-import io.kubernetes.client.ApiClient;
+import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.V1PersistentVolumeClaim;
-import io.kubernetes.client.models.V1ResourceRequirements;
-import io.kubernetes.client.models.V1StorageClass;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.openapi.models.V1ResourceRequirements;
+import io.kubernetes.client.openapi.models.V1StorageClass;
 
 /**
  * Validate Volumes:
@@ -145,7 +145,7 @@ public class VolumeValidatorHook implements InvokerHook<WorkflowContext> {
 	 * @throws HyscaleException
 	 */
 	private void validateStorageClass(List<Volume> volumeList) throws HyscaleException {
-		String defaultStorageClass = getDefaultStorageClass();
+		List<String> defaultStorageClass = getDefaultStorageClass();
 		Set<String> storageClassAllowed = storageClassList.stream().map(each -> each.getMetadata().getName())
 				.collect(Collectors.toSet());
 		logger.debug("Allowed Storage classes are : {}", storageClassAllowed);
@@ -154,11 +154,15 @@ public class VolumeValidatorHook implements InvokerHook<WorkflowContext> {
 		StringBuilder failMsgBuilder = new StringBuilder();
 		for (Volume volume : volumeList) {
 			String storageClass = volume.getStorageClass();
-			if (storageClass == null && StringUtils.isBlank(defaultStorageClass)) {
-				isFailed = true;
-				errorCode = DeployerErrorCodes.MISSING_DEFAULT_STORAGE_CLASS;
-				failMsgBuilder.append(volume.getName());
-				failMsgBuilder.append(ToolConstants.COMMA);
+			if (storageClass == null && isInvalidDefaultStorageClass(defaultStorageClass)) {
+			    isFailed = true;
+			    if (defaultStorageClass == null || defaultStorageClass.isEmpty()) {
+			        errorCode = DeployerErrorCodes.MISSING_DEFAULT_STORAGE_CLASS;
+			    } else {
+			        errorCode = DeployerErrorCodes.MISSING_UNIQUE_DEFAULT_STORAGE_CLASS;
+			    }
+			    failMsgBuilder.append(volume.getName());
+			    failMsgBuilder.append(ToolConstants.COMMA);
 			}
 			if (storageClass != null && !storageClassAllowed.contains(storageClass)) {
 				isFailed = true;
@@ -174,7 +178,14 @@ public class VolumeValidatorHook implements InvokerHook<WorkflowContext> {
 
 	}
 
-	/**
+	private boolean isInvalidDefaultStorageClass(List<String> defaultStorageClass) {
+	    if (defaultStorageClass == null || defaultStorageClass.isEmpty() || defaultStorageClass.size() > 1) {
+	        return true;
+	    }
+        return false;
+    }
+
+    /**
 	 * Validate volume edit is supported,
 	 * <p> print warn message for size and storage class changes
 	 * Get all pvc for this service and app
@@ -288,17 +299,15 @@ public class VolumeValidatorHook implements InvokerHook<WorkflowContext> {
 		};
 	}
 
-	private String getDefaultStorageClass() {
-		if (storageClassList != null && !storageClassList.isEmpty()) {
-			V1StorageClass defaultStorageClass = storageClassList.stream().filter(isDefaultStorageClass()).findFirst()
-					.orElse(null);
+    private List<String> getDefaultStorageClass() {
+        List<String> storageClasses = new ArrayList<String>();
+        if (storageClassList != null && !storageClassList.isEmpty()) {
+            storageClasses = storageClassList.stream().filter(isDefaultStorageClass())
+                    .map(each -> each.getMetadata().getName()).collect(Collectors.toList());
 
-			if (defaultStorageClass != null) {
-				return defaultStorageClass.getMetadata().getName();
-			}
-		}
-		return null;
-	}
+        }
+        return storageClasses;
+    }
 
 	private void initStorageClass(ApiClient apiClient) throws HyscaleException {
 		ResourceLifeCycleHandler resourceHandler = ResourceHandlers.getHandlerOf(ResourceKind.STORAGE_CLASS.getKind());

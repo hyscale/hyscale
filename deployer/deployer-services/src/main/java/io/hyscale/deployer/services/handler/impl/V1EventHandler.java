@@ -22,11 +22,11 @@ import io.hyscale.deployer.core.model.ResourceOperation;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.util.ExceptionHelper;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.ApiException;
-import io.kubernetes.client.apis.CoreV1Api;
-import io.kubernetes.client.models.V1Event;
-import io.kubernetes.client.models.V1EventList;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.apis.CoreV1Api;
+import io.kubernetes.client.openapi.models.V1Event;
+import io.kubernetes.client.openapi.models.V1EventList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +72,7 @@ public class V1EventHandler implements ResourceLifeCycleHandler<V1Event> {
             String labelSelector = label ? selector : null;
             String fieldSelector = label ? null : selector;
 
-            V1EventList v1EventList = coreV1Api.listNamespacedEvent(namespace, TRUE,
+            V1EventList v1EventList = coreV1Api.listNamespacedEvent(namespace, TRUE, null, 
                     null, fieldSelector, labelSelector, null, null, null, null);
 
             events = v1EventList != null ? v1EventList.getItems() : null;

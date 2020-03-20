@@ -16,6 +16,8 @@
 package io.hyscale.dockerfile.gen.services.config;
 
 import io.hyscale.commons.constants.ToolConstants;
+import io.hyscale.commons.utils.WindowsUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -52,42 +54,50 @@ public class DockerfileGenConfig {
 	public String getRelativeArtifactDir(String artifactName) {
 		StringBuilder dir = new StringBuilder(ARTIFACT_DIR);
 		dir.append(ToolConstants.FILE_SEPARATOR).append(artifactName).append(ToolConstants.FILE_SEPARATOR);
-		return dir.toString();
+		return getEffectiveDir(dir);
 	}
 
 	public String getScriptDestinationDir() {
 		StringBuilder dir = new StringBuilder();
 		dir.append(ToolConstants.FILE_SEPARATOR);
 		dir.append(HYSCALE).append(ToolConstants.FILE_SEPARATOR).append(SCRIPTS_DIR).append(ToolConstants.FILE_SEPARATOR);
-		return dir.toString();
+		return getEffectiveDir(dir);
 	}
 
 	public String getRunScriptAbsoluteDir(String appName, String serviceName) {
 		StringBuilder dir = new StringBuilder(setupConfig.getServiceDir(appName, serviceName));
 		dir.append(DOCKERFILE_DIR).append(ToolConstants.FILE_SEPARATOR).append(RUN_SCRIPT);
-		return dir.toString();
+		return getEffectiveDir(dir);
 	}
 
 	public String getConfigureScriptAbsoluteDir(String appName, String serviceName) {
 		StringBuilder dir = new StringBuilder(setupConfig.getServiceDir(appName, serviceName));
 		dir.append(DOCKERFILE_DIR).append(ToolConstants.FILE_SEPARATOR).append(CONFIGURE_SCRIPT);
-		return dir.toString();
+		return getEffectiveDir(dir);
 	}
 
 	public String getConfigureScriptContainerDir() {
 		StringBuilder dir = new StringBuilder(getScriptDestinationDir());
 		dir.append(CONFIGURE_SCRIPT);
-		return dir.toString();
+		return getEffectiveDir(dir);
 	}
 
 	public String getRunScriptContainerDir() {
 		StringBuilder dir = new StringBuilder(getScriptDestinationDir());
 		dir.append(RUN_SCRIPT);
-		return dir.toString();
+		return getEffectiveDir(dir);
 	}
 
 	public String getShellStartScript() {
 		return SHELL_START_SCRIPT;
+	}
+	
+	private String getEffectiveDir(StringBuilder dir) {
+        return getEffectiveDir(dir.toString());
+    }
+	
+	private String getEffectiveDir(String dir) {
+	    return WindowsUtil.isHostWindows() ? WindowsUtil.updateToUnixFileSeparator(dir) : dir;
 	}
 
 }

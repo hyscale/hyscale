@@ -15,21 +15,24 @@
  */
 package io.hyscale.builder.services.impl;
 
-import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
-import io.hyscale.builder.services.service.ImageBuildPushService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.hyscale.builder.cleanup.services.ImageCleanupProcessor;
 import io.hyscale.builder.core.models.BuildContext;
 import io.hyscale.builder.core.models.ImageBuilderActivity;
+import io.hyscale.builder.services.config.ImageBuilderConfig;
+import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
+import io.hyscale.builder.services.service.ImageBuildPushService;
+import io.hyscale.builder.services.util.ImageCleanupProcessorFactory;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.servicespec.commons.model.service.Dockerfile;
 import io.hyscale.commons.models.Status;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.service.Dockerfile;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @Component
@@ -41,7 +44,13 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
     private LocalImageBuildServiceImpl buildService;
 
     @Autowired
+    private ImageCleanupProcessorFactory imageCleanupProcessorFactory;
+
+    @Autowired
     private LocalImagePushServiceImpl pushService;
+    
+    @Autowired
+    private ImageBuilderConfig imageBuilderConfig;
 
     @Override
     public void buildAndPush(ServiceSpec serviceSpec, BuildContext context) throws HyscaleException {
@@ -49,6 +58,13 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
         if (validate(serviceSpec) && isImageBuildPushRequired(serviceSpec, context)) {
             context = buildService.build(serviceSpec, context);
             pushService.pushImage(serviceSpec, context);
+            String imageCleanUpPolicy = imageBuilderConfig.getImageCleanUpPolicy();
+            ImageCleanupProcessor imageCleanupProcessor = imageCleanupProcessorFactory.getImageCleanupProcessor(imageCleanUpPolicy);
+            logger.debug("Image clean up processor used {}", imageCleanupProcessor.getClass());
+            if (imageCleanupProcessor != null) {
+                imageCleanupProcessor.clean(serviceSpec);
+            }
+
         } else {
             WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_BUILD_PUSH);
             WorkflowLogger.endActivity(Status.SKIPPING);

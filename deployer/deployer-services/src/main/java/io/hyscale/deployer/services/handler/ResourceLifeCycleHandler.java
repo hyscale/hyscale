@@ -31,8 +31,8 @@ import io.hyscale.commons.utils.ThreadPoolUtil;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.model.ResourceStatus;
 import io.hyscale.deployer.services.model.ResourceUpdatePolicy;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.models.V1DeleteOptions;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.models.V1DeleteOptions;
 
 /**
  * Defines operation for K8s resources

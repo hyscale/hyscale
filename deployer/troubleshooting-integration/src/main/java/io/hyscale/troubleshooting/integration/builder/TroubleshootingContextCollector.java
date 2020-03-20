@@ -34,8 +34,8 @@ import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
 import io.hyscale.troubleshooting.integration.models.ServiceInfo;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
 import io.hyscale.troubleshooting.integration.spring.TroubleshootingConfig;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.models.*;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.models.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,7 +119,7 @@ public class TroubleshootingContextCollector {
     }
 
     private Collection<? extends TroubleshootingContext.ResourceInfo> filterPodsByHash(List<TroubleshootingContext.ResourceInfo> podResourceInfos, String podTemplateHash) {
-        if ((podResourceInfos == null && podResourceInfos.isEmpty()) || StringUtils.isBlank(podTemplateHash)) {
+        if ((podResourceInfos == null || podResourceInfos.isEmpty()) || StringUtils.isBlank(podTemplateHash)) {
             return null;
         }
         List<TroubleshootingContext.ResourceInfo> result = new ArrayList<>();

@@ -32,7 +32,7 @@ Some useful things you can achieve in just a few lines with HyScale's app-centri
 + Override or add different configurations for different environments using profiles.
 
 
-**App-centric troubleshooting** (in the works)
+**App-centric troubleshooting**
 
 Deployment failures at Kubernetes are cryptic and not intuitive for debugging. Users have to refer many things to identify the root cause of the failure like pod status, describe pod , statuses of other kinds etc. When issues occur abstraction is needed to simplify troubleshooting. So instead of presenting users with an error like "CrashLoopBackOff", HyScale executes a troubleshooting flowchart that will basically try to figure out the possible causes and inform the user in plain terms. 
 Hyscale abstracts Kubernetes errors to an app-centric model eg.: a "Pending" state may mean one of many things such as "New services cannot be accommodated as cluster capacity is full" or "Specified volume cannot be attached to the service"
@@ -66,10 +66,10 @@ If you do not have access to a kubernetes cluster and wish to deploy your applic
 Open your terminal and enter the following:
 
 ```sh
-curl -sSL http://get.hyscale.io | bash
+curl -sSL https://get.hyscale.io | bash
 ```
 
-#### Mac 
+#### Mac & Windows
 Usage Pre-Requisites:
 
 * JDK version 11 and above
@@ -85,7 +85,7 @@ For commands refer [here](https://github.com/hyscale/hyscale/blob/master/docs/hy
 Example :  java -jar </path/to/hyscale.jar> deploy service -f myservice.hspec -n my-namespace -a my-app
 ```
 
-Verified on CentOS, Ubuntu and Debian Linux,Mac .  Windows installer coming soon!
+Verified on CentOS, Ubuntu and Debian Linux, Mac, Windows.
 
 ## Deploying to K8s
 
@@ -111,7 +111,7 @@ volumes:
 replicas:
     min: 1
     max: 3
-    cpuThresold: 40%
+    cpuThreshold: 40%
  
 external: true
 ports:
@@ -168,6 +168,113 @@ hyscale get service logs -s `<myservice>` -n `<my-namespace>` -a `<my-app-name>`
 ```
 
 For all possible commands, see the [command reference](docs/hyscale-commands-reference.md).
+
+### HyScale version compatibility
+####  HyScale vs [hspec version](https://github.com/hyscale/hspec) 
+<table>
+<tr>
+    <th class="tg-0lax">hspec-version ➝ </th>
+    <th class="tg-cly1"><a href="https://github.com/hyscale/hyscale/blob/v0.9/docs/hyscale-spec-reference.md">0.5</a></th>
+    <th class="tg-cly1"><a href="https://github.com/hyscale/hspec/blob/v0.6/docs/hyscale-spec-reference.md">0.6</a></th>
+    <th class="tg-0lax"><a href="https://github.com/hyscale/hspec/blob/v0.6.1/docs/hyscale-spec-reference.md">0.6.1</a></th>
+    <th class="tg-0lax"><a href="https://github.com/hyscale/hspec/blob/v0.6.1.1/docs/hyscale-spec-reference.md">0.6.1.1</a></th>
+  </tr>
+  <tr>
+    <td class="tg-0lax">0.9</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-cly1">-️</td>
+    <td class="tg-0lax">-️</td>
+    <td class="tg-0lax">-️</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">0.9.1</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-0lax">-️</td>
+    <td class="tg-0lax">-️</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">0.9.2</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">-️</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">0.9.3</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">✔️</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">0.9.4</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">✔️</td>
+  </tr>
+  </table>
+  
+#### HyScale vs Kubernetes cluster 
+
+<table class="tg">
+  <tr>
+    <th class="tg-cly1">cluster-version ➝ </th>
+    <th class="tg-cly1">1.12</th>
+    <th class="tg-0lax">1.13</th>
+    <th class="tg-0lax">1.14</th>
+    <th class="tg-0lax">1.15</th>
+    <th class="tg-0lax">1.16</th>
+  </tr>
+  <tr>
+    <td class="tg-cly1">0.9</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-0lax">-</td>
+    <td class="tg-0lax">-</td>
+    <td class="tg-0lax">-</td>
+    <td class="tg-0lax">-</td>
+  </tr>
+  <tr>
+    <td class="tg-cly1">0.9.1</td>
+    <td class="tg-cly1">✔️</td>
+    <td class="tg-0lax">-</td>
+    <td class="tg-0lax">-</td>
+    <td class="tg-0lax">-</td>
+    <td class="tg-0lax">-</td>
+  </tr>
+  <tr>
+    <td class="tg-cly1">0.9.2</td>
+    <td class="tg-cly1">+</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">-</td>
+    <td class="tg-0lax">-</td>
+  </tr>
+  <tr>
+    <td class="tg-cly1">0.9.3</td>
+    <td class="tg-cly1">+</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">-</td>
+    <td class="tg-0lax">-</td>
+  </tr>
+  <tr>
+    <td class="tg-cly1">0.9.4</td>
+    <td class="tg-cly1">+</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">✔️</td>
+    <td class="tg-0lax">✔️</td>
+  </tr>
+</table>
+
+Key: 
+
+* `✔` Supported version 
+* `-` Unsupported version
+* `+` Backward compatible
+
 
 ### Contributing
 

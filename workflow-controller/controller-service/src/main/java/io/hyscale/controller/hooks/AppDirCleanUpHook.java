@@ -18,7 +18,7 @@ package io.hyscale.controller.hooks;
 import io.hyscale.commons.component.InvokerHook;
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.utils.HyscaleFilesUtil;
+import io.hyscale.commons.io.HyscaleFilesUtil;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
 import org.slf4j.Logger;

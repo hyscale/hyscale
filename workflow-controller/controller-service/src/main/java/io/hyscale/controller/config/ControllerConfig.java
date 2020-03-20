@@ -31,7 +31,7 @@ import io.hyscale.commons.exception.HyscaleErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.core.exception.ControllerErrorCodes;
+import io.hyscale.controller.exception.ControllerErrorCodes;
 
 /**
  * Controller level config details such as docker registry config, kube config
@@ -56,18 +56,6 @@ public class ControllerConfig {
     public void init() throws HyscaleException {
         this.defaultKubeConf = SetupConfig.USER_HOME_DIR + ToolConstants.FILE_SEPARATOR + defaultKubeConfAsString;
         this.defaultRegistryConf = SetupConfig.USER_HOME_DIR + ToolConstants.FILE_SEPARATOR + defaultRegistryConfAsString;
-        validate(defaultRegistryConf, false, ControllerErrorCodes.DOCKER_CONFIG_NOT_FOUND);
-        validate(defaultKubeConf, true, ControllerErrorCodes.KUBE_CONFIG_NOT_FOUND);
-    }
-
-    private void validate(String path, boolean kubeConf, HyscaleErrorCode hyscaleErrorCode) throws HyscaleException {
-        File conffile = new File(path);
-        if (conffile != null && !conffile.exists()) {
-            String confpath = kubeConf ? SetupConfig.getMountPathOfKubeConf(path) : SetupConfig.getMountOfDockerConf(path);
-            WorkflowLogger.error(ControllerActivity.CANNOT_FIND_FILE,
-                    confpath);
-            throw new HyscaleException(hyscaleErrorCode, confpath);
-        }
     }
 
     public String getDefaultRegistryConf() {

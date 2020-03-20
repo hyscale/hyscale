@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.hyscale.commons.config.SetupConfig;
+import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.dockerfile.gen.services.manager.DockerfileEntityManager;
 import io.hyscale.dockerfile.gen.services.constants.DockerfileGenConstants;
 import io.hyscale.dockerfile.gen.services.templates.CommandsTemplateProvider;
@@ -182,6 +183,24 @@ public class DockerScriptManagerImpl implements DockerfileEntityManager {
 			return false;
 		}
 		return true;
+	}
+	
+	/**
+	 * Update script command to remove windows carriage return in scripts
+	 * sed -i 's/\r$//' #scriptfile
+	 * @param scriptFile
+	 * @return script update command
+	 */
+	public String getScriptUpdateCommand(String scriptFile) {
+	    if (StringUtils.isBlank(scriptFile)) {
+	        return scriptFile;
+	    }
+	    
+	    StringBuilder scriptUpdateCmd = new StringBuilder();
+	    scriptUpdateCmd.append(DockerfileGenConstants.WINDOWS_NEW_LINE_CHANGE_COMMAND)
+	        .append(ToolConstants.SPACE).append(scriptFile);
+	    
+	    return scriptUpdateCmd.toString();
 	}
 
 }

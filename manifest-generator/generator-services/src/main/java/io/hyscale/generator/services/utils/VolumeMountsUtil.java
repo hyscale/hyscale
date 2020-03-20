@@ -15,7 +15,7 @@
  */
 package io.hyscale.generator.services.utils;
 
-import io.kubernetes.client.models.V1VolumeMount;
+import io.kubernetes.client.openapi.models.V1VolumeMount;
 
 public class VolumeMountsUtil {
 

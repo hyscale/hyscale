@@ -29,7 +29,7 @@ import io.hyscale.builder.services.config.ImageBuilderConfig;
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.controller.commands.HyscaleCommand;
-import io.hyscale.controller.core.exception.ControllerErrorCodes;
+import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.exception.ExceptionHandler;
 import io.hyscale.controller.util.ResourceCleanUpUtil;
 import io.hyscale.controller.util.ShutdownHook;

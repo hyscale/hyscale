@@ -15,10 +15,11 @@
  */
 package io.hyscale.deployer.services.model;
 
-import io.kubernetes.client.models.V1ContainerStatus;
-import io.kubernetes.client.models.V1Pod;
-
 import java.util.List;
+
+import io.kubernetes.client.openapi.models.V1ContainerState;
+import io.kubernetes.client.openapi.models.V1ContainerStatus;
+import io.kubernetes.client.openapi.models.V1Pod;
 
 public class PodStatusUtil {
 
@@ -55,7 +56,7 @@ public class PodStatusUtil {
         String aggregateStatus = null;
         for (V1ContainerStatus each : containerStatuses) {
             if (withLastState) {
-                if (!each.isReady() && each.getLastState() != null) {
+                if (!each.getReady() && each.getLastState() != null) {
                     if (each.getLastState().getTerminated() != null) {
                         aggregateStatus = each.getLastState().getTerminated().getReason();
                         break;
@@ -88,7 +89,7 @@ public class PodStatusUtil {
         }
         String initContainerStatus = null;
         for (V1ContainerStatus each : initContainerStatuses) {
-            if (each.getState().getTerminated() != null && each.isReady()) {
+            if (each.getState().getTerminated() != null && each.getReady()) {
                 continue;
             } else if (each.getState().getWaiting() != null) {
                 initContainerStatus = each.getState().getWaiting().getReason();
@@ -99,5 +100,22 @@ public class PodStatusUtil {
         }
         return initContainerStatus;
     }
+    
+	public static V1ContainerState getLastState(V1Pod pod) {
+		List<V1ContainerStatus> v1ContainerStatus = pod.getStatus().getContainerStatuses();
+		for (V1ContainerStatus containerStatus : v1ContainerStatus) {
+			if (containerStatus.getState().getRunning() == null && !containerStatus.getReady()) {
+				return containerStatus.getLastState();
+			}
+		}
+		return null;
+	}
+
+	public static Integer getExitCode(V1ContainerState v1ContainerState) {
+		if (v1ContainerState!=null && v1ContainerState.getTerminated() != null) {
+			return v1ContainerState.getTerminated().getExitCode();
+		}
+		return null;
+	}
 
 }

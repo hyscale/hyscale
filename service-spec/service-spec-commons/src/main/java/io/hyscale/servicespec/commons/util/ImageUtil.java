@@ -15,13 +15,13 @@
  */
 package io.hyscale.servicespec.commons.util;
 
-import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
-import io.hyscale.servicespec.commons.model.service.Image;
-import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.apache.commons.lang3.StringUtils;
 
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.service.Image;
+import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 
 public class ImageUtil {
@@ -30,7 +30,7 @@ public class ImageUtil {
 
     /**
      * Get complete image name from service spec
-     * @param serviceSpec 
+     * @param serviceSpec
      * @return image complete name
      * registry url + "/" + imageName:tag
      * 1. registry url is null - imageName:tag
@@ -38,24 +38,36 @@ public class ImageUtil {
      * @throws HyscaleException
      */
     public static String getImage(ServiceSpec serviceSpec) throws HyscaleException {
-        if(serviceSpec == null){
+        if (serviceSpec == null) {
             return null;
         }
         Image image = serviceSpec.get(HyscaleSpecFields.image, Image.class);
-        if(image == null){
+        if (image == null) {
             return null;
         }
         StringBuilder sb = new StringBuilder();
         sb.append(getImageWithoutTag(image));
         String tag = image.getTag();
-        if(StringUtils.isNotBlank(tag)){
-                sb.append(ToolConstants.COLON);
-                sb.append(tag);
-            }
+        if (StringUtils.isNotBlank(tag)) {
+            sb.append(ToolConstants.COLON);
+            sb.append(tag);
+        }
         return sb.toString();
     }
 
-    private static String getImageWithoutTag(Image image){
+    public static String getImageWithoutTag(ServiceSpec serviceSpec) throws HyscaleException {
+        if (serviceSpec == null) {
+            return null;
+        }
+        Image image = serviceSpec.get(HyscaleSpecFields.image, Image.class);
+        if (image == null) {
+            return null;
+        }
+        return getImageWithoutTag(image);
+    }
+
+
+    private static String getImageWithoutTag(Image image) {
         String registryUrl = image.getRegistry();
         StringBuilder sb = new StringBuilder();
         if (StringUtils.isNotBlank(registryUrl)) {
@@ -63,7 +75,7 @@ public class ImageUtil {
             sb.append(DELIMITER);
         }
         String imageName = image.getName();
-        if(StringUtils.isNotBlank(imageName)) {
+        if (StringUtils.isNotBlank(imageName)) {
             sb.append(imageName);
         }
         return sb.toString();
@@ -81,11 +93,11 @@ public class ImageUtil {
      */
 
     public static String getImageWithDigest(ServiceSpec serviceSpec, String digest) throws HyscaleException {
-        if(serviceSpec == null){
+        if (serviceSpec == null) {
             return null;
         }
         Image image = serviceSpec.get(HyscaleSpecFields.image, Image.class);
-        if(image == null){
+        if (image == null) {
             return null;
         }
         StringBuilder stringBuilder = new StringBuilder();

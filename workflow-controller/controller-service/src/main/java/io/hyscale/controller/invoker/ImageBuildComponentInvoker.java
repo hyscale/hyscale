@@ -20,6 +20,7 @@ import javax.annotation.PostConstruct;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.constants.WorkflowConstants;
+import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.manager.RegistryManager;
 import io.hyscale.controller.model.WorkflowContext;
 
@@ -33,7 +34,6 @@ import io.hyscale.commons.component.ComponentInvoker;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DockerfileEntity;
-import io.hyscale.controller.core.exception.ControllerErrorCodes;
 import io.hyscale.controller.hooks.ImageCleanUpHook;
 import io.hyscale.builder.services.service.ImageBuildPushService;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;

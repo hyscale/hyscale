@@ -38,13 +38,13 @@ import io.hyscale.deployer.services.model.ServiceAddress;
 import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
 import io.hyscale.deployer.services.util.K8sServiceUtil;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.ApiException;
-import io.kubernetes.client.apis.CoreV1Api;
-import io.kubernetes.client.models.V1DeleteOptions;
-import io.kubernetes.client.models.V1LoadBalancerIngress;
-import io.kubernetes.client.models.V1Service;
-import io.kubernetes.client.models.V1ServiceList;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.apis.CoreV1Api;
+import io.kubernetes.client.openapi.models.V1DeleteOptions;
+import io.kubernetes.client.openapi.models.V1LoadBalancerIngress;
+import io.kubernetes.client.openapi.models.V1Service;
+import io.kubernetes.client.openapi.models.V1ServiceList;
 import io.kubernetes.client.custom.V1Patch;
 
 public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
@@ -137,7 +137,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 	try {
 	    String labelSelector = label ? selector : null;
 	    String fieldSelector = label ? null : selector;
-	    V1ServiceList v1ServiceList = coreV1Api.listNamespacedService(namespace, null, null, fieldSelector,
+	    V1ServiceList v1ServiceList = coreV1Api.listNamespacedService(namespace, TRUE, null, null, fieldSelector,
 		    labelSelector, null, null, null, null);
 	    v1Services = v1ServiceList != null ? v1ServiceList.getItems() : null;
 	} catch (ApiException e) {
@@ -200,7 +200,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 	WorkflowLogger.startActivity(activityContext);
 	try {
 	    try {
-			coreV1Api.deleteNamespacedService(name, namespace, TRUE, deleteOptions, null, null, null, null);
+			coreV1Api.deleteNamespacedService(name, namespace, TRUE, null, null, null, null, deleteOptions);
 	    } catch (JsonSyntaxException e) {
 		// K8s end exception ignore
 	    }

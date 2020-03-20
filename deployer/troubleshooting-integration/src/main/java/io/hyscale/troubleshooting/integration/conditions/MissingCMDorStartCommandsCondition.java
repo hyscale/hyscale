@@ -27,7 +27,7 @@ import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
 import io.hyscale.troubleshooting.integration.models.*;
 import io.hyscale.troubleshooting.integration.actions.DockerfileCMDMissingAction;
-import io.kubernetes.client.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1Pod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,7 +97,7 @@ public class MissingCMDorStartCommandsCondition extends ConditionNode<Troublesho
             throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
         }
 
-        String dockerInstallCommand = commandProvider.getDockerInstalledCommand();
+        String dockerInstallCommand = commandProvider.dockerVersion();
         if (!CommandExecutor.execute(dockerInstallCommand)) {
             report.setRecommendedFix(DOCKER_INSTALLATION_NOTFOUND_MESSAGE);
             context.addReport(report);
@@ -105,7 +105,7 @@ public class MissingCMDorStartCommandsCondition extends ConditionNode<Troublesho
         }
 
 
-        CommandResult result = CommandExecutor.executeAndGetResults(commandProvider.getImageInspectCommand(image));
+        CommandResult result = CommandExecutor.executeAndGetResults(commandProvider.dockerInspect(image));
         if (result == null || StringUtils.isEmpty(result.getCommandOutput()) || result.getExitCode() != 0) {
             report.setRecommendedFix(String.format(IMAGE_NOT_FOUND_LOCALLY, image));
             context.addReport(report);

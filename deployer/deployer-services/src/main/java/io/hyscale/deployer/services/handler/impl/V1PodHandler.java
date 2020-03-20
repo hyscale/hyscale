@@ -25,8 +25,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonSyntaxException;
-import com.squareup.okhttp.Call;
-import com.squareup.okhttp.Response;
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
+import okhttp3.OkHttpClient.Builder;
+import okhttp3.Response;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
@@ -40,14 +42,14 @@ import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.ApiException;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.PodLogs;
-import io.kubernetes.client.apis.CoreV1Api;
-import io.kubernetes.client.models.V1ContainerStatus;
-import io.kubernetes.client.models.V1DeleteOptions;
-import io.kubernetes.client.models.V1Pod;
-import io.kubernetes.client.models.V1PodList;
+import io.kubernetes.client.openapi.apis.CoreV1Api;
+import io.kubernetes.client.openapi.models.V1ContainerStatus;
+import io.kubernetes.client.openapi.models.V1DeleteOptions;
+import io.kubernetes.client.openapi.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1PodList;
 import io.kubernetes.client.custom.V1Patch;
 
 public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
@@ -132,7 +134,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 		String fieldSelector = label ? null : selector;
 		List<V1Pod> v1Pods = null;
 		try {
-			V1PodList v1PodList = coreV1Api.listNamespacedPod(namespace, TRUE, null, fieldSelector, labelSelector,
+			V1PodList v1PodList = coreV1Api.listNamespacedPod(namespace, TRUE, null, null, fieldSelector, labelSelector,
 					null, null, null, null);
 			v1Pods = v1PodList != null ? v1PodList.getItems() : null;
 		} catch (ApiException e) {
@@ -186,10 +188,10 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
 
 		V1DeleteOptions deleteOptions = getDeleteOptions();
-		deleteOptions.setApiVersion("apps/v1beta2");
+		deleteOptions.setApiVersion("apps/v1");
 		try {
 		    try {
-				coreV1Api.deleteNamespacedPod(name, namespace, TRUE,deleteOptions, null, null, null, null);
+				coreV1Api.deleteNamespacedPod(name, namespace, TRUE, null, null, null, null, deleteOptions);
 		    } catch (JsonSyntaxException e) {
 			// K8s end exception ignore
 		    } 
@@ -251,15 +253,26 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 			}
 			podName = v1Pods.get(0).getMetadata().getName();
 		}
+		OkHttpClient existingHttpClient = apiClient.getHttpClient();
 		try {
-			apiClient.getHttpClient().setReadTimeout(120, TimeUnit.MINUTES);
+		    // Update timeout
+		    apiClient.setHttpClient(getUpdatedHttpClient(existingHttpClient));
 			PodLogs logs = new PodLogs(apiClient);
 			return logs.streamNamespacedPodLog(namespace, podName, containerName, null, readLines,
 					true);
 		} catch (IOException | ApiException e) {
 			LOGGER.error("Failed to tail Pod logs for service {} in namespace {} ", serviceName, namespace);
 			throw new HyscaleException(DeployerErrorCodes.FAILED_TO_TAIL_POD, serviceName, namespace);
-		}
+		} finally {
+		    apiClient.setHttpClient(existingHttpClient);
+        }
+	}
+	
+	private OkHttpClient getUpdatedHttpClient(OkHttpClient existingHttpClient) {
+	    Builder newClientBuilder = existingHttpClient.newBuilder()
+	            .readTimeout(120, TimeUnit.MINUTES);
+	    
+	    return newClientBuilder.build();
 	}
 
 	public InputStream getLogs(ApiClient apiClient, String name, String namespace, Integer readLines)
@@ -280,7 +293,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 		try {
 			CoreV1Api coreClient = new CoreV1Api(apiClient);
 			Call call = coreClient.readNamespacedPodLogCall(podName, namespace, containerName, false, null, TRUE, false, null,
-					readLines, true, null, null);
+					readLines, true, null);
 			Response response = call.execute();
 			if (!response.isSuccessful()) {
 				LOGGER.error("Failed to get Pod logs for service {} in namespace {} : {}", serviceName, namespace,
@@ -294,6 +307,29 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 			throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_LOGS, serviceName, namespace);
 		}
 	}
+	
+    public List<V1Pod> getPodsForAllNamespaces(ApiClient apiClient) throws HyscaleException {
+        return getPodsForAllNamespaces(apiClient, null, true);
+    }
+
+    public List<V1Pod> getPodsForAllNamespaces(ApiClient apiClient, String selector, boolean label)
+            throws HyscaleException {
+        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+        String labelSelector = label ? selector : null;
+        String fieldSelector = label ? null : selector;
+        List<V1Pod> v1Pods = null;
+        try {
+            V1PodList v1PodList = coreV1Api.listPodForAllNamespaces(null, null, fieldSelector, labelSelector, null,
+                    TRUE, null, null, null);
+            v1Pods = v1PodList != null ? v1PodList.getItems() : null;
+        } catch (ApiException e) {
+            HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_BY_SELECTOR);
+            LOGGER.error("Error while listing Pods in all namespace, with selectors {},  error {}", selector,
+                    ex.toString());
+            throw ex;
+        }
+        return v1Pods;
+    }
 
 	// Integrate this check to K8sUtil
 	private void waitForContainerCreation(ApiClient apiClient, V1Pod v1Pod, String name, String namespace) {
@@ -310,7 +346,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 							.filter(each -> {
 								return each.getName().equals(name);
 							}).findFirst().get();
-					containerReady = v1ContainerStatus.isReady();
+					containerReady = v1ContainerStatus.getReady();
 					// TODO Check if container is in error state and exit fast
 				}
 				Thread.sleep(5 * 1000);

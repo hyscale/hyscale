@@ -23,18 +23,17 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.ResourceLabelUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.impl.V1PodHandler;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.models.V1PersistentVolumeClaim;
-import io.kubernetes.client.models.V1PersistentVolumeClaimVolumeSource;
-import io.kubernetes.client.models.V1Pod;
-import io.kubernetes.client.models.V1PodSpec;
-import io.kubernetes.client.models.V1Volume;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimVolumeSource;
+import io.kubernetes.client.openapi.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1PodSpec;
+import io.kubernetes.client.openapi.models.V1Volume;
 
 /**
  * Utility to get volume related information from resource
@@ -81,9 +80,9 @@ public class KubernetesVolumeUtil {
 
 	/**
 	 * Get volume name from pvc
-	 * pvc name = volume_name-app_name-service_name-index
+	 * pvc name = volume_name-service_name-index
 	 * @param pvcName
-	 * @return volume_name
+	 * @return volumeName
 	 */
 	public static String getVolumeName(V1PersistentVolumeClaim pvc) {
 		if (pvc == null) {
@@ -98,9 +97,7 @@ public class KubernetesVolumeUtil {
 			return pvcName;
 		}
 
-		String suffix = appName + ToolConstants.DASH + serviceName;
-
-		int indexOfSuffix = pvcName.indexOf(suffix);
+		int indexOfSuffix = pvcName.indexOf(serviceName);
 		
 		if (indexOfSuffix > 0) {
 		    return pvcName.substring(0, indexOfSuffix - 1);

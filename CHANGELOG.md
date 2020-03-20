@@ -1,3 +1,18 @@
+# v0.9.4 Release
+
+This is a minor release to support windows,  1.16 cluster support , improved troubleshooting error scope 
+
+### Features:
+
+* Improved troubleshooting error scope to pod parent 
+* Support for 1.16 Kubernetes clusters.  
+* Support for windows as a binary.
+
+### Fixes
+
+* Image clean up with a policy after building images from hyscale.
+* Added multiple default storage classes validation.
+
 # v0.9.3 Release
 
 This is a minor release to support schema validation, replica logs & troubleshooting.

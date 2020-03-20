@@ -18,18 +18,18 @@ package io.hyscale.generator.services.generator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.hyscale.generator.services.builder.DefaultLabelBuilder;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.AppMetaData;
+import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
-import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.openapi.models.V1ObjectMeta;
 
 public class MetadataManifestSnippetGenerator {
 
-	public static ManifestSnippet getMetaData(ManifestResource manifestResource, AppMetaData appMetaData)
+	public static ManifestSnippet getMetaData(ManifestResource manifestResource, ServiceMetadata serviceMetadata)
 			throws JsonProcessingException {
 		V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
-		v1ObjectMeta.setLabels(DefaultLabelBuilder.build(appMetaData));
-		v1ObjectMeta.setName(manifestResource.getName(appMetaData));
+		v1ObjectMeta.setLabels(DefaultLabelBuilder.build(serviceMetadata));
+		v1ObjectMeta.setName(manifestResource.getName(serviceMetadata));
 
 		ManifestSnippet snippet = new ManifestSnippet();
 		snippet.setSnippet(JsonSnippetConvertor.serialize(v1ObjectMeta));
@@ -38,7 +38,7 @@ public class MetadataManifestSnippetGenerator {
 		return snippet;
 	}
 
-	public static ManifestSnippet getApiVersion(ManifestResource manifestResource, AppMetaData metaDataContext) {
+	public static ManifestSnippet getApiVersion(ManifestResource manifestResource, ServiceMetadata metaDataContext) {
 		ManifestSnippet apiVersionSnippet = new ManifestSnippet();
 		apiVersionSnippet.setPath("apiVersion");
 		apiVersionSnippet.setKind(manifestResource.getKind());

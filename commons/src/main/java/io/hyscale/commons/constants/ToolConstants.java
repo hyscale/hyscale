@@ -20,6 +20,8 @@ public class ToolConstants {
     public static final String CHARACTER_ENCODING = "UTF-8";
 
     public static final String AT_SIGN = "@";
+    
+    public static final String COMMAND_SEPARATOR = "&&";
 
     public static final String COLON = ":";
 
@@ -43,7 +45,7 @@ public class ToolConstants {
     
     public static final String LINUX_FILE_SEPARATOR = "/";
 
-    public static final String HYSCALE = "Hyscale";
+    public static final String HYSCALE = "HyScale";
 
     public static final String VERSION_KEY = "Version";
 

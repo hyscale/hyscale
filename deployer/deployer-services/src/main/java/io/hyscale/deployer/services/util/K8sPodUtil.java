@@ -26,10 +26,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import io.hyscale.commons.constants.K8SRuntimeConstants;
 import io.hyscale.deployer.services.model.PodCondition;
-import io.kubernetes.client.models.V1ContainerStatus;
-import io.kubernetes.client.models.V1OwnerReference;
-import io.kubernetes.client.models.V1Pod;
-import io.kubernetes.client.models.V1PodCondition;
+import io.kubernetes.client.openapi.models.V1ContainerStatus;
+import io.kubernetes.client.openapi.models.V1OwnerReference;
+import io.kubernetes.client.openapi.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1PodCondition;
 
 /**
  * Created by sameerag on 12/9/18.
@@ -118,7 +118,7 @@ public class K8sPodUtil {
 		}
 		String aggregateStatus = null;
 		for (V1ContainerStatus each : containerStatuses) {
-			if (!each.isReady() && each.getLastState() != null) {
+			if (!each.getReady() && each.getLastState() != null) {
 				if (each.getLastState().getTerminated() != null) {
 					aggregateStatus = each.getLastState().getTerminated().getReason();
 					break;
@@ -165,7 +165,7 @@ public class K8sPodUtil {
 		}
 		String initContainerStatus = null;
 		for (V1ContainerStatus each : initContainerStatuses) {
-			if (each.getState().getTerminated() != null && each.isReady()) {
+			if (each.getState().getTerminated() != null && each.getReady()) {
 				continue;
 			} else if (each.getState().getWaiting() != null) {
 				initContainerStatus = each.getState().getWaiting().getReason();
@@ -271,7 +271,7 @@ public class K8sPodUtil {
 		}
 		String initContainerStatus = null;
 		for (V1ContainerStatus each : initContainerStatuses) {
-			if (each.getState().getTerminated() != null && each.isReady()) {
+			if (each.getState().getTerminated() != null && each.getReady()) {
 				continue;
 			} else if (each.getState().getWaiting() != null) {
 				initContainerStatus = each.getState().getWaiting().getMessage();

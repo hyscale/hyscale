@@ -26,7 +26,7 @@ import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.model.ManifestGeneratorActivity;
 import io.hyscale.generator.services.builder.DefaultLabelBuilder;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.AppMetaData;
+import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.generator.services.model.ResourceName;
 import io.hyscale.generator.services.generator.MetadataManifestSnippetGenerator;
 import org.apache.commons.codec.binary.Base64;
@@ -50,7 +50,7 @@ import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
-import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.openapi.models.V1ObjectMeta;
 
 @Component
 @ManifestPlugin(name = "ImagePullSecretHandler")
@@ -71,15 +71,15 @@ public class ImagePullSecretHandler implements ManifestHandler {
         }
 
         String name = imageRegistry.getName() == null ? imageRegistry.getUrl() : imageRegistry.getName();
-        AppMetaData appMetaData = new AppMetaData();
-        appMetaData.setAppName(manifestContext.getAppName());
-        appMetaData.setEnvName(manifestContext.getEnvName());
-        appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
+        ServiceMetadata serviceMetadata = new ServiceMetadata();
+        serviceMetadata.setAppName(manifestContext.getAppName());
+        serviceMetadata.setEnvName(manifestContext.getEnvName());
+        serviceMetadata.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
         logger.debug("Generated image pull secret metadata.");
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         try {
             // Override the name because image-pull-secret has either the registry-name or registry-url as the name of the manifest
-            ManifestSnippet apiVersionSnippet = MetadataManifestSnippetGenerator.getApiVersion(ManifestResource.SECRET, appMetaData);
+            ManifestSnippet apiVersionSnippet = MetadataManifestSnippetGenerator.getApiVersion(ManifestResource.SECRET, serviceMetadata);
 
             //Api Version snippet
             manifestSnippetList.add(apiVersionSnippet);
@@ -87,7 +87,7 @@ public class ImagePullSecretHandler implements ManifestHandler {
             // Get the secret kind of image pull secret
             manifestSnippetList.add(MetadataManifestSnippetGenerator.getKind(ManifestResource.SECRET));
             // Get the labels of secret as image pull secret also have the same set of labels
-            manifestSnippetList.add(getMetaDataSnippet(appMetaData, name));
+            manifestSnippetList.add(getMetaDataSnippet(serviceMetadata, name));
             logger.debug("Added labels to image pull secret manifest snippet.");
             // Get the data of image pull secret
             manifestSnippetList.add(getDataSnippet(imageRegistry));
@@ -117,10 +117,10 @@ public class ImagePullSecretHandler implements ManifestHandler {
         return secretTypeSnippet;
     }
 
-    private ManifestSnippet getMetaDataSnippet(AppMetaData appMetaData, String name)
+    private ManifestSnippet getMetaDataSnippet(ServiceMetadata serviceMetadata, String name)
             throws JsonProcessingException {
         V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
-        v1ObjectMeta.setLabels(DefaultLabelBuilder.build(appMetaData.getAppName(), appMetaData.getEnvName()));
+        v1ObjectMeta.setLabels(DefaultLabelBuilder.build(serviceMetadata.getAppName(), serviceMetadata.getEnvName()));
         v1ObjectMeta.setName(NormalizationUtil.normalize(name));
 
 

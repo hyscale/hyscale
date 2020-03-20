@@ -33,7 +33,7 @@ import io.hyscale.commons.models.K8sBasicAuth;
 import io.hyscale.commons.models.K8sConfigFileAuth;
 import io.hyscale.commons.models.K8sConfigReaderAuth;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
-import io.kubernetes.client.ApiClient;
+import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.util.Config;
 
 @Component

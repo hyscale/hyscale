@@ -15,8 +15,8 @@
  */
 package io.hyscale.troubleshooting.integration.models;
 
-import io.kubernetes.client.models.V1Event;
-import io.kubernetes.client.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1Event;
+import io.kubernetes.client.openapi.models.V1Pod;
 
 import java.util.List;
 
@@ -27,7 +27,8 @@ public enum FailedResourceKey {
     UNREADY_POD(V1Pod.class),
     UNHEALTHY_POD_EVENT(V1Event.class),
     RESTARTS(Boolean.class),
-    OBSERVED_POD_STATUS(String.class);
+    OBSERVED_POD_STATUS(String.class),
+    FAILED_PARENT_EVENT(V1Event.class);
 
     private Class klazz;
 

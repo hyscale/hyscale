@@ -36,13 +36,13 @@ import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.model.ResourceStatus;
 import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.ApiException;
-import io.kubernetes.client.apis.AppsV1beta2Api;
-import io.kubernetes.client.models.V1DeleteOptions;
-import io.kubernetes.client.models.V1beta2Deployment;
-import io.kubernetes.client.models.V1beta2DeploymentList;
-import io.kubernetes.client.models.V1beta2DeploymentStatus;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.apis.AppsV1beta2Api;
+import io.kubernetes.client.openapi.models.V1DeleteOptions;
+import io.kubernetes.client.openapi.models.V1beta2Deployment;
+import io.kubernetes.client.openapi.models.V1beta2DeploymentList;
+import io.kubernetes.client.openapi.models.V1beta2DeploymentStatus;
 import io.kubernetes.client.custom.V1Patch;
 
 public class V1beta2DeploymentHandler implements ResourceLifeCycleHandler<V1beta2Deployment> {
@@ -132,7 +132,7 @@ public class V1beta2DeploymentHandler implements ResourceLifeCycleHandler<V1beta
 			String labelSelector = label ? selector : null;
 			String fieldSelector = label ? null : selector;
 
-			V1beta2DeploymentList v1beta2DeploymentList = appsV1beta2Api.listNamespacedDeployment(namespace, TRUE,
+			V1beta2DeploymentList v1beta2DeploymentList = appsV1beta2Api.listNamespacedDeployment(namespace, TRUE, null, 
 					null, fieldSelector, labelSelector, null, null, null, null);
 
 			v1beta2Deployments = v1beta2DeploymentList != null ? v1beta2DeploymentList.getItems() : null;
@@ -198,7 +198,7 @@ public class V1beta2DeploymentHandler implements ResourceLifeCycleHandler<V1beta
 		WorkflowLogger.startActivity(activityContext);
 		try {
 			try {
-			    appsV1beta2Api.deleteNamespacedDeployment(name, namespace, TRUE, deleteOptions, null, null, null, null);
+			    appsV1beta2Api.deleteNamespacedDeployment(name, namespace, TRUE, null, null, null, null, deleteOptions);
 			} catch (JsonSyntaxException e) {
 			    // K8s end exception ignore
 			}

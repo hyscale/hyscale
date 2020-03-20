@@ -72,16 +72,22 @@ public class StatusComponentInvoker extends ComponentInvoker<WorkflowContext> {
         if (StringUtils.isNotBlank(serviceName)) {
             // Service status command
             DeploymentStatus serviceStatus = deployer.getServiceDeploymentStatus(deploymentContext);
-            serviceStatus.setMessage(getServiceMessage(serviceStatus, deploymentContext));
+            if (serviceStatus != null) {
+                serviceStatus.setMessage(getServiceMessage(serviceStatus, deploymentContext));
+            }
             context.addAttribute(WorkflowConstants.DEPLOYMENT_STATUS, serviceStatus);
             return;
         }
         // App status command
         List<DeploymentStatus> deploymentStatusList = deployer.getDeploymentStatus(deploymentContext);
-        for (DeploymentStatus serviceStatus : deploymentStatusList) {
-            serviceStatus.setMessage(getServiceMessage(serviceStatus, deploymentContext));
+        if (deploymentStatusList != null) {
+            for (DeploymentStatus serviceStatus : deploymentStatusList) {
+                if (serviceStatus != null) {
+                    serviceStatus.setMessage(getServiceMessage(serviceStatus, deploymentContext));
+                }
+            }
+            context.addAttribute(WorkflowConstants.DEPLOYMENT_STATUS_LIST, deploymentStatusList);
         }
-        context.addAttribute(WorkflowConstants.DEPLOYMENT_STATUS_LIST, deploymentStatusList);
         
     }
     

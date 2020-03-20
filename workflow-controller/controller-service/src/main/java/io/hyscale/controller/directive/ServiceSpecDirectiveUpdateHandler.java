@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.ObjectMapperFactory;
-import io.hyscale.controller.core.exception.ControllerErrorCodes;
+import io.hyscale.controller.exception.ControllerErrorCodes;
 
 /**
  * Defines update operation on service spec through json object

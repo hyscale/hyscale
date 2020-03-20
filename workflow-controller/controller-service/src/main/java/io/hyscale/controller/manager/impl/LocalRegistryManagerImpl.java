@@ -15,17 +15,14 @@
  */
 package io.hyscale.controller.manager.impl;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 
-import io.hyscale.commons.config.SetupConfig;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.*;
-import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.builder.ImageRegistryBuilder;
-import io.hyscale.controller.config.ControllerConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,9 +32,18 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.DockerConfig;
+import io.hyscale.commons.models.DockerCredHelper;
+import io.hyscale.commons.models.DockerHubAliases;
+import io.hyscale.commons.models.ImageRegistry;
 import io.hyscale.commons.utils.ObjectMapperFactory;
-import io.hyscale.controller.core.exception.ControllerErrorCodes;
+import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.builder.ImageRegistryBuilder;
+import io.hyscale.controller.config.ControllerConfig;
+import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.manager.RegistryManager;
 
 /**
@@ -75,32 +81,53 @@ public class LocalRegistryManagerImpl implements RegistryManager {
             throw ex;
         }
     }
+   
 
     /**returns image registry credentials if found in docker config in the credHelpers,credsStore or Auths else returns null.
      *
      * @param registry
      * @return ImageRegistry object if found in credHelpers,credsStore or Auths else returns null.
      */
-    @Override
-    public ImageRegistry getImageRegistry(String registry) throws HyscaleException {
-        if (StringUtils.isBlank(registry)) {
-            return null;
-        }
-
-        List<String> dockerRegistryAliases = DockerHubAliases.getDockerRegistryAliases(registry);
-        List<String> registryPatterns = new ArrayList<>();
-        for (String registryAlias : dockerRegistryAliases) {
-            registryPatterns.addAll(getRegistryPatterns(registryAlias));
-        }
-        for (String pattern : registryPatterns) {
-            ImageRegistryBuilder builder = new ImageRegistryBuilder(pattern);
-            DockerCredHelper dockerCredHelper = getDockerCredHelper(pattern);
-            ImageRegistry imageRegistry = dockerCredHelper != null ? builder.from(dockerCredHelper) : builder.from(dockerConfig.getAuths());
-            if (imageRegistry != null) {
-                return imageRegistry;
-            }
-        }
-        return null;
+	@Override
+	public ImageRegistry getImageRegistry(String registry) throws HyscaleException {
+		ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
+		try {
+			TypeReference<DockerConfig> dockerConfigTypeReference = new TypeReference<DockerConfig>() {
+			};
+			dockerConfig = mapper.readValue(new File(controllerConfig.getDefaultRegistryConf()),
+					dockerConfigTypeReference);
+		} catch (IOException e) {
+			    String dockerConfPath = SetupConfig.getMountOfDockerConf(controllerConfig.getDefaultRegistryConf());
+	            WorkflowLogger.error(ControllerActivity.ERROR_WHILE_READING, dockerConfPath, e.getMessage());
+	            HyscaleException ex = new HyscaleException(e, ControllerErrorCodes.DOCKER_CONFIG_NOT_FOUND, dockerConfPath);
+	            logger.error("Error while deserializing image registries {}", ex.toString());
+	            throw ex;
+		}
+		validate(controllerConfig.getDefaultRegistryConf());
+		return getImageRegistry(dockerConfig, registry);
+	}
+    
+    public ImageRegistry getImageRegistry(DockerConfig dockerConfig, String registry) {
+    	
+    	   if (StringUtils.isBlank(registry)) {
+               return null;
+           }
+           
+           List<String> dockerRegistryAliases = DockerHubAliases.getDockerRegistryAliases(registry);
+           List<String> registryPatterns = new ArrayList<>();
+           for (String registryAlias : dockerRegistryAliases) {
+               registryPatterns.addAll(getRegistryPatterns(registryAlias));
+           }
+           for (String pattern : registryPatterns) {
+               ImageRegistryBuilder builder = new ImageRegistryBuilder(pattern);
+               DockerCredHelper dockerCredHelper = getDockerCredHelper(pattern);
+               ImageRegistry imageRegistry = dockerCredHelper != null ? builder.from(dockerCredHelper) : builder.from(dockerConfig.getAuths());
+               if (imageRegistry != null) {
+                   return imageRegistry;
+               }
+           }
+           return null;
+    
     }
 
     /**
@@ -131,5 +158,16 @@ public class LocalRegistryManagerImpl implements RegistryManager {
         String withHttpsAndSuffix = "https://" + registry + "/";
         return Arrays.asList(exactMatch, withHttps, withSuffix, withHttpsAndSuffix);
     }
+    
 
+    
+    private void validate(String path) throws HyscaleException {
+        File confFile = new File(path);
+        if (confFile != null && !confFile.exists()) {
+            String confpath = SetupConfig.getMountOfDockerConf(path);
+            WorkflowLogger.error(ControllerActivity.CANNOT_FIND_FILE,
+                    confpath);
+            throw new HyscaleException(ControllerErrorCodes.DOCKER_CONFIG_NOT_FOUND, confpath);
+        }
+    }
 }

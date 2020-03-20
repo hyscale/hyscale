@@ -5,18 +5,11 @@
 	<parent>
 		<groupId>io.hyscale</groupId>
 		<artifactId>workflow-controller</artifactId>
-		<version>0.9.3</version>
+		<version>0.9.4.1</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>controller-core</artifactId>
 	<packaging>jar</packaging>
 
-	<dependencies>
-		<dependency>
-			<groupId>io.hyscale</groupId>
-			<artifactId>commons</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-	</dependencies>
 </project>

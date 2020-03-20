@@ -29,10 +29,10 @@ import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
-import io.kubernetes.client.ApiClient;
-import io.kubernetes.client.ApiException;
-import io.kubernetes.client.apis.AutoscalingV1Api;
-import io.kubernetes.client.models.*;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.apis.AutoscalingV1Api;
+import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.kubernetes.client.custom.V1Patch;
@@ -132,7 +132,7 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
             String fieldSelector = label ? null : selector;
 
             V1HorizontalPodAutoscalerList v1HorizontalPodAutoscalerList = autoscalingV1Api.listNamespacedHorizontalPodAutoscaler(namespace, TRUE,
-                    null, fieldSelector, labelSelector, null, null, null, null);
+                    null, null, fieldSelector, labelSelector, null, null, null, null);
 
             v1HorizontalPodAutoscalers = v1HorizontalPodAutoscalerList != null ? v1HorizontalPodAutoscalerList.getItems() : null;
         } catch (ApiException e) {
@@ -196,7 +196,7 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
         WorkflowLogger.startActivity(activityContext);
         try {
             try {
-                autoscalingV1Api.deleteNamespacedHorizontalPodAutoscaler(name, namespace, TRUE,deleteOptions, null, null, null, null);
+                autoscalingV1Api.deleteNamespacedHorizontalPodAutoscaler(name, namespace, TRUE, null, null, null, null, deleteOptions);
             } catch (JsonSyntaxException e) {
                 logger.debug("Ignoring delete HorizontalPodAutoScaler exception");
             }

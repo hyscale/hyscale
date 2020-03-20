@@ -39,11 +39,10 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.Manifest;
-import io.hyscale.commons.utils.LogProcessor;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
-import io.hyscale.controller.core.exception.ControllerErrorCodes;
+import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.hooks.K8SResourcesCleanUpHook;
 import io.hyscale.controller.hooks.VolumeCleanUpHook;
 import io.hyscale.controller.hooks.VolumeValidatorHook;
@@ -81,7 +80,7 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
     private DeployerConfig deployerConfig;
 
     @Autowired
-    private LogProcessor logProcessor;
+    private io.hyscale.commons.io.LogProcessor logProcessor;
 
     @Autowired
     private K8SResourcesCleanUpHook k8sResourcesCleanUpHook;
