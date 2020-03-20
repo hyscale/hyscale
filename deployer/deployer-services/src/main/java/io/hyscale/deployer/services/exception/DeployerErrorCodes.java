@@ -44,6 +44,8 @@ public enum DeployerErrorCodes implements HyscaleErrorCode {
     POD_FAILED_READINESS("Pod Readiness failed"),
     FAILED_TO_CREATE_POD("Failed to create pod"),
     FAILED_TO_EXEC_INTO_POD("Failed to exec into pod {} with exitCode {}"),
+    SERVICE_NOT_FOUND("Service {} is not yet deployed in app {}"),
+    K8SAUTHORISATION_NOT_SUPPORTED("K8SAuthorisation not yet supported"),
     OPERATION_NOT_SUPPORTED("Operation {} not supported for resource {}"),
     INVALID_STORAGE_CLASS_FOR_VOLUME("Storage class {} in your hspec is found to be invalid , allowed values from your cluster are {}"),
 	NO_STORAGE_CLASS_IN_K8S("No storage class defined in your kubernetes cluster. Please contact your cluster administrator"),

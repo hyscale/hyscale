@@ -222,7 +222,7 @@ public class CommandExecutor {
 			} catch (Exception e) {
 				 HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_EXECUTE_COMMAND);
 		         logger.error("Error while exec  into pod with error code {}, error {}", exitCode, ex);
-		         return exitCode;
+		         return ex.getCode();
 			}
 			return exitCode;
     }

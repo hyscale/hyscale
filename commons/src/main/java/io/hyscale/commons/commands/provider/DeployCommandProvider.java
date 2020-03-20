@@ -15,6 +15,7 @@
  */
 package io.hyscale.commons.commands.provider;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,24 +31,19 @@ public class DeployCommandProvider {
 	public static final String NAMESPACE="-n";
 	public static final String BASH="bash";
 	public static final String TOKEN="--token";
-	public static final String KUBECONFIG="--kubeConfig";
+	public static final String KUBECONFIG="--kubeconfig";
 	
-	public List<String> getExecCommandByAccessToken(String replicaName, String namespace, String accessToken) {
-		List<String> commands = getCommand(replicaName, namespace);
-		commands.add(TOKEN);
-		commands.add(accessToken);
-		return commands;
-	}
-	
-	public List<String> getExecCommandByKubeconfig(String replicaName, String namespace, String kubeConfig) {
+	public List<String> getExecCommandByKubeConfig(String replicaName, String namespace, File kubeConfigFile) {
 		List<String> commands = getCommand(replicaName, namespace);
 		commands.add(KUBECONFIG);
-		commands.add(kubeConfig);
+		commands.add(kubeConfigFile.toString());
 		return commands;
 	}
 	
 	public List<String> getExecCommandByBasicAuth(String replicaName, String namespace, K8sBasicAuth k8sBasicAuth) {
 		List<String> commands = getCommand(replicaName, namespace);
+		commands.add(TOKEN);
+		commands.add(k8sBasicAuth.getToken());
 		return commands;
 	}
 	

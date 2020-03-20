@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
-import io.hyscale.commons.models.K8sConfigFileAuth;
+import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.deployer.services.deployer.Deployer;
@@ -61,8 +61,7 @@ public class HyscaleExecCommand implements Callable<Integer> {
 		if (!CommandUtil.isInputValid(this)) {
 			return ToolConstants.INVALID_INPUT_ERROR_CODE;
 		}
-		K8sConfigFileAuth k8sConfigFileAuth=(K8sConfigFileAuth) authConfigBuilder.getAuthConfig();
-		return deployer.exec(k8sConfigFileAuth,serviceName, appName, namespace, replicaName);
+	    deployer.exec((K8sAuthorisation)authConfigBuilder.getAuthConfig(),serviceName, appName, namespace, replicaName);
+	    return null;
 	}
-
 }
