@@ -22,7 +22,7 @@ import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.exception.ManifestErrorCodes;
-import io.hyscale.generator.services.model.AppMetaData;
+import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.generator.services.model.ManifestGeneratorActivity;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
@@ -96,15 +96,15 @@ public class AutoScalingPluginHandler implements ManifestHandler {
 
     private Map<String, Object> getContext(Replicas replicas, ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         Map<String, Object> context = new HashMap<>();
-        AppMetaData appMetaData = new AppMetaData();
-        appMetaData.setAppName(manifestContext.getAppName());
-        appMetaData.setEnvName(manifestContext.getEnvName());
-        appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
+        ServiceMetadata serviceMetadata = new ServiceMetadata();
+        serviceMetadata.setAppName(manifestContext.getAppName());
+        serviceMetadata.setEnvName(manifestContext.getEnvName());
+        serviceMetadata.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
         ManifestResource podSpecOwner = null;
         podSpecOwner = ManifestResource.fromString((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         context.put(TARGET_KIND, podSpecOwner.getKind());
         context.put(TARGET_APIVERSION, podSpecOwner.getApiVersion());
-        context.put(TARGET_NAME, podSpecOwner.getName(appMetaData));
+        context.put(TARGET_NAME, podSpecOwner.getName(serviceMetadata));
         context.put(MIN_REPLICAS, replicas.getMin());
         context.put(MAX_REPLICAS, replicas.getMax());
         context.put(AVERAGE_UTILIZATION, normalizeThreshold(replicas.getCpuThreshold()));
