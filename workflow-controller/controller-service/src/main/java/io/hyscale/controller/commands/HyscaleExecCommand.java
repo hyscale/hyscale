@@ -62,6 +62,6 @@ public class HyscaleExecCommand implements Callable<Integer> {
 			return ToolConstants.INVALID_INPUT_ERROR_CODE;
 		}
 	    deployer.exec((K8sAuthorisation)authConfigBuilder.getAuthConfig(),serviceName, appName, namespace, replicaName);
-	    return null;
+	    return 0;
 	}
 }

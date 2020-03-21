@@ -194,8 +194,8 @@ public class KubernetesDeployer implements Deployer {
 	@Override
 	public void exec(K8sAuthorisation k8sAuthorisation, String serviceName, String appName, String namespace,
 			String replicaName) throws HyscaleException {
-		boolean validateReplica=validateReplica(k8sAuthorisation, appName, serviceName, namespace, replicaName);
-		if(!validateReplica) {
+		boolean isReplicaValid=validateReplica(k8sAuthorisation, appName, serviceName, namespace, replicaName);
+		if(!isReplicaValid) {
 		   // TODO throws proper msg
 		    HyscaleException ex = new HyscaleException(DeployerErrorCodes.SERVICE_NOT_FOUND, serviceName,appName);
 		    throw ex;
@@ -212,19 +212,19 @@ public class KubernetesDeployer implements Deployer {
 		case BASIC_AUTH:
 			K8sBasicAuth k8sBasicAuth = (K8sBasicAuth) k8sAuthorisation;
 			commands = deployCommandProvider.getExecCommandByBasicAuth(replicaName, namespace, k8sBasicAuth);
-			exitCode = CommandExecutor.executeWithParentIO(commands);
 			break;
 
 		case KUBE_CONFIG_FILE:
 			K8sConfigFileAuth k8sConfigFileAuth = (K8sConfigFileAuth) k8sAuthorisation;
 			commands=deployCommandProvider.getExecCommandByKubeConfig(replicaName, namespace, k8sConfigFileAuth.getK8sConfigFile());
-			exitCode = CommandExecutor.executeWithParentIO(commands);
 			break;
 
 		default: 
 			throw new HyscaleException(DeployerErrorCodes.K8SAUTHORISATION_NOT_SUPPORTED);
 			
 		}
+		exitCode = CommandExecutor.executeWithParentIO(commands);
+
 		if (exitCode != 0) {
 			throw new HyscaleException(DeployerErrorCodes.FAILED_TO_EXEC_INTO_POD, replicaName,
 					Integer.toString(exitCode));
@@ -232,16 +232,11 @@ public class KubernetesDeployer implements Deployer {
 	}
 	
 	private boolean validateReplica(AuthConfig authConfig, String appName,String serviceName, String namespace, String replicaName) throws HyscaleException {
-		List<ReplicaInfo> replicaInfos=null;
-		replicaInfos=getReplicas(authConfig, appName, serviceName, namespace, false);
-		if(replicaInfos==null && replicaInfos.isEmpty()) {
+		List<ReplicaInfo> replicaInfos=getReplicas(authConfig, appName, serviceName, namespace, false);
+		if(replicaInfos==null) {
 		 throw new HyscaleException(DeployerErrorCodes.SERVICE_NOT_FOUND, serviceName,appName);
 		}
-		Set<String> replicaNames=new HashSet<String>();
-		for(ReplicaInfo replicaInfo:replicaInfos) {
-			replicaNames.add(replicaInfo.getName());
-		}
-		return replicaNames.contains(replicaName);
+		return replicaInfos.stream().anyMatch(existing -> existing.getName().equals(replicaName));
 	}
 
     @Override
