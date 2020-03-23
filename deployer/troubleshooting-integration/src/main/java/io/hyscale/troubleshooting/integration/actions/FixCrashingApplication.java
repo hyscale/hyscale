@@ -35,6 +35,7 @@ import io.kubernetes.client.openapi.models.V1Pod;
 public class FixCrashingApplication extends ActionNode<TroubleshootingContext> {
 
 	private static final Logger logger = LoggerFactory.getLogger(FixCrashingApplication.class);
+	private static final String EXIT_CODE="exit code ";
 
 	@Override
 	public void process(TroubleshootingContext context) {
@@ -53,7 +54,7 @@ public class FixCrashingApplication extends ActionNode<TroubleshootingContext> {
 			context.addReport(report);
 			return;
 		}
-		
+
 		if (lastState.equals(PodStatus.OOMKILLED.getStatus())) {
 			report.setReason(AbstractedErrorMessage.NOT_ENOUGH_MEMORY_FOUND
 					.formatReason(context.getServiceInfo().getServiceName()));
@@ -64,15 +65,17 @@ public class FixCrashingApplication extends ActionNode<TroubleshootingContext> {
 		} else {
 			V1ContainerState v1ContainerState = PodStatusUtil.getLastState(pod);
 			Integer statusCode = PodStatusUtil.getExitCode(v1ContainerState);
-			PodStatusCode.Signals signals = PodStatusCode.Signals.fromCode(statusCode);
-			if (signals != null) {
-				report.setReason(AbstractedErrorMessage.SERVICE_COMMANDS_FAILURE.formatReason(signals.getSignal()));
-			} else {
+			if (statusCode!=null) {
+				PodStatusCode.Signals signals = PodStatusCode.Signals.fromCode(statusCode);
+				String exitCode = (signals != null) ? signals.getSignal() : EXIT_CODE + statusCode.toString();
+				report.setReason(AbstractedErrorMessage.SERVICE_COMMANDS_FAILURE.formatReason(exitCode));
+			}else {
 				report.setReason(AbstractedErrorMessage.APPLICATION_CRASH.getReason());
 			}
 			report.setRecommendedFix(AbstractedErrorMessage.APPLICATION_CRASH.getMessage());
 		}
 		context.addReport(report);
+
 	}
 
 	@Override

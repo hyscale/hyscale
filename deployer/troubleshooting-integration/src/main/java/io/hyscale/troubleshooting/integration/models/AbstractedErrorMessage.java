@@ -36,7 +36,8 @@ public enum AbstractedErrorMessage implements IMessage, IReason {
     MULTIPLE_DEFAULT_STORAGE_CLASS("Volume creation failed. More than 1 default storage class configured on the cluster.","Provide a storage class name in the service spec or contact your cluster administrator to configure a single default storage class."),
     INVALID_RESOURCE_NAME("{} available in cluster is invalid.", "Fix the resource name and redeploy"),
     TRY_AFTER_SOMETIME("Deployment is still in progress, service is not yet ready.", "Try querying after sometime."),
-    SERVICE_COMMANDS_FAILURE("Service startup commands failed with {}" , "Possible errors in startCommands in service spec or ENTRYPOINT/CMD in Dockerfile");
+    SERVICE_COMMANDS_FAILURE("Service startup commands failed with {}" , "Possible errors can be in startCommands of hspec or ENTRYPOINT/CMD in Dockerfile");
+
 
     private String message;
     private String reason;
