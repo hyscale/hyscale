@@ -65,9 +65,13 @@ public class FixCrashingApplication extends ActionNode<TroubleshootingContext> {
 		} else {
 			V1ContainerState v1ContainerState = PodStatusUtil.getLastState(pod);
 			Integer statusCode = PodStatusUtil.getExitCode(v1ContainerState);
-			PodStatusCode.Signals signals = PodStatusCode.Signals.fromCode(statusCode);
-			String exitCode = (signals != null) ? signals.getSignal() : EXIT_CODE + statusCode.toString();
-			report.setReason(AbstractedErrorMessage.SERVICE_COMMANDS_FAILURE.formatReason(exitCode));
+			if (statusCode!=null) {
+				PodStatusCode.Signals signals = PodStatusCode.Signals.fromCode(statusCode);
+				String exitCode = (signals != null) ? signals.getSignal() : EXIT_CODE + statusCode.toString();
+				report.setReason(AbstractedErrorMessage.SERVICE_COMMANDS_FAILURE.formatReason(exitCode));
+			}else {
+				report.setReason(AbstractedErrorMessage.SERVICE_COMMANDS_FAILURE.getMessage());
+			}
 			report.setRecommendedFix(AbstractedErrorMessage.APPLICATION_CRASH.getMessage());
 		}
 		context.addReport(report);
