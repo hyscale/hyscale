@@ -35,6 +35,7 @@ import io.kubernetes.client.openapi.models.V1Pod;
 public class FixCrashingApplication extends ActionNode<TroubleshootingContext> {
 
 	private static final Logger logger = LoggerFactory.getLogger(FixCrashingApplication.class);
+	private static final String WITH_EXIT_CODE="with exit code ";
 
 	@Override
 	public void process(TroubleshootingContext context) {
@@ -68,7 +69,7 @@ public class FixCrashingApplication extends ActionNode<TroubleshootingContext> {
 			if (signals != null) {
 				report.setReason(AbstractedErrorMessage.SERVICE_COMMANDS_FAILURE.formatReason(signals.getSignal()));
 			} else {
-				report.setReason(AbstractedErrorMessage.SERVICE_COMMANDS_FAILURE_WITH_UNRESOLVE_EXITCODE.formatReason(statusCode.toString()));
+				report.setReason(AbstractedErrorMessage.SERVICE_COMMANDS_FAILURE.formatReason(WITH_EXIT_CODE+statusCode.toString()));
 			}
 			report.setRecommendedFix(AbstractedErrorMessage.APPLICATION_CRASH.getMessage());
 		}
