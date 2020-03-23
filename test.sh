@@ -5,5 +5,5 @@
 #docker build  -t registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER .
 echo "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxaaa"
 #docker push registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER
-echo "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+echo "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyaayyyyyyyyyyy"
 #docker rmi -f registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER
