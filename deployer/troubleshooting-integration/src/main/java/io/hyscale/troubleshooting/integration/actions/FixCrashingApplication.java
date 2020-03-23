@@ -70,7 +70,7 @@ public class FixCrashingApplication extends ActionNode<TroubleshootingContext> {
 				String exitCode = (signals != null) ? signals.getSignal() : EXIT_CODE + statusCode.toString();
 				report.setReason(AbstractedErrorMessage.SERVICE_COMMANDS_FAILURE.formatReason(exitCode));
 			}else {
-				report.setReason(AbstractedErrorMessage.SERVICE_COMMANDS_FAILURE.getMessage());
+				report.setReason(AbstractedErrorMessage.APPLICATION_CRASH.getReason());
 			}
 			report.setRecommendedFix(AbstractedErrorMessage.APPLICATION_CRASH.getMessage());
 		}
