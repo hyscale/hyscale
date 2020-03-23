@@ -53,7 +53,7 @@ public class FixCrashingApplication extends ActionNode<TroubleshootingContext> {
 			context.addReport(report);
 			return;
 		}
-		
+
 		if (lastState.equals(PodStatus.OOMKILLED.getStatus())) {
 			report.setReason(AbstractedErrorMessage.NOT_ENOUGH_MEMORY_FOUND
 					.formatReason(context.getServiceInfo().getServiceName()));
@@ -68,11 +68,12 @@ public class FixCrashingApplication extends ActionNode<TroubleshootingContext> {
 			if (signals != null) {
 				report.setReason(AbstractedErrorMessage.SERVICE_COMMANDS_FAILURE.formatReason(signals.getSignal()));
 			} else {
-				report.setReason(AbstractedErrorMessage.APPLICATION_CRASH.getReason());
+				report.setReason(AbstractedErrorMessage.SERVICE_COMMANDS_FAILURE_WITH_UNRESOLVE_EXITCODE.formatReason(statusCode.toString()));
 			}
 			report.setRecommendedFix(AbstractedErrorMessage.APPLICATION_CRASH.getMessage());
 		}
 		context.addReport(report);
+
 	}
 
 	@Override
