@@ -15,12 +15,16 @@
  */
 package io.hyscale.generator.services.plugins;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import io.hyscale.commons.utils.NormalizationUtil;
+import io.hyscale.generator.services.model.ResourceName;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
+import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.hyscale.servicespec.commons.util.ImageUtil;
@@ -49,6 +53,8 @@ public class ImageHandler implements ManifestHandler {
         List<ManifestSnippet> snippetList = new ArrayList<>();
         snippetList.add(getImageSnippet(serviceSpec, manifestContext));
         snippetList.add(getImagePullPolicy(serviceSpec, manifestContext));
+        snippetList.add(getImagePullSecretName((String) manifestContext.getGenerationAttribute(ManifestGenConstants.IMAGE_PULL_SECRET_NAME),
+                (String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)));
         return snippetList;
     }
 
@@ -67,7 +73,7 @@ public class ImageHandler implements ManifestHandler {
         String image = null;
         if (StringUtils.isNotBlank(imageShaId)) {
             logger.debug("Preparing image with its digest.");
-            image = ImageUtil.getImageWithDigest(serviceSpec,imageShaId);
+            image = ImageUtil.getImageWithDigest(serviceSpec, imageShaId);
         } else {
             logger.debug("Preparing image directly from given tag.");
             image = ImageUtil.getImage(serviceSpec);
@@ -78,5 +84,21 @@ public class ImageHandler implements ManifestHandler {
         imageSnippet.setPath("spec.template.spec.containers[0].image");
         imageSnippet.setKind(podSpecOwner);
         return imageSnippet;
+    }
+
+    private ManifestSnippet getImagePullSecretName(String name, String podSpecOwner) {
+        List<ResourceName> resourceNameList = new ArrayList<>();
+        ResourceName resourceName = new ResourceName();
+        resourceName.setName(NormalizationUtil.normalize(name));
+        resourceNameList.add(resourceName);
+        ManifestSnippet imgPullSecretNamesnippet = new ManifestSnippet();
+        try {
+            imgPullSecretNamesnippet.setKind(podSpecOwner);
+            imgPullSecretNamesnippet.setPath("spec.template.spec.imagePullSecrets");
+            imgPullSecretNamesnippet.setSnippet(JsonSnippetConvertor.serialize(resourceNameList));
+        } catch (JsonProcessingException e) {
+            logger.error("Error while generating image pull secret manifest {}", e);
+        }
+        return imgPullSecretNamesnippet;
     }
 }
