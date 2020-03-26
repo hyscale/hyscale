@@ -18,10 +18,7 @@
         },
         "args": {
           "description": "args is the list of build arguments to be passed during container image build. should be given in this format <key>=<value> ",
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
+          "$ref": "#/definitions/io.hyscale.api.map.string"
         }
       },
       "type": "object"
@@ -30,7 +27,7 @@
       "description": "Describes artifact source and destination inside container.",
       "properties": {
         "name": {
-          "description": "defines the name of the artifacti. should be unique",
+          "description": "defines the name of the artifact. should be unique",
           "type": "string"
         },
         "source": {
@@ -86,7 +83,7 @@
       "type": "object"
     },
     "io.hyscale.api.image.Image": {
-      "description": "Describes container Image could be from dockerfile or buildSpec",
+      "description": "Describes container Image, could be from dockerfile or buildSpec",
       "properties": {
         "name": {
           "description": "Name of final Image",
@@ -94,7 +91,15 @@
         },
         "tag": {
           "description": "tag defines the final image tag",
-          "type": "string"
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*"
+            },
+            {
+              "type": "number"
+            }
+          ]
         },
         "registry": {
           "description": "docker registry url along with namespace",
@@ -129,7 +134,8 @@
       "additionalProperties": {
         "type": [
           "string",
-          "integer"
+          "number",
+          "boolean"
         ]
       }
     },
@@ -137,7 +143,7 @@
       "description": "Defines the keys of any attribute the service",
       "type": "array",
       "items": {
-        "type": "string",
+        "type": ["string","number"],
         "description": "string key"
       }
     },
@@ -266,8 +272,15 @@
         ],
         "properties": {
           "port": {
-            "type": "string",
-            "pattern": "(([0-9])+)(\\/(tcp|TCP|udp|UDP|http|HTTP|https|HTTPS))?",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string",
+                "pattern": "(([0-9])+)(\\/(tcp|TCP|udp|UDP|http|HTTP|https|HTTPS))?"
+              }
+            ],
             "description": "defines port number along with type. default type is tcp."
           },
           "healthCheck": {
@@ -317,7 +330,7 @@
           },
           "props": {
             "$ref": "#/definitions/io.hyscale.api.map.string",
-            "description": "Describes the properties of the service as key-value pairs "
+            "description": "Describes the properties of the service sidecar as key-value pairs "
           },
           "propsVolumePath": {
             "$ref": "#/definitions/io.hyscale.api.props.PropsVolumePath",
