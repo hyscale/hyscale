@@ -17,7 +17,6 @@ package io.hyscale.controller.commands;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.lang3.StringUtils;
@@ -39,16 +38,18 @@ import picocli.CommandLine.Option;
 
 /**
  * 
- * This class executes 'hyscale get deployments' command.
+ * This class executes 'hyscale get apps' command.
  *  It is a sub-command of the 'hyscale get' command
  *  @see HyscaleGetCommand .
+ *  It also act as parent command to perform app level operation like get status
+ *  @see HyscaleAppStatusCommand
  *  Every command/sub-command has to implement the {@link Callable} so that
  *  whenever the command is executed the {@link #call()}
  *  method will be invoked
  *
  * @option wide - to display extra information
  *
- * Eg: hyscale get deployments --wide
+ * Eg: hyscale get apps --wide
  *
  * Fetches all the apps and services deployed on the cluster.
  * If user selects wide option services are also shown else only namespace and apps
@@ -56,9 +57,9 @@ import picocli.CommandLine.Option;
  * @author tushar
  *
  */
-@Command(name = "deployments", description = "Get all deployments from cluster.")
+@Command(name = "apps", aliases =  "app", subcommands = { HyscaleAppStatusCommand.class }, description = "Operates on the application specified.")
 @Component
-public class HyscaleGetDeploymentsCommand implements Callable<Integer> {
+public class HyscaleGetAppsCommand implements Callable<Integer> {
 
     @Option(names = { "-h", "--help" }, usageHelp = true, description = "Displays the  help information of the specified command")
     private boolean helpRequested = false;
