@@ -329,14 +329,16 @@ public class VolumeValidatorHook implements InvokerHook<WorkflowContext> {
 		}
 	}
 
-	private boolean matchStorageClass(String existing, String modified) {
-		if (StringUtils.isBlank(modified)) {
-			return (existing != null && getDefaultStorageClass() != null) ? existing.equals(getDefaultStorageClass())
-					: false;
-		}
-		if (StringUtils.isNotBlank(existing) && StringUtils.isNotBlank(modified)) {
-			return existing.equals(modified);
-		}
-		return false;
-	}
+    private boolean matchStorageClass(String existing, String modified) {
+        if (StringUtils.isBlank(modified)) {
+            List<String> defaultStorageClassList = getDefaultStorageClass();
+            return (existing != null && defaultStorageClassList != null && defaultStorageClassList.size() == 1)
+                    ? existing.equals(defaultStorageClassList.get(0))
+                    : false;
+        }
+        if (StringUtils.isNotBlank(existing) && StringUtils.isNotBlank(modified)) {
+            return existing.equals(modified);
+        }
+        return false;
+    }
 }

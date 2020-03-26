@@ -128,10 +128,10 @@ Options:
 
 HyScale abstracts the generation of Kubernetes manifests for deployments, however a user can generate the Kubernetes manifests without deployment using the "generate service manifests" command. The command requires service name, the application name as inputs, additionally profile can also be provided for a service. Multiple service names (-f `<serviceName1>`.hspec -f `<serviceName2>`.hspec `<serviceNameN>`.hspec or comma separated -f `<serviceName1>`.hspec,`<serviceName2>`.hspec) can be provided to generate Kubernetes manifests for multiple services. Additionally profiles files (-p `<profileName1>-<serviceName1>`.hprof -p `<profileName2>-<serviceName2>`.hprof -p `<profileNameN>-<serviceNameN>`.hprof or comma separated -p `<profileName1>-<serviceName1>`.hprof,`<profileName2>-<serviceName2>`.hprof) can also be provided for services. At max one profile is allowed per service.
 
-## get deployments
+## get apps
 
 ```markdown
-Usage: hyscale get deployments [OPTIONS]
+Usage: hyscale get apps [OPTIONS]
 
 Display application along with the namespace they are deployed in.
 
@@ -140,7 +140,7 @@ Options:
 ```
 #### Description
 
-To get all the deployed applications, use "get deployments" command. The command will display all the applications along with namespace deployed through hyscale. To view additional information like services, user can select the wide option.
+To get all the deployed applications, use "get apps" command. The command will display all the applications along with namespace deployed through hyscale. To view additional information like services, user can select the wide option.
 
 ## Tool Options Description:
 
