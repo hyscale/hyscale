@@ -47,12 +47,11 @@ import picocli.CommandLine.Option;
  *  whenever the command is executed the {@link #call()}
  *  method will be invoked
  *
- * @option wide - to display extra information
+ * TODO @option wide - to display extra information
  *
- * Eg: hyscale get apps --wide
+ * Eg: hyscale get apps
  *
- * Fetches all the apps and services deployed on the cluster.
- * If user selects wide option services are also shown else only namespace and apps
+ * Displays all the apps along with namespace deployed on the cluster.
  * 
  * @author tushar
  *
@@ -64,7 +63,7 @@ public class HyscaleGetAppsCommand implements Callable<Integer> {
     @Option(names = { "-h", "--help" }, usageHelp = true, description = "Displays the  help information of the specified command")
     private boolean helpRequested = false;
 
-    @Option(names = { "--wide" }, required = false, description = "Display additional information like services.")
+//    @Option(names = { "--wide" }, required = false, description = "Display additional information like services.")
     private boolean wide = false;
 
     @Autowired

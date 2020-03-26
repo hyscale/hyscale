@@ -131,16 +131,15 @@ HyScale abstracts the generation of Kubernetes manifests for deployments, howeve
 ## get apps
 
 ```markdown
-Usage: hyscale get apps [OPTIONS]
+Usage: hyscale get apps
 
 Display application along with the namespace they are deployed in.
 
-Options:
---wide                   `Optional` display additional information like services
+
 ```
 #### Description
 
-To get all the deployed applications, use "get apps" command. The command will display all the applications along with namespace deployed through hyscale. To view additional information like services, user can select the wide option.
+To get all the deployed applications, use "get apps" command. The command will display all the applications along with namespace deployed through hyscale.
 
 ## Tool Options Description:
 
