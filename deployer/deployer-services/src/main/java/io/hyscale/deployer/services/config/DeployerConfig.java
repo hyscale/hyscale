@@ -33,49 +33,42 @@ import javax.annotation.PostConstruct;
 @PropertySource("classpath:config/deployer-config.props")
 public class DeployerConfig {
 
-	private static final String DEPLOY_LOG = "deploy.log";
+    private static final String DEPLOY_LOG = "deploy.log";
 
-	private static final String SERVICE_LOG = "service.log";
+    private static final String SERVICE_LOG = "service.log";
 
-	@Value(("${hyscale.ctl.k8s.pod.log.tail.lines:100}"))
-	private int defaultTailLines;
+    @Value(("${hyscale.ctl.k8s.pod.log.tail.lines:100}"))
+    private int defaultTailLines;
 
-	@Value(("${hyscale.ctl.k8s.max.lb.ready.timeout.ms:90000}"))
-	private long lbMaxReadyTimeout;
+    @Autowired
+    private SetupConfig setupConfig;
 
-	@Autowired
-	private SetupConfig setupConfig;
+    public int getDefaultTailLines() {
+        return defaultTailLines;
+    }
 
-	public int getDefaultTailLines() {
-		return defaultTailLines;
-	}
+    /**
+     * @param appName
+     * @param serviceName
+     * @return deploy logs directory
+     */
+    public String getDeployLogDir(String appName, String serviceName) {
+        StringBuilder sb = new StringBuilder(setupConfig.getLogsDir(appName, serviceName));
+        sb.append(DEPLOY_LOG);
+        return sb.toString();
+    }
 
-	/**
-	 * @param appName
-	 * @param serviceName
-	 * @return deploy logs directory
-	 */
-	public String getDeployLogDir(String appName, String serviceName) {
-		StringBuilder sb = new StringBuilder(setupConfig.getLogsDir(appName, serviceName));
-		sb.append(DEPLOY_LOG);
-		return sb.toString();
-	}
+    /**
+     *
+     * @param appName
+     * @param serviceName
+     * @return service logs directory
+     */
+    public String getServiceLogDir(String appName, String serviceName) {
+        StringBuilder sb = new StringBuilder(setupConfig.getLogsDir(appName, serviceName));
+        sb.append(SERVICE_LOG);
+        return sb.toString();
+    }
 
-	/**
-	 * 
-	 * @param appName
-	 * @param serviceName
-	 * @return service logs directory
-	 */
-	public String getServiceLogDir(String appName, String serviceName) {
-		StringBuilder sb = new StringBuilder(setupConfig.getLogsDir(appName, serviceName));
-		sb.append(SERVICE_LOG);
-		return sb.toString();
-	}
-
-
-	public long getLbMaxReadyTimeout() {
-		return lbMaxReadyTimeout;
-	}
 
 }
