@@ -30,12 +30,13 @@ jobs:
         prefix: client
 
     # Runs a single command using the runners shell
-    #- name: Run a one-line script
-    #run: |
-          #echo xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    - name: Run a one-line script
+      run: |
+          echo xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
           #echo $BUILD_NUMBER
-          #     sed -i "s|@@BUILD_NUMBER@@|$Hyscale_Docker_Image_Tag.$BUILD_NUMBER|g" scripts/*
-          #sed -i "s|@@HYSCALE_BUILD_VERSION@@|$Hyscale_Docker_Image_Tag.$BUILD_NUMBER|g" scripts/*
+          sed -i "s|@@BUILD_NUMBER@@|$Hyscale_Docker_Image_Tag.$BUILD_NUMBER|g" scripts/*
+          sed -i "s|@@HYSCALE_BUILD_VERSION@@|$Hyscale_Docker_Image_Tag.$BUILD_NUMBER|g" scripts/*
+          cat scripts/hyscale
           #docker push registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER
           #docker rmi -f registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER
 
@@ -46,3 +47,13 @@ jobs:
         registry: registry.hyscale.io
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - uses: jakejarvis/s3-sync-action@master
+      with:
+        args: --acl public-read --follow-symlinks --delete
+      env:
+        AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: 'us-west-2'   # optional: defaults to us-east-1
+        SOURCE_DIR: 'scripts'      # optional: defaults to entire repository
