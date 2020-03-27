@@ -56,4 +56,3 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: 'us-west-2'   # optional: defaults to us-east-1
         SOURCE_DIR: 'scripts'      # optional: defaults to entire repository
-        DEST_DIR: '/'
