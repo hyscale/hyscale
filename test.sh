@@ -3,7 +3,7 @@
 #cp /var/jenkins_home/hyscale/$BUILD_NUMBER/hyscale-tool-ops/Dockerfile /var/jenkins_home/hyscale/$BUILD_NUMBER/hyscale-ctl/
 #cd /var/jenkins_home/hyscale/$BUILD_NUMBER/hyscale-ctl/
 #docker build  -t registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER .
-echo "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxaaa"
+echo "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 #docker push registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER
-echo "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyaayyyyyyyyyyy"
+echo "yyyyyyaaayyyyyyyyyyyyyyyyyyyyya"
 #docker rmi -f registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER

@@ -1,5 +1,3 @@
-![CircleCI](https://circleci.com/gh/srujankujmar/hyscale/tree/circleci-project-setup.svg?style=svg)
-
 ![HyScale](https://www.hyscale.io/wp-content/uploads/2019/01/hyscale-logo.png)
 
 ### The K8s App Deployment Tool 
