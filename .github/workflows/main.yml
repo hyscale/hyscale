@@ -36,6 +36,7 @@ jobs:
           #echo $BUILD_NUMBER
           sed -i "s|@@BUILD_NUMBER@@|$Hyscale_Docker_Image_Tag.$BUILD_NUMBER|g" scripts/*
           sed -i "s|@@HYSCALE_BUILD_VERSION@@|$Hyscale_Docker_Image_Tag.$BUILD_NUMBER|g" scripts/*
+          cat scripts/hyscale
           #docker push registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER
           #docker rmi -f registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER
 
