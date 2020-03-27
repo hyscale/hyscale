@@ -49,8 +49,6 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - uses: jakejarvis/s3-sync-action@master
-      with:
-        args: --acl public-read
       env:
         #FILE: scripts/hyscale
         AWS_S3_BUCKET: 'wavemaker-downloading-testing'
