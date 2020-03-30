@@ -32,7 +32,7 @@ jobs:
     # Runs a single command using the runners shell
     - name: Run a one-line script
       run: |
-          echo xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          echo xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
           #echo $BUILD_NUMBER
           sed -i "s|@@BUILD_NUMBER@@|$Hyscale_Docker_Image_Tag.$BUILD_NUMBER|g" scripts/*
           sed -i "s|@@HYSCALE_BUILD_VERSION@@|$Hyscale_Docker_Image_Tag.$BUILD_NUMBER|g" scripts/*
