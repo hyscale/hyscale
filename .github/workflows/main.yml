@@ -39,6 +39,7 @@ jobs:
           cat scripts/hyscale
           #docker push registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER
           #docker rmi -f registry.hyscale.io/hyscale/hyscale:test.$BUILD_NUMBER
+          echo ::set-env name=PULL_NUMBER::$(echo "$GITHUB_REF" | awk -F / '{print $3}')
 
     - uses: mr-smithers-excellent/docker-build-push@v2
       with:
