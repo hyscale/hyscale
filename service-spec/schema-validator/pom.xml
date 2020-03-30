@@ -7,11 +7,6 @@
 		<version>0.9.4.1</version>
 	</parent>
 	
-	<properties>
-	    <hspec.supported.version>0.6.1.1</hspec.supported.version>
-		<hprof.supported.version>0.6.1.1</hprof.supported.version>
-	</properties>
-
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>schema-validator</artifactId>
 	<name>schema-validator</name>
@@ -35,7 +30,7 @@
                 <version>1.5.0</version>
                 <executions>
                     <execution >
-                     <id>hspec-service-json-download</id>
+                     <id>hspec-service-json</id>
                         <goals>
                             <goal>wget</goal>
                         </goals>
@@ -45,16 +40,15 @@
                                 <outputDirectory>src/main/resources/hspec/${hspec.supported.version}</outputDirectory>
                         </configuration>
                  </execution> 
-                 
                  <execution>
-                         <id>hprof-service-json-download</id>
+                         <id>hprof-service-json</id>
                         <goals>
                             <goal>wget</goal>
                         </goals>
                         <configuration>
                                 <mkdir dir="src/main/resources/hprof/${hprof.supported.version}"/>
-                                <url>https://raw.githubusercontent.com/hyscale/hyscale/master/service-spec/schema-validator/src/main/resources/hprof/${hprof.supported.version}/profile-spec.json</url>
-                                <outputDirectory>src/main/resources/hprof/${hprof.supported.version}</outputDirectory>
+                                <url>https://raw.githubusercontent.com/hyscale/hyscale/master/service-spec/schema-validator/src/main/resources/hprof/${hspec.supported.version}/profile-spec.json</url>
+                                <outputDirectory>src/main/resources/hprof/${hspec.supported.version}</outputDirectory>
                         </configuration>
                  </execution> 
                 </executions>
