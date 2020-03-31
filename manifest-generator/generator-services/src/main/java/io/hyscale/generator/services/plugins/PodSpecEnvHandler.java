@@ -23,7 +23,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.DecoratedArrayList;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.AppMetaData;
+import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.generator.services.provider.PropsProvider;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
@@ -50,10 +50,10 @@ public class PodSpecEnvHandler implements ManifestHandler {
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         List<ManifestSnippet> snippetList = new ArrayList<>();
-        AppMetaData appMetaData = new AppMetaData();
-        appMetaData.setAppName(manifestContext.getAppName());
-        appMetaData.setEnvName(manifestContext.getEnvName());
-        appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
+        ServiceMetadata serviceMetadata = new ServiceMetadata();
+        serviceMetadata.setAppName(manifestContext.getAppName());
+        serviceMetadata.setEnvName(manifestContext.getEnvName());
+        serviceMetadata.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
         String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
 
         List<V1EnvVar> envVarList = new DecoratedArrayList<V1EnvVar>();
@@ -62,14 +62,14 @@ public class PodSpecEnvHandler implements ManifestHandler {
             Props props = PropsProvider.getProps(serviceSpec);
             if (ManifestPredicates.getPropsPredicate().test(serviceSpec)) {
                 logger.debug("Preparing Pod Spec env's from props.");
-                envVarList.addAll(getPodSpecEnv(props, appMetaData));
+                envVarList.addAll(getPodSpecEnv(props, serviceMetadata));
             }
 
             // Preparing Pod Spec secrets from props
             Secrets secrets = serviceSpec.get(HyscaleSpecFields.secrets, Secrets.class);
             if (ManifestPredicates.getSecretsEnvPredicate().test(serviceSpec)) {
                 logger.debug("Preparing Pod Spec env's from secrets.");
-                envVarList.addAll(getSecretsSnippet(secrets, appMetaData));
+                envVarList.addAll(getSecretsSnippet(secrets, serviceMetadata));
             }
             if (envVarList.isEmpty()) {
                 return null;
@@ -88,13 +88,13 @@ public class PodSpecEnvHandler implements ManifestHandler {
     }
 
 
-    private List<V1EnvVar> getSecretsSnippet(Secrets secrets, AppMetaData appMetaData) {
-        String secretName = ManifestResource.SECRET.getName(appMetaData);
+    private List<V1EnvVar> getSecretsSnippet(Secrets secrets, ServiceMetadata serviceMetadata) {
+        String secretName = ManifestResource.SECRET.getName(serviceMetadata);
         return PodSpecEnvUtil.getSecretEnv(secrets,secretName);
     }
 
-    private List<V1EnvVar> getPodSpecEnv(Props props, AppMetaData appMetaData) {
-        String configMapName = ManifestResource.CONFIG_MAP.getName(appMetaData);
+    private List<V1EnvVar> getPodSpecEnv(Props props, ServiceMetadata serviceMetadata) {
+        String configMapName = ManifestResource.CONFIG_MAP.getName(serviceMetadata);
         return PodSpecEnvUtil.getPropEnv(props,configMapName);
     }
 }

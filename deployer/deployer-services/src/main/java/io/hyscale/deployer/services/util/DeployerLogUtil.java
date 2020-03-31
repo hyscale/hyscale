@@ -28,8 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.io.LogProcessor;
 import io.hyscale.commons.models.AuthConfig;
-import io.hyscale.commons.utils.LogProcessor;
 import io.hyscale.deployer.services.deployer.Deployer;
 
 /**

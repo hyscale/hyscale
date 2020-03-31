@@ -16,40 +16,40 @@
 package io.hyscale.commons.commands;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.exec.ExecuteWatchdog;
+import org.apache.commons.exec.Executor;
+import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.hyscale.commons.config.SetupConfig;
+import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.io.HyscaleFilesUtil;
+import io.hyscale.commons.io.StringOutputStream;
 import io.hyscale.commons.models.CommandResult;
-import io.hyscale.commons.utils.HyscaleFilesUtil;
-import io.hyscale.commons.utils.ThreadPoolUtil;
 
 /**
- * Class to execute commands using java process
+ * Class to execute commands using apache commons exec {@link https://commons.apache.org/proper/commons-exec/}
  * Use case:
  * To execute command and check if it was successful
  * To execute command and get output in String
  * To execute command and copy output to a file
  * To execute command in a particular directory
  *
- * <p>
- * In case file is not provided, an async thread is started
- * to read copy command output to string writer
- * This is done to ensure output buffer is not exhausted
- * This thread runs until the process is alive
- * String writer is used to get command output when required
- * </p>
  */
 public class CommandExecutor {
 
     private static final Logger logger = LoggerFactory.getLogger(CommandExecutor.class);
-
+    
+    private static final long DEFAULT_TIMEOUT_IN_MILLIS = 120000;
+    
     /**
      * @param command to be executed
      * @return {@link CommandResult} which contains command output and exit code
@@ -60,7 +60,6 @@ public class CommandExecutor {
 
     /**
      * Executes command with the given input.
-     *
      *
      * @param command
      * @param stdInput it is passed to the command as input
@@ -86,7 +85,7 @@ public class CommandExecutor {
         CommandResult commandResult = null;
         try {
             commandResult = _execute(command, null, null, null);
-        } catch (IOException | InterruptedException | HyscaleException e) {
+        } catch (IOException | HyscaleException e) {
             HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_EXECUTE_COMMAND, command);
             logger.error("Failed while executing command, error {}", ex.toString());
             return false;
@@ -113,7 +112,7 @@ public class CommandExecutor {
         CommandResult commandResult = null;
         try {
             commandResult = _execute(command, commandOutputFile, dir, null);
-        } catch (IOException | InterruptedException | HyscaleException e) {
+        } catch (IOException | HyscaleException e) {
             HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_EXECUTE_COMMAND, command);
             logger.error("Failed while executing command, error {}", ex.toString());
             return false;
@@ -122,101 +121,83 @@ public class CommandExecutor {
     }
 
     /**
-     * Executes command in the directory specified, uses current directory if not
-     * specified If file provided directs output to file (creates if does not exist)
-     * else Asynchronously copy command output in
-     * {@link CommandResult#setCommandOutput(String)} waits for the process to
-     * complete
-     * if standard input is specified, it is passed as input to the command.
-     *
+     * Uses apache commons exec to execute passed command
+     * 
      * @param command
-     * @param file
+     * @param outputFile output stream for process {@link #getOutputStream(File)}
      * @param dir
      * @param stdInput
      * @return {@link CommandResult}
-     * @throws IOException
-     * @throws InterruptedException
      * @throws HyscaleException
+     * @throws IOException
      */
-    private static CommandResult _execute(String command, File file, String dir, String stdInput)
-            throws IOException, InterruptedException, HyscaleException {
+    private static CommandResult _execute(String command, File outputFile, String dir, String stdInput)
+            throws HyscaleException, IOException {
+        
         CommandResult cmdResult = new CommandResult();
-        int exitCode = 1;
-        cmdResult.setExitCode(exitCode);
         if (StringUtils.isBlank(command)) {
             return cmdResult;
         }
-        ProcessBuilder processBuilder = new ProcessBuilder();
         if (StringUtils.isBlank(dir) || dir.equals(".")) {
             dir = SetupConfig.CURRENT_WORKING_DIR;
         }
-        logger.debug("Executing command {} in dir {}", command, dir);
-        processBuilder.command(command.split(" "));
-        processBuilder.redirectErrorStream(true);
-        if (file != null) {
-            HyscaleFilesUtil.createEmptyFile(file);
-            processBuilder.redirectOutput(file);
-        }
-        Process process = processBuilder.start();
-        handleStandardInput(process, command, stdInput);
+        CommandLine commandToExecute = CommandLine.parse(command);
 
-        boolean readOutput = false;
-        StringWriter strWriter = new StringWriter();
-        if (file == null) {
-            readOutput = copyOutput(process, strWriter);
-        }
+        Executor executor = new DefaultExecutor();
+
+        /*
+         * Stream closing is handled by executor itself
+         */
+        // Output handler
+        OutputStream outputStream = getOutputStream(outputFile);
+
+        // Input handler
+        InputStream inputStream = getInputStream(stdInput);
+
+        // Stream handlers
+        PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream, outputStream, inputStream);
+
+        // Timeout
+        // ExecuteWatchdog watchDog = new ExecuteWatchdog(DEFAULT_TIMEOUT_IN_MILLIS);
+        // executor.setWatchdog(watchDog);
+
+        executor.setStreamHandler(streamHandler);
+        executor.setWorkingDirectory(new File(dir));
+        int exitCode = 1;
         try {
-            exitCode = process.waitFor();
-        } catch (
-                InterruptedException e) {
-            logger.error("Error while waiting for process to complete");
-            throw e;
+            exitCode = executor.execute(commandToExecute);
+        } catch (ExecuteException e) {
+            // timeout case
+            exitCode = e.getExitValue();
         }
-        if (readOutput) {
-            cmdResult.setCommandOutput(strWriter.toString());
+        if (outputFile == null) {
+            cmdResult.setCommandOutput(getCommandOutput(outputStream));
         }
+
         cmdResult.setExitCode(exitCode);
         return cmdResult;
     }
 
-    /**
-     * Copy output from process input stream to string writer
-     *
-     * @param process
-     * @param strWriter
-     * @return is thread started
-     */
-    private static boolean copyOutput(Process process, StringWriter strWriter) {
-        return ThreadPoolUtil.getInstance().execute(() -> {
-            try {
-                do {
-                    IOUtils.copy(process.getInputStream(), strWriter, StandardCharsets.UTF_8);
-                } while (process.isAlive());
-            } catch (IOException e) {
-                logger.error("Error while reading command output", e);
-            }
-        });
+    private static String getCommandOutput(OutputStream outputStream) throws UnsupportedEncodingException {
+        if (outputStream != null && outputStream instanceof StringOutputStream) {
+            return ((StringOutputStream) outputStream).toString();
+        }
+        return null;
     }
 
-
-    /**
-     * Passes input to command.
-     *
-     * @param process
-     * @param command
-     * @param stdInput
-     * @throws HyscaleException
-     */
-    private static void handleStandardInput(Process process, String command, String stdInput) throws HyscaleException {
+    private static InputStream getInputStream(String stdInput) throws UnsupportedEncodingException {
         if (StringUtils.isBlank(stdInput)) {
-            return;
+            return null;
         }
-        try (OutputStream processStdin = process.getOutputStream()) {
-            processStdin.write(stdInput.getBytes(StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_WRITE_STDIN, command);
-            logger.error("Error while writing std input to the process, error {}", ex.toString());
-            throw ex;
-        }
+        return new ByteArrayInputStream(stdInput.getBytes(ToolConstants.CHARACTER_ENCODING));
     }
+
+    private static OutputStream getOutputStream(File outputFile) throws FileNotFoundException, HyscaleException {
+        if (outputFile != null) {
+            HyscaleFilesUtil.createEmptyFile(outputFile);
+            return new FileOutputStream(outputFile);
+        }
+        return new StringOutputStream();
+    }
+    
 }

@@ -307,6 +307,29 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 			throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_LOGS, serviceName, namespace);
 		}
 	}
+	
+    public List<V1Pod> getPodsForAllNamespaces(ApiClient apiClient) throws HyscaleException {
+        return getPodsForAllNamespaces(apiClient, null, true);
+    }
+
+    public List<V1Pod> getPodsForAllNamespaces(ApiClient apiClient, String selector, boolean label)
+            throws HyscaleException {
+        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+        String labelSelector = label ? selector : null;
+        String fieldSelector = label ? null : selector;
+        List<V1Pod> v1Pods = null;
+        try {
+            V1PodList v1PodList = coreV1Api.listPodForAllNamespaces(null, null, fieldSelector, labelSelector, null,
+                    TRUE, null, null, null);
+            v1Pods = v1PodList != null ? v1PodList.getItems() : null;
+        } catch (ApiException e) {
+            HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_BY_SELECTOR);
+            LOGGER.error("Error while listing Pods in all namespace, with selectors {},  error {}", selector,
+                    ex.toString());
+            throw ex;
+        }
+        return v1Pods;
+    }
 
 	// Integrate this check to K8sUtil
 	private void waitForContainerCreation(ApiClient apiClient, V1Pod v1Pod, String name, String namespace) {

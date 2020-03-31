@@ -6,7 +6,7 @@
 		<groupId>io.hyscale</groupId>
 		<version>0.9.5</version>
 	</parent>
-
+	
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>schema-validator</artifactId>
 	<name>schema-validator</name>
@@ -21,4 +21,39 @@
 			<artifactId>commons</artifactId>
 		</dependency>
     </dependencies>
+    
+    <build>
+    <plugins>
+            <plugin>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <version>1.5.0</version>
+                <executions>
+                    <execution >
+                     <id>hspec-service-json</id>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                                <mkdir dir="src/main/resources/hspec/${hspec.supported.version}"/>
+                                <url>https://raw.githubusercontent.com/hyscale/hyscale/master/service-spec/schema-validator/src/main/resources/hspec/${hspec.supported.version}/service-spec.json</url>
+                                <outputDirectory>src/main/resources/hspec/${hspec.supported.version}</outputDirectory>
+                        </configuration>
+                 </execution> 
+                 <execution>
+                         <id>hprof-service-json</id>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                                <mkdir dir="src/main/resources/hprof/${hprof.supported.version}"/>
+                                <url>https://raw.githubusercontent.com/hyscale/hyscale/master/service-spec/schema-validator/src/main/resources/hprof/${hspec.supported.version}/profile-spec.json</url>
+                                <outputDirectory>src/main/resources/hprof/${hspec.supported.version}</outputDirectory>
+                        </configuration>
+                 </execution> 
+                </executions>
+            </plugin>
+
+        </plugins>
+        </build>
 </project>

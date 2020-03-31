@@ -80,5 +80,9 @@ public class ToolConstants {
     public static final String NASHORNS_ARGS = "nashorn.args";
 
     public static final String NASHORNS_DEPRECATION_WARNING_FLAG = "--no-deprecation-warning";
+    
+    public static final String JDK_TLS_CLIENT_PROTOCOLS_ARGS = "jdk.tls.client.protocols";
 
+    public static final String JDK_TLS_CLIENT_VERSION = "TLSv1.2";
+    
 }

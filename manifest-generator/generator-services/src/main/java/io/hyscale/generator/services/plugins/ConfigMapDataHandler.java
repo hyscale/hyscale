@@ -20,7 +20,7 @@ import io.hyscale.generator.services.utils.ConfigMapDataUtil;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
-import io.hyscale.generator.services.model.AppMetaData;
+import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.generator.services.provider.PropsProvider;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
@@ -47,10 +47,10 @@ public class ConfigMapDataHandler implements ManifestHandler {
             logger.debug("Props found to be empty while processing ConfigMap data.");
             return null;
         }
-        AppMetaData appMetaData = new AppMetaData();
-        appMetaData.setAppName(manifestContext.getAppName());
-        appMetaData.setEnvName(manifestContext.getEnvName());
-        appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
+        ServiceMetadata serviceMetadata = new ServiceMetadata();
+        serviceMetadata.setAppName(manifestContext.getAppName());
+        serviceMetadata.setEnvName(manifestContext.getEnvName());
+        serviceMetadata.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
 
         String propsVolumePath = serviceSpec.get(HyscaleSpecFields.propsVolumePath, String.class);
 
@@ -59,7 +59,7 @@ public class ConfigMapDataHandler implements ManifestHandler {
             manifestSnippetList.addAll(ConfigMapDataUtil.build(props,propsVolumePath));
             logger.debug("Added ConfigMap map data to the manifest snippet list");
         } catch (JsonProcessingException e) {
-            logger.error("Error while generating manifest for props of service {}", appMetaData.getServiceName(), e);
+            logger.error("Error while generating manifest for props of service {}", serviceMetadata.getServiceName(), e);
         }
         return manifestSnippetList;
     }

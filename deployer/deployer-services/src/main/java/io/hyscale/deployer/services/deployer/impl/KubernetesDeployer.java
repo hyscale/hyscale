@@ -35,24 +35,23 @@ import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.KubernetesResource;
 import io.hyscale.commons.models.Manifest;
-import io.hyscale.commons.models.ResourceLabelKey;
 import io.hyscale.commons.models.Status;
 import io.hyscale.commons.models.YAMLManifest;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.commons.utils.ThreadPoolUtil;
+import io.hyscale.deployer.core.model.AppMetadata;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ReplicaInfo;
 import io.hyscale.deployer.core.model.ResourceKind;
+import io.hyscale.deployer.services.builder.AppMetadataBuilder;
 import io.hyscale.deployer.services.config.DeployerConfig;
 import io.hyscale.deployer.services.deployer.Deployer;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
-import io.hyscale.deployer.services.handler.impl.V1DeploymentHandler;
 import io.hyscale.deployer.services.handler.impl.V1PersistentVolumeClaimHandler;
 import io.hyscale.deployer.services.handler.impl.V1PodHandler;
 import io.hyscale.deployer.services.handler.impl.V1ServiceHandler;
-import io.hyscale.deployer.services.handler.impl.V1StatefulSetHandler;
 import io.hyscale.deployer.services.predicates.PodPredicates;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.hyscale.deployer.services.util.DeploymentStatusUtil;
@@ -83,6 +82,9 @@ public class KubernetesDeployer implements Deployer {
 
     @Autowired
     private K8sClientProvider clientProvider;
+    
+    @Autowired
+    private AppMetadataBuilder appMetadataBuilder;
     
     @Override
     public void deploy(DeploymentContext context) throws HyscaleException {
@@ -486,6 +488,17 @@ public class KubernetesDeployer implements Deployer {
         // TODO do we need to handle STS cases ??
         logger.debug("Replicas info:: unhandled case, pod owner: {}", podOwner);
         return K8sReplicaUtil.getReplicaInfo(podList);
+    }
+
+    @Override
+    public List<AppMetadata> getAppsMetadata(AuthConfig authConfig) throws HyscaleException {
+        ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
+
+        V1PodHandler podHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
+        
+        List<V1Pod> podList  = podHandler.getPodsForAllNamespaces(apiClient);
+        
+        return appMetadataBuilder.build(podList);
     }
     
 }

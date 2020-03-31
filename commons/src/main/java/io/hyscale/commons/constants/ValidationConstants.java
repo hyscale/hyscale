@@ -16,9 +16,17 @@
 package io.hyscale.commons.constants;
 
 public class ValidationConstants {
+    
+    public static final int NAMESPACE_LENGTH_MAX = 30;
+    
+    public static final int NAMESPACE_LENGTH_MIN = 2;
+    
+    public static final int APP_NAME_LENGTH_MAX = 30;
+    
+    public static final int APP_NAME_LENGTH_MIN = 2;
 
-    public static final String APP_NAME_REGEX = "([a-z0-9-]){2,30}";
-
+    public static final String APP_NAME_REGEX = "([a-z0-9-]){" + APP_NAME_LENGTH_MIN + "," + APP_NAME_LENGTH_MAX + "}";
+    
     public static final String SERVICE_NAME_REGEX = "[a-z]([-a-z0-9]*[a-z0-9])?";
     
     public static final String SERVICE_SPEC_NAME_REGEX = "^" + SERVICE_NAME_REGEX + "(\\.hspec)$";
@@ -27,14 +35,14 @@ public class ValidationConstants {
     
     public static final String PROFILE_FILENAME_REGEX = "^" + PROFILE_NAME_REGEX + ToolConstants.DASH + SERVICE_NAME_REGEX + "(\\.hprof)$";
 
-    public static final String NAMESPACE_REGEX = "([a-z0-9-]){2,30}";
+    public static final String NAMESPACE_REGEX = "([a-z0-9-]){" + NAMESPACE_LENGTH_MIN + "," + NAMESPACE_LENGTH_MAX + "}";
     
     public static final long MIN_LOG_LINES = 1;
     
     public static final long MAX_LOG_LINES = 501;
 
     public static final String INVALID_APP_NAME_MSG = "Application name \"{}\" is invalid. It must consist of lower case alphanumeric characters or '-', "
-            + "its length should be between 2 and 30."
+            + "its length should be between " + APP_NAME_LENGTH_MIN + " and " + APP_NAME_LENGTH_MAX + "."
             + "(regex used for validation is '"
             + APP_NAME_REGEX + "')";
 
@@ -44,7 +52,7 @@ public class ValidationConstants {
             + SERVICE_NAME_REGEX + "')";
 
     public static final String INVALID_NAMESPACE_MSG = "Namespace \"{}\" is invalid. It must consist of lower case alphanumeric characters or '-', "
-            + "its length should be between 2 and 30."
+            + "its length should be between " + NAMESPACE_LENGTH_MIN + " and " + NAMESPACE_LENGTH_MAX + "."
             + "(regex used for validation is '"
             + NAMESPACE_REGEX + "')";
     

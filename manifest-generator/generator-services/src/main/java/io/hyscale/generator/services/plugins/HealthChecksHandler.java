@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
+import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
@@ -37,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,35 +53,40 @@ public class HealthChecksHandler implements ManifestHandler {
     private static final int DEFAULT_TIMEOUT_IN_SECONDS = 30;
     private static final int DEFAULT_FAILURE_THRESHOLD_IN_SECONDS = 10;
     private static final int DEFAULT_SUCESS_THRESHOLD_IN_SECONDS = 1;
-
+    private static final String HTTPS = "HTTPS";
+    
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext context) throws HyscaleException {
         TypeReference<List<Port>> listTypeReference = new TypeReference<List<Port>>() {
         };
         List<Port> portsList = serviceSpec.get(HyscaleSpecFields.ports, listTypeReference);
-
+    
         if (portsList == null || portsList.isEmpty()) {
             logger.debug("Cannot handle HealthChecks as ports are empty.");
             return null;
         }
-        // TODO supporiting single healthcheck
+        // TODO supporting single health check
         boolean healthCheck = false;
         V1Probe v1Probe = new V1Probe();
-        // TODO set successfull threshold
-
+        // TODO set successful threshold
+    
         Optional<Port> httpHealthCheckPort = portsList.stream().filter(each -> {
             return each.getPort() != null && each.getHealthCheck() != null && each.getHealthCheck().getHttpPath() != null;
         }).findFirst();
-
+    
         if (httpHealthCheckPort.isPresent()) {
             Port port = httpHealthCheckPort.get();
             String[] portAndProtocol = port.getPort().split("/");
             String path = port.getHealthCheck().getHttpPath();
             if (StringUtils.isNotBlank(path)) {
-                logger.debug("Adding HTTP HealthCheck for port {} .", port);
+                String protocol = portAndProtocol.length > 1 ? portAndProtocol[1] : null;
+                logger.debug("Protocol {} for HealthCheck for port {} .", protocol, port.getPort());
                 V1HTTPGetAction v1HTTPGetAction = new V1HTTPGetAction();
                 v1HTTPGetAction.setPort(new IntOrString(Integer.valueOf(portAndProtocol[0])));
                 v1HTTPGetAction.setPath(path);
+                if (HTTPS.equalsIgnoreCase(protocol)) {
+                    v1HTTPGetAction.setScheme(HTTPS);
+                }
                 v1Probe.setHttpGet(v1HTTPGetAction);
                 healthCheck = true;
             }
@@ -98,7 +105,7 @@ public class HealthChecksHandler implements ManifestHandler {
                 }
             }
         }
-
+    
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         if (healthCheck) {
             v1Probe.setInitialDelaySeconds(DEFAULT_INITIAL_DELAY_IN_SECONDS);

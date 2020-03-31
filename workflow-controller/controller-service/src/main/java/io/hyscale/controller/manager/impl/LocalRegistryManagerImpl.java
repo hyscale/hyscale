@@ -15,18 +15,13 @@
  */
 package io.hyscale.controller.manager.impl;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
-
-import io.hyscale.commons.config.SetupConfig;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.*;
-import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.builder.ImageRegistryBuilder;
-import io.hyscale.controller.config.ControllerConfig;
-import io.hyscale.controller.exception.ControllerErrorCodes;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -37,8 +32,18 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.DockerConfig;
+import io.hyscale.commons.models.DockerCredHelper;
+import io.hyscale.commons.models.DockerHubAliases;
+import io.hyscale.commons.models.ImageRegistry;
 import io.hyscale.commons.utils.ObjectMapperFactory;
+import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.builder.ImageRegistryBuilder;
+import io.hyscale.controller.config.ControllerConfig;
+import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.manager.RegistryManager;
 
 /**
@@ -52,39 +57,34 @@ public class LocalRegistryManagerImpl implements RegistryManager {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalRegistryManagerImpl.class);
 
-    private static DockerConfig dockerConfig;
+    private LocalDockerConfigBuilder dockerConfigBuilder;
 
     @Autowired
     private ControllerConfig controllerConfig;
 
-    /**Reads local docker config*/
     @PostConstruct
-    public void init() throws HyscaleException {
-        ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
-        try {
-            TypeReference<DockerConfig> dockerConfigTypeReference = new TypeReference<DockerConfig>() {
-            };
-
-            dockerConfig = mapper.readValue(new File(controllerConfig.getDefaultRegistryConf()),
-                    dockerConfigTypeReference);
-
-        } catch (IOException e) {
-            String dockerConfPath = SetupConfig.getMountOfDockerConf(controllerConfig.getDefaultRegistryConf());
-            WorkflowLogger.error(ControllerActivity.ERROR_WHILE_READING, dockerConfPath, e.getMessage());
-            HyscaleException ex = new HyscaleException(e, ControllerErrorCodes.DOCKER_CONFIG_NOT_FOUND, dockerConfPath);
-            logger.error("Error while deserializing image registries {}", ex.toString());
-            throw ex;
-        }
+    public void init() {
+        this.dockerConfigBuilder = new LocalDockerConfigBuilder();
     }
 
-    /**returns image registry credentials if found in docker config in the credHelpers,credsStore or Auths else returns null.
+    /**
+     * returns image registry credentials if found in docker config in the credHelpers,credsStore or Auths else returns null.
      *
      * @param registry
      * @return ImageRegistry object if found in credHelpers,credsStore or Auths else returns null.
      */
     @Override
     public ImageRegistry getImageRegistry(String registry) throws HyscaleException {
+        return getImageRegistry(dockerConfigBuilder.getDockerConfig(), registry);
+    }
+
+    public ImageRegistry getImageRegistry(DockerConfig dockerConfig, String registry) {
+
         if (StringUtils.isBlank(registry)) {
+            return null;
+        }
+
+        if (dockerConfig == null) {
             return null;
         }
 
@@ -95,24 +95,25 @@ public class LocalRegistryManagerImpl implements RegistryManager {
         }
         for (String pattern : registryPatterns) {
             ImageRegistryBuilder builder = new ImageRegistryBuilder(pattern);
-            DockerCredHelper dockerCredHelper = getDockerCredHelper(pattern);
+            DockerCredHelper dockerCredHelper = getDockerCredHelper(dockerConfig, pattern);
             ImageRegistry imageRegistry = dockerCredHelper != null ? builder.from(dockerCredHelper) : builder.from(dockerConfig.getAuths());
             if (imageRegistry != null) {
                 return imageRegistry;
             }
         }
         return null;
+
     }
 
     /**
-     *Returns credential helper if resgistry pattern found  in credHelpers if specified
-     *  or directly credsStore if specified else returns null.
+     * Returns credential helper if resgistry pattern found  in credHelpers if specified
+     * or directly credsStore if specified else returns null.
      *
      * @param pattern
      * @return docker credential helper else returns null
      */
-    public DockerCredHelper getDockerCredHelper(String pattern) {
-        String helperFunc = dockerConfig.getCredHelpers() != null ? getHelperFunction(pattern) : null;
+    private DockerCredHelper getDockerCredHelper(DockerConfig dockerConfig, String pattern) {
+        String helperFunc = dockerConfig.getCredHelpers() != null ? getHelperFunction(dockerConfig, pattern) : null;
         if (helperFunc != null) {
             return new DockerCredHelper(helperFunc);
         } else if (dockerConfig.getCredsStore() != null) {
@@ -121,7 +122,7 @@ public class LocalRegistryManagerImpl implements RegistryManager {
         return null;
     }
 
-    private static String getHelperFunction(String registry) {
+    private static String getHelperFunction(DockerConfig dockerConfig, String registry) {
         return dockerConfig.getCredHelpers().containsKey(registry) ? dockerConfig.getCredHelpers().get(registry) : null;
     }
 
@@ -132,5 +133,59 @@ public class LocalRegistryManagerImpl implements RegistryManager {
         String withHttpsAndSuffix = "https://" + registry + "/";
         return Arrays.asList(exactMatch, withHttps, withSuffix, withHttpsAndSuffix);
     }
+
+
+    private void validate(String path) throws HyscaleException {
+        File confFile = new File(path);
+        if (confFile != null && !confFile.exists()) {
+            String confpath = SetupConfig.getMountOfDockerConf(path);
+            WorkflowLogger.error(ControllerActivity.CANNOT_FIND_FILE,
+                    confpath);
+            throw new HyscaleException(ControllerErrorCodes.DOCKER_CONFIG_NOT_FOUND, confpath);
+        }
+    }
+
+    public class LocalDockerConfigBuilder {
+
+        private LocalDockerConfigBuilder() {
+        }
+
+        private DockerConfig dockerConfig;
+
+        public DockerConfig getDockerConfig() throws HyscaleException {
+            if (dockerConfig != null) {
+                return dockerConfig;
+            } else {
+                build();
+                return dockerConfig;
+            }
+        }
+
+        /**
+         * Reads local docker config
+         */
+        private void build() throws HyscaleException {
+            if (dockerConfig != null) {
+                return;
+            }
+            validate(controllerConfig.getDefaultRegistryConf());
+            ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
+            try {
+                TypeReference<DockerConfig> dockerConfigTypeReference = new TypeReference<DockerConfig>() {
+                };
+
+                this.dockerConfig = mapper.readValue(new File(controllerConfig.getDefaultRegistryConf()),
+                        dockerConfigTypeReference);
+
+            } catch (IOException e) {
+                String dockerConfPath = SetupConfig.getMountOfDockerConf(controllerConfig.getDefaultRegistryConf());
+                WorkflowLogger.error(ControllerActivity.ERROR_WHILE_READING, dockerConfPath, e.getMessage());
+                HyscaleException ex = new HyscaleException(e, ControllerErrorCodes.DOCKER_CONFIG_NOT_FOUND, dockerConfPath);
+                logger.error("Error while deserializing image registries {}", ex.toString());
+                throw ex;
+            }
+        }
+    }
+
 
 }

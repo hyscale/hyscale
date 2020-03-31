@@ -32,7 +32,7 @@ import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Status;
-import io.hyscale.commons.utils.HyscaleFilesUtil;
+import io.hyscale.commons.io.HyscaleFilesUtil;
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.commons.utils.WindowsUtil;
 import io.hyscale.controller.activity.ControllerActivity;

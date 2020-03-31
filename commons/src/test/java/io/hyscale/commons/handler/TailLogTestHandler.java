@@ -15,10 +15,10 @@
  */
 package io.hyscale.commons.handler;
 
-import io.hyscale.commons.utils.TailHandler;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import io.hyscale.commons.utils.TailHandler;
 
 public class TailLogTestHandler implements TailHandler {
 

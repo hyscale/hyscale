@@ -21,7 +21,7 @@ import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
-import io.hyscale.generator.services.model.AppMetaData;
+import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -43,17 +43,17 @@ public class PodSpecLabels implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
-        AppMetaData appMetaData = new AppMetaData();
-        appMetaData.setAppName(manifestContext.getAppName());
-        appMetaData.setEnvName(manifestContext.getEnvName());
-        appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
+        ServiceMetadata serviceMetadata = new ServiceMetadata();
+        serviceMetadata.setAppName(manifestContext.getAppName());
+        serviceMetadata.setEnvName(manifestContext.getEnvName());
+        serviceMetadata.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
         List<ManifestSnippet> snippetList = new ArrayList<>();
         String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         try {
             ManifestSnippet metaDataSnippet = new ManifestSnippet();
             metaDataSnippet.setPath("spec.template.metadata");
             metaDataSnippet.setKind(podSpecOwner);
-            metaDataSnippet.setSnippet(JsonSnippetConvertor.serialize(getTemplateMetaData(appMetaData, podSpecOwner)));
+            metaDataSnippet.setSnippet(JsonSnippetConvertor.serialize(getTemplateMetaData(serviceMetadata, podSpecOwner)));
             snippetList.add(metaDataSnippet);
 
         } catch (JsonProcessingException e) {
@@ -61,9 +61,9 @@ public class PodSpecLabels implements ManifestHandler {
         }
         return snippetList;    }
 
-    private V1ObjectMeta getTemplateMetaData(AppMetaData appMetaData, String podSpecOwner) {
+    private V1ObjectMeta getTemplateMetaData(ServiceMetadata serviceMetadata, String podSpecOwner) {
         V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
-        v1ObjectMeta.setLabels(DefaultLabelBuilder.build(appMetaData));
+        v1ObjectMeta.setLabels(DefaultLabelBuilder.build(serviceMetadata));
         //TODO Add release-version ??
         return v1ObjectMeta;
     }

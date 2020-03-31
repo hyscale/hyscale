@@ -64,7 +64,8 @@ public class HyscaleInitializer implements CommandLineRunner {
     static {
         System.setProperty(ImageBuilderConfig.IMAGE_BUILDER_PROP, ImageBuilder.LOCAL.name());
         System.setProperty(ToolConstants.HYSCALECTL_LOGS_DIR_PROPERTY, SetupConfig.getToolLogDir());
-        System.setProperty(ToolConstants.NASHORNS_ARGS,ToolConstants.NASHORNS_DEPRECATION_WARNING_FLAG);
+        System.setProperty(ToolConstants.NASHORNS_ARGS, ToolConstants.NASHORNS_DEPRECATION_WARNING_FLAG);
+        System.setProperty(ToolConstants.JDK_TLS_CLIENT_PROTOCOLS_ARGS, ToolConstants.JDK_TLS_CLIENT_VERSION);
     }
 
     public static void main(String[] args) {

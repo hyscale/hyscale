@@ -33,17 +33,17 @@ public enum ManifestResource {
 
     STATEFUL_SET("StatefulSet", "apps/v1") {
         @Override
-        public String getName(AppMetaData appMetaData) {
+        public String getName(ServiceMetadata serviceMetadata) {
             StringBuilder sb = new StringBuilder();
-            sb.append(NormalizationUtil.normalize(appMetaData.getAppName()));
-            sb.append(ManifestGenConstants.NAME_DELIMITER);
-            sb.append(NormalizationUtil.normalize(appMetaData.getServiceName()));
+            //sb.append(NormalizationUtil.normalize(serviceMetadata.getAppName()));
+            //sb.append(ManifestGenConstants.NAME_DELIMITER);
+            sb.append(NormalizationUtil.normalize(serviceMetadata.getServiceName()));
             return sb.toString();
         }
 
         @Override
-        public Map<String, String> getLabels(AppMetaData appMetaData) {
-            return DefaultLabelBuilder.build(appMetaData);
+        public Map<String, String> getLabels(ServiceMetadata serviceMetadata) {
+            return DefaultLabelBuilder.build(serviceMetadata);
 
         }
 
@@ -54,17 +54,17 @@ public enum ManifestResource {
     },
     DEPLOYMENT("Deployment", "apps/v1") {
         @Override
-        public String getName(AppMetaData appMetaData) {
+        public String getName(ServiceMetadata serviceMetadata) {
             StringBuilder sb = new StringBuilder();
-            sb.append(NormalizationUtil.normalize(appMetaData.getAppName()));
-            sb.append(ManifestGenConstants.NAME_DELIMITER);
-            sb.append(NormalizationUtil.normalize(appMetaData.getServiceName()));
+            //sb.append(NormalizationUtil.normalize(serviceMetadata.getAppName()));
+            //sb.append(ManifestGenConstants.NAME_DELIMITER);
+            sb.append(NormalizationUtil.normalize(serviceMetadata.getServiceName()));
             return sb.toString();
         }
 
         @Override
-        public Map<String, String> getLabels(AppMetaData appMetaData) {
-            return DefaultLabelBuilder.build(appMetaData);
+        public Map<String, String> getLabels(ServiceMetadata serviceMetadata) {
+            return DefaultLabelBuilder.build(serviceMetadata);
         }
 
         @Override
@@ -76,17 +76,17 @@ public enum ManifestResource {
     },
     CONFIG_MAP("ConfigMap", "v1") {
         @Override
-        public String getName(AppMetaData appMetaData) {
+        public String getName(ServiceMetadata serviceMetadata) {
             StringBuilder sb = new StringBuilder();
-            sb.append(NormalizationUtil.normalize(appMetaData.getAppName()));
+            sb.append(NormalizationUtil.normalize(serviceMetadata.getAppName()));
             sb.append(ManifestGenConstants.NAME_DELIMITER);
-            sb.append(NormalizationUtil.normalize(appMetaData.getServiceName()));
+            sb.append(NormalizationUtil.normalize(serviceMetadata.getServiceName()));
             return sb.toString();
         }
 
         @Override
-        public Map<String, String> getLabels(AppMetaData appMetaData) {
-            return DefaultLabelBuilder.build(appMetaData);
+        public Map<String, String> getLabels(ServiceMetadata serviceMetadata) {
+            return DefaultLabelBuilder.build(serviceMetadata);
         }
 
         // TODO set this value to false by default on props plugin should be true
@@ -98,17 +98,17 @@ public enum ManifestResource {
     },
     SECRET("Secret", "v1") {
         @Override
-        public String getName(AppMetaData appMetaData) {
+        public String getName(ServiceMetadata serviceMetadata) {
             StringBuilder sb = new StringBuilder();
-            sb.append(NormalizationUtil.normalize(appMetaData.getAppName()));
+            sb.append(NormalizationUtil.normalize(serviceMetadata.getAppName()));
             sb.append(ManifestGenConstants.NAME_DELIMITER);
-            sb.append(NormalizationUtil.normalize(appMetaData.getServiceName()));
+            sb.append(NormalizationUtil.normalize(serviceMetadata.getServiceName()));
             return sb.toString();
         }
 
         @Override
-        public Map<String, String> getLabels(AppMetaData appMetaData) {
-            return DefaultLabelBuilder.build(appMetaData);
+        public Map<String, String> getLabels(ServiceMetadata serviceMetadata) {
+            return DefaultLabelBuilder.build(serviceMetadata);
         }
 
         @Override
@@ -119,13 +119,13 @@ public enum ManifestResource {
     },
     SERVICE("Service", "v1") {
         @Override
-        public String getName(AppMetaData appMetaData) {
-            return NormalizationUtil.normalize(appMetaData.getServiceName());
+        public String getName(ServiceMetadata serviceMetadata) {
+            return NormalizationUtil.normalize(serviceMetadata.getServiceName());
         }
 
         @Override
-        public Map<String, String> getLabels(AppMetaData appMetaData) {
-            return DefaultLabelBuilder.build(appMetaData);
+        public Map<String, String> getLabels(ServiceMetadata serviceMetadata) {
+            return DefaultLabelBuilder.build(serviceMetadata);
         }
 
         @Override
@@ -136,17 +136,17 @@ public enum ManifestResource {
     },
     HORIZONTAL_POD_AUTOSCALER("HorizontalPodAutoscaler", "autoscaling/v1") {
         @Override
-        public String getName(AppMetaData appMetaData) {
+        public String getName(ServiceMetadata serviceMetadata) {
             StringBuilder sb = new StringBuilder();
-            sb.append(NormalizationUtil.normalize(appMetaData.getAppName()));
+            sb.append(NormalizationUtil.normalize(serviceMetadata.getAppName()));
             sb.append(ManifestGenConstants.NAME_DELIMITER);
-            sb.append(NormalizationUtil.normalize(appMetaData.getServiceName()));
+            sb.append(NormalizationUtil.normalize(serviceMetadata.getServiceName()));
             return sb.toString();
         }
 
         @Override
-        public Map<String, String> getLabels(AppMetaData appMetaData) {
-            return DefaultLabelBuilder.build(appMetaData);
+        public Map<String, String> getLabels(ServiceMetadata serviceMetadata) {
+            return DefaultLabelBuilder.build(serviceMetadata);
         }
 
         @Override
@@ -183,9 +183,9 @@ public enum ManifestResource {
         return null;
     }
 
-    public abstract String getName(AppMetaData appMetaData);
+    public abstract String getName(ServiceMetadata serviceMetadata);
 
-    public abstract Map<String, String> getLabels(AppMetaData appMetaData);
+    public abstract Map<String, String> getLabels(ServiceMetadata serviceMetadata);
 
     public abstract Predicate<ServiceSpec> getPredicate();
 
