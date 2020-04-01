@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.hooks;
+package io.hyscale.controller.processors;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import io.hyscale.commons.component.InvokerHook;
+import io.hyscale.commons.component.PrePostProcessors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,9 +53,9 @@ import io.kubernetes.client.openapi.models.V1ObjectMeta;
  *
  */
 @Component
-public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
+public class K8SResourcesCleanUpProcessor implements PrePostProcessors<WorkflowContext> {
 
-	private static final Logger logger = LoggerFactory.getLogger(K8SResourcesCleanUpHook.class);
+	private static final Logger logger = LoggerFactory.getLogger(K8SResourcesCleanUpProcessor.class);
 
 	@Autowired
 	private K8sClientProvider clientProvider;
@@ -71,7 +71,7 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 	 * 		2. if doesnot exist in map delete
 	 */
 	@Override
-	public void preHook(WorkflowContext context) throws HyscaleException {
+	public void preProcess(WorkflowContext context) throws HyscaleException {
 		logger.debug("Starting stale kubernetes resource cleanup");
 		ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfigBuilder.getAuthConfig());
 		String serviceName = context.getServiceName();
@@ -146,7 +146,7 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 	}
 
 	@Override
-	public void postHook(WorkflowContext context) throws HyscaleException {
+	public void postProcess(WorkflowContext context) throws HyscaleException {
 
 	}
 

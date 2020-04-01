@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.hooks;
+package io.hyscale.controller.processors;
 
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
-import io.hyscale.commons.component.InvokerHook;
+import io.hyscale.commons.component.PrePostProcessors;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
@@ -32,12 +32,12 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-public class ImageValidatorHook implements InvokerHook<WorkflowContext> {
+public class ImageValidatorProcessor implements PrePostProcessors<WorkflowContext> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ImageValidatorHook.class);
+    private static final Logger logger = LoggerFactory.getLogger(ImageValidatorProcessor.class);
 
     @Override
-    public void preHook(WorkflowContext context) throws HyscaleException {
+    public void preProcess(WorkflowContext context) throws HyscaleException {
         logger.debug("Executing {}", getClass());
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
@@ -50,7 +50,7 @@ public class ImageValidatorHook implements InvokerHook<WorkflowContext> {
     }
 
     @Override
-    public void postHook(WorkflowContext context) throws HyscaleException {
+    public void postProcess(WorkflowContext context) throws HyscaleException {
 
     }
 

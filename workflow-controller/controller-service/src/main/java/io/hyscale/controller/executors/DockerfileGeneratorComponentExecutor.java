@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.invoker;
+package io.hyscale.controller.executors;
 
 import io.hyscale.dockerfile.gen.services.exception.DockerfileErrorCodes;
 import org.slf4j.Logger;
@@ -21,17 +21,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.commons.component.ComponentInvoker;
+import io.hyscale.commons.component.ProcessExecutor;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DockerfileEntity;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.exception.ControllerErrorCodes;
-import io.hyscale.controller.hooks.BuildSpecValidatorHook;
-import io.hyscale.controller.hooks.ImageValidatorHook;
-import io.hyscale.controller.hooks.ServiceDirCleanUpHook;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.controller.processors.BuildSpecValidatorProcessor;
+import io.hyscale.controller.processors.ImageValidatorProcessor;
+import io.hyscale.controller.processors.ServiceDirCleanUpProcessor;
 import io.hyscale.dockerfile.gen.services.model.DockerfileGenContext;
 import io.hyscale.dockerfile.gen.services.generator.DockerfileGenerator;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
@@ -48,27 +48,27 @@ import javax.annotation.PostConstruct;
  * The registered hooks are executed as a part of component invocation
  */
 @Component
-public class DockerfileGeneratorComponentInvoker extends ComponentInvoker<WorkflowContext> {
+public class DockerfileGeneratorComponentExecutor extends ProcessExecutor<WorkflowContext> {
 
-    private static final Logger logger = LoggerFactory.getLogger(DockerfileGeneratorComponentInvoker.class);
+    private static final Logger logger = LoggerFactory.getLogger(DockerfileGeneratorComponentExecutor.class);
 
     @Autowired
     private DockerfileGenerator dockerfileGenerator;
 
     @Autowired
-    private ServiceDirCleanUpHook serviceDirCleanUpHook;
+    private ServiceDirCleanUpProcessor serviceDirCleanUpHook;
 
     @Autowired
-    private BuildSpecValidatorHook buildSpecValidatorHook;
+    private BuildSpecValidatorProcessor buildSpecValidatorHook;
 
     @Autowired
-    private ImageValidatorHook imageValidatorHook;
+    private ImageValidatorProcessor imageValidatorHook;
 
     @PostConstruct
     public void init() {
-        super.addHook(imageValidatorHook);
-        super.addHook(buildSpecValidatorHook);
-        super.addHook(serviceDirCleanUpHook);
+        super.addProcessor(imageValidatorHook);
+        super.addProcessor(buildSpecValidatorHook);
+        super.addProcessor(serviceDirCleanUpHook);
     }
 
     @Override

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.invoker;
+package io.hyscale.controller.executors;
 
 import javax.annotation.PostConstruct;
 
@@ -22,17 +22,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.commons.component.ComponentInvoker;
+import io.hyscale.commons.component.ProcessExecutor;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.exception.ControllerErrorCodes;
-import io.hyscale.controller.hooks.AppDirCleanUpHook;
-import io.hyscale.controller.hooks.ServiceDirCleanUpHook;
-import io.hyscale.controller.hooks.StaleVolumeDetailsHook;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.controller.processors.AppDirCleanUpProcessor;
+import io.hyscale.controller.processors.ServiceDirCleanUpProcessor;
+import io.hyscale.controller.processors.StaleVolumeDetailsProcessor;
 import io.hyscale.deployer.services.deployer.Deployer;
 
 /**
@@ -40,9 +40,9 @@ import io.hyscale.deployer.services.deployer.Deployer;
  *	provides link between {@link WorkflowContext} and {@link DeploymentContext}
  */
 @Component
-public class UndeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
+public class UndeployComponentExecutor extends ProcessExecutor<WorkflowContext> {
 
-    private static final Logger logger = LoggerFactory.getLogger(UndeployComponentInvoker.class);
+    private static final Logger logger = LoggerFactory.getLogger(UndeployComponentExecutor.class);
 
     @Autowired
     private Deployer deployer;
@@ -51,19 +51,19 @@ public class UndeployComponentInvoker extends ComponentInvoker<WorkflowContext> 
     private K8sAuthConfigBuilder authConfigBuilder;
 
     @Autowired
-    private ServiceDirCleanUpHook serviceDirCleanUpHook;
+    private ServiceDirCleanUpProcessor serviceDirCleanUpHook;
 
     @Autowired
-    private AppDirCleanUpHook appDirCleanUpHook;
+    private AppDirCleanUpProcessor appDirCleanUpHook;
     
     @Autowired
-    private StaleVolumeDetailsHook staleVolumeDetailsHook;
+    private StaleVolumeDetailsProcessor staleVolumeDetailsHook;
 
     @PostConstruct
     public void init() {
-        addHook(serviceDirCleanUpHook);
-        addHook(appDirCleanUpHook);
-        addHook(staleVolumeDetailsHook);
+        addProcessor(serviceDirCleanUpHook);
+        addProcessor(appDirCleanUpHook);
+        addProcessor(staleVolumeDetailsHook);
     }
     
     @Override

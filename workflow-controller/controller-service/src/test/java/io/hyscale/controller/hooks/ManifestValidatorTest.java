@@ -30,6 +30,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.controller.processors.ManifestValidatorProcessor;
 import io.hyscale.controller.util.ServiceSpecTestUtil;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
@@ -37,7 +38,7 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 public class ManifestValidatorTest {
 
     @Autowired
-    private ManifestValidatorHook manifestValidatorHook;
+    private ManifestValidatorProcessor manifestValidatorHook;
 
     public static Stream<Arguments> input() {
         return Stream.of(Arguments.of(null, HyscaleException.class),
@@ -57,7 +58,7 @@ public class ManifestValidatorTest {
         }
         context.setServiceSpec(serviceSpec);
         assertThrows(klazz, () -> {
-            manifestValidatorHook.preHook(context);
+            manifestValidatorHook.preProcess(context);
         });
     }
 
@@ -70,7 +71,7 @@ public class ManifestValidatorTest {
             fail();
         }
         try {
-            manifestValidatorHook.preHook(context);
+            manifestValidatorHook.preProcess(context);
         } catch (HyscaleException e) {
             fail();
         }

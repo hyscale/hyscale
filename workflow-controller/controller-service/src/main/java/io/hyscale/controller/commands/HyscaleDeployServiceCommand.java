@@ -20,15 +20,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.Map;
-import io.hyscale.controller.Converters.ProfileConverter;
-import io.hyscale.controller.Converters.ServiceSpecConverter;
-import io.hyscale.commons.component.ComponentInvoker;
+
+import io.hyscale.commons.component.ProcessExecutor;
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.constants.WorkflowConstants;
-import io.hyscale.controller.invoker.DockerfileGeneratorComponentInvoker;
+import io.hyscale.controller.converters.ProfileConverter;
+import io.hyscale.controller.converters.ServiceSpecConverter;
+import io.hyscale.controller.executors.DeployComponentExecutor;
+import io.hyscale.controller.executors.DockerfileGeneratorComponentExecutor;
+import io.hyscale.controller.executors.ImageBuildComponentExecutor;
+import io.hyscale.controller.executors.ManifestGeneratorComponentExecutor;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.ServiceProfileUtil;
@@ -42,9 +46,6 @@ import org.springframework.stereotype.Component;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.invoker.DeployComponentInvoker;
-import io.hyscale.controller.invoker.ImageBuildComponentInvoker;
-import io.hyscale.controller.invoker.ManifestGeneratorComponentInvoker;
 import picocli.CommandLine;
 import javax.annotation.PreDestroy;
 import javax.validation.constraints.Pattern;
@@ -99,16 +100,16 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
     private List<File> profiles;
 
     @Autowired
-    private ImageBuildComponentInvoker imageBuildComponentInvoker;
+    private ImageBuildComponentExecutor imageBuildComponentInvoker;
 
     @Autowired
-    private ManifestGeneratorComponentInvoker manifestGeneratorComponentInvoker;
+    private ManifestGeneratorComponentExecutor manifestGeneratorComponentInvoker;
 
     @Autowired
-    private DockerfileGeneratorComponentInvoker dockerfileGeneratorComponentInvoker;
+    private DockerfileGeneratorComponentExecutor dockerfileGeneratorComponentInvoker;
 
     @Autowired
-    private DeployComponentInvoker deployComponentInvoker;
+    private DeployComponentExecutor deployComponentInvoker;
     
     @Autowired
     private ServiceSpecMapper serviceSpecMapper;
@@ -176,7 +177,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
         return isCommandFailed ? ToolConstants.HYSCALE_ERROR_CODE : 0;
     }
     
-    private boolean executeInvoker(ComponentInvoker invoker, WorkflowContext context) {
+    private boolean executeInvoker(ProcessExecutor invoker, WorkflowContext context) {
         try {
             invoker.execute(context);
         } catch (HyscaleException e) {

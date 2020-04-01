@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.hooks;
+package io.hyscale.controller.processors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.commands.provider.ImageCommandProvider;
-import io.hyscale.commons.component.InvokerHook;
+import io.hyscale.commons.component.PrePostProcessors;
 import io.hyscale.commons.commands.CommandExecutor;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.Status;
@@ -35,20 +35,20 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
  *
  */
 @Component
-public class ImageCleanUpHook implements InvokerHook<WorkflowContext> {
+public class ImageCleanUpProcessor implements PrePostProcessors<WorkflowContext> {
 
-	private static final Logger logger = LoggerFactory.getLogger(ImageCleanUpHook.class);
+	private static final Logger logger = LoggerFactory.getLogger(ImageCleanUpProcessor.class);
 
 	@Autowired
 	private ImageCommandProvider imageCommandProvider;
 
 	@Override
-	public void preHook(WorkflowContext context) {
+	public void preProcess(WorkflowContext context) {
 
 	}
 
 	@Override
-	public void postHook(WorkflowContext context) throws HyscaleException {
+	public void postProcess(WorkflowContext context) throws HyscaleException {
 		ServiceSpec serviceSpec = context.getServiceSpec();
 		if (serviceSpec == null) {
 			logger.error(" Cannot clean up image without service specs ");

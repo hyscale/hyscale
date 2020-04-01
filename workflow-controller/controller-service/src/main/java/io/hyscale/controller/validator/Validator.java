@@ -13,15 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.commons.component;
+package io.hyscale.controller.validator;
 
-import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.component.PrePostProcessors;
 
-public interface InvokerHook<C> {
+public abstract class Validator<I> implements PrePostProcessors<I> {
+    
+    public abstract boolean preValidate(I processInput);
 
-	public void preHook(C context) throws HyscaleException;
+    public abstract boolean postValidate(I processInput);
 
-	public void postHook(C context) throws HyscaleException;
+    public void preHook(I processInput) {
+        if (!preValidate(processInput))
+            onError(processInput, null);
+    }
 
-	public void onError(C context, Throwable th);
+    public void postHook(I processInput) {
+        if (!postValidate(processInput))
+            onError(processInput, null);
+    }
+
 }

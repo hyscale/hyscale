@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.hooks;
+package io.hyscale.controller.processors;
 
 import java.util.List;
 import java.util.Map;
@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.commons.component.InvokerHook;
+import io.hyscale.commons.component.PrePostProcessors;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.K8sAuthorisation;
@@ -47,9 +47,9 @@ import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
  *
  */
 @Component
-public class StaleVolumeDetailsHook implements InvokerHook<WorkflowContext> {
+public class StaleVolumeDetailsProcessor implements PrePostProcessors<WorkflowContext> {
 
-	private static final Logger logger = LoggerFactory.getLogger(StaleVolumeDetailsHook.class);
+	private static final Logger logger = LoggerFactory.getLogger(StaleVolumeDetailsProcessor.class);
 
 	@Autowired
 	private K8sClientProvider clientProvider;
@@ -58,7 +58,7 @@ public class StaleVolumeDetailsHook implements InvokerHook<WorkflowContext> {
 	private K8sAuthConfigBuilder authConfigBuilder;
 
 	@Override
-	public void preHook(WorkflowContext context) throws HyscaleException {
+	public void preProcess(WorkflowContext context) throws HyscaleException {
 
 	}
 
@@ -67,7 +67,7 @@ public class StaleVolumeDetailsHook implements InvokerHook<WorkflowContext> {
 	 * Mark all pvcs as stale resources
 	 */
 	@Override
-	public void postHook(WorkflowContext context) throws HyscaleException {
+	public void postProcess(WorkflowContext context) throws HyscaleException {
 		String serviceName = context.getServiceName();
 		String appName = context.getAppName();
 		String namespace = context.getNamespace();

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.invoker;
+package io.hyscale.controller.executors;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,9 +33,10 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import io.hyscale.commons.component.ComponentInvoker;
+import io.hyscale.commons.component.ProcessExecutor;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.io.LogProcessor;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.Manifest;
@@ -43,11 +44,11 @@ import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.exception.ControllerErrorCodes;
-import io.hyscale.controller.hooks.K8SClusterValidatorHook;
-import io.hyscale.controller.hooks.K8SResourcesCleanUpHook;
-import io.hyscale.controller.hooks.VolumeCleanUpHook;
-import io.hyscale.controller.hooks.VolumeValidatorHook;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.controller.processors.K8SClusterValidatorProcessor;
+import io.hyscale.controller.processors.K8SResourcesCleanUpProcessor;
+import io.hyscale.controller.processors.VolumeCleanUpProcessor;
+import io.hyscale.controller.processors.VolumeValidatorProcessor;
 import io.hyscale.controller.util.LoggerUtility;
 import io.hyscale.controller.util.TroubleshootUtil;
 import io.hyscale.deployer.services.config.DeployerConfig;
@@ -64,9 +65,9 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
  * provides link between {@link WorkflowContext} and {@link DeploymentContext}
  */
 @Component
-public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
+public class DeployComponentExecutor extends ProcessExecutor<WorkflowContext> {
 
-    private static final Logger logger = LoggerFactory.getLogger(DeployComponentInvoker.class);
+    private static final Logger logger = LoggerFactory.getLogger(DeployComponentExecutor.class);
 
     @Autowired
     private Deployer deployer;
@@ -81,29 +82,29 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
     private DeployerConfig deployerConfig;
 
     @Autowired
-    private io.hyscale.commons.io.LogProcessor logProcessor;
+    private LogProcessor logProcessor;
 
     @Autowired
-    private K8SResourcesCleanUpHook k8sResourcesCleanUpHook;
+    private K8SResourcesCleanUpProcessor k8sResourcesCleanUpHook;
 
     @Autowired
-    private VolumeCleanUpHook volumeCleanUpHook;
+    private VolumeCleanUpProcessor volumeCleanUpHook;
 
     @Autowired
-    private VolumeValidatorHook volumeValidatorHook;
+    private VolumeValidatorProcessor volumeValidatorHook;
     
     @Autowired
-    private K8SClusterValidatorHook k8SClusterValidatorHook;
+    private K8SClusterValidatorProcessor k8SClusterValidatorHook;
 
     @Autowired
     private TroubleshootService troubleshootService;
 
     @PostConstruct
     public void init() {
-        super.addHook(k8SClusterValidatorHook);
-        super.addHook(volumeValidatorHook);
-        super.addHook(k8sResourcesCleanUpHook);
-        super.addHook(volumeCleanUpHook);
+        super.addProcessor(k8SClusterValidatorHook);
+        super.addProcessor(volumeValidatorHook);
+        super.addProcessor(k8sResourcesCleanUpHook);
+        super.addProcessor(volumeCleanUpHook);
     }
 
     /**

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.hooks;
+package io.hyscale.controller.processors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import io.hyscale.commons.component.InvokerHook;
+import io.hyscale.commons.component.PrePostProcessors;
 import io.hyscale.commons.constants.K8SRuntimeConstants;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
@@ -68,9 +68,9 @@ import io.kubernetes.client.openapi.models.V1StorageClass;
  * @author tushart
  */
 @Component
-public class VolumeValidatorHook implements InvokerHook<WorkflowContext> {
+public class VolumeValidatorProcessor implements PrePostProcessors<WorkflowContext> {
 
-	private static final Logger logger = LoggerFactory.getLogger(VolumeValidatorHook.class);
+	private static final Logger logger = LoggerFactory.getLogger(VolumeValidatorProcessor.class);
 
 	private static final String STORAGE = "storage";
 
@@ -91,7 +91,7 @@ public class VolumeValidatorHook implements InvokerHook<WorkflowContext> {
 	private List<V1StorageClass> storageClassList = new ArrayList<>();
 
 	@Override
-	public void preHook(WorkflowContext context) throws HyscaleException {
+	public void preProcess(WorkflowContext context) throws HyscaleException {
 		logger.debug("Validating volumes from the service spec");
 		ServiceSpec serviceSpec = context.getServiceSpec();
 		if (serviceSpec == null) {
@@ -119,7 +119,7 @@ public class VolumeValidatorHook implements InvokerHook<WorkflowContext> {
 	}
 
 	@Override
-	public void postHook(WorkflowContext context) throws HyscaleException {
+	public void postProcess(WorkflowContext context) throws HyscaleException {
 
 	}
 

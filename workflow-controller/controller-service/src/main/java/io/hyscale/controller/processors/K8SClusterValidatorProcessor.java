@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.hooks;
+package io.hyscale.controller.processors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.commons.component.InvokerHook;
+import io.hyscale.commons.component.PrePostProcessors;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.model.WorkflowContext;
@@ -31,21 +31,21 @@ import io.hyscale.controller.model.WorkflowContext;
  *
  */
 @Component
-public class K8SClusterValidatorHook implements InvokerHook<WorkflowContext> {
+public class K8SClusterValidatorProcessor implements PrePostProcessors<WorkflowContext> {
     
-    private static final Logger logger = LoggerFactory.getLogger(K8SClusterValidatorHook.class);
+    private static final Logger logger = LoggerFactory.getLogger(K8SClusterValidatorProcessor.class);
     
     @Autowired
     private K8sAuthConfigBuilder authConfigBuilder;
 
     @Override
-    public void preHook(WorkflowContext context) throws HyscaleException {
+    public void preProcess(WorkflowContext context) throws HyscaleException {
         logger.debug("Starting K8s cluster validation");
         authConfigBuilder.getAuthConfig();
     }
 
     @Override
-    public void postHook(WorkflowContext context) throws HyscaleException {
+    public void postProcess(WorkflowContext context) throws HyscaleException {
         // TODO Auto-generated method stub
         
     }

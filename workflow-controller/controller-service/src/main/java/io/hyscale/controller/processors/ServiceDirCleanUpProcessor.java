@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.hooks;
+package io.hyscale.controller.processors;
 
-import io.hyscale.commons.component.InvokerHook;
+import io.hyscale.commons.component.PrePostProcessors;
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.io.HyscaleFilesUtil;
@@ -31,15 +31,15 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-public class ServiceDirCleanUpHook implements InvokerHook<WorkflowContext> {
+public class ServiceDirCleanUpProcessor implements PrePostProcessors<WorkflowContext> {
 
-	private static final Logger logger = LoggerFactory.getLogger(ServiceDirCleanUpHook.class);
+	private static final Logger logger = LoggerFactory.getLogger(ServiceDirCleanUpProcessor.class);
 
 	@Autowired
 	private SetupConfig setupConfig;
 
 	@Override
-	public void preHook(WorkflowContext context) throws HyscaleException {
+	public void preProcess(WorkflowContext context) throws HyscaleException {
 		if (context.getServiceName() != null && context.getAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR) != null
 				&& context.getAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR).equals(true)) {
 			String serviceDir = setupConfig.getServiceDir(context.getAppName(), context.getServiceName());
@@ -49,7 +49,7 @@ public class ServiceDirCleanUpHook implements InvokerHook<WorkflowContext> {
 	}
 
 	@Override
-	public void postHook(WorkflowContext context) throws HyscaleException {
+	public void postProcess(WorkflowContext context) throws HyscaleException {
 
 	}
 

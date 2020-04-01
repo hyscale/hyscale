@@ -16,6 +16,7 @@
 package io.hyscale.controller.commands;
 
 import io.hyscale.controller.constants.WorkflowConstants;
+import io.hyscale.controller.executors.UndeployComponentExecutor;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.UndeployCommandUtil;
@@ -35,7 +36,6 @@ import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.invoker.UndeployComponentInvoker;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -82,7 +82,7 @@ public class HyscaleUndeploySeviceCommand implements Callable<Integer> {
 	String> serviceList;
 
 	@Autowired
-	private UndeployComponentInvoker undeployComponentInvoker;
+	private UndeployComponentExecutor undeployComponentInvoker;
 
 	@Override
 	public Integer call() throws Exception {

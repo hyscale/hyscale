@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.hooks;
+package io.hyscale.controller.processors;
 
-import io.hyscale.commons.component.InvokerHook;
+import io.hyscale.commons.component.PrePostProcessors;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.dockerfile.gen.services.exception.DockerfileErrorCodes;
@@ -36,12 +36,12 @@ import java.util.List;
  *
  */
 @Component
-public class BuildSpecValidatorHook implements InvokerHook<WorkflowContext> {
+public class BuildSpecValidatorProcessor implements PrePostProcessors<WorkflowContext> {
 
-    private static final Logger logger = LoggerFactory.getLogger(BuildSpecValidatorHook.class);
+    private static final Logger logger = LoggerFactory.getLogger(BuildSpecValidatorProcessor.class);
 
     @Override
-    public void preHook(WorkflowContext context) throws HyscaleException {
+    public void preProcess(WorkflowContext context) throws HyscaleException {
         logger.debug("Executing Build Spec Validator Hook");
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
@@ -75,7 +75,7 @@ public class BuildSpecValidatorHook implements InvokerHook<WorkflowContext> {
     }
 
     @Override
-    public void postHook(WorkflowContext context) throws HyscaleException {
+    public void postProcess(WorkflowContext context) throws HyscaleException {
 
     }
 

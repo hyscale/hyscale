@@ -15,27 +15,26 @@
  */
 package io.hyscale.commons.component;
 
-import javax.annotation.PreDestroy;
-import java.util.Collections;
-import java.util.List;
+import io.hyscale.commons.exception.HyscaleException;
 
-public class ExecutableComponentProvider {
+public class ProcessingError {
 
-	private List<ProcessExecutor> componentInvokers;
+    private boolean failed;
+    private HyscaleException hyscaleException;
 
-	public ExecutableComponentProvider(List<ProcessExecutor> componentInvokers) {
-		this.componentInvokers = componentInvokers;
-	}
+    public boolean isFailed() {
+        return failed;
+    }
 
-	public List<ProcessExecutor> getComponentInvokers() {
-		return Collections.unmodifiableList(componentInvokers);
-	}
+    public void setFailed(boolean failed) {
+        this.failed = failed;
+    }
 
-	@PreDestroy
-	protected void cleanUp() {
-		if (componentInvokers != null) {
-			componentInvokers.clear();
-			componentInvokers = null;
-		}
-	}
+    public HyscaleException getHyscaleException() {
+        return hyscaleException;
+    }
+
+    public void setHyscaleException(HyscaleException hyscaleException) {
+        this.hyscaleException = hyscaleException;
+    }
 }

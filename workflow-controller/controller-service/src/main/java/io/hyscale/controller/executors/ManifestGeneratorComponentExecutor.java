@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.invoker;
+package io.hyscale.controller.executors;
 
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Manifest;
@@ -22,8 +22,8 @@ import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.manager.RegistryManager;
 import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.hooks.ManifestCleanUpHook;
-import io.hyscale.controller.hooks.ManifestValidatorHook;
+import io.hyscale.controller.processors.ManifestCleanUpProcessor;
+import io.hyscale.controller.processors.ManifestValidatorProcessor;
 import io.hyscale.generator.services.config.ManifestConfig;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.exception.ManifestErrorCodes;
@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.commons.component.ComponentInvoker;
+import io.hyscale.commons.component.ProcessExecutor;
 import io.hyscale.commons.exception.HyscaleException;
 
 import javax.annotation.PostConstruct;
@@ -47,9 +47,9 @@ import java.util.List;
  *	to generate K8s manifests provides link between {@link WorkflowContext} and {@link ManifestContext}
  */
 @Component
-public class ManifestGeneratorComponentInvoker extends ComponentInvoker<WorkflowContext> {
+public class ManifestGeneratorComponentExecutor extends ProcessExecutor<WorkflowContext> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ManifestGeneratorComponentInvoker.class);
+    private static final Logger logger = LoggerFactory.getLogger(ManifestGeneratorComponentExecutor.class);
 
     @Autowired
     private ManifestGenerator manifestGenerator;
@@ -61,15 +61,15 @@ public class ManifestGeneratorComponentInvoker extends ComponentInvoker<Workflow
     private ManifestConfig manifestConfig;
 
     @Autowired
-    private ManifestCleanUpHook manifestCleanUpHook;
+    private ManifestCleanUpProcessor manifestCleanUpHook;
 
     @Autowired
-    private ManifestValidatorHook manifestValidatorHook;
+    private ManifestValidatorProcessor manifestValidatorHook;
 
     @PostConstruct
     public void init() {
-        super.addHook(manifestValidatorHook);
-        super.addHook(manifestCleanUpHook);
+        super.addProcessor(manifestValidatorHook);
+        super.addProcessor(manifestCleanUpHook);
     }
 
     protected void doExecute(WorkflowContext context) throws HyscaleException {

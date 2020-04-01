@@ -17,30 +17,11 @@ package io.hyscale.commons.component;
 
 import io.hyscale.commons.exception.HyscaleException;
 
-/**
- *  This class provides the invocation context
- *  to invoke any component 
- *
- */
+public interface PrePostProcessors<I> {
 
-public class ComponentInvokerContext {
+	public void preProcess(I processInput) throws HyscaleException;
 
-    private boolean failed;
-    private HyscaleException hyscaleException;
+	public void postProcess(I processInput) throws HyscaleException;
 
-    public boolean isFailed() {
-        return failed;
-    }
-
-    public void setFailed(boolean failed) {
-        this.failed = failed;
-    }
-
-    public HyscaleException getHyscaleException() {
-        return hyscaleException;
-    }
-
-    public void setHyscaleException(HyscaleException hyscaleException) {
-        this.hyscaleException = hyscaleException;
-    }
+	public void onError(I processInput, Throwable th);
 }

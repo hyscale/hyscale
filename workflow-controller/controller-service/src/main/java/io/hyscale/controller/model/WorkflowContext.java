@@ -15,7 +15,7 @@
  */
 package io.hyscale.controller.model;
 
-import io.hyscale.commons.component.ComponentInvokerContext;
+import io.hyscale.commons.component.ProcessingError;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 import java.util.HashMap;
@@ -25,7 +25,7 @@ import java.util.Map;
  * Context information for workflow controller
  *
  */
-public class WorkflowContext extends ComponentInvokerContext {
+public class WorkflowContext extends ProcessingError {
 
     private ServiceSpec serviceSpec;
     private String namespace;

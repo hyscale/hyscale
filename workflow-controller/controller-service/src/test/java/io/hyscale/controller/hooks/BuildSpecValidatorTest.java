@@ -30,6 +30,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.controller.processors.BuildSpecValidatorProcessor;
 import io.hyscale.controller.util.ServiceSpecTestUtil;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
@@ -37,7 +38,7 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 public class BuildSpecValidatorTest {
 
     @Autowired
-    private BuildSpecValidatorHook buildSpecValidatorHook;
+    private BuildSpecValidatorProcessor buildSpecValidatorHook;
 
     public static Stream<Arguments> input() {
         return Stream.of(Arguments.of(null, HyscaleException.class),
@@ -57,7 +58,7 @@ public class BuildSpecValidatorTest {
         }
         context.setServiceSpec(serviceSpec);
         assertThrows(exception, () -> {
-            buildSpecValidatorHook.preHook(context);
+            buildSpecValidatorHook.preProcess(context);
         });
     }
 
@@ -72,7 +73,7 @@ public class BuildSpecValidatorTest {
         }
         context.setServiceSpec(serviceSpec);
         try {
-            buildSpecValidatorHook.preHook(context);
+            buildSpecValidatorHook.preProcess(context);
         } catch (HyscaleException e) {
             fail();
         }

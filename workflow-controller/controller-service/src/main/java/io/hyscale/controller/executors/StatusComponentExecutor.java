@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.invoker;
+package io.hyscale.controller.executors;
 
 import java.util.List;
 
@@ -25,14 +25,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.commons.component.ComponentInvoker;
+import io.hyscale.commons.component.ProcessExecutor;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
-import io.hyscale.controller.hooks.K8SClusterValidatorHook;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.controller.processors.K8SClusterValidatorProcessor;
 import io.hyscale.controller.util.TroubleshootUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.services.deployer.Deployer;
@@ -48,9 +48,9 @@ import io.hyscale.troubleshooting.integration.service.TroubleshootService;
  *
  */
 @Component
-public class StatusComponentInvoker extends ComponentInvoker<WorkflowContext> {
+public class StatusComponentExecutor extends ProcessExecutor<WorkflowContext> {
     
-    private static final Logger logger = LoggerFactory.getLogger(StatusComponentInvoker.class);
+    private static final Logger logger = LoggerFactory.getLogger(StatusComponentExecutor.class);
 
     @Autowired
     private Deployer deployer;
@@ -62,11 +62,11 @@ public class StatusComponentInvoker extends ComponentInvoker<WorkflowContext> {
     private TroubleshootService troubleshootService;
     
     @Autowired
-    private K8SClusterValidatorHook k8SClusterValidatorHook;
+    private K8SClusterValidatorProcessor k8SClusterValidatorHook;
 
     @PostConstruct
     public void init() {
-        super.addHook(k8SClusterValidatorHook);
+        super.addProcessor(k8SClusterValidatorHook);
     }
     
     @Override

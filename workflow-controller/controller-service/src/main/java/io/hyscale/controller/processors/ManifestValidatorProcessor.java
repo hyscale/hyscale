@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.hooks;
+package io.hyscale.controller.processors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import io.hyscale.commons.component.InvokerHook;
+import io.hyscale.commons.component.PrePostProcessors;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.model.WorkflowContext;
@@ -37,12 +37,12 @@ import java.util.List;
  *
  */
 @Component
-public class ManifestValidatorHook implements InvokerHook<WorkflowContext> {
+public class ManifestValidatorProcessor implements PrePostProcessors<WorkflowContext> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ManifestValidatorHook.class);
+    private static final Logger logger = LoggerFactory.getLogger(ManifestValidatorProcessor.class);
 
     @Override
-    public void preHook(WorkflowContext context) throws HyscaleException {
+    public void preProcess(WorkflowContext context) throws HyscaleException {
         logger.debug("Executing Manifest Validator Hook");
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
@@ -81,7 +81,7 @@ public class ManifestValidatorHook implements InvokerHook<WorkflowContext> {
     }
 
     @Override
-    public void postHook(WorkflowContext context) throws HyscaleException {
+    public void postProcess(WorkflowContext context) throws HyscaleException {
 
     }
 

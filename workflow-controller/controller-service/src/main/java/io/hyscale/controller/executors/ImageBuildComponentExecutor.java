@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.invoker;
+package io.hyscale.controller.executors;
 
 import javax.annotation.PostConstruct;
 
@@ -23,6 +23,7 @@ import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.manager.RegistryManager;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.controller.processors.ImageCleanUpProcessor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,11 +31,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.builder.core.models.BuildContext;
-import io.hyscale.commons.component.ComponentInvoker;
+import io.hyscale.commons.component.ProcessExecutor;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DockerfileEntity;
-import io.hyscale.controller.hooks.ImageCleanUpHook;
 import io.hyscale.builder.services.service.ImageBuildPushService;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -46,7 +46,7 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
  *	{@link WorkflowContext} and {@link BuildContext}
  */
 @Component
-public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext> {
+public class ImageBuildComponentExecutor extends ProcessExecutor<WorkflowContext> {
 
     @Autowired
     private ImageBuildPushService imageBuildService;
@@ -55,14 +55,14 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
     private RegistryManager registryManager;
 
     @Autowired
-    private ImageCleanUpHook imageCleanUpHook;
+    private ImageCleanUpProcessor imageCleanUpHook;
 
     @PostConstruct
     public void init() {
-        super.addHook(imageCleanUpHook);
+        super.addProcessor(imageCleanUpHook);
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(ImageBuildComponentInvoker.class);
+    private static final Logger logger = LoggerFactory.getLogger(ImageBuildComponentExecutor.class);
 
     @Override
     protected void doExecute(WorkflowContext context) throws HyscaleException {

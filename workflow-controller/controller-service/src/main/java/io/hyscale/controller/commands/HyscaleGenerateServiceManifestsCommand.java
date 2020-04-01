@@ -20,9 +20,11 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.HashMap;
 import java.util.Map;
-import io.hyscale.controller.Converters.ProfileConverter;
-import io.hyscale.controller.Converters.ServiceSpecConverter;
+
 import io.hyscale.controller.constants.WorkflowConstants;
+import io.hyscale.controller.converters.ProfileConverter;
+import io.hyscale.controller.converters.ServiceSpecConverter;
+import io.hyscale.controller.executors.ManifestGeneratorComponentExecutor;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.ServiceProfileUtil;
@@ -38,7 +40,6 @@ import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.invoker.ManifestGeneratorComponentInvoker;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import picocli.CommandLine;
 import javax.annotation.PreDestroy;
@@ -85,7 +86,7 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
 
 
     @Autowired
-    private ManifestGeneratorComponentInvoker manifestGeneratorComponentInvoker;
+    private ManifestGeneratorComponentExecutor manifestGeneratorComponentInvoker;
     
     @Autowired
     private ServiceSpecMapper serviceSpecMapper;

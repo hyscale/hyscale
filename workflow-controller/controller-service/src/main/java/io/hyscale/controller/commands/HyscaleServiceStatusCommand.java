@@ -23,7 +23,7 @@ import java.util.concurrent.Callable;
 import javax.validation.constraints.Pattern;
 
 import io.hyscale.controller.constants.WorkflowConstants;
-import io.hyscale.controller.invoker.StatusComponentInvoker;
+import io.hyscale.controller.executors.StatusComponentExecutor;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.StatusUtil;
@@ -83,7 +83,7 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
     String> serviceList;
 
     @Autowired
-    private StatusComponentInvoker statusComponentInvoker;
+    private StatusComponentExecutor statusComponentInvoker;
 
     @Override
     public Integer call() throws Exception {
