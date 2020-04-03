@@ -118,7 +118,7 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
                     rowList.add(tableRow);
                 }
             }
-            TableFormatter table = StatusUtil.getStatusTable(false);
+            TableFormatter table = StatusUtil.getStatusTable(isLarge);
             rowList.forEach(each -> table.addRow(each));
             WorkflowLogger.logTable(table);
         } catch (HyscaleException e) {

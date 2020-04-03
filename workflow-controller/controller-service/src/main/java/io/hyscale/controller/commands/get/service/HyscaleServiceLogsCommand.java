@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Pramati Prism, Inc.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -109,16 +109,4 @@ public class HyscaleServiceLogsCommand implements Callable<Integer> {
 
         return workflowContext.isFailed() ? ToolConstants.HYSCALE_ERROR_CODE : ToolConstants.HYSCALE_SUCCESS_CODE;
     }
-
-    /*   For logs :
-     *   if r==null
-     *     Get replica's info by fetching latest deployment pods and print them
-     *     select replica
-     *   else
-     *     validate replica by fetching all pods
-     *     select replica if validation is true
-     *
-     *   get logs of the selected replica
-     */
-
 }
