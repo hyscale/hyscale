@@ -40,7 +40,7 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.commons.models.VolumeAccessMode;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.AppMetaData;
+import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -76,34 +76,34 @@ public class VolumeTemplatesHandler implements ManifestHandler {
         }
 
         String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
-        AppMetaData appMetaData = new AppMetaData();
-        appMetaData.setServiceName(serviceName);
-        appMetaData.setEnvName(manifestContext.getEnvName());
-        appMetaData.setAppName(manifestContext.getAppName());
+        ServiceMetadata serviceMetadata = new ServiceMetadata();
+        serviceMetadata.setServiceName(serviceName);
+        serviceMetadata.setEnvName(manifestContext.getEnvName());
+        serviceMetadata.setAppName(manifestContext.getAppName());
 
         List<ManifestSnippet> snippetList = new ArrayList<>();
 
 
         try {
             // Creating a manifest snippet for volumeClaimTemplates
-            snippetList.add(buildVolumeClaimSnippet(volumes, appMetaData));
-            snippetList.add(getServiceNameSnippet(appMetaData.getServiceName()));
+            snippetList.add(buildVolumeClaimSnippet(volumes, serviceMetadata));
+            snippetList.add(getServiceNameSnippet(serviceMetadata.getServiceName()));
         } catch (JsonProcessingException e) {
             logger.error("Error while serializing volumes snippet ", e);
         }
         return snippetList.isEmpty() ? null : snippetList;
     }
 
-    private ManifestSnippet buildVolumeClaimSnippet(List<Volume> volumes, AppMetaData appMetaData)
+    private ManifestSnippet buildVolumeClaimSnippet(List<Volume> volumes, ServiceMetadata serviceMetadata)
             throws JsonProcessingException, HyscaleException {
         ManifestSnippet snippet = new ManifestSnippet();
-        snippet.setSnippet(GsonSnippetConvertor.serialize(getVolumeClaims(volumes, appMetaData)));
+        snippet.setSnippet(GsonSnippetConvertor.serialize(getVolumeClaims(volumes, serviceMetadata)));
         snippet.setKind(ManifestResource.STATEFUL_SET.getKind());
         snippet.setPath("spec.volumeClaimTemplates");
         return snippet;
     }
 
-    private List<V1PersistentVolumeClaim> getVolumeClaims(List<Volume> volumes, AppMetaData appMetaData)
+    private List<V1PersistentVolumeClaim> getVolumeClaims(List<Volume> volumes, ServiceMetadata serviceMetadata)
             throws HyscaleException {
         List<V1PersistentVolumeClaim> volumeClaims = new LinkedList<>();
         for (Volume volume : volumes) {
@@ -117,7 +117,7 @@ public class VolumeTemplatesHandler implements ManifestHandler {
             V1PersistentVolumeClaim v1PersistentVolumeClaim = new V1PersistentVolumeClaim();
             V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
             v1ObjectMeta.setName(volume.getName());
-            v1ObjectMeta.setLabels(ManifestResource.STATEFUL_SET.getLabels(appMetaData));
+            v1ObjectMeta.setLabels(ManifestResource.STATEFUL_SET.getLabels(serviceMetadata));
 
             V1PersistentVolumeClaimSpec claimSpec = new V1PersistentVolumeClaimSpec();
             claimSpec.setAccessModes(Arrays.asList(VolumeAccessMode.READ_WRITE_ONCE.getAccessMode()));

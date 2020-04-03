@@ -165,6 +165,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
             if (!isServiceFailed) {
                 List<Manifest> manifestList = (List<Manifest>) workflowContext.getAttribute(WorkflowConstants.OUTPUT);
                 workflowContext.addAttribute(WorkflowConstants.GENERATED_MANIFESTS, manifestList);
+                WorkflowLogger.header(ControllerActivity.STARTING_DEPLOYMENT);
                 isServiceFailed = isServiceFailed ? isServiceFailed : !executeInvoker(deployComponentInvoker, workflowContext);
             }
             logWorkflowInfo(workflowContext);

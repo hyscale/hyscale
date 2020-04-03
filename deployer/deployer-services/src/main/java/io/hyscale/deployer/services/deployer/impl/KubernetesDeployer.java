@@ -39,9 +39,11 @@ import io.hyscale.commons.models.Status;
 import io.hyscale.commons.models.YAMLManifest;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.commons.utils.ThreadPoolUtil;
+import io.hyscale.deployer.core.model.AppMetadata;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ReplicaInfo;
 import io.hyscale.deployer.core.model.ResourceKind;
+import io.hyscale.deployer.services.builder.AppMetadataBuilder;
 import io.hyscale.deployer.services.config.DeployerConfig;
 import io.hyscale.deployer.services.deployer.Deployer;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
@@ -80,6 +82,9 @@ public class KubernetesDeployer implements Deployer {
 
     @Autowired
     private K8sClientProvider clientProvider;
+    
+    @Autowired
+    private AppMetadataBuilder appMetadataBuilder;
     
     @Override
     public void deploy(DeploymentContext context) throws HyscaleException {
@@ -464,6 +469,17 @@ public class KubernetesDeployer implements Deployer {
         List<V1Pod> filteredPods = K8sDeployerUtil.filterPods(apiClient, appName, serviceName, namespace, podList);
         
         return K8sReplicaUtil.getReplicaInfo(filteredPods);
+    }
+
+    @Override
+    public List<AppMetadata> getAppsMetadata(AuthConfig authConfig) throws HyscaleException {
+        ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
+
+        V1PodHandler podHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
+        
+        List<V1Pod> podList  = podHandler.getPodsForAllNamespaces(apiClient);
+        
+        return appMetadataBuilder.build(podList);
     }
     
 }

@@ -22,7 +22,7 @@ import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.AppMetaData;
+import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -44,17 +44,17 @@ public class SelectorLabelsHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
-        AppMetaData appMetaData = new AppMetaData();
-        appMetaData.setAppName(manifestContext.getAppName());
-        appMetaData.setEnvName(manifestContext.getEnvName());
-        appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
+        ServiceMetadata serviceMetadata = new ServiceMetadata();
+        serviceMetadata.setAppName(manifestContext.getAppName());
+        serviceMetadata.setEnvName(manifestContext.getEnvName());
+        serviceMetadata.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
         List<ManifestSnippet> snippetList = new ArrayList<>();
         String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         try {
-            snippetList.add(getPodSpecSelectorLabels(appMetaData, podSpecOwner));
+            snippetList.add(getPodSpecSelectorLabels(serviceMetadata, podSpecOwner));
             if (ManifestResource.SERVICE.getPredicate().test(serviceSpec)) {
                 logger.debug("Checking  for service ports in spec and adding service seletor labels to the snippet.");
-                snippetList.add(getServiceSelectorLabels(appMetaData));
+                snippetList.add(getServiceSelectorLabels(serviceMetadata));
             }
         } catch (JsonProcessingException e) {
             logger.error("Error while serializing pod spec labels snippet ", e);
@@ -62,26 +62,26 @@ public class SelectorLabelsHandler implements ManifestHandler {
         return snippetList;
     }
 
-    private ManifestSnippet getServiceSelectorLabels(AppMetaData appMetaData)
+    private ManifestSnippet getServiceSelectorLabels(ServiceMetadata serviceMetadata)
             throws JsonProcessingException {
         ManifestSnippet selectorSnippet = new ManifestSnippet();
         selectorSnippet.setPath("spec.selector");
         selectorSnippet.setKind(ManifestResource.SERVICE.getKind());
-        selectorSnippet.setSnippet(JsonSnippetConvertor.serialize(getSelectorLabels(appMetaData)));
+        selectorSnippet.setSnippet(JsonSnippetConvertor.serialize(getSelectorLabels(serviceMetadata)));
         return selectorSnippet;
     }
 
-    private ManifestSnippet getPodSpecSelectorLabels(AppMetaData appMetaData, String podSpecOwner)
+    private ManifestSnippet getPodSpecSelectorLabels(ServiceMetadata serviceMetadata, String podSpecOwner)
             throws JsonProcessingException {
         ManifestSnippet selectorSnippet = new ManifestSnippet();
         selectorSnippet.setPath("spec.selector.matchLabels");
         selectorSnippet.setKind(podSpecOwner);
-        selectorSnippet.setSnippet(JsonSnippetConvertor.serialize(getSelectorLabels(appMetaData)));
+        selectorSnippet.setSnippet(JsonSnippetConvertor.serialize(getSelectorLabels(serviceMetadata)));
         return selectorSnippet;
     }
 
-    private Map<String, String> getSelectorLabels(AppMetaData appMetaData) {
-        return DefaultLabelBuilder.build(appMetaData);
+    private Map<String, String> getSelectorLabels(ServiceMetadata serviceMetadata) {
+        return DefaultLabelBuilder.build(serviceMetadata);
     }
 
 }

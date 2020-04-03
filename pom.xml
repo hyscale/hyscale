@@ -8,7 +8,7 @@
 	<groupId>io.hyscale</groupId>
 	<artifactId>hyscale</artifactId>
 	<packaging>pom</packaging>
-	<version>0.9.4.1</version>
+	<version>0.9.5</version>
 
 	<modules>
 		<module>image-builder</module>
@@ -63,7 +63,7 @@
 		<copyright.year>2019</copyright.year>
 		<copyright.company>Pramati Prism, Inc.</copyright.company>
 		<release.name>First Light</release.name>
-		<hspec.supported.version>0.6.1.1</hspec.supported.version>
+		<hspec.supported.version>0.6.2</hspec.supported.version>
 	</properties>
 
 	<dependencies>

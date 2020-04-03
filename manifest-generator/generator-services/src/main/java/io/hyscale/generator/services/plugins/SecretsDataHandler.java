@@ -23,7 +23,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.io.HyscaleFilesUtil;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.AppMetaData;
+import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -50,17 +50,17 @@ public class SecretsDataHandler implements ManifestHandler {
         }
 
         String secretsVolumePath = serviceSpec.get(HyscaleSpecFields.secretsVolumePath, String.class);
-        AppMetaData appMetaData = new AppMetaData();
-        appMetaData.setAppName(manifestContext.getAppName());
-        appMetaData.setEnvName(manifestContext.getEnvName());
-        appMetaData.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
+        ServiceMetadata serviceMetadata = new ServiceMetadata();
+        serviceMetadata.setAppName(manifestContext.getAppName());
+        serviceMetadata.setEnvName(manifestContext.getEnvName());
+        serviceMetadata.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
 
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         try {
 
             manifestSnippetList.add(getSecretsData(secrets, secretsVolumePath));
         } catch (JsonProcessingException e) {
-            logger.error("Error while generating manifest for secrets of service {}", appMetaData.getServiceName(), e);
+            logger.error("Error while generating manifest for secrets of service {}", serviceMetadata.getServiceName(), e);
         }
         return manifestSnippetList;
 

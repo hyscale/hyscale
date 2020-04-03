@@ -1,3 +1,18 @@
+# v0.9.4.1 Release
+
+This is a minor release to support listing applications in a cluster,https healthcheck for services,troubleshooting failures with pod exitcodes, 
+
+### Features:
+
+* Support for https healthcheck of services.  
+* To list application that are deployed in a cluster.
+* Improved troubleshooting error scope to include pod exit codes
+
+### Fixes
+
+* Fixed order of ImagePullSecret being created before pod
+* Moved KubeConfig & DockerConfig file validations to runtime.
+
 # v0.9.4 Release
 
 This is a minor release to support windows,  1.16 cluster support , improved troubleshooting error scope 
