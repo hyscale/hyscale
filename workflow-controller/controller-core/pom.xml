@@ -11,5 +11,9 @@
 
 	<artifactId>controller-core</artifactId>
 	<packaging>jar</packaging>
+       
+        <properties>
+           <main.basedir>../../</main.basedir>
+        </properties>
 
 </project>

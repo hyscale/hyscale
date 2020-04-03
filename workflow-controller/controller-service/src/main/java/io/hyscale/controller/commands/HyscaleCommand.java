@@ -17,6 +17,10 @@ package io.hyscale.controller.commands;
 
 import java.util.concurrent.Callable;
 
+import io.hyscale.controller.commands.deploy.HyscaleDeployCommand;
+import io.hyscale.controller.commands.generate.HyscaleGenerateCommand;
+import io.hyscale.controller.commands.get.HyscaleGetCommand;
+import io.hyscale.controller.commands.undeploy.HyscaleUndeployCommand;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.constants.ToolConstants;

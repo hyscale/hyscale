@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.commands;
+package io.hyscale.controller.commands.get.service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,6 +23,7 @@ import java.util.concurrent.Callable;
 
 import javax.validation.constraints.Pattern;
 
+import io.hyscale.commons.logger.TableFields;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.invoker.StatusComponentInvoker;
 import io.hyscale.controller.model.WorkflowContext;
@@ -42,24 +44,23 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 /**
- *  This class executes 'hyscale get service status' command.
- *  It is a sub-command of the 'hyscale get service' command
- *  @see HyscaleGetServiceCommand .
- *  Every command/sub-command has to implement the {@link Callable} so that
- *  whenever the command is executed the {@link #call()}
- *  method will be invoked
+ * This class executes 'hyscale get service status' command.
+ * It is a sub-command of the 'hyscale get service' command
  *
  * @option serviceList list of service names
  * @option namespace  namespace in which the app is deployed
  * @option appName   name of the app
- *
+ * <p>
  * Eg: hyscale get service status -s s1 -n dev -a sample
- *
+ * <p>
  * Fetches the service status from the given cluster.
  * The service status has been abstracted over the pod status,see {@link DeploymentStatus},
  * gives the information about service and the failure message when it is in
  * NotRunning status.
- *
+ * @see HyscaleGetServiceCommand .
+ * Every command/sub-command has to implement the {@link Callable} so that
+ * whenever the command is executed the {@link #call()}
+ * method will be invoked
  */
 @Command(name = "status", description = "Get the status of the deployment")
 public class HyscaleServiceStatusCommand implements Callable<Integer> {
@@ -79,8 +80,8 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
 
     @Option(names = {"-s", "--service"}, required = true, description = "Service names", split = ",")
     private List<
-    @Pattern(regexp = ValidationConstants.SERVICE_NAME_REGEX, message = ValidationConstants.INVALID_SERVICE_NAME_MSG)
-    String> serviceList;
+            @Pattern(regexp = ValidationConstants.SERVICE_NAME_REGEX, message = ValidationConstants.INVALID_SERVICE_NAME_MSG)
+                    String> serviceList;
 
     @Autowired
     private StatusComponentInvoker statusComponentInvoker;
@@ -93,18 +94,18 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
         }
 
         WorkflowLogger.info(ControllerActivity.WAITING_FOR_SERVICE_STATUS);
-        
+
         WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
 
-        TableFormatter table =StatusUtil.getStatusTable(false);
 
         WorkflowContext context = new WorkflowContext();
         context.setAppName(appName);
         context.setNamespace(namespace);
-        
+
         try {
+            boolean isLarge = false;
             Set<String> services = new HashSet<String>(serviceList);
-            WorkflowLogger.logTableFields(table);
+            List<String[]> rowList = new ArrayList<String[]>();
             for (String serviceName : services) {
                 context.setServiceName(serviceName);
                 statusComponentInvoker.execute(context);
@@ -112,20 +113,21 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
                         WorkflowConstants.DEPLOYMENT_STATUS);
                 if (statusAttr != null) {
                     DeploymentStatus serviceStatus = (DeploymentStatus) statusAttr;
+                    isLarge = isLarge ? isLarge : serviceStatus.getServiceAddress().length() > TableFields.SERVICE_ADDRESS.getLength();
                     String[] tableRow = StatusUtil.getRowData(serviceStatus);
-                    table.addRow(tableRow);
-                    WorkflowLogger.logTableRow(table, tableRow);
+                    rowList.add(tableRow);
                 }
             }
+            TableFormatter table = StatusUtil.getStatusTable(false);
+            rowList.forEach(each -> table.addRow(each));
+            WorkflowLogger.logTable(table);
         } catch (HyscaleException e) {
             logger.error("Error while getting status for app: {}, in namespace: {}", appName, namespace);
             WorkflowLogger.error(ControllerActivity.ERROR_WHILE_FETCHING_STATUS, e.toString());
             throw e;
-        }
-        finally {
+        } finally {
             WorkflowLogger.footer();
         }
-
         return 0;
     }
 

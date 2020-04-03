@@ -13,44 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.commands;
+package io.hyscale.controller.commands.get.replica;
+
+import io.hyscale.commons.constants.ToolConstants;
+import org.springframework.stereotype.Component;
+import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
 
-import org.springframework.stereotype.Component;
-
-import io.hyscale.commons.constants.ToolConstants;
-import picocli.CommandLine;
-import picocli.CommandLine.Command;
-
-/**
- * This class executes 'hyscale get' command
- * It is a sub-command of the 'hyscale' command
- * @see HyscaleCommand
- * Every command/sub-command has to implement the {@link Callable} so that
- * whenever the command is executed the {@link #call()}
- * method will be invoked
- *
- * The sub-commands of are handled by @Command annotation
- *
- */
-@Command(name = "get", subcommands = { HyscaleGetServiceCommand.class,
-        HyscaleGetAppsCommand.class },
-        description = "Gets the specified resource.")
+@CommandLine.Command(name = "replica", aliases = "replicas",
+        subcommands = {HyscaleReplicaStatusCommand.class}, description = "Get the replica sub-resource of the service")
 @Component
-public class HyscaleGetCommand implements Callable<Integer> {
+public class HyscaleGetReplicaCommand implements Callable<Integer> {
 
     @CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "Displays the help information of the specified command")
     private boolean helpRequested = false;
 
     /**
-     * Executes the 'hyscale get' command
+     * Executes the 'hyscale get replica' command
      * Provides usage of this command to the user
      */
     @Override
     public Integer call() throws Exception {
-        new CommandLine(new HyscaleGetCommand()).usage(System.out);
+        new CommandLine(new HyscaleGetReplicaCommand()).usage(System.out);
         return ToolConstants.INVALID_INPUT_ERROR_CODE;
     }
-
 }

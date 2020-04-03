@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.commands;
+package io.hyscale.controller.commands.generate;
 
 import java.util.concurrent.Callable;
 
@@ -21,12 +21,11 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.constants.ToolConstants;
 import picocli.CommandLine;
-import picocli.CommandLine.Command;
 
 /**
- * This class executes 'hyscale deploy' command
- * It is a sub-command of the 'hyscale' command
- * @see HyscaleCommand
+ * This class executes 'hyscale generate service' command
+ * It is a sub-command of the 'hyscale generate' command
+ * @see HyscaleGenerateCommand
  * Every command/sub-command has to implement the {@link Callable} so that
  * whenever the command is executed the {@link #call()}
  * method will be invoked
@@ -34,20 +33,14 @@ import picocli.CommandLine.Command;
  * The sub-commands of are handled by @Command annotation
  *
  */
-@Command(name = "deploy", subcommands = { HyscaleDeployServiceCommand.class}, description = "Deploys the specified resource")
+@CommandLine.Command(name = "service", subcommands = { HyscaleGenerateServiceManifestsCommand.class} ,
+        description = "Performs action on the service")
 @Component
-public class HyscaleDeployCommand implements Callable<Integer> {
-
-	@CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "Displays the help information of the specified command")
-	private boolean helpRequested = false;
-
-	/**
-	 * Executes the 'hyscale deploy' command
-	 * Provides usage of this command to the user
-	 */
-	@Override
+public class HyscaleGenerateServiceCommand implements Callable<Integer> {
+    
+    @Override
     public Integer call() throws Exception {
-		new CommandLine(new HyscaleDeployCommand()).usage(System.out);
-		return ToolConstants.INVALID_INPUT_ERROR_CODE;
-	}
+        new CommandLine(new HyscaleGenerateServiceCommand()).usage(System.out);
+        return ToolConstants.INVALID_INPUT_ERROR_CODE;
+    }
 }
