@@ -20,7 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import io.hyscale.deployer.core.model.ReplicaInfo;
+import io.hyscale.deployer.services.model.PodStatus;
+import io.hyscale.deployer.services.model.ReplicaInfo;
 import io.kubernetes.client.openapi.models.V1Pod;
 
 public class K8sReplicaUtil {
@@ -36,23 +37,10 @@ public class K8sReplicaUtil {
         }
         return podList.stream().map(each -> getReplicaInfo(each)).collect(Collectors.toList());
     }
-    
-    public static Map<Integer, ReplicaInfo> getIndexedReplicaInfo(List<V1Pod> podList) {
-        if (podList == null) {
-            return null;
-        }
-        List<ReplicaInfo> replicasInfo = getReplicaInfo(podList);
-        Map<Integer, ReplicaInfo> indexedReplicasInfo = new LinkedHashMap<Integer, ReplicaInfo>();
-        Integer replicaIndex = 1;
-        for (ReplicaInfo replicaInfo : replicasInfo ) {
-            indexedReplicasInfo.put(replicaIndex++, replicaInfo);
-        }
-        
-        return indexedReplicasInfo;
-    }
-    
+
+
     /**
-     * 
+     *
      * @param pod
      * @return {@link ReplicaInfo} for the pod
      */
@@ -64,8 +52,8 @@ public class K8sReplicaUtil {
         replicaInfo.setName(pod.getMetadata().getName());
         replicaInfo.setAge(pod.getStatus().getStartTime());
         replicaInfo.setStatus(K8sPodUtil.getAggregatedStatusOfContainersForPod(pod));
-        
+
         return replicaInfo;
     }
-    
+
 }

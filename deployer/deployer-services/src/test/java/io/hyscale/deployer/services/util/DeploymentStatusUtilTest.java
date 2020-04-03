@@ -26,6 +26,6 @@ public class DeploymentStatusUtilTest {
         DeploymentStatus status = DeploymentStatusUtil.getNotDeployedStatus("myservice");
         Assertions.assertNotNull(status);
         Assertions.assertEquals(status.getServiceName(), "myservice");
-        Assertions.assertEquals(status.getStatus(), DeploymentStatus.Status.NOT_DEPLOYED);
+        Assertions.assertEquals(status.getServiceStatus(), DeploymentStatus.ServiceStatus.NOT_DEPLOYED);
     }
 }

@@ -25,8 +25,8 @@ import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.deployer.core.model.AppMetadata;
 import io.hyscale.deployer.core.model.DeploymentStatus;
-import io.hyscale.deployer.core.model.ReplicaInfo;
 import io.hyscale.deployer.services.model.Pod;
+import io.hyscale.deployer.services.model.ReplicaInfo;
 import io.hyscale.deployer.services.model.ResourceStatus;
 import io.hyscale.deployer.services.model.ServiceAddress;
 import io.hyscale.deployer.services.progress.ProgressHandler;
@@ -37,124 +37,135 @@ import io.hyscale.deployer.services.progress.ProgressHandler;
  *
  * <p>Implementation Notes</p>
  * Should be able to do service deployments from the supplied manifest to the cluster.
- *
  */
-public interface Deployer {
+public interface Deployer<T extends AuthConfig> {
+
+    /**
+     * Deploy Service to cluster
+     *
+     * @param context
+     * @throws HyscaleException
+     */
+    public void deploy(DeploymentContext context) throws HyscaleException;
+
+    /**
+     * Wait for Deployment to complete
+     * Prints deployment status
+     *
+     * @param context
+     * @throws HyscaleException
+     */
+    public void waitForDeployment(DeploymentContext context) throws HyscaleException;
+
+    public default void waitForDeployment(DeploymentContext context, ProgressHandler progressHandler)
+            throws HyscaleException {
+        waitForDeployment(context);
+    }
+
+    /**
+     * Undeploy service from cluster
+     *
+     * @param context
+     * @throws HyscaleException
+     */
+    public void unDeploy(DeploymentContext context) throws HyscaleException;
+
+    /**
+     * Check if User can access cluster
+     *
+     * @param authConfig
+     * @return true if user can access cluster
+     * @throws HyscaleException
+     */
+    public boolean authenticate(T authConfig) throws HyscaleException;
+
+    /**
+     * Get Deployment status for Service
+     *
+     * @param context
+     * @return {@link DeploymentStatus} for the service
+     * @throws HyscaleException
+     */
+    public DeploymentStatus getServiceDeploymentStatus(DeploymentContext context) throws HyscaleException;
+
+    /**
+     * Get Deployment ServiceStatus for Services in an App
+     *
+     * @param deploymentContext
+     * @return List of {@link DeploymentStatus} for each Service
+     * @throws HyscaleException
+     */
+    public List<DeploymentStatus> getDeploymentStatus(DeploymentContext deploymentContext) throws HyscaleException;
+
+
+    /**
+     * Get replicas info based on pods
+     * isFilter restricts which pods for which replica info is required
+     *
+     * @param authConfig
+     * @param appName
+     * @param serviceName
+     * @param namespace
+     * @param isFilter    TODO Enable predicate based filter
+     * @return List of {@link ReplicaInfo} based on pods fetched
+     * @throws HyscaleException
+     */
+    public List<ReplicaInfo> getReplicas(T authConfig, String appName, String serviceName, String namespace,
+                                         boolean isFilter) throws HyscaleException;
+
+
+    /**
+     * Get logs of a specific Pod of a Service
+     * tail logs or read specific number of lines
+     *
+     * @return Input Stream with logs
+     * @throws HyscaleException
+     */
+    public InputStream logs(T authConfig, String serviceName, String namespace, String podName, String containerName,
+                            Integer readLines, boolean tail) throws HyscaleException;
+
+    /**
+     * @param context
+     * @return ServiceAddress
+     * @throws HyscaleException if service not found or failed to create cluster client
+     */
+    public ServiceAddress getServiceAddress(DeploymentContext context) throws HyscaleException;
+
+
+    /**
+     * @param authConfig
+     * @return List of {@link AppMetadata} containing details of deployed apps
+     * @throws HyscaleException
+     */
+    public List<AppMetadata> getAppsMetadata(T authConfig) throws HyscaleException;
+
+    /**
+     * Get resource status based on manifest
+     *
+     * @param namespace
+     * @param manifest
+     * @param authConfig
+     * @return ResourceStatus, STABLE as default
+     * @throws Exception
+     */
+    default ResourceStatus status(String namespace, Manifest manifest, T authConfig) throws Exception {
+        return ResourceStatus.STABLE;
+    }
+
+
+
+    List<Pod> getPods(String namespace, String appName, String serviceName, T k8sAuthorisation) throws Exception;
 
 	/**
-	 * Deploy Service to cluster
-	 * @param context
+	 * Fetches the replicas of the latest deployment of a service
+	 * @param authConfig Auth of connecting to the cluster
+	 * @param appName  Name of the application
+	 * @param serviceName service name
+	 * @param namespace namespace of the deployed application
+	 * @return
 	 * @throws HyscaleException
 	 */
-	public void deploy(DeploymentContext context) throws HyscaleException;
 
-	/**
-	 * Wait for Deployment to complete
-	 * Prints deployment status
-	 * @param context
-	 * @throws HyscaleException
-	 */
-	public void waitForDeployment(DeploymentContext context) throws HyscaleException;
-
-	public default void waitForDeployment(DeploymentContext context, ProgressHandler progressHandler)
-			throws HyscaleException {
-		waitForDeployment(context);
-	}
-
-	/**
-	 * Undeploy service from cluster
-	 * @param context
-	 * @throws HyscaleException
-	 */
-	public void unDeploy(DeploymentContext context) throws HyscaleException;
-
-	/**
-	 * Check if User can access cluster
-	 * @param authConfig
-	 * @return true if user can access cluster
-	 * @throws HyscaleException
-	 */
-	public boolean authenticate(AuthConfig authConfig) throws HyscaleException;
-
-	/**
-	 * Get Deployment status for Service
-	 * @param context
-	 * @return {@link DeploymentStatus} for the service
-	 * @throws HyscaleException
-	 */
-	public DeploymentStatus getServiceDeploymentStatus(DeploymentContext context) throws HyscaleException;
-
-	/**
-	 * Get Deployment Status for Services in an App
-	 * @param deploymentContext
-	 * @return List of {@link DeploymentStatus} for each Service
-	 * @throws HyscaleException
-	 */
-	public List<DeploymentStatus> getDeploymentStatus(DeploymentContext deploymentContext) throws HyscaleException;
-
-
-	/**
-	 * Get replicas info based on pods
-	 * isFilter restricts which pods for which replica info is required
-	 * 
-	 * @param authConfig
-	 * @param appName
-	 * @param serviceName
-	 * @param namespace
-	 * @param isFilter TODO Enable predicate based filter
-	 * @return List of {@link ReplicaInfo} based on pods fetched
-	 * @throws HyscaleException
-	 */
-	public List<ReplicaInfo> getReplicas(AuthConfig authConfig, String appName, String serviceName, String namespace, 
-	        boolean isFilter) throws HyscaleException;
-	
-	/**
-	 * Get Service logs from Pods
-	 * tail logs or read specific number of lines
-	 * @param deploymentContext
-	 * @return Input Stream with logs
-	 * @throws HyscaleException
-	 */
-	public InputStream logs(DeploymentContext deploymentContext) throws HyscaleException;
-	
-	/**
-	 * Get logs of a specific Pod of a Service
-	 * tail logs or read specific number of lines
-	 * @return Input Stream with logs
-	 * @throws HyscaleException
-	 */
-	public InputStream logs(AuthConfig authConfig, String serviceName, String namespace, String podName, String containerName,
-			Integer readLines, boolean tail) throws HyscaleException;
-	
-	/**
-	 * 
-	 * @param context
-	 * @return ServiceAddress
-	 * @throws HyscaleException if service not found or failed to create cluster client
-	 */
-	public ServiceAddress getServiceAddress(DeploymentContext context) throws HyscaleException;
-	
-	
-	/**
-	 * 
-	 * @param authConfig
-	 * @return List of {@link AppMetadata} containing details of deployed apps
-	 * @throws HyscaleException
-	 */
-	public List<AppMetadata> getAppsMetadata(AuthConfig authConfig) throws HyscaleException;
-	
-	/**
-	 * Get resource status based on manifest
-	 * @param namespace
-	 * @param manifest
-	 * @param authConfig
-	 * @return ResourceStatus, STABLE as default
-	 * @throws Exception
-	 */
-	default ResourceStatus status(String namespace, Manifest manifest, AuthConfig authConfig) throws Exception {
-		return ResourceStatus.STABLE;
-	}
-	
-	List<Pod> getPods(String namespace, String appName, String serviceName, K8sAuthorisation k8sAuthorisation) throws Exception;
+	public List<ReplicaInfo> getLatestReplicas(T authConfig, String appName, String serviceName, String namespace) throws HyscaleException ;
 
 }

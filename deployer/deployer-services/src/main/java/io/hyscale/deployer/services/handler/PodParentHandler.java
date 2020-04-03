@@ -17,6 +17,7 @@ package io.hyscale.deployer.services.handler;
 
 import java.util.List;
 
+import com.google.protobuf.Api;
 import io.hyscale.commons.utils.ResourceLabelUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.kubernetes.client.openapi.ApiClient;
@@ -24,22 +25,25 @@ import io.kubernetes.client.openapi.models.V1ObjectMeta;
 
 public abstract class PodParentHandler<T> {
 
-    public abstract List<DeploymentStatus> getStatus(ApiClient apiClient, String selector, boolean label,
-            String namespace);
+    public abstract List<DeploymentStatus> getStatus(ApiClient apiClient, String selector, boolean label, String namespace);
 
     public abstract DeploymentStatus buildStatus(T t);
 
     public abstract List<DeploymentStatus> buildStatus(List<T> t);
 
-    public DeploymentStatus buildStatusFromMetadata(V1ObjectMeta metadata, DeploymentStatus.Status status) {
+    public abstract String getPodSelector(ApiClient apiClient, String selector, boolean label, String namespace);
+
+    public DeploymentStatus buildStatusFromMetadata(V1ObjectMeta metadata, DeploymentStatus.ServiceStatus serviceStatus) {
         if (metadata == null) {
             return null;
         }
         DeploymentStatus deploymentStatus = new DeploymentStatus();
         String serviceName = ResourceLabelUtil.getServiceName(metadata.getLabels());
         deploymentStatus.setServiceName(serviceName);
-        deploymentStatus.setStatus(status);
+        deploymentStatus.setServiceStatus(serviceStatus);
         deploymentStatus.setAge(metadata.getCreationTimestamp());
         return deploymentStatus;
     }
+
+    public abstract String getKind();
 }

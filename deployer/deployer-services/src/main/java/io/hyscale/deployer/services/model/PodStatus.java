@@ -15,30 +15,33 @@
  */
 package io.hyscale.deployer.services.model;
 
+import io.hyscale.deployer.core.model.DeploymentStatus;
+
 import java.util.HashMap;
 import java.util.Map;
 
-//TODO JAVADOC
 public enum PodStatus {
 
-    IMAGEPULL_BACKOFF("ImagePullBackOff", true),
-    CRASHLOOP_BACKOFF("CrashLoopBackOff", true),
-    PENDING("Pending", true),
-    ERR_IMAGE_PULL("ErrImagePull", true),
-    OOMKILLED("OOMKilled", true),
-    RUN_CONTAINER_ERROR("RunContainerErr", true),
-    ERROR("Error", true),
-    COMPLETED("Completed", true),
-    RUNNING("Running", false),
-    DEFAULT("default", true);
+    IMAGEPULL_BACKOFF("ImagePullBackOff", true, DeploymentStatus.ServiceStatus.FAILED),
+    CRASHLOOP_BACKOFF("CrashLoopBackOff", true, DeploymentStatus.ServiceStatus.FAILED),
+    PENDING("Pending", true, DeploymentStatus.ServiceStatus.FAILED),
+    ERR_IMAGE_PULL("ErrImagePull", true, DeploymentStatus.ServiceStatus.FAILED),
+    OOMKILLED("OOMKilled", true, DeploymentStatus.ServiceStatus.FAILED),
+    RUN_CONTAINER_ERROR("RunContainerErr", true, DeploymentStatus.ServiceStatus.FAILED),
+    ERROR("Error", true, DeploymentStatus.ServiceStatus.FAILED),
+    COMPLETED("Completed", true, DeploymentStatus.ServiceStatus.FAILED),
+    RUNNING("Running", false, DeploymentStatus.ServiceStatus.RUNNING),
+    DEFAULT("default", true, DeploymentStatus.ServiceStatus.FAILED);
 
     private String status;
     private boolean failed;
+    private DeploymentStatus.ServiceStatus serviceStatus;
     private static Map<String, PodStatus> podStatusMap = new HashMap<>();
 
-    PodStatus(String status, boolean failed) {
+    PodStatus(String status, boolean failed, DeploymentStatus.ServiceStatus serviceStatus) {
         this.status = status;
         this.failed = failed;
+        this.serviceStatus = serviceStatus;
     }
 
     static {
@@ -57,5 +60,9 @@ public enum PodStatus {
 
     public static PodStatus get(String status) {
         return podStatusMap.getOrDefault(status, PodStatus.DEFAULT);
+    }
+
+    public DeploymentStatus.ServiceStatus getServiceStatus() {
+        return serviceStatus;
     }
 }

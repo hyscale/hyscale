@@ -51,7 +51,7 @@ import io.kubernetes.client.openapi.models.V1ReplicaSet;
 public class K8sDeployerUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(K8sDeployerUtil.class);
-    
+
     public static List<V1Pod> getExistingPods(ApiClient apiClient, String appName, String serviceName, String namespace)
             throws HyscaleException {
 
@@ -59,14 +59,22 @@ public class K8sDeployerUtil {
         String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
         return v1PodHandler.getBySelector(apiClient, selector, true, namespace);
     }
-    
-    public static List<V1Pod> filterPods(ApiClient apiClient, String appName, String serviceName,
-            String namespace, List<V1Pod> podList) {
-        
+
+    public static List<V1Pod> getLatestPods(ApiClient apiClient, String appName, String serviceName,
+                                            String namespace) {
+        List<V1Pod> podList = null;
+        V1PodHandler v1PodHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
+        try {
+            String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
+            podList = v1PodHandler.getBySelector(apiClient, selector, true, namespace);
+        } catch (HyscaleException e) {
+
+        }
+
         if (podList == null || podList.isEmpty()) {
             return podList;
         }
-        
+
         if (!PodPredicates.isPodAmbiguous().test(podList)) {
             return podList;
         }
@@ -83,7 +91,7 @@ public class K8sDeployerUtil {
         // Deployment
         if (ResourceKind.REPLICA_SET.equals(podOwnerKind) || ResourceKind.DEPLOYMENT.equals(podOwnerKind)) {
             // Get deployment, get revision, get RS with the revision, get all labels and filter pods
-            return K8sDeployerUtil.filterPodsByDeployment(apiClient, appName, serviceName, namespace, podList);
+            return filterPodsByDeployment(apiClient, appName, serviceName, namespace, podList);
         }
 
         // TODO do we need to handle STS cases ??
@@ -97,7 +105,7 @@ public class K8sDeployerUtil {
      * Get {@link V1ReplicaSet} from cluster based on namespace, appname, service name and revision.
      * Replica set provides pod-template-hash label(cluster internal) for corresponding pods
      * From the provided pods return the ones which contains pod-template-hash in label 
-     * 
+     *
      * @param apiClient
      * @param appName
      * @param serviceName
@@ -105,8 +113,7 @@ public class K8sDeployerUtil {
      * @param podList
      * @return pods from pod list which refer to deployment for the app and service in namespace
      */
-    public static List<V1Pod> filterPodsByDeployment(ApiClient apiClient, String appName, String serviceName,
-            String namespace, List<V1Pod> podList) {
+    public static List<V1Pod> filterPodsByDeployment(ApiClient apiClient, String appName, String serviceName, String namespace, List<V1Pod> podList) {
         String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
         V1DeploymentHandler v1DeploymentHandler = (V1DeploymentHandler) ResourceHandlers
                 .getHandlerOf(ResourceKind.DEPLOYMENT.getKind());
@@ -154,7 +161,7 @@ public class K8sDeployerUtil {
         return K8sPodUtil.filterPods(podList, PodPredicates.podContainsLabel(), searchLabel);
 
     }
-    
+
     /**
      * Fetch service status from pod parent, called in case pods are not present
      * @param context
@@ -168,10 +175,10 @@ public class K8sDeployerUtil {
         String serviceName = context.getServiceName();
         String namespace = context.getNamespace();
         String selector = ResourceSelectorUtil.getServiceSelector(context.getAppName(), serviceName);
-        
+
         Map<String, DeploymentStatus> serviceVsDeploymentStatus = new HashMap<String, DeploymentStatus>();
         // Deployment
-        V1DeploymentHandler deploymentHandler = (V1DeploymentHandler)ResourceHandlers
+        V1DeploymentHandler deploymentHandler = (V1DeploymentHandler) ResourceHandlers
                 .getHandlerOf(ResourceKind.DEPLOYMENT.getKind());
         List<DeploymentStatus> deploymentStatus = deploymentHandler.getStatus(apiClient, selector, true, namespace);
         if (deploymentStatus != null && !deploymentStatus.isEmpty()) {
@@ -181,9 +188,9 @@ public class K8sDeployerUtil {
             });
         }
         // StatefulSet
-        V1StatefulSetHandler stsHandler = (V1StatefulSetHandler)ResourceHandlers
+        V1StatefulSetHandler stsHandler = (V1StatefulSetHandler) ResourceHandlers
                 .getHandlerOf(ResourceKind.STATEFUL_SET.getKind());
-        
+
         deploymentStatus = stsHandler.getStatus(apiClient, selector, true, namespace);
         if (deploymentStatus != null && !deploymentStatus.isEmpty()) {
             logger.debug("Getting status from StatefulSet");
@@ -192,19 +199,19 @@ public class K8sDeployerUtil {
             });
         }
         if (serviceVsDeploymentStatus.isEmpty()) {
-            return serviceName != null ? Arrays.asList(DeploymentStatusUtil.getNotDeployedStatus(serviceName)): null;
+            return serviceName != null ? Arrays.asList(DeploymentStatusUtil.getNotDeployedStatus(serviceName)) : null;
         }
-        
+
         return new ArrayList(serviceVsDeploymentStatus.values());
     }
-    
+
     /**
      * Get list of services deployed for the given app
      * Fetch it from owners instead of pods as pods might not be created in some cases
      * @param apiClient
      * @param context
      * @return List of deployed services
-     * @throws HyscaleException 
+     * @throws HyscaleException
      */
     public static Set<String> getDeployedServices(ApiClient apiClient, DeploymentContext context) throws HyscaleException {
         if (context == null) {

@@ -15,7 +15,6 @@
  */
 package io.hyscale.deployer.services.util;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import io.hyscale.deployer.services.model.PodCondition;
@@ -24,12 +23,8 @@ import org.joda.time.DateTime;
 
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.utils.HyscaleStringUtil;
-import io.hyscale.commons.utils.ResourceLabelUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.kubernetes.client.openapi.models.V1Pod;
-import io.kubernetes.client.openapi.models.V1StatefulSet;
-import io.kubernetes.client.openapi.models.V1Deployment;
-import io.kubernetes.client.openapi.models.V1ObjectMeta;
 
 /**
  * 
@@ -38,7 +33,7 @@ import io.kubernetes.client.openapi.models.V1ObjectMeta;
 public class DeploymentStatusUtil {
 
 	/**
-	 * Status for service not deployed on cluster
+	 *Status for service not deployed on cluster
 	 * @param serviceName
 	 * @return DeploymentStatus
 	 */
@@ -48,7 +43,7 @@ public class DeploymentStatusUtil {
         }
         DeploymentStatus status = new DeploymentStatus();
         status.setServiceName(serviceName);
-        status.setStatus(DeploymentStatus.Status.NOT_DEPLOYED);
+        status.setServiceStatus(DeploymentStatus.ServiceStatus.NOT_DEPLOYED);
         status.setAge(null);
         return status;
     }
@@ -86,18 +81,18 @@ public class DeploymentStatusUtil {
         return null;
     }
 
-    public static DeploymentStatus.Status getStatus(List<V1Pod> v1PodList) {
+    public static DeploymentStatus.ServiceStatus getStatus(List<V1Pod> v1PodList) {
         if (v1PodList == null || v1PodList.isEmpty()) {
-            return DeploymentStatus.Status.NOT_DEPLOYED;
+            return DeploymentStatus.ServiceStatus.NOT_DEPLOYED;
         }
         boolean ready = true;
         for (V1Pod v1Pod : v1PodList) {
             ready = K8sPodUtil.checkForPodCondition(v1Pod, PodCondition.READY) && ready;
         }
         if (ready) {
-            return DeploymentStatus.Status.RUNNING;
+            return DeploymentStatus.ServiceStatus.RUNNING;
         } else {
-            return DeploymentStatus.Status.NOT_RUNNING;
+            return DeploymentStatus.ServiceStatus.NOT_RUNNING;
         }
     }
 

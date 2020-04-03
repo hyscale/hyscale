@@ -57,7 +57,7 @@ public class StatusUtil {
             return null;
         }
         String age = getAge(replicaInfo.getAge());
-        return new String[]{replicaInfo.getName(), replicaInfo.getStatus() != null ? replicaInfo.getStatus().getStatus() : null, age};
+        return new String[]{replicaInfo.getName(), replicaInfo.getStatus() != null ? replicaInfo.getStatus() : null, age};
     }
 
     /**
