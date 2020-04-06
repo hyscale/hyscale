@@ -16,9 +16,8 @@
 package io.hyscale.controller.validator;
 
 import io.hyscale.commons.validator.Validator;
+import io.hyscale.controller.model.WorkflowContext;
 
-import io.hyscale.controller.model.ManifestGenCommandSpec;
-
-public interface ManifestGenValidator extends Validator<ManifestGenCommandSpec> {
+public interface ClusterValidator extends Validator<WorkflowContext>{
 
 }

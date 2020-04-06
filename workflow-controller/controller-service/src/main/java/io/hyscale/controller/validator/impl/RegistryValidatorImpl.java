@@ -13,12 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.validator;
+package io.hyscale.controller.validator.impl;
 
-import io.hyscale.commons.validator.Validator;
+import org.springframework.stereotype.Component;
 
-import io.hyscale.controller.model.ManifestGenCommandSpec;
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.controller.validator.RegistryValidator;
 
-public interface ManifestGenValidator extends Validator<ManifestGenCommandSpec> {
+@Component
+public class RegistryValidatorImpl implements RegistryValidator{
+
+	@Override
+	public boolean validate(WorkflowContext t) throws HyscaleException {
+		return false;
+	}
 
 }
