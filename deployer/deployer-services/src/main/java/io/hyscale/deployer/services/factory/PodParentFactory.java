@@ -16,14 +16,17 @@
 package io.hyscale.deployer.services.factory;
 
 import io.hyscale.deployer.services.handler.PodParentHandler;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/* TODO
+  need to inject the parentHandlers
+  to parenthandler list. Until then , this
+  class is incomplete
+ */
 public class PodParentFactory {
 
     private List<PodParentHandler> parentHandlerList;

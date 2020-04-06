@@ -22,12 +22,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import io.hyscale.commons.models.K8sAuthorisation;
-import io.hyscale.commons.models.KubernetesResource;
-import io.hyscale.commons.utils.ResourceSelectorUtil;
-import io.hyscale.deployer.core.model.ResourceKind;
-import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
-import io.kubernetes.client.openapi.ApiClient;
 import org.apache.commons.lang3.StringUtils;
 
 import io.hyscale.commons.constants.K8SRuntimeConstants;

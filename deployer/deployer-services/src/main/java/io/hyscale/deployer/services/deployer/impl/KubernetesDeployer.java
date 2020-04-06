@@ -18,9 +18,16 @@ package io.hyscale.deployer.services.deployer.impl;
 import java.io.InputStream;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import io.hyscale.commons.models.*;
+import io.hyscale.deployer.services.builder.PodBuilder;
+import io.hyscale.deployer.services.handler.impl.V1PersistentVolumeClaimHandler;
 import io.hyscale.deployer.services.model.*;
+import io.hyscale.deployer.services.util.*;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.openapi.models.V1Volume;
+import io.kubernetes.client.openapi.models.V1VolumeMount;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,11 +53,6 @@ import io.hyscale.deployer.services.handler.impl.V1PodHandler;
 import io.hyscale.deployer.services.handler.impl.V1ServiceHandler;
 import io.hyscale.deployer.services.predicates.PodPredicates;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
-import io.hyscale.deployer.services.util.DeploymentStatusUtil;
-import io.hyscale.deployer.services.util.K8sDeployerUtil;
-import io.hyscale.deployer.services.util.K8sReplicaUtil;
-import io.hyscale.deployer.services.util.K8sResourceDispatcher;
-import io.hyscale.deployer.services.util.KubernetesResourceUtil;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.models.V1Pod;
 
@@ -141,7 +143,45 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
 
     @Override
     public List<Pod> getPods(String namespace, String appName, String serviceName, K8sAuthorisation k8sAuthorisation) throws Exception {
-        return null;
+        List<Pod> podList = new ArrayList<Pod>();
+        List<V1Pod> v1PodList = null;
+        try {
+            ApiClient apiClient = clientProvider.get(k8sAuthorisation);
+            V1PodHandler v1PodHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
+
+            String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
+
+            v1PodList = v1PodHandler.getBySelector(apiClient, selector, true, namespace);
+            if (v1PodList == null || v1PodList.isEmpty()) {
+                return null;
+            }
+
+            for (V1Pod v1Pod : v1PodList) {
+                PodBuilder builder = new PodBuilder();
+                List<V1Volume> v1VolumeList = v1Pod.getSpec().getVolumes();
+                List<Volume> podVolumeList = new ArrayList<Volume>();
+                Set<String> volumeNames = new HashSet<>();
+                if (v1VolumeList != null) {
+                    for (V1Volume v1Volume : v1VolumeList) {
+                        Volume volume = getVolume(apiClient, v1Volume, namespace);
+                        if (volume != null) {
+                            volumeNames.add(volume.getName());
+                            podVolumeList.add(volume);
+                        }
+                    }
+                }
+                builder.withName(v1Pod.getMetadata().getName())
+                        .withStatus(K8sPodUtil.getAggregatedStatusOfContainersForPod(v1Pod))
+                        .withContainers(getContainers(v1Pod, volumeNames))
+                        .withVolumes(podVolumeList)
+                        .withReady(K8sPodUtil.checkForPodCondition(v1Pod, PodCondition.READY));
+                podList.add(builder.get());
+            }
+            return podList;
+        } catch (HyscaleException e) {
+            logger.error("Error while getting Pods, error {}", e.getMessage());
+            throw e;
+        }
     }
 
     @Override
@@ -359,4 +399,63 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
         return K8sReplicaUtil.getReplicaInfo(v1PodList);
     }
 
+    private List<Container> getContainers(V1Pod v1Pod, Set<String> volumeNames) {
+        List<Container> containers = new ArrayList<Container>();
+        // get all status
+        Map<String, String> containerVsStatus = new HashMap<>();
+        if (v1Pod.getStatus() != null && v1Pod.getStatus().getContainerStatuses() != null) {
+            v1Pod.getStatus().getContainerStatuses().forEach((containerStatus) -> {
+                String status = K8sPodUtil.getContainerStatus(containerStatus);
+                if (status != null) {
+                    containerVsStatus.put(containerStatus.getName(), status);
+                }
+            });
+        }
+        v1Pod.getSpec().getContainers().forEach((v1Container) -> {
+            Container container = new Container();
+            container.setName(v1Container.getName());
+            container.setStatus(containerVsStatus.get(v1Container.getName()));
+            if (v1Container.getVolumeMounts() != null) {
+                List<VolumeMount> volumeMounts = v1Container.getVolumeMounts().stream()
+                        .filter(v1VolumeMount -> volumeNames.contains(v1VolumeMount.getName()))
+                        .map(this::getVolumeMount).collect(Collectors.toList());
+                container.setVolumeMounts(volumeMounts);
+            }
+            containers.add(container);
+        });
+        return containers;
+    }
+
+    private Volume getVolume(ApiClient apiClient, V1Volume v1Volume, String namespace) throws HyscaleException {
+        if (v1Volume.getPersistentVolumeClaim() == null) {
+            return null;
+        }
+        String claimName = v1Volume.getPersistentVolumeClaim().getClaimName();
+        if (claimName == null) {
+            return null;
+        }
+        V1PersistentVolumeClaimHandler v1PersistentVolumeClaimHandler = (V1PersistentVolumeClaimHandler) ResourceHandlers
+                .getHandlerOf(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind());
+        Volume volume = new Volume();
+        volume.setName(v1Volume.getName());
+        volume.setClaimName(claimName);
+
+        V1PersistentVolumeClaim pvc = v1PersistentVolumeClaimHandler.get(apiClient, claimName,
+                namespace);
+        if (pvc.getStatus() != null && pvc.getStatus().getCapacity() != null
+                && pvc.getStatus().getCapacity().get(STORAGE) != null) {
+            volume.setSize(pvc.getStatus().getCapacity().get(STORAGE).toSuffixedString());
+        }
+        return volume;
+    }
+
+    private VolumeMount getVolumeMount(V1VolumeMount v1VolumeMount) {
+        VolumeMount volumeMount = new VolumeMount();
+        volumeMount.setMountPath(v1VolumeMount.getMountPath());
+        volumeMount.setName(v1VolumeMount.getName());
+        if (v1VolumeMount.getReadOnly() != null) {
+            volumeMount.setReadOnly(v1VolumeMount.getReadOnly());
+        }
+        return volumeMount;
+    }
 }
