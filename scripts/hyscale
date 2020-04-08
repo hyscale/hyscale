@@ -18,6 +18,10 @@ HYSCALE_DATA_VOL=hyscale
 USER_INTERACTIVE=""
 HYS_SERVICE_LOGS="get service logs"
 USER_MAP=""
+HYS_DOCKER_CONF_VOL=""
+HYS_KUBE_CONF_VOL=""
+HYS_LB_TIMEOUT=""
+
 command_exists() {
   command -v "$@" > /dev/null 2>&1
 }
@@ -27,14 +31,12 @@ if [ ! -z "$KUBECONFIG" ]; then
    KUBE_CONF=$KUBECONFIG
 fi
 
-if [ ! -s "$DOCKER_CONF" ]; then
-   echo "$DOCKER_CONF file does not exist, make sure $DOCKER_CONF has the latest auth credentials by logging into the image registry using docker login !"
-   exit 1
+if [ -s "$DOCKER_CONF" ]; then
+   HYS_DOCKER_CONF_VOL="-v ${DOCKER_CONF}:/hyscale/.docker/config.json:ro"
 fi
 
-if [ ! -s "$KUBE_CONF" ]; then
-   echo "$KUBE_CONF file does not exist, make sure $KUBE_CONF file has the kubernetes authentication credentials !"
-   exit 1
+if [ -s "$KUBE_CONF" ]; then
+   HYS_KUBE_CONF_VOL="-v ${KUBE_CONF}:/hyscale/.kube/config:ro"
 fi
 
 if [ "$USER" != "root" ]; then
@@ -75,16 +77,22 @@ else
         IMAGE_CLEANUP_POLICY=""
 fi
 
+if [ -n "$HYS_LB_READY_TIMEOUT" ]; then
+        HYS_LB_TIMEOUT="-e HYS_LB_READY_TIMEOUT=$HYS_LB_READY_TIMEOUT"
+fi
+
 # TODO: generate a random string/number to add to name
 docker run \
   $USER_MAP \
   $USER_INTERACTIVE \
+  --net=host \
   --rm \
   --label name=$HYSCALE \
+  $HYS_DOCKER_CONF_VOL \
+  $HYS_KUBE_CONF_VOL \
   -v ${USER_DIR}:/hyscale/app:ro \
-  -v ${KUBE_CONF}:/hyscale/.kube/config:ro \
-  -v ${DOCKER_CONF}:/hyscale/.docker/config.json:ro \
   -v ${HYS_DIR}/${HYSCALE_DATA_VOL}:/hyscale/hyscale \
+  $HYS_LB_TIMEOUT \
   -e IMAGE_CLEANUP_POLICY=$IMAGE_CLEANUP_POLICY \
   -e HYSCALECTL_HOME=$HYS_DIR \
   -e HYSCALECTL_KUBECONF=$KUBE_CONF \
