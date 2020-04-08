@@ -1,0 +1,35 @@
+# Build workflow gets auto triggered upon code merge to master or release* branches
+
+name: Release
+
+on:
+  repository_dispatch:
+    types: do-something
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Hyscale Docker image build and push to DockerHub, Build Binary and upload to S3 Bucket
+      run: |
+          ./scripts/publish_artifacts.sh
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.HYS_STABLE_AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.HYS_STABLE_AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: 'us-west-2'
+        AWS_S3_BUCKET: ${{ secrets.HYS_STABLE_AWS_S3_BUCKET }}
+        DOCKER_USERNAME: ${{ secrets.HYS_STABLE_DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.HYS_STABLE_DOCKER_PASSWORD }}
+        DOCKER_REPO: 'hyscale'
+
+    - name: URL to Download Hyscale Artifact
+      run: |
+          echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \n curl -sSL https://get.hyscale.io | HYS_VERSION=$IMAGE_VERSION  bash" >> hyscale_version.txt
+
+    - name: SendGrid
+      uses: peter-evans/sendgrid-action@v1
+      env:
+        SENDGRID_API_KEY: ${{ secrets.HYS_SENDGRID_API_KEY }}
