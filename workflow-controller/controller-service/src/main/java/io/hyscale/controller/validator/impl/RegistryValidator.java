@@ -15,18 +15,30 @@
  */
 package io.hyscale.controller.validator.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.validator.Validator;
+import io.hyscale.controller.manager.RegistryManager;
 import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.validator.RegistryValidator;
+import io.hyscale.controller.util.RegistryAndDockerValidatorUtil;
 
 @Component
-public class RegistryValidatorImpl implements RegistryValidator{
+public class RegistryValidator implements Validator<WorkflowContext> {
+	private static final Logger logger = LoggerFactory.getLogger(ClusterValidator.class);
+
+	@Autowired
+	private RegistryManager registryManager;
 
 	@Override
-	public boolean validate(WorkflowContext t) throws HyscaleException {
-		return false;
+	public boolean validate(WorkflowContext context) throws HyscaleException {
+		logger.debug("Starting K8s cluster validation");
+		if(!RegistryAndDockerValidatorUtil.isValidate(context.getServiceSpec())) {
+			return false;
+		}
+		return registryManager.getImageRegistry("") != null ? true : false;
 	}
-
 }

@@ -25,23 +25,21 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.controller.model.ManifestGenCommandSpec;
+import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.validator.ManifestGenValidator;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.hyscale.servicespec.commons.model.service.Volume;
 
 @Component
-public class ManifestValidatorImpl implements ManifestGenValidator{
-    private static final Logger logger = LoggerFactory.getLogger(ManifestValidatorImpl.class);
+public class ManifestValidator implements Validator<WorkflowContext>{
+    private static final Logger logger = LoggerFactory.getLogger(ManifestValidator.class);
 
 	
 	@Override
-	public boolean validate(ManifestGenCommandSpec manifestGenCommandSpec) throws HyscaleException {
+	public boolean validate(WorkflowContext context) throws HyscaleException {
 		 logger.debug("Executing Manifest Validator Hook");
-		 //TODO here we have fetch service spec from manifestGenCommandSpec
-	        ServiceSpec serviceSpec = null;
+	        ServiceSpec serviceSpec = context.getServiceSpec();
 	        if (serviceSpec == null) {
 	            logger.debug("Empty service spec found at manifest validator hook ");
 	            return false;
@@ -63,4 +61,5 @@ public class ManifestValidatorImpl implements ManifestGenValidator{
 		return true;
 	
 	}
+
 }

@@ -32,6 +32,7 @@ public class WorkflowContext extends ComponentInvokerContext {
     private String appName;
     private String serviceName;
     private String envName;
+    private String kubeConfigPath;
 
     private Map<String, Object> attributes;
 
@@ -87,5 +88,14 @@ public class WorkflowContext extends ComponentInvokerContext {
         this.serviceSpec = serviceSpec;
     }
 
+	public String getKubeConfigPath() {
+		return kubeConfigPath;
+	}
+
+	public void setKubeConfigPath(String kubeConfigPath) {
+		this.kubeConfigPath = kubeConfigPath;
+	}
+
+    
 
 }

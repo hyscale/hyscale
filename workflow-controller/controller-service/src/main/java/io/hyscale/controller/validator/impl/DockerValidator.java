@@ -25,18 +25,22 @@ import io.hyscale.commons.commands.CommandExecutor;
 import io.hyscale.commons.commands.provider.ImageCommandProvider;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.validator.DockerValidator;
+import io.hyscale.controller.util.RegistryAndDockerValidatorUtil;
 
 @Component
-public class DockerValidatorImpl implements DockerValidator{
-    private static final Logger logger = LoggerFactory.getLogger(DockerValidatorImpl.class);
+public class DockerValidator implements Validator<WorkflowContext> {
+	private static final Logger logger = LoggerFactory.getLogger(DockerValidator.class);
 
-    @Autowired
-    private ImageCommandProvider commandGenerator;
+	@Autowired
+	private ImageCommandProvider commandGenerator;
 
 	@Override
-	public boolean validate(WorkflowContext t) throws HyscaleException {
+	public boolean validate(WorkflowContext context) throws HyscaleException {
+		if(!RegistryAndDockerValidatorUtil.isValidate(context.getServiceSpec())) {
+			return false;
+		}
 		String command = commandGenerator.dockerVersion();
 		logger.debug("Docker Installed check command: {}", command);
 		boolean success = CommandExecutor.execute(command);

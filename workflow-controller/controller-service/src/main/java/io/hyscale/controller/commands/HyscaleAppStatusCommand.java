@@ -74,7 +74,7 @@ public class HyscaleAppStatusCommand implements Callable<Integer> {
 
     @Autowired
     private StatusComponentInvoker statusComponentInvoker;
-
+    
     @Override
     public Integer call() throws Exception{
         if (!CommandUtil.isInputValid(this)) {

@@ -18,23 +18,26 @@ package io.hyscale.controller.validator.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.validator.ClusterValidator;
+import io.hyscale.deployer.services.deployer.Deployer;
 
-public class ClusterValidatorImpl implements ClusterValidator{
-  private static final Logger logger = LoggerFactory.getLogger(ClusterValidatorImpl.class);
+@Component
+public class ClusterValidator implements Validator<WorkflowContext>{
+  private static final Logger logger = LoggerFactory.getLogger(ClusterValidator.class);
 
     @Autowired
-    private K8sAuthConfigBuilder authConfigBuilder;
-
+    private  K8sAuthConfigBuilder authConfigBuilder;
+    @Autowired
+    private Deployer deployer;
+   
 	@Override
-	public boolean validate(WorkflowContext t) throws HyscaleException {
+	public boolean validate(WorkflowContext context) throws HyscaleException {
 		  logger.debug("Starting K8s cluster validation");
-	        authConfigBuilder.getAuthConfig();
-		return false;
+	      return deployer.authenticate(authConfigBuilder.getAuthConfig(context.getKubeConfigPath()));
 	}
-
 }

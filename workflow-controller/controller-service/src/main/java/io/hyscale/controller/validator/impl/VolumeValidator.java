@@ -39,9 +39,9 @@ import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.StorageClassAnnotation;
 import io.hyscale.commons.utils.HyscaleStringUtil;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
+import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.validator.VolumeValidator;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
@@ -61,8 +61,8 @@ import io.kubernetes.client.openapi.models.V1ResourceRequirements;
 import io.kubernetes.client.openapi.models.V1StorageClass;
 
 @Component
-public class VolumeValidatorImpl implements VolumeValidator{
-	private static final Logger logger = LoggerFactory.getLogger(VolumeValidatorImpl.class);
+public class VolumeValidator implements Validator<WorkflowContext>{
+	private static final Logger logger = LoggerFactory.getLogger(VolumeValidator.class);
 	
 	private static final String STORAGE = "storage";
 
