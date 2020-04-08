@@ -21,23 +21,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.validator.Validator;
+import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.deployer.services.deployer.Deployer;
+import io.hyscale.deployer.services.handler.impl.AuthenticationHandler;
 
 @Component
-public class ClusterValidator implements Validator<WorkflowContext>{
-  private static final Logger logger = LoggerFactory.getLogger(ClusterValidator.class);
+public class ClusterValidator implements Validator<WorkflowContext> {
+	private static final Logger logger = LoggerFactory.getLogger(ClusterValidator.class);
 
-    @Autowired
-    private  K8sAuthConfigBuilder authConfigBuilder;
-    @Autowired
-    private Deployer deployer;
-   
+	@Autowired
+	private K8sAuthConfigBuilder authConfigBuilder;
+	@Autowired
+	private AuthenticationHandler authenticationHandler;
+
 	@Override
 	public boolean validate(WorkflowContext context) throws HyscaleException {
-		  logger.debug("Starting K8s cluster validation");
-	      return deployer.authenticate(authConfigBuilder.getAuthConfig(context.getKubeConfigPath()));
+		logger.debug("Starting K8s cluster validation");
+		boolean flag = authenticationHandler.authenticate(authConfigBuilder.getAuthConfig(context.getKubeConfigPath()));
+		if (!flag) {
+			WorkflowLogger.persistError(ValidatorActivity.CLUSTER_VALIDATION, "Cluster validation failed");
+		}
+		return flag;
 	}
 }

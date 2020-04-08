@@ -15,16 +15,23 @@
  */
 package io.hyscale.controller.validator.impl;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.ImageRegistry;
 import io.hyscale.commons.validator.Validator;
+import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.manager.RegistryManager;
 import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.util.RegistryAndDockerValidatorUtil;
+import io.hyscale.controller.util.ImageDetailsUtil;
+import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 
 @Component
 public class RegistryValidator implements Validator<WorkflowContext> {
@@ -32,13 +39,29 @@ public class RegistryValidator implements Validator<WorkflowContext> {
 
 	@Autowired
 	private RegistryManager registryManager;
+	
+	private Set<String> registries=new HashSet<String>();
 
 	@Override
 	public boolean validate(WorkflowContext context) throws HyscaleException {
-		logger.debug("Starting K8s cluster validation");
-		if(!RegistryAndDockerValidatorUtil.isValidate(context.getServiceSpec())) {
+		logger.debug("Starting registry validation");
+		if (!ImageDetailsUtil.isImageBuildPushRequired(context.getServiceSpec())) {
+			return true;
+		}
+		ImageRegistry imageRegistry = context.getServiceSpec().get(
+				HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.registry), ImageRegistry.class);
+		boolean isRegistryAvailable = registries.contains(imageRegistry.getName());
+		if (isRegistryAvailable) {
+			return true;
+		} else {
+			isRegistryAvailable = registryManager.getImageRegistry(imageRegistry.getName()) != null ? true : false;
+		}
+		if (isRegistryAvailable) {
+			registries.add(imageRegistry.getName());
+			return true;
+		} else {
+			WorkflowLogger.persistError(ValidatorActivity.REGISTRY_VALIDATION, "Registry validation failed");
 			return false;
 		}
-		return registryManager.getImageRegistry("") != null ? true : false;
 	}
 }

@@ -73,9 +73,6 @@ import io.hyscale.deployer.services.util.K8sReplicaUtil;
 import io.hyscale.deployer.services.util.K8sResourceDispatcher;
 import io.hyscale.deployer.services.util.KubernetesResourceUtil;
 import io.kubernetes.client.openapi.ApiClient;
-import io.kubernetes.client.openapi.ApiException;
-import io.kubernetes.client.openapi.apis.AuthenticationV1Api;
-import io.kubernetes.client.openapi.models.V1APIResourceList;
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
 import io.kubernetes.client.openapi.models.V1Pod;
 import io.kubernetes.client.openapi.models.V1Volume;
@@ -84,7 +81,6 @@ import io.kubernetes.client.openapi.models.V1VolumeMount;
 /**
  * {@link Deployer} implementation for K8s Cluster
  */
-@SuppressWarnings({ "unchecked", "unchecked" })
 @Component
 public class KubernetesDeployer implements Deployer {
 
@@ -182,16 +178,6 @@ public class KubernetesDeployer implements Deployer {
 
 	@Override
 	public boolean authenticate(AuthConfig authConfig) throws HyscaleException {
-		ApiClient apiClient = null;
-		apiClient = clientProvider.get((K8sAuthorisation) authConfig);
-		AuthenticationV1Api apiInstance = new AuthenticationV1Api(apiClient);
-		try {
-			V1APIResourceList result = apiInstance.getAPIResources();
-			System.out.println(result);
-			return true;
-		} catch (ApiException e) {
-			logger.error("Exception when calling AuthenticationV1Api#createTokenReview");
-		}
 		return false;
 	}
     

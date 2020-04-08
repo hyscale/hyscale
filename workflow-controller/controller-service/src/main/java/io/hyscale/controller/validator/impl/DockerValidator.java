@@ -20,14 +20,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.builder.core.models.ImageBuilderActivity;
 import io.hyscale.commons.commands.CommandExecutor;
 import io.hyscale.commons.commands.provider.ImageCommandProvider;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.validator.Validator;
+import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.util.RegistryAndDockerValidatorUtil;
+import io.hyscale.controller.util.ImageDetailsUtil;
 
 @Component
 public class DockerValidator implements Validator<WorkflowContext> {
@@ -36,10 +36,15 @@ public class DockerValidator implements Validator<WorkflowContext> {
 	@Autowired
 	private ImageCommandProvider commandGenerator;
 
+	private boolean isDockerAvailable = false;;
+
 	@Override
 	public boolean validate(WorkflowContext context) throws HyscaleException {
-		if(!RegistryAndDockerValidatorUtil.isValidate(context.getServiceSpec())) {
-			return false;
+		if (!ImageDetailsUtil.isImageBuildPushRequired(context.getServiceSpec())) {
+			return true;
+		}
+		if (isDockerAvailable) {
+			return isDockerAvailable;
 		}
 		String command = commandGenerator.dockerVersion();
 		logger.debug("Docker Installed check command: {}", command);
@@ -51,9 +56,10 @@ public class DockerValidator implements Validator<WorkflowContext> {
 		logger.debug("Docker Daemon running check command: {}", command);
 		success = CommandExecutor.execute(command);
 		if (!success) {
-			WorkflowLogger.error(ImageBuilderActivity.DOCKER_DAEMON_NOT_RUNNING);
+			WorkflowLogger.error(ValidatorActivity.DOCKER_VALIDATION,"Docker validation failed");
 			return false;
 		}
-		return true;
+		isDockerAvailable = true;
+		return isDockerAvailable;
 	}
 }

@@ -19,27 +19,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.models.ImageRegistry;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.BuildSpec;
+import io.hyscale.servicespec.commons.model.service.Dockerfile;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
-public class RegistryAndDockerValidatorUtil {
-	private static final Logger logger = LoggerFactory.getLogger(RegistryAndDockerValidatorUtil.class);
+public class ImageDetailsUtil {
+	private static final Logger logger = LoggerFactory.getLogger(ImageDetailsUtil.class);
 
-	public static boolean isValidate(ServiceSpec serviceSpec) {
+	public static boolean isImageBuildPushRequired(ServiceSpec serviceSpec) {
 
 		BuildSpec buildSpec = null;
-		ImageRegistry imageRegistry = null;
+		Dockerfile dockerfile = null;
 		try {
 			buildSpec = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.buildSpec),
 					BuildSpec.class);
-			imageRegistry = serviceSpec
-					.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.registry), ImageRegistry.class);
+			dockerfile = serviceSpec
+					.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.dockerfile), Dockerfile.class);
 		} catch (HyscaleException e) {
 			logger.info("Error while fetching buildSpec and registryUrl from serviceSpec ");
 		}
-		if (buildSpec == null && imageRegistry == null) {
+		if (buildSpec == null && dockerfile == null) {
 			return false;
 		} else {
 			return true;

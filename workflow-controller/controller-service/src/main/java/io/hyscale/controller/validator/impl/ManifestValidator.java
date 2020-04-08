@@ -25,7 +25,9 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.validator.Validator;
+import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
@@ -41,7 +43,7 @@ public class ManifestValidator implements Validator<WorkflowContext>{
 		 logger.debug("Executing Manifest Validator Hook");
 	        ServiceSpec serviceSpec = context.getServiceSpec();
 	        if (serviceSpec == null) {
-	            logger.debug("Empty service spec found at manifest validator hook ");
+	            WorkflowLogger.persistError(ValidatorActivity.MANIFEST_VALIDATION, "Empty service spec found at manifest validator hook");
 	            return false;
 	        }
 	        boolean validate = true;
@@ -53,7 +55,7 @@ public class ManifestValidator implements Validator<WorkflowContext>{
 	                validate = validate && volume != null && StringUtils.isNotBlank(volume.getName())
 	                        && StringUtils.isNotBlank(volume.getPath());
 	                if (!validate) {
-	                    logger.debug("Error validating volumes of service spec");
+	    	            WorkflowLogger.persistError(ValidatorActivity.MANIFEST_VALIDATION, "Error validating volumes of service spec");
 	                    return false;
 	                }
 	            }

@@ -217,4 +217,17 @@ public class WorkflowLogger {
         }
         persistedActivities.clear();
     }
+    
+    
+    public static void persistError(Activity activity, String... args) {
+        persist(activity, LoggerTags.ERROR, args);
+    }
+    
+    public static void persist(Activity activity, LoggerTags loggerTags, String... args) {
+        if (activity != null) {
+            persistedActivities.add(getActivityMessage(activity, loggerTags, args));
+        }
+    }
+    
+    
 }

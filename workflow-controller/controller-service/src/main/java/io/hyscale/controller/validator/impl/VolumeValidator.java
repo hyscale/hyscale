@@ -40,6 +40,7 @@ import io.hyscale.commons.models.StorageClassAnnotation;
 import io.hyscale.commons.utils.HyscaleStringUtil;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.commons.validator.Validator;
+import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.deployer.core.model.ResourceKind;
@@ -79,7 +80,7 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 		logger.debug("Validating volumes from the service spec");
 		ServiceSpec serviceSpec = context.getServiceSpec();
 		if (serviceSpec == null) {
-			logger.debug("Service spec not found");
+			WorkflowLogger.persistError(ValidatorActivity.VOLUME_VALIDATION, "Service spec not found");
 			return false;
 		}
 		TypeReference<List<Volume>> volTypeRef = new TypeReference<List<Volume>>() {
@@ -87,7 +88,7 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 		List<Volume> volumeList = serviceSpec.get(HyscaleSpecFields.volumes, volTypeRef);
 
 		if (volumeList == null || volumeList.isEmpty()) {
-			logger.debug("No volumes found for validation");
+			WorkflowLogger.persistError(ValidatorActivity.VOLUME_VALIDATION, "No volumes found for validation");
 			return false;
 		}
 		ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfigBuilder.getAuthConfig());
