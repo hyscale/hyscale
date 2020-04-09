@@ -4,6 +4,8 @@ name: Build
 
 on:
   push:
+    paths-ignore:
+    - .github/workflows/*.yaml
     branches: 
     - master
     - release/HyScale*
