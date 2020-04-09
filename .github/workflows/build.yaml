@@ -6,6 +6,10 @@ on:
   push:
     paths-ignore:
     - .github/workflows/*.yaml
+    - docs/images/*.jpg
+    - docs/*.md
+    - LICENSE
+    - README.md
     branches: 
     - master
     - release/HyScale*
