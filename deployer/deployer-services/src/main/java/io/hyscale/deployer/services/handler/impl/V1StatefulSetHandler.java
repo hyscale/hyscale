@@ -51,11 +51,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
  * @author tushart
- *
  */
 
 public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implements ResourceLifeCycleHandler<V1StatefulSet> {
@@ -318,14 +318,13 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
     public int getWeight() {
         return ResourceKind.STATEFUL_SET.getWeight();
     }
-    
+
     public List<String> getServiceNames(ApiClient apiClient, String selector, boolean label, String namespace)
             throws HyscaleException {
         return getServiceNames(getBySelector(apiClient, selector, label, namespace));
     }
 
     /**
-     * 
      * @param statefulSetList
      * @return list of service names from label of statefulset
      */
@@ -337,10 +336,9 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
             return each != null && each.getMetadata() != null;
         }).map(each -> ResourceLabelUtil.getServiceName(each.getMetadata().getLabels())).collect(Collectors.toList());
     }
-    
+
     @Override
-    public List<DeploymentStatus> getStatus(ApiClient apiClient, String selector, boolean label,
-            String namespace) {
+    public List<DeploymentStatus> getStatus(ApiClient apiClient, String selector, boolean label, String namespace) {
         try {
             return buildStatus(getBySelector(apiClient, selector, label, namespace));
         } catch (HyscaleException e) {
@@ -349,13 +347,13 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         }
         return null;
     }
-    
+
     @Override
     public DeploymentStatus buildStatus(V1StatefulSet statefulSet) {
         if (statefulSet == null) {
             return null;
         }
-        return buildStatusFromMetadata(statefulSet.getMetadata(), DeploymentStatus.Status.NOT_RUNNING);
+        return buildStatusFromMetadata(statefulSet.getMetadata(), DeploymentStatus.ServiceStatus.NOT_RUNNING);
     }
 
     @Override
@@ -371,5 +369,48 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
             }
         });
         return statuses;
+    }
+
+    @Override
+    public String getPodSelector(ApiClient apiClient, String selector, boolean label, String namespace) {
+        List<V1StatefulSet> statefulSetList = null;
+        try {
+            statefulSetList = getBySelector(apiClient, selector, label, namespace);
+        } catch (HyscaleException e) {
+            logger.error("Error fetching deployment for pod selection, ignoring", e);
+            return selector;
+        }
+        if (statefulSetList == null || statefulSetList.isEmpty()) {
+            return selector;
+        }
+
+        V1StatefulSet v1StatefulSet = statefulSetList.get(0);
+        if (v1StatefulSet == null) {
+            return selector;
+        }
+        V1StatefulSetStatus stsStatus = v1StatefulSet.getStatus();
+        if (stsStatus == null) {
+            return selector;
+        }
+
+        String currentRevision = stsStatus.getCurrentRevision();
+        String updateRevision = stsStatus.getUpdateRevision();
+        logger.debug("Current Revision = " + currentRevision);
+        logger.debug("Updated Revision = " + updateRevision);
+
+        return selector
+                .concat("," + K8SRuntimeConstants.K8s_STS_CONTROLLER_REVISION_HASH + "=" + updateRevision);
+    }
+
+    public String getControllerRevisoionHash(V1StatefulSet v1StatefulSet) {
+        if (v1StatefulSet == null) {
+            return null;
+        }
+
+        Map<String, String> annotations = v1StatefulSet.getMetadata().getAnnotations();
+        if (annotations == null || annotations.isEmpty()) {
+            return null;
+        }
+        return annotations.get(K8SRuntimeConstants.K8s_STS_CONTROLLER_REVISION_HASH);
     }
 }

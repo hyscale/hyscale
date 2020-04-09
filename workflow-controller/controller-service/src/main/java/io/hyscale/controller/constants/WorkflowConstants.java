@@ -64,5 +64,7 @@ public class WorkflowConstants {
 	public static final String DEPLOYMENT_STATUS = "DEPLOYMENT_STATUS";
 	
 	public static final String TROUBLESHOOT_MESSAGE = "TROUBLESHOOT_MESSAGE";
+	
+	public static final String REPLICA_NAME = "REPLICA_NAME";
 
 }

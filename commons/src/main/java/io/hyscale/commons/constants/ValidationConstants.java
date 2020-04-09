@@ -39,8 +39,6 @@ public class ValidationConstants {
     
     public static final long MIN_LOG_LINES = 1;
     
-    public static final long MAX_LOG_LINES = 501;
-
     public static final String INVALID_APP_NAME_MSG = "Application name \"{}\" is invalid. It must consist of lower case alphanumeric characters or '-', "
             + "its length should be between " + APP_NAME_LENGTH_MIN + " and " + APP_NAME_LENGTH_MAX + "."
             + "(regex used for validation is '"
@@ -55,8 +53,6 @@ public class ValidationConstants {
             + "its length should be between " + NAMESPACE_LENGTH_MIN + " and " + NAMESPACE_LENGTH_MAX + "."
             + "(regex used for validation is '"
             + NAMESPACE_REGEX + "')";
-    
-    public static final String MAX_LOG_LINES_ERROR_MSG = "Logs lines must be less than " + MAX_LOG_LINES;
     
     public static final String MIN_LOG_LINES_ERROR_MSG = "Logs lines must be more than " + MIN_LOG_LINES;
     

@@ -11,6 +11,10 @@
     <packaging>jar</packaging>
     <name>controller-service</name>
 
+    <properties>
+           <main.basedir>../../</main.basedir>
+        </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -72,7 +76,7 @@
             <groupId>io.hyscale</groupId>
             <artifactId>troubleshooting-integration</artifactId>
         </dependency>
-        <!-- Status time formatting -->
+        <!-- ServiceStatus time formatting -->
         <dependency>
             <groupId>org.ocpsoft.prettytime</groupId>
             <artifactId>prettytime</artifactId>

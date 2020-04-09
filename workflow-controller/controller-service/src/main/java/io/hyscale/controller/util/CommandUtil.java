@@ -24,7 +24,6 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
-import io.hyscale.commons.exception.HyscaleException;
 import org.apache.commons.lang3.StringUtils;
 
 import io.hyscale.commons.logger.WorkflowLogger;

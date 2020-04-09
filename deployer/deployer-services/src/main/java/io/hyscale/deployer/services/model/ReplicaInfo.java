@@ -13,13 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.deployer.core.model;
+package io.hyscale.deployer.services.model;
 
 import org.joda.time.DateTime;
 
+/**
+ *  Projects the replica of the service
+ */
 public class ReplicaInfo {
 
     private String name;
+    private String appName;
+    private String serviceName;
     private String status;
     private DateTime age;
 
@@ -31,12 +36,12 @@ public class ReplicaInfo {
         this.name = name;
     }
 
-    public String getStatus() {
-        return status;
+    public String getAppName() {
+        return appName;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 
     public DateTime getAge() {
@@ -45,5 +50,21 @@ public class ReplicaInfo {
 
     public void setAge(DateTime age) {
         this.age = age;
+    }
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

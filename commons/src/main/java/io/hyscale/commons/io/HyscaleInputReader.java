@@ -34,8 +34,6 @@ public class HyscaleInputReader {
 
     private static final Logger logger = LoggerFactory.getLogger(HyscaleInputReader.class);
 
-    public static final Integer MAX_RETRIES = 2;
-
     private static final InputStream DEFAULT_INPUT_STREAM = System.in;
 
     public static String readInput() throws HyscaleException {
@@ -47,7 +45,7 @@ public class HyscaleInputReader {
             is = DEFAULT_INPUT_STREAM;
         }
         try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
             return br.readLine();
         } catch (Exception e) {
             logger.error("Error while getting valid input", e);
