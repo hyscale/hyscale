@@ -13,21 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.commands;
+package io.hyscale.controller.commands.get.service;
 
 import java.util.concurrent.Callable;
 
+import io.hyscale.controller.commands.get.HyscaleGetCommand;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.constants.ToolConstants;
 import picocli.CommandLine;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
 
 /**
- *  This class executes 'hyscale undeploy' command
- *  It is a sub-command of the 'hyscale' command
- *  @see HyscaleCommand
+ *  This class executes  'hyscale get service' command
+ *  It is a sub-command of the 'hyscale get ' command
+ *  @see HyscaleGetCommand .
  *  Every command/sub-command has to implement the {@link Callable} so that
  *  whenever the command is executed the {@link #call()}
  *  method will be invoked
@@ -35,22 +34,21 @@ import picocli.CommandLine.Option;
  * The sub-commands of are handled by @Command annotation
  *
  */
-@Command(name = "undeploy", subcommands = {HyscaleUndeployAppCommand.class,
-		HyscaleUndeploySeviceCommand.class }, description = "Undeploys the specified resource")
+@CommandLine.Command(name = "service", aliases = "services", subcommands = {HyscaleServiceLogsCommand.class,
+        HyscaleServiceStatusCommand.class}, description = "Performs action on the service")
 @Component
-public class HyscaleUndeployCommand implements Callable<Integer> {
+public class HyscaleGetServiceCommand implements Callable<Integer> {
 
-	@Option(names = { "-h", "--help" }, usageHelp = true, description = "Display help message")
-	private boolean helpRequested = false;
+    @CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "Displays the help information of the specified command")
+    private boolean helpRequested = false;
 
-	/**
-	 * Executes the 'hyscale undeploy' command
-	 * Provides usage of this command to the user
-	 */
-	@Override
+    /**
+     * Executes the 'hyscale get service' command
+     * Provides usage of this command to the user
+     */
+    @Override
     public Integer call() throws Exception {
-	    new CommandLine(new HyscaleUndeployCommand()).usage(System.out);
-	    return ToolConstants.INVALID_INPUT_ERROR_CODE;
-	}
-
+        new CommandLine(new HyscaleGetServiceCommand()).usage(System.out);
+        return ToolConstants.INVALID_INPUT_ERROR_CODE;
+    }
 }

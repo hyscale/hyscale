@@ -17,56 +17,59 @@ package io.hyscale.deployer.services.model;
 
 import java.util.List;
 
+/*TODO make setters to be protected and
+   move this class to respective package
+ */
 public class Pod {
 
-	private String name;
-	// TODO enum?
-	private String status;
+    private String name;
+    // TODO enum?
+    private String status;
 
-	private List<Container> containers;
-	private List<Volume> volumes;
+    private List<Container> containers;
+    private List<Volume> volumes;
 
-	private boolean ready;
+    private boolean ready;
 
-	public boolean isReady() {
-		return ready;
-	}
+    public boolean isReady() {
+        return ready;
+    }
 
-	public List<Volume> getVolumes() {
-		return volumes;
-	}
+    public List<Volume> getVolumes() {
+        return volumes;
+    }
 
-	public void setVolumes(List<Volume> volumes) {
-		this.volumes = volumes;
-	}
+    public void setVolumes(List<Volume> volumes) {
+        this.volumes = volumes;
+    }
 
-	public void setReady(boolean ready) {
-		this.ready = ready;
-	}
+    public void setReady(boolean ready) {
+        this.ready = ready;
+    }
 
-	public List<Container> getContainers() {
-		return containers;
-	}
+    public List<Container> getContainers() {
+        return containers;
+    }
 
-	public void setContainers(List<Container> containers) {
-		this.containers = containers;
-	}
+    public void setContainers(List<Container> containers) {
+        this.containers = containers;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getStatus() {
-		return status;
-	}
+    public String getStatus() {
+        return status;
+    }
 
-	public void setStatus(String status) {
-		this.status = status;
-	}
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
 
 }

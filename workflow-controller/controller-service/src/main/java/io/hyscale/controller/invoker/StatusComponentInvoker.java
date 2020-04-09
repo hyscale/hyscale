@@ -41,7 +41,7 @@ import io.hyscale.troubleshooting.integration.models.ServiceInfo;
 import io.hyscale.troubleshooting.integration.service.TroubleshootService;
 
 /**
- * Status component acts as a bridge between workflow controller and deployer for status operation
+ * ServiceStatus component acts as a bridge between workflow controller and deployer for status operation
  * provides link between {@link WorkflowContext} and {@link DeploymentContext}
  * Responsible for calling troubleshooting in case service is in Not running state
  * @author tushar
@@ -112,7 +112,7 @@ public class StatusComponentInvoker extends ComponentInvoker<WorkflowContext> {
          * context can have the previous service name in case of app deploy
          */
         context.setServiceName(serviceStatus.getServiceName());
-        if (!DeploymentStatus.Status.RUNNING.equals(serviceStatus.getStatus())) {
+        if (!DeploymentStatus.ServiceStatus.RUNNING.equals(serviceStatus.getServiceStatus())) {
             List<DiagnosisReport> diagnosisReports = troubleshoot(context);
             message = TroubleshootUtil.getTroubleshootMessage(diagnosisReports);
         }

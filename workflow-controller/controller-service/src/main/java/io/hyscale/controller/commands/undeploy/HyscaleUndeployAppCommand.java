@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.commands;
+package io.hyscale.controller.commands.undeploy;
 
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.UndeployCommandUtil;
 
-import java.util.List;
 import java.util.concurrent.Callable;
 
 import javax.validation.constraints.Pattern;
@@ -40,7 +39,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 /**
- *  This class executes 'hyscale undeploy service' command
+ *  This class executes 'hyscale undeploy app' command
  *  It is a sub-command of the 'hyscale undeploy' command
  *  @see HyscaleUndeployCommand
  *  Every command/sub-command has to implement the {@link Callable} so that
@@ -48,66 +47,59 @@ import picocli.CommandLine.Option;
  *  method will be invoked
  *
  * @option namespace  name of the namespace from which the
- * 					  service has to be undeployed
- * @option appName    name of the app in which the service is present
- * @option serviceList  list of service names to be undeployed
+ * 					  app has to be undeployed
+ * @option appName    name of the app to be undeployed
  *
- * Eg: hyscale undeploy service -s s1 -s s2 -a sample -n dev
+ * Eg: hyscale undeploy app -a sample -n dev
  *
- * Undeploys the service from the namespace in the cluster
- * Removes all the resources, except the pvcs from the cluster related 
- * to the given service from the namespace.
+ * Undeploys the app from the given namespace in the
+ * configured kubernetes cluster.
+ * Undeploys all the resources except the pvcs from the cluster related 
+ * to the app from the namespace.
+ * @Note Note: Undeploy does not clear the namespace
  *
  */
-@Command(name = "service", description = "Undeploy service from the configured kubernetes cluster")
+@Command(name = "app", description = "Undeploys app from the kubernetes cluster")
 @Component
-public class HyscaleUndeploySeviceCommand implements Callable<Integer> {
+public class HyscaleUndeployAppCommand implements Callable<Integer> {
     
-    private static final Logger logger = LoggerFactory.getLogger(HyscaleUndeploySeviceCommand.class);
+    private static final Logger logger = LoggerFactory.getLogger(HyscaleUndeployAppCommand.class);
 
-	@Option(names = { "-h", "--help" }, usageHelp = true, description = "Displays the help information of the specified command")
+	@Option(names = { "-h", "--help" }, usageHelp = true, description = "Display the help information of the specified command")
 	private boolean helpRequested = false;
 
 	@Pattern(regexp = ValidationConstants.NAMESPACE_REGEX, message = ValidationConstants.INVALID_NAMESPACE_MSG)
-	@Option(names = { "-n", "--namespace", "-ns" }, required = true, description = "Namespace of the deployed service")
+	@Option(names = { "-n", "--namespace", "-ns" }, required = true, description = "Namespace of the deployed app")
 	private String namespace;
 
 	@Pattern(regexp = ValidationConstants.APP_NAME_REGEX, message = ValidationConstants.INVALID_APP_NAME_MSG)
 	@Option(names = { "-a", "--app" }, required = true, description = "Application name")
 	private String appName;
 
-	@Option(names = { "-s", "--service" }, required = true, description = "Service names", split = ",")
-	private List<
-	@Pattern(regexp = ValidationConstants.SERVICE_NAME_REGEX, message = ValidationConstants.INVALID_SERVICE_NAME_MSG)
-	String> serviceList;
-
 	@Autowired
 	private UndeployComponentInvoker undeployComponentInvoker;
 
 	@Override
 	public Integer call() throws Exception {
+
 	    if (!CommandUtil.isInputValid(this)) {
 	        return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-	    boolean isFailed = false;
+	    
 		WorkflowContext workflowContext = new WorkflowContext();
-		workflowContext.addAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR, true);
 		workflowContext.setAppName(appName.trim());
 		workflowContext.setNamespace(namespace.trim());
-
-		for (String serviceName: serviceList) {
-		    WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
-		    workflowContext.setServiceName(serviceName);
-		    try {
-		        undeployComponentInvoker.execute(workflowContext);
-		    } catch (HyscaleException e) {
-		        logger.error("Error while undeploying app: {}, service: {}, in namespace: {}", appName, serviceName, namespace, e);
-		        isFailed = true;
-            } finally {
-                UndeployCommandUtil.logUndeployInfo();
-            }
-		}
-		return isFailed ? ToolConstants.HYSCALE_ERROR_CODE : 0;
+		workflowContext.addAttribute(WorkflowConstants.CLEAN_UP_APP_DIR, true);
+		WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
+		try {
+		    undeployComponentInvoker.execute(workflowContext);
+		} catch (HyscaleException e) {
+		    logger.error("Error while undeploying app: {}, in namespace: {}", appName, namespace, e);
+		    throw e; 
+		} finally {
+		    UndeployCommandUtil.logUndeployInfo();
+        }	
+		return 0;
 	}
 
 }

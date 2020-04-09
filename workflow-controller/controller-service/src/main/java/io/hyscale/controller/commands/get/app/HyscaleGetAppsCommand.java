@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.commands;
+package io.hyscale.controller.commands.get.app;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import io.hyscale.controller.commands.get.app.HyscaleAppStatusCommand;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -40,7 +41,7 @@ import picocli.CommandLine.Option;
  * 
  * This class executes 'hyscale get apps' command.
  *  It is a sub-command of the 'hyscale get' command
- *  @see HyscaleGetCommand .
+ *  @see io.hyscale.controller.commands.get.HyscaleGetCommand .
  *  It also act as parent command to perform app level operation like get status
  *  @see HyscaleAppStatusCommand
  *  Every command/sub-command has to implement the {@link Callable} so that

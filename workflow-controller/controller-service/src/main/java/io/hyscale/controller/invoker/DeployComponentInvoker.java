@@ -48,7 +48,6 @@ import io.hyscale.controller.hooks.K8SResourcesCleanUpHook;
 import io.hyscale.controller.hooks.VolumeCleanUpHook;
 import io.hyscale.controller.hooks.VolumeValidatorHook;
 import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.util.LoggerUtility;
 import io.hyscale.controller.util.TroubleshootUtil;
 import io.hyscale.deployer.services.config.DeployerConfig;
 import io.hyscale.deployer.services.deployer.Deployer;
@@ -70,9 +69,6 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
 
     @Autowired
     private Deployer deployer;
-
-    @Autowired
-    private LoggerUtility loggerUtility;
 
     @Autowired
     private K8sAuthConfigBuilder authConfigBuilder;
@@ -169,9 +165,6 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
             writeDeployLogs(context, deploymentContext);
         }
         context.addAttribute(WorkflowConstants.OUTPUT, true);
-        if (verbose) {
-            loggerUtility.deploymentLogs(context);
-        }
 
         Boolean external = serviceSpec.get(HyscaleSpecFields.external, Boolean.class);
         external = external == null ? false : external;
@@ -207,7 +200,7 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
         }
         return null;
     }
-        
+
     /**
      * Write deployment logs to file for later access
      *
@@ -215,9 +208,11 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
      * @param deploymentContext
      */
     private void writeDeployLogs(WorkflowContext context, DeploymentContext deploymentContext) {
-        try (InputStream is = deployer.logs(deploymentContext)) {
+        String serviceName = deploymentContext.getServiceName();
+        try (InputStream is = deployer.logs(deploymentContext.getAuthConfig(), serviceName,
+                deploymentContext.getNamespace(), null, serviceName, deploymentContext.getReadLines(), deploymentContext.isTailLogs())) {
             String deploylogFile = deployerConfig.getDeployLogDir(deploymentContext.getAppName(),
-                    deploymentContext.getServiceName());
+                    serviceName);
             logProcessor.writeLogFile(is, deploylogFile);
             context.addAttribute(WorkflowConstants.DEPLOY_LOGS,
                     deployerConfig.getDeployLogDir(deploymentContext.getAppName(), deploymentContext.getServiceName()));
@@ -235,7 +230,7 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
         StringBuilder errorMessage = new StringBuilder();
         errorMessage.append(he != null ? he.getMessage() : DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST.getErrorMessage());
         if (troubleshootMsgObj != null) {
-            String troubleshootMessage = (String)troubleshootMsgObj;
+            String troubleshootMessage = (String) troubleshootMsgObj;
             logger.error("Troubleshoot message: {}", troubleshootMessage);
             errorMessage.append(ToolConstants.NEW_LINE).append(troubleshootMessage);
         }

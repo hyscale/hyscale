@@ -16,6 +16,10 @@
         <module>controller-service</module>
     </modules>
 
+    <properties>
+        <main.basedir>../</main.basedir>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>

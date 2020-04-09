@@ -16,10 +16,10 @@
 package io.hyscale.controller.exception;
 
 import io.hyscale.commons.exception.HyscaleErrorCode;
+import io.hyscale.commons.models.Activity;
 
 /**
  * Error Codes for Workflow Controller
- *
  */
 public enum ControllerErrorCodes implements HyscaleErrorCode {
     INVALID_COMMAND("Invalid command {}"),
@@ -34,7 +34,8 @@ public enum ControllerErrorCodes implements HyscaleErrorCode {
     INVALID_VOLUMES_FOUND("Volumes found to be invalid in service spec"),
     UNEXPECTED_ERROR("Unexpected error occurred"),
     UNDEPLOYMENT_FAILED("Failed to Undeploy"),
-    UNIQUE_PROFILE_REQUIRED("Service {} cannot have multiple profiles");
+    UNIQUE_PROFILE_REQUIRED("Service {} cannot have multiple profiles"),
+    INVALID_REPLICA_SELECTED_REACHED_MAX_RETRIES("Invalid input provided . Reached maximum retries. Please try again");
 
     private String message;
 

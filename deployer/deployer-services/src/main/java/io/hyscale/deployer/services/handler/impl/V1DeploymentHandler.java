@@ -17,17 +17,20 @@ package io.hyscale.deployer.services.handler.impl;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonSyntaxException;
+import io.hyscale.commons.constants.K8SRuntimeConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.ActivityContext;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.Status;
 import io.hyscale.commons.utils.ResourceLabelUtil;
+import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.PodParentHandler;
+import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.model.ResourceStatus;
@@ -37,6 +40,7 @@ import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.apis.AppsV1Api;
 import io.kubernetes.client.openapi.models.*;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,7 +136,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
             String labelSelector = label ? selector : null;
             String fieldSelector = label ? null : selector;
 
-            V1DeploymentList v1DeploymentList = appsV1Api.listNamespacedDeployment(namespace, TRUE, null, 
+            V1DeploymentList v1DeploymentList = appsV1Api.listNamespacedDeployment(namespace, TRUE, null,
                     null, fieldSelector, labelSelector, null, null, null, null);
 
             v1Deployments = v1DeploymentList != null ? v1DeploymentList.getItems() : null;
@@ -284,17 +288,17 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         }
         return ResourceStatus.STABLE;
     }
-    
+
     public static String getDeploymentRevision(V1Deployment deployment) {
         if (deployment == null) {
             return null;
         }
         Map<String, String> annotations = deployment.getMetadata().getAnnotations();
-        
+
         if (annotations == null) {
             return null;
         }
-        
+
         return annotations.get(AnnotationKey.K8S_DEPLOYMENT_REVISION.getAnnotation());
     }
 
@@ -315,10 +319,9 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
             return each != null && each.getMetadata() != null;
         }).map(each -> ResourceLabelUtil.getServiceName(each.getMetadata().getLabels())).collect(Collectors.toList());
     }
-    
+
     @Override
-    public List<DeploymentStatus> getStatus(ApiClient apiClient, String selector, boolean label,
-            String namespace) {
+    public List<DeploymentStatus> getStatus(ApiClient apiClient, String selector, boolean label, String namespace) {
         try {
             return buildStatus(getBySelector(apiClient, selector, label, namespace));
         } catch (HyscaleException e) {
@@ -327,13 +330,13 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         }
         return null;
     }
-    
+
     @Override
     public DeploymentStatus buildStatus(V1Deployment deployment) {
         if (deployment == null) {
             return null;
         }
-        return buildStatusFromMetadata(deployment.getMetadata(), DeploymentStatus.Status.NOT_RUNNING);
+        return buildStatusFromMetadata(deployment.getMetadata(), DeploymentStatus.ServiceStatus.NOT_RUNNING);
     }
 
     @Override
@@ -349,5 +352,45 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
             }
         });
         return statuses;
+    }
+
+    @Override
+    public String getPodSelector(ApiClient apiClient, String selector, boolean label, String namespace) {
+        List<V1Deployment> deploymentList = null;
+        try {
+            deploymentList = getBySelector(apiClient, selector, label, namespace);
+        } catch (HyscaleException e) {
+            logger.error("Error fetching deployment for pod selection, ignoring", e);
+            return selector;
+        }
+        if (deploymentList == null || deploymentList.isEmpty()) {
+            return selector;
+        }
+
+        String revision = getDeploymentRevision(deploymentList.get(0));
+        if (StringUtils.isBlank(revision)) {
+            return selector;
+        }
+
+        V1ReplicaSetHandler v1ReplicaSetHandler = (V1ReplicaSetHandler) ResourceHandlers
+                .getHandlerOf(ResourceKind.REPLICA_SET.getKind());
+        V1ReplicaSet replicaSet = null;
+        try {
+            replicaSet = v1ReplicaSetHandler.getReplicaSetByRevision(apiClient, namespace, selector, true, revision);
+        } catch (HyscaleException e) {
+            logger.error("Error fetching replica set with revision {} for pod filtering, ignoring", revision, e);
+            return selector;
+        }
+        if (replicaSet == null) {
+            logger.debug("No Replica set found with revision: {} for filtering pods, returning empty list", revision);
+            return null;
+        }
+        String podTemplateHash = replicaSet.getMetadata().getLabels()
+                .get(K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH);
+
+        logger.debug("pod-template-hash: {}", podTemplateHash);
+
+        return selector
+                .concat("," + K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH + "=" + podTemplateHash);
     }
 }

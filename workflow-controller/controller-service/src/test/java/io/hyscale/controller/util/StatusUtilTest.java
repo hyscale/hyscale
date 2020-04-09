@@ -27,7 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.hyscale.deployer.core.model.DeploymentStatus;
-import io.hyscale.deployer.core.model.DeploymentStatus.Status;
+import io.hyscale.deployer.core.model.DeploymentStatus.ServiceStatus;
 
 public class StatusUtilTest {
 
@@ -42,7 +42,7 @@ public class StatusUtilTest {
         deploymentStatus.setServiceAddress("serviceAddress");
         deploymentStatus.setMessage("test Message");
         deploymentStatus.setServiceName("service");
-        deploymentStatus.setStatus(Status.RUNNING);
+        deploymentStatus.setServiceStatus(ServiceStatus.RUNNING);
     }
 
     @Test
@@ -54,7 +54,7 @@ public class StatusUtilTest {
         assertTrue(rowDataList.contains(deploymentStatus.getMessage()));
         assertTrue(rowDataList.contains(deploymentStatus.getServiceAddress()));
         assertTrue(rowDataList.contains(deploymentStatus.getServiceName()));
-        assertTrue(rowDataList.contains(deploymentStatus.getStatus().getMessage()));
+        assertTrue(rowDataList.contains(deploymentStatus.getServiceStatus().getMessage()));
         assertTrue(rowDataList.contains(StatusUtil.getAge(dateTime)));
     }
 
@@ -65,7 +65,7 @@ public class StatusUtilTest {
 
     @Test
     public void nullStatus() {
-        deploymentStatus.setStatus(null);
+        deploymentStatus.setServiceStatus(null);
         assertNotNull(StatusUtil.getRowData(deploymentStatus));
     }
 

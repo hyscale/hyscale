@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.commands;
+package io.hyscale.controller.commands.generate;
 
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.HashMap;
 import java.util.Map;
-import io.hyscale.controller.Converters.ProfileConverter;
-import io.hyscale.controller.Converters.ServiceSpecConverter;
+
 import io.hyscale.controller.constants.WorkflowConstants;
+import io.hyscale.controller.converters.ProfileConverter;
+import io.hyscale.controller.converters.ServiceSpecConverter;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.ServiceProfileUtil;
