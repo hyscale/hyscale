@@ -1,6 +1,5 @@
 ![HyScale](https://www.hyscale.io/wp-content/uploads/2019/01/hyscale-logo.png)
 
-![Build](https://github.com/hyscale/hyscale/workflows/Build/badge.svg)
 
 ### The K8s App Deployment Tool 
 
