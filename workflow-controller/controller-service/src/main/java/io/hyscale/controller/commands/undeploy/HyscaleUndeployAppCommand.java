@@ -19,6 +19,7 @@ import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.UndeployCommandUtil;
+import io.hyscale.controller.validator.impl.ClusterValidator;
 
 import java.util.concurrent.Callable;
 
@@ -75,6 +76,9 @@ public class HyscaleUndeployAppCommand implements Callable<Integer> {
 	@Pattern(regexp = ValidationConstants.APP_NAME_REGEX, message = ValidationConstants.INVALID_APP_NAME_MSG)
 	@Option(names = { "-a", "--app" }, required = true, description = "Application name")
 	private String appName;
+	
+    @Autowired
+    private ClusterValidator clusterValidator;
 
 	@Autowired
 	private UndeployComponentInvoker undeployComponentInvoker;
@@ -90,6 +94,13 @@ public class HyscaleUndeployAppCommand implements Callable<Integer> {
 		workflowContext.setAppName(appName.trim());
 		workflowContext.setNamespace(namespace.trim());
 		workflowContext.addAttribute(WorkflowConstants.CLEAN_UP_APP_DIR, true);
+		
+		// TODO
+        if (!clusterValidator.validate(workflowContext )) {
+            WorkflowLogger.logPersistedActivities();
+            return ToolConstants.INVALID_INPUT_ERROR_CODE;
+        }
+        
 		WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
 		try {
 		    undeployComponentInvoker.execute(workflowContext);

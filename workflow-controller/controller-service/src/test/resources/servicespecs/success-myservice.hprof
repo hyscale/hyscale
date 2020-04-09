@@ -1,0 +1,7 @@
+environment: multiple
+overrides: myservice
+
+secrets:
+    TEST_VALUE: TEST 
+    
+memory: 512Mi

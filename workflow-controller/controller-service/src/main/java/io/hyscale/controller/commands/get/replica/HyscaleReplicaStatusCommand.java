@@ -17,9 +17,12 @@ package io.hyscale.controller.commands.get.replica;
 
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
+import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.commands.get.service.HyscaleGetServiceCommand;
+import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.service.ReplicaProcessingService;
 import io.hyscale.controller.util.CommandUtil;
+import io.hyscale.controller.validator.impl.ClusterValidator;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.services.deployer.Deployer;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
@@ -69,6 +72,9 @@ public class HyscaleReplicaStatusCommand implements Callable<Integer> {
     @Pattern(regexp = ValidationConstants.SERVICE_NAME_REGEX, message = ValidationConstants.INVALID_SERVICE_NAME_MSG)
     @CommandLine.Option(names = {"-s", "--service"}, required = true, description = "Service name")
     private String serviceName;
+    
+    @Autowired
+    private ClusterValidator clusterValidator;
 
     @Autowired
     private ReplicaProcessingService replicaProcessingService;
@@ -78,6 +84,13 @@ public class HyscaleReplicaStatusCommand implements Callable<Integer> {
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
+        // TODO
+        WorkflowContext context = new WorkflowContext();
+        if (!clusterValidator.validate(context )) {
+            WorkflowLogger.logPersistedActivities();
+            return ToolConstants.INVALID_INPUT_ERROR_CODE;
+        }
+        
         replicaProcessingService.logReplicas(replicaProcessingService.getReplicas(appName, serviceName, namespace, true), false);
 
         return ToolConstants.HYSCALE_SUCCESS_CODE;

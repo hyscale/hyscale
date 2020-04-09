@@ -13,26 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.exception;
+package io.hyscale.controller.validator.impl;
 
 import org.springframework.stereotype.Component;
 
-import io.hyscale.commons.exception.HyscaleException;
-import picocli.CommandLine.IExitCodeExceptionMapper;
+import io.hyscale.commons.constants.ValidationConstants;
+import io.hyscale.controller.validator.FileValidator;
+import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
 
 @Component
-public class ExitCodeExceptionMapper implements IExitCodeExceptionMapper {
+public class ServiceSpecFileValidator extends FileValidator {
 
     @Override
-    public int getExitCode(Throwable exception) {
-        if (exception == null) {
-            return 0;
-        }
-        if (exception instanceof HyscaleException) {
-            HyscaleException he = (HyscaleException) exception;
-            return he.getCode();
-        }
-        return 1;
+    public String getFilePattern() {
+        return ValidationConstants.SERVICE_SPEC_NAME_REGEX;
+    }
+
+    @Override
+    public ServiceSpecActivity getWarnMessage() {
+        return ServiceSpecActivity.IMPROPER_SERVICE_FILE_NAME;
     }
 
 }

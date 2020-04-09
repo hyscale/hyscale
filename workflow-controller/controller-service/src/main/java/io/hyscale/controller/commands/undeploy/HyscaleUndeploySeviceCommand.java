@@ -19,6 +19,7 @@ import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.UndeployCommandUtil;
+import io.hyscale.controller.validator.impl.ClusterValidator;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -81,6 +82,9 @@ public class HyscaleUndeploySeviceCommand implements Callable<Integer> {
 	@Pattern(regexp = ValidationConstants.SERVICE_NAME_REGEX, message = ValidationConstants.INVALID_SERVICE_NAME_MSG)
 	String> serviceList;
 
+    @Autowired
+    private ClusterValidator clusterValidator;
+
 	@Autowired
 	private UndeployComponentInvoker undeployComponentInvoker;
 
@@ -94,7 +98,11 @@ public class HyscaleUndeploySeviceCommand implements Callable<Integer> {
 		workflowContext.addAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR, true);
 		workflowContext.setAppName(appName.trim());
 		workflowContext.setNamespace(namespace.trim());
-
+		// TODO
+        if (!clusterValidator.validate(workflowContext )) {
+            WorkflowLogger.logPersistedActivities();
+            return ToolConstants.INVALID_INPUT_ERROR_CODE;
+        }
 		for (String serviceName: serviceList) {
 		    WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
 		    workflowContext.setServiceName(serviceName);

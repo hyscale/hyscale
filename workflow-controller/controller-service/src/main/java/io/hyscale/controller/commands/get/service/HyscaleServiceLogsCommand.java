@@ -26,6 +26,8 @@ import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.LoggerUtility;
+import io.hyscale.controller.validator.impl.ClusterValidator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,6 +88,9 @@ public class HyscaleServiceLogsCommand implements Callable<Integer> {
     @Min(value = ValidationConstants.MIN_LOG_LINES, message = ValidationConstants.MIN_LOG_LINES_ERROR_MSG)
     @Option(names = {"-l", "--line"}, required = false, description = "Number of lines of logs")
     private Integer line = 100;
+    
+    @Autowired
+    private ClusterValidator clusterValidator;
 
     @Autowired
     private LoggerUtility loggerUtility;
@@ -97,7 +102,6 @@ public class HyscaleServiceLogsCommand implements Callable<Integer> {
         }
 
         WorkflowContext workflowContext = new WorkflowContext();
-        WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
         workflowContext.setAppName(appName.trim());
         workflowContext.setNamespace(namespace.trim());
         workflowContext.setServiceName(serviceName);
@@ -105,6 +109,13 @@ public class HyscaleServiceLogsCommand implements Callable<Integer> {
         workflowContext.addAttribute(WorkflowConstants.LINES, line);
         workflowContext.addAttribute(WorkflowConstants.REPLICA_NAME, replicaName);
 
+        // TODO
+        if (!clusterValidator.validate(workflowContext )) {
+            WorkflowLogger.logPersistedActivities();
+            return ToolConstants.INVALID_INPUT_ERROR_CODE;
+        }
+        
+        WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
         loggerUtility.deploymentLogs(workflowContext);
 
         return workflowContext.isFailed() ? ToolConstants.HYSCALE_ERROR_CODE : ToolConstants.HYSCALE_SUCCESS_CODE;

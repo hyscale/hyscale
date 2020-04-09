@@ -20,16 +20,21 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import io.hyscale.controller.commands.get.app.HyscaleAppStatusCommand;
+import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.controller.validator.impl.ClusterValidator;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.constants.K8SRuntimeConstants;
+import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.TableFields;
 import io.hyscale.commons.logger.TableFormatter;
 import io.hyscale.commons.logger.TableFormatter.Builder;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.deployer.core.model.AppMetadata;
@@ -66,6 +71,9 @@ public class HyscaleGetAppsCommand implements Callable<Integer> {
 
 //    @Option(names = { "--wide" }, required = false, description = "Display additional information like services.")
     private boolean wide = false;
+    
+    @Autowired
+    private ClusterValidator clusterValidator;
 
     @Autowired
     private K8sAuthConfigBuilder authConfigBuilder;
@@ -75,9 +83,18 @@ public class HyscaleGetAppsCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
+        AuthConfig authConfig = authConfigBuilder.getAuthConfig();
+        WorkflowContext context = new WorkflowContext();
+        
+        // TODO
+        if (!clusterValidator.validate(context)) {
+            WorkflowLogger.logPersistedActivities();
+            return ToolConstants.INVALID_INPUT_ERROR_CODE;
+        }
+        
         List<AppMetadata> appInfoList = null;
         try {
-            appInfoList = deployer.getAppsMetadata(authConfigBuilder.getAuthConfig());
+            appInfoList = deployer.getAppsMetadata(authConfig);
         } catch (HyscaleException e) {
             WorkflowLogger.error(ControllerActivity.ERROR_WHILE_FETCHING_DEPLOYMENTS);
             throw e;

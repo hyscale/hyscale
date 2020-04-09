@@ -38,6 +38,7 @@ import io.hyscale.controller.invoker.StatusComponentInvoker;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.StatusUtil;
+import io.hyscale.controller.validator.impl.ClusterValidator;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -71,6 +72,9 @@ public class HyscaleAppStatusCommand implements Callable<Integer> {
     @Pattern(regexp = ValidationConstants.APP_NAME_REGEX, message = ValidationConstants.INVALID_APP_NAME_MSG)
     @Option(names = {"-a", "--app"}, required = true, description = "Application name.")
     private String appName;
+    
+    @Autowired
+    private ClusterValidator clusterValidator;
 
     @Autowired
     private StatusComponentInvoker statusComponentInvoker;
@@ -80,14 +84,18 @@ public class HyscaleAppStatusCommand implements Callable<Integer> {
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
+        WorkflowContext context = new WorkflowContext();
+        context.setAppName(appName);
+        context.setNamespace(namespace);
+        // TODO
+        if (!clusterValidator.validate(context)) {
+            WorkflowLogger.logPersistedActivities();
+            return ToolConstants.INVALID_INPUT_ERROR_CODE;
+        }
         
         WorkflowLogger.info(ControllerActivity.WAITING_FOR_SERVICE_STATUS);
         
         WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
-
-        WorkflowContext context = new WorkflowContext();
-        context.setAppName(appName);
-        context.setNamespace(namespace);
         try {
             statusComponentInvoker.execute(context);
             

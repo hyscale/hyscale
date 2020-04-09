@@ -19,7 +19,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DeployCommandSpec {
+public class HyscaleCommandSpec {
 
     private String appName;
     private String namespace;

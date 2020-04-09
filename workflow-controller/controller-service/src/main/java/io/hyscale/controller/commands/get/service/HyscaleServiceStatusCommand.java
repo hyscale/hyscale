@@ -29,6 +29,8 @@ import io.hyscale.controller.invoker.StatusComponentInvoker;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.StatusUtil;
+import io.hyscale.controller.validator.impl.ClusterValidator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +86,9 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
                     String> serviceList;
 
     @Autowired
+    private ClusterValidator clusterValidator;
+    
+    @Autowired
     private StatusComponentInvoker statusComponentInvoker;
 
     @Override
@@ -92,16 +97,19 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-
-        WorkflowLogger.info(ControllerActivity.WAITING_FOR_SERVICE_STATUS);
-
-        WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
-
-
         WorkflowContext context = new WorkflowContext();
         context.setAppName(appName);
         context.setNamespace(namespace);
 
+        // TODO
+        if (!clusterValidator.validate(context )) {
+            WorkflowLogger.logPersistedActivities();
+            return ToolConstants.INVALID_INPUT_ERROR_CODE;
+        }
+        
+        WorkflowLogger.info(ControllerActivity.WAITING_FOR_SERVICE_STATUS);
+        
+        WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
         try {
             boolean isLarge = false;
             Set<String> services = new HashSet<String>(serviceList);

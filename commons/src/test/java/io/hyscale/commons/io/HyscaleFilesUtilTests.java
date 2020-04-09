@@ -64,13 +64,6 @@ public class HyscaleFilesUtilTests {
         return newFile;
     }
 
-    private boolean deleteFile(File file) {
-        if (file.exists()) {
-            return file.delete();
-        }
-        return false;
-    }
-
     private File createDirectory(String path) {
         new File(path).mkdirs();
         return new File(path);
@@ -124,6 +117,16 @@ public class HyscaleFilesUtilTests {
     @Test
     public void getFileNameTest() throws HyscaleException {
         assertEquals(SAMPLE_FILE_NAME, HyscaleFilesUtil.getFileName(sampleFilePath));
+    }
+    
+    @Test
+    public void searchFileInDirTest() {
+        File file = createFile(testFilePath);
+        File foundFile = HyscaleFilesUtil.searchForFileinDir(file.getParent(), TEST_FILE_NAME);
+        assertEquals(file.getAbsolutePath(), foundFile.getAbsolutePath());
+        deleteDirectory(testDir);
+        foundFile = HyscaleFilesUtil.searchForFileinDir(file.getParent(), TEST_FILE_NAME);
+        assertNull(foundFile);
     }
 
     @Test

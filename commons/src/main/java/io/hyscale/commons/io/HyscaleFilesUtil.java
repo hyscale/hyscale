@@ -241,4 +241,22 @@ public class HyscaleFilesUtil {
             throw ex;
         }
 	}
+	
+	public static File searchForFileinDir(String directory, String fileName) {
+        if (directory == null || StringUtils.isBlank(fileName)) {
+            return null;
+        }
+        return searchForFileinDir(new File(directory), fileName);
+    }
+	
+	public static File searchForFileinDir(File directory, String fileName) {
+	    if (directory == null || !directory.isDirectory()|| StringUtils.isBlank(fileName)) {
+	        return null;
+	    }
+	    File[] matchingFile = directory.listFiles((dir, name) -> {
+	      return name.equals(fileName);  
+	    });
+	    
+	    return matchingFile == null || matchingFile.length < 1 ? null : matchingFile[0];
+	}
 }

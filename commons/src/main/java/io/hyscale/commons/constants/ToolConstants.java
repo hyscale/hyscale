@@ -84,5 +84,11 @@ public class ToolConstants {
     public static final String JDK_TLS_CLIENT_PROTOCOLS_ARGS = "jdk.tls.client.protocols";
 
     public static final String JDK_TLS_CLIENT_VERSION = "TLSv1.2";
+
+    public static final String HSPEC_EXTENSION = ".hspec";
     
+    public static final String HPROF_EXTENSION = ".hprof";
+    
+    public static final String PROFILES_DIR_NAME = "profiles";
+
 }
