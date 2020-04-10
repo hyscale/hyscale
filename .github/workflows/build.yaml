@@ -4,6 +4,13 @@ name: Build
 
 on:
   push:
+    paths-ignore:
+    - .github/workflows/*
+    - .gitignore
+    - docs/images/*
+    - docs/*
+    - LICENSE
+    - README.md
     branches: 
     - master
     - release/HyScale*
