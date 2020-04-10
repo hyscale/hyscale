@@ -15,11 +15,12 @@
  */
 package io.hyscale.controller.model;
 
-import io.hyscale.commons.component.ComponentInvokerContext;
-import io.hyscale.servicespec.commons.model.service.ServiceSpec;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import io.hyscale.commons.component.ComponentInvokerContext;
+import io.hyscale.commons.models.AuthConfig;
+import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 /**
  * Context information for workflow controller
@@ -32,7 +33,7 @@ public class WorkflowContext extends ComponentInvokerContext {
     private String appName;
     private String serviceName;
     private String envName;
-    private String kubeConfigPath;
+    private AuthConfig authConfig;
 
     private Map<String, Object> attributes;
 
@@ -88,14 +89,12 @@ public class WorkflowContext extends ComponentInvokerContext {
         this.serviceSpec = serviceSpec;
     }
 
-	public String getKubeConfigPath() {
-		return kubeConfigPath;
+	public AuthConfig getAuthConfig() {
+		return authConfig;
 	}
 
-	public void setKubeConfigPath(String kubeConfigPath) {
-		this.kubeConfigPath = kubeConfigPath;
+	public void setAuthConfig(AuthConfig authConfig) {
+		this.authConfig = authConfig;
 	}
-
-    
 
 }

@@ -50,6 +50,7 @@ import io.hyscale.deployer.services.builder.PodBuilder;
 import io.hyscale.deployer.services.config.DeployerConfig;
 import io.hyscale.deployer.services.deployer.Deployer;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
+import io.hyscale.deployer.services.handler.AuthenticationHandler;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.handler.impl.V1PersistentVolumeClaimHandler;
@@ -97,6 +98,9 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
 
     @Autowired
     private AppMetadataBuilder appMetadataBuilder;
+    
+    @Autowired
+    private AuthenticationHandler authenticationHandler;
 
     @Override
     public void deploy(DeploymentContext context) throws HyscaleException {
@@ -221,9 +225,8 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
 
 
     @Override
-    public boolean authenticate(K8sAuthorisation authConfig) {
-        // TODO
-        return false;
+    public boolean authenticate(K8sAuthorisation authConfig) throws HyscaleException {
+        return authenticationHandler.authenticate(authConfig);
     }
 
     @Override

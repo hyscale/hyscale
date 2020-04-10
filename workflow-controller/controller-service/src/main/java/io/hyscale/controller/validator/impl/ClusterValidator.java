@@ -24,23 +24,26 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
-import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.deployer.services.handler.impl.AuthenticationHandler;
+import io.hyscale.deployer.services.handler.AuthenticationHandler;
 
 @Component
 public class ClusterValidator implements Validator<WorkflowContext> {
 	private static final Logger logger = LoggerFactory.getLogger(ClusterValidator.class);
 
 	@Autowired
-	private K8sAuthConfigBuilder authConfigBuilder;
-	@Autowired
 	private AuthenticationHandler authenticationHandler;
 
+	/**
+	 * 1. It will try to connect to the cluster 
+	 * 2. It will take cluster details which is provided by user
+	 * 3. Try to fetch V1APIResourceList from cluster
+	 * 4. If  V1APIResourceList null then it will return true otherwise false
+	 */
 	@Override
 	public boolean validate(WorkflowContext context) throws HyscaleException {
 		logger.debug("Starting K8s cluster validation");
-		boolean flag = authenticationHandler.authenticate(authConfigBuilder.getAuthConfig(context.getKubeConfigPath()));
+		boolean flag = authenticationHandler.authenticate(context.getAuthConfig());
 		if (!flag) {
 			WorkflowLogger.persistError(ValidatorActivity.CLUSTER_VALIDATION, "Cluster validation failed");
 		}

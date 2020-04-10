@@ -27,7 +27,7 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.util.ImageDetailsUtil;
+import io.hyscale.servicespec.commons.util.ImageUtil;
 
 @Component
 public class DockerValidator implements Validator<WorkflowContext> {
@@ -38,9 +38,17 @@ public class DockerValidator implements Validator<WorkflowContext> {
 
 	private boolean isDockerAvailable = false;;
 
+	/**
+	 * 1. It will check that spec has buildspec or dockerfile 
+	 * 2. If both is not then it will return true
+	 * 3. If any one is there then 
+	 *    3.1  It will verify that docker is installed or not
+	 *    3.2  It will run docker command 
+	 *    3.3  if command executed successfully then return true else false
+	 */
 	@Override
 	public boolean validate(WorkflowContext context) throws HyscaleException {
-		if (!ImageDetailsUtil.isImageBuildPushRequired(context.getServiceSpec())) {
+		if (!ImageUtil.isImageBuildPushRequired(context.getServiceSpec())) {
 			return true;
 		}
 		if (isDockerAvailable) {

@@ -30,8 +30,8 @@ import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.manager.RegistryManager;
 import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.util.ImageDetailsUtil;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.util.ImageUtil;
 
 @Component
 public class RegistryValidator implements Validator<WorkflowContext> {
@@ -42,10 +42,19 @@ public class RegistryValidator implements Validator<WorkflowContext> {
 	
 	private Set<String> registries=new HashSet<String>();
 
+
+	/**
+	 * 1. It will check that spec has buildspec or dockerfile 
+	 * 2. If both is not then it will return true
+	 * 3. If any one is there then 
+	 *    3.1  It will fetch registry details
+	 *    3.2  Then it will verify the registry
+	 *    3.3  if registry is exist which is provided by user then return true else false
+	 */
 	@Override
 	public boolean validate(WorkflowContext context) throws HyscaleException {
 		logger.debug("Starting registry validation");
-		if (!ImageDetailsUtil.isImageBuildPushRequired(context.getServiceSpec())) {
+		if (!ImageUtil.isImageBuildPushRequired(context.getServiceSpec())) {
 			return true;
 		}
 		ImageRegistry imageRegistry = context.getServiceSpec().get(

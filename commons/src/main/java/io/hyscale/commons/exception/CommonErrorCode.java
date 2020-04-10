@@ -45,7 +45,8 @@ public enum CommonErrorCode implements HyscaleErrorCode {
     INVALID_FILE_INPUT("Given input {} is not a file. Expecting file input."),
     UNABLE_READ_SCHEMA("Cannot process empty schema {}"),
     ERROR_OCCURED_WHILE_SCHEMA_VALIDATION("Schema validation failed due to \"{}\""),
-    INVALID_JSON_FORMAT("Json format is invalid");
+    INVALID_JSON_FORMAT("Json format is invalid"),
+    ERROR_OCCURED_WHILE_CONNECTING_TO_CLUSTER("Failed to connect cluster");
 
     private String message;
 

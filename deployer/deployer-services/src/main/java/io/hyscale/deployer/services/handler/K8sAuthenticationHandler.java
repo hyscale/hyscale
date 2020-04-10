@@ -13,25 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.deployer.services.handler.impl;
+package io.hyscale.deployer.services.handler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.models.K8sAuthorisation;
+import io.hyscale.deployer.core.model.ResourceOperation;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
+import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.apis.AuthenticationV1Api;
 import io.kubernetes.client.openapi.models.V1APIResourceList;
 
 @Component
-public class AuthenticationHandler {
-	private static final Logger logger = LoggerFactory.getLogger(AuthenticationHandler.class);
+public class K8sAuthenticationHandler implements AuthenticationHandler {
+	private static final Logger logger = LoggerFactory.getLogger(K8sAuthenticationHandler.class);
+
 	@Autowired
 	private K8sClientProvider clientProvider;
 
@@ -41,11 +45,13 @@ public class AuthenticationHandler {
 		AuthenticationV1Api apiInstance = new AuthenticationV1Api(apiClient);
 		try {
 			V1APIResourceList result = apiInstance.getAPIResources();
-			return true;
+			return result != null ? true : false;
 		} catch (ApiException e) {
 			logger.error("Exception when calling AuthenticationV1Api#createTokenReview");
+			HyscaleException ex = new HyscaleException(e, CommonErrorCode.ERROR_OCCURED_WHILE_CONNECTING_TO_CLUSTER,
+					ExceptionHelper.getExceptionMessage("Falied to validate cluster", e, ResourceOperation.DELETE));
+			throw ex; 
 		}
-		return false;
 	}
 
 }

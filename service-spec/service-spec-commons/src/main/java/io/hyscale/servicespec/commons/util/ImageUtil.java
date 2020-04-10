@@ -16,15 +16,21 @@
 package io.hyscale.servicespec.commons.util;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.service.BuildSpecImage;
+import io.hyscale.servicespec.commons.model.service.DockerBuildImage;
 import io.hyscale.servicespec.commons.model.service.Image;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 
 public class ImageUtil {
+	private static final Logger logger = LoggerFactory.getLogger(ImageUtil.class);
+
 
     private static final String DELIMITER = "/";
 
@@ -107,4 +113,18 @@ public class ImageUtil {
         }
         return stringBuilder.toString();
     }
+
+	public static boolean isImageBuildPushRequired(ServiceSpec serviceSpec) {
+		Image image = null;
+		try {
+			image = serviceSpec.get(HyscaleSpecFields.image, Image.class);
+		} catch (HyscaleException e) {
+			logger.info("Error while fetching buildSpec and registryUrl from serviceSpec ");
+		}
+		if (image != null && (image instanceof BuildSpecImage) || (image instanceof DockerBuildImage)) {
+			return true;
+		} else {
+			return true;
+		}
+	}
 }
