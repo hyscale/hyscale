@@ -5,9 +5,10 @@ name: Build
 on:
   push:
     paths-ignore:
-    - .github/workflows/*.yaml
-    - docs/images/*.jpg
-    - docs/*.md
+    - .github/workflows/*
+    - .gitignore
+    - docs/images/*
+    - docs/*
     - LICENSE
     - README.md
     branches: 
