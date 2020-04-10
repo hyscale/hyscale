@@ -5,7 +5,6 @@ name: Build
 on:
   push:
     paths-ignore:
-    - .github/workflows/*
     - .gitignore
     - docs/images/*
     - docs/*
@@ -36,7 +35,8 @@ jobs:
 
     - name: URL to Download Hyscale Artifact
       run: |
-          echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \n curl -sSL ${{ secrets.HYS_DEV_BINARY_URL }} | HYS_VERSION=$IMAGE_VERSION  bash" >> hyscale_version.txt
+          echo -en "CHANGE LOG: \n$(git log -1 --pretty=format:"%s") \n-------------------------------------------------------- \n" >> hyscale_version.txt
+          echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \ncurl -sSL ${{ secrets.HYS_DEV_BINARY_URL }} | HYS_VERSION=$IMAGE_VERSION  bash" >> hyscale_version.txt
 
     - name: SendGrid
       uses: peter-evans/sendgrid-action@v1
