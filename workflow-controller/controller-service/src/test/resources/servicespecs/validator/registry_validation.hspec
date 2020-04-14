@@ -1,0 +1,32 @@
+name: web
+image:
+   registry: registry.hub.docker.com
+   name: satyasimtech/hrdatabase
+   tag: 1.0.2
+   dockerfile:
+      args: 
+         VERSION: 2.0.GA
+
+memory: 512M
+external: true
+ports:
+  - port: 8080/tcp
+    healthCheck:
+      httpPath: /SampleApp/version
+
+propsVolumePath: /HyscaleProps/
+props:
+   KEY1: value1
+   KEY2: value2
+   KEY3: "yes"
+
+secretsVolumePath: /HyscaleSecrets/
+secrets:
+  secret1: svalue1
+volumes:
+   - name: test
+     path: /LocalTest/
+     storageClass: gp2
+     size: 2G
+
+startCommand: "/bin/sh,-c,sleep 60 && echo Sleep expired > /dev/termination-log"
