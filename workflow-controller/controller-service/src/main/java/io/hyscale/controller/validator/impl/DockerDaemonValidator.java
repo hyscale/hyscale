@@ -30,8 +30,8 @@ import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.servicespec.commons.util.ImageUtil;
 
 @Component
-public class DockerValidator implements Validator<WorkflowContext> {
-	private static final Logger logger = LoggerFactory.getLogger(DockerValidator.class);
+public class DockerDaemonValidator implements Validator<WorkflowContext> {
+	private static final Logger logger = LoggerFactory.getLogger(DockerDaemonValidator.class);
 
 	@Autowired
 	private ImageCommandProvider commandGenerator;
@@ -48,11 +48,11 @@ public class DockerValidator implements Validator<WorkflowContext> {
 	 */
 	@Override
 	public boolean validate(WorkflowContext context) throws HyscaleException {
-		if (!ImageUtil.isImageBuildPushRequired(context.getServiceSpec())) {
-			return true;
-		}
 		if (isDockerAvailable) {
 			return isDockerAvailable;
+		}
+		if (!ImageUtil.isImageBuildPushRequired(context.getServiceSpec())) {
+			return true;
 		}
 		String command = commandGenerator.dockerVersion();
 		logger.debug("Docker Installed check command: {}", command);

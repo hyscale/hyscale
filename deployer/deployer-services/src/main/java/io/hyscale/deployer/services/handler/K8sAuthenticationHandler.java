@@ -49,7 +49,7 @@ public class K8sAuthenticationHandler implements AuthenticationHandler {
 		} catch (ApiException e) {
 			logger.error("Exception when calling AuthenticationV1Api#createTokenReview");
 			HyscaleException ex = new HyscaleException(e, CommonErrorCode.ERROR_OCCURED_WHILE_CONNECTING_TO_CLUSTER,
-					ExceptionHelper.getExceptionMessage("Falied to validate cluster", e, ResourceOperation.DELETE));
+					ExceptionHelper.getExceptionMessage("Falied to validate cluster", e, ResourceOperation.GET));
 			throw ex; 
 		}
 	}

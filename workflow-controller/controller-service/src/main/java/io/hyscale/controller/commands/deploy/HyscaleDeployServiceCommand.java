@@ -35,7 +35,7 @@ import io.hyscale.controller.processor.ServiceSpecProcessor;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.ManifestAndDeployHelper;
 import io.hyscale.controller.validator.impl.ClusterValidator;
-import io.hyscale.controller.validator.impl.DockerValidator;
+import io.hyscale.controller.validator.impl.DockerDaemonValidator;
 import io.hyscale.controller.validator.impl.InputSpecPostValidator;
 import io.hyscale.controller.validator.impl.InputSpecValidator;
 import io.hyscale.controller.validator.impl.ManifestValidator;

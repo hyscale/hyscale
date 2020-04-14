@@ -25,12 +25,12 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.ImageRegistry;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.manager.RegistryManager;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.service.Image;
 import io.hyscale.servicespec.commons.util.ImageUtil;
 
 @Component
@@ -57,16 +57,15 @@ public class RegistryValidator implements Validator<WorkflowContext> {
 		if (!ImageUtil.isImageBuildPushRequired(context.getServiceSpec())) {
 			return true;
 		}
-		ImageRegistry imageRegistry = context.getServiceSpec().get(
-				HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.registry), ImageRegistry.class);
-		boolean isRegistryAvailable = registries.contains(imageRegistry.getName());
+		Image image = context.getServiceSpec().get(HyscaleSpecFields.image, Image.class);
+		boolean isRegistryAvailable = registries.contains(image.getRegistry());
 		if (isRegistryAvailable) {
 			return true;
 		} else {
-			isRegistryAvailable = registryManager.getImageRegistry(imageRegistry.getName()) != null ? true : false;
+			isRegistryAvailable = registryManager.getImageRegistry(image.getRegistry()) != null ? true : false;
 		}
 		if (isRegistryAvailable) {
-			registries.add(imageRegistry.getName());
+			registries.add(image.getRegistry());
 			return true;
 		} else {
 			WorkflowLogger.persistError(ValidatorActivity.REGISTRY_VALIDATION, "Registry validation failed");

@@ -27,7 +27,7 @@ import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.model.EffectiveServiceSpec;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.validator.impl.ClusterValidator;
-import io.hyscale.controller.validator.impl.DockerValidator;
+import io.hyscale.controller.validator.impl.DockerDaemonValidator;
 import io.hyscale.controller.validator.impl.ManifestValidator;
 import io.hyscale.controller.validator.impl.RegistryValidator;
 import io.hyscale.controller.validator.impl.VolumeValidator;
@@ -36,7 +36,7 @@ import io.hyscale.controller.validator.impl.VolumeValidator;
 public class ManifestAndDeployHelper {
     
     @Autowired
-    private DockerValidator dockerValidator;
+    private DockerDaemonValidator dockerValidator;
     
     @Autowired
     private RegistryValidator registryValidator;

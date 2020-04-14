@@ -124,7 +124,7 @@ public class ImageUtil {
 		if (image != null && (image instanceof BuildSpecImage) || (image instanceof DockerBuildImage)) {
 			return true;
 		} else {
-			return true;
+			return false;
 		}
 	}
 }
