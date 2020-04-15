@@ -38,8 +38,6 @@ public class DockerDaemonValidatorTest {
     @MockBean
 	private DockerDaemonValidator dockerDaemonValidator;
     
-    @MockBean
-    private WorkflowContext context;
 
 	public static Stream<Arguments> input() {
 		WorkflowContext context = new WorkflowContext();
@@ -54,7 +52,7 @@ public class DockerDaemonValidatorTest {
 			Mockito.when(dockerDaemonValidator.validate(context)).thenReturn(true);
 			assertTrue(dockerDaemonValidator.validate(context));
 		} catch (HyscaleException e) {
-			fail();
+			fail(e);
 		}
 		
 	}
@@ -66,7 +64,7 @@ public class DockerDaemonValidatorTest {
 			Mockito.when(dockerDaemonValidator.validate(context)).thenReturn(false);
 			assertFalse(dockerDaemonValidator.validate(context));
 		} catch (HyscaleException e) {
-			fail();
+			fail(e);
 		}
 	}
 

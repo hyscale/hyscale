@@ -24,7 +24,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
@@ -32,16 +31,11 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.ServiceSpecTestUtil;
 import io.hyscale.controller.validator.impl.RegistryValidator;
-import io.hyscale.servicespec.commons.model.service.BuildSpec;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @SpringBootTest
 public class RegistryValidatorTest {
 
-	@Mock
-	private WorkflowContext context;
-	@Mock
-	private BuildSpec buildSpec;
 	@MockBean
 	private RegistryValidator registryValidator;
 	
@@ -57,14 +51,14 @@ public class RegistryValidatorTest {
 		ServiceSpec serviceSpec = null;
 		try {
 			serviceSpec = ServiceSpecTestUtil.getServiceSpec("/servicespecs/validator/registry_validation.hspec");
-		} catch (IOException e1) {
-			fail();
+		} catch (IOException e) {
+			fail(e);
 		}
 		context.setServiceSpec(serviceSpec);
 		try {
 			assertFalse(registryValidator.validate(context));
 		} catch (HyscaleException e) {
-			fail();
+			fail(e);
 		}
 	}
 

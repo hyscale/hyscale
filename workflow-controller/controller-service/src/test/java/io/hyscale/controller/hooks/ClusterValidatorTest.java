@@ -56,7 +56,7 @@ public class ClusterValidatorTest {
     			Mockito.when(authenticationHandler.authenticate(context.getAuthConfig())).thenReturn(true);
 				assertTrue(authenticationHandler.authenticate(context.getAuthConfig()));
 			} catch (HyscaleException e) {
-				fail();
+				fail(e);
 		}
 	}
 	
@@ -67,7 +67,7 @@ public class ClusterValidatorTest {
     			Mockito.when(authenticationHandler.authenticate(context.getAuthConfig())).thenReturn(false);
 				assertFalse(authenticationHandler.authenticate(context.getAuthConfig()));
 			} catch (HyscaleException e) {
-				fail();
+				fail(e);
 			}
 	}
 
