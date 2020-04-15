@@ -11,6 +11,10 @@
 	<artifactId>schema-validator</artifactId>
 	<name>schema-validator</name>
 
+    <properties>
+        <main.basedir>../../</main.basedir>
+    </properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.github.java-json-tools</groupId>
@@ -36,7 +40,7 @@
                         </goals>
                         <configuration>
                                 <mkdir dir="src/main/resources/hspec/${hspec.supported.version}"/>
-                                <url>https://raw.githubusercontent.com/hyscale/hyscale/master/service-spec/schema-validator/src/main/resources/hspec/${hspec.supported.version}/service-spec.json</url>
+                                <url>https://raw.githubusercontent.com/hyscale/hspec/release/HSpec${hspec.supported.version}/schema/service-spec.json</url>
                                 <outputDirectory>src/main/resources/hspec/${hspec.supported.version}</outputDirectory>
                         </configuration>
                  </execution> 
@@ -47,7 +51,7 @@
                         </goals>
                         <configuration>
                                 <mkdir dir="src/main/resources/hprof/${hprof.supported.version}"/>
-                                <url>https://raw.githubusercontent.com/hyscale/hyscale/master/service-spec/schema-validator/src/main/resources/hprof/${hspec.supported.version}/profile-spec.json</url>
+                                <url>https://raw.githubusercontent.com/hyscale/hspec/release/HSpec${hspec.supported.version}/schema/profile-spec.json</url>
                                 <outputDirectory>src/main/resources/hprof/${hspec.supported.version}</outputDirectory>
                         </configuration>
                  </execution> 
