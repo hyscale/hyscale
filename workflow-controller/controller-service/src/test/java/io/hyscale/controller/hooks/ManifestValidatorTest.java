@@ -15,7 +15,8 @@
  */
 package io.hyscale.controller.hooks;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
@@ -31,18 +32,18 @@ import org.springframework.boot.test.context.SpringBootTest;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.ServiceSpecTestUtil;
+import io.hyscale.controller.validator.impl.ManifestValidator;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @SpringBootTest
 public class ManifestValidatorTest {
 
     @Autowired
-    private ManifestValidatorHook manifestValidatorHook;
+    private ManifestValidator manifestValidator;
 
     public static Stream<Arguments> input() {
         return Stream.of(Arguments.of(null, HyscaleException.class),
-                Arguments.of("/servicespecs/invalid_vol.hspec", HyscaleException.class),
-                Arguments.of("/servicespecs/invalid_ports.hspec", HyscaleException.class));
+                Arguments.of("/servicespecs/invalid_vol.hspec", HyscaleException.class));
     }
 
     @ParameterizedTest
@@ -52,13 +53,11 @@ public class ManifestValidatorTest {
         ServiceSpec serviceSpec = null;
         try {
             serviceSpec = ServiceSpecTestUtil.getServiceSpec(serviceSpecPath);
-        } catch (IOException e1) {
-            fail();
+            context.setServiceSpec(serviceSpec);
+            assertFalse(manifestValidator.validate(context));
+        } catch (IOException | HyscaleException e ) {
+            fail(e);
         }
-        context.setServiceSpec(serviceSpec);
-        assertThrows(klazz, () -> {
-            manifestValidatorHook.preHook(context);
-        });
     }
 
     @Test
@@ -70,7 +69,7 @@ public class ManifestValidatorTest {
             fail();
         }
         try {
-            manifestValidatorHook.preHook(context);
+            assertTrue(manifestValidator.validate(context));
         } catch (HyscaleException e) {
             fail();
         }

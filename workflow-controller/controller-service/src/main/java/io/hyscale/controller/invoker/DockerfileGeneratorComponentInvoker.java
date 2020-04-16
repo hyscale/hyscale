@@ -27,9 +27,6 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DockerfileEntity;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.constants.WorkflowConstants;
-import io.hyscale.controller.exception.ControllerErrorCodes;
-import io.hyscale.controller.hooks.BuildSpecValidatorHook;
-import io.hyscale.controller.hooks.ImageValidatorHook;
 import io.hyscale.controller.hooks.ServiceDirCleanUpHook;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.dockerfile.gen.services.model.DockerfileGenContext;
@@ -58,16 +55,8 @@ public class DockerfileGeneratorComponentInvoker extends ComponentInvoker<Workfl
     @Autowired
     private ServiceDirCleanUpHook serviceDirCleanUpHook;
 
-    @Autowired
-    private BuildSpecValidatorHook buildSpecValidatorHook;
-
-    @Autowired
-    private ImageValidatorHook imageValidatorHook;
-
     @PostConstruct
     public void init() {
-        super.addHook(imageValidatorHook);
-        super.addHook(buildSpecValidatorHook);
         super.addHook(serviceDirCleanUpHook);
     }
 

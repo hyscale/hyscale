@@ -35,6 +35,7 @@ import io.hyscale.servicespec.commons.model.service.Volume;
 
 @Component
 public class ManifestValidator implements Validator<WorkflowContext>{
+    
     private static final Logger logger = LoggerFactory.getLogger(ManifestValidator.class);
 
 	
