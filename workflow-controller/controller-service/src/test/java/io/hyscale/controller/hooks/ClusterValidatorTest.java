@@ -16,7 +16,6 @@
 package io.hyscale.controller.hooks;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.stream.Stream;
@@ -24,7 +23,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
@@ -53,22 +51,9 @@ public class ClusterValidatorTest {
     @MethodSource(value = "input")
 	void testValidate(WorkflowContext context) {
             try {
-    			Mockito.when(authenticationHandler.authenticate(context.getAuthConfig())).thenReturn(true);
-				assertTrue(authenticationHandler.authenticate(context.getAuthConfig()));
+				assertFalse(authenticationHandler.authenticate(context.getAuthConfig()));
 			} catch (HyscaleException e) {
 				fail(e);
 		}
 	}
-	
-	@ParameterizedTest
-	@MethodSource(value = "input")
-	void testInvalidValidate(WorkflowContext context) {
-            try {
-    			Mockito.when(authenticationHandler.authenticate(context.getAuthConfig())).thenReturn(false);
-				assertFalse(authenticationHandler.authenticate(context.getAuthConfig()));
-			} catch (HyscaleException e) {
-				fail(e);
-			}
-	}
-
 }
