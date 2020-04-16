@@ -89,7 +89,7 @@ public class LocalImageBuildServiceImpl implements ImageBuildService {
         String tag = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.tag),
                 String.class);
         String dockerfilePath = getDockerfilePath(userDockerfile, context);
-        String dockerBuildCommand = imageCommandProvider.dockerBuildCommand(appName, serviceName, tag, dockerfilePath,
+        String dockerBuildCommand = imageCommandProvider.dockerBuildCommand(appName, serviceName, tag, dockerfilePath,userDockerfile.getTarget(),
                 userDockerfile != null ? userDockerfile.getArgs() : null);
 
         logger.debug("Docker build command {}", dockerBuildCommand);
