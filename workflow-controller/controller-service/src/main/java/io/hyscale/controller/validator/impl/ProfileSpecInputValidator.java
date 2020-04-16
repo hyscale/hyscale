@@ -13,27 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.exception;
+package io.hyscale.controller.validator.impl;
 
+import java.io.File;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.commons.constants.ToolConstants;
-import io.hyscale.commons.exception.HyscaleException;
-import picocli.CommandLine.IExitCodeExceptionMapper;
+import io.hyscale.commons.validator.Validator;
+import io.hyscale.controller.validator.InputSpecValidator;
 
 @Component
-public class ExitCodeExceptionMapper implements IExitCodeExceptionMapper {
+public class ProfileSpecInputValidator extends InputSpecValidator {
+
+    @Autowired
+    private ProfileFileValidator profileFileValidator;
+
+    @Autowired
+    private ProfileSpecSchemaValidator profileSpecSchemaValidator;
 
     @Override
-    public int getExitCode(Throwable exception) {
-        if (exception == null) {
-            return ToolConstants.HYSCALE_SUCCESS_CODE;
-        }
-        if (exception instanceof HyscaleException) {
-            HyscaleException he = (HyscaleException) exception;
-            return he.getCode();
-        }
-        return ToolConstants.HYSCALE_FAILURE_CODE;
+    protected Validator<File> getFileValidator() {
+        return profileFileValidator;
+    }
+
+    @Override
+    protected Validator<File> getSchemaValidator() {
+        return profileSpecSchemaValidator;
     }
 
 }

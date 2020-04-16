@@ -35,6 +35,7 @@ import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.builder.WorkflowContextBuilder;
 import io.hyscale.controller.invoker.UndeployComponentInvoker;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -82,6 +83,9 @@ public class HyscaleUndeployAppCommand implements Callable<Integer> {
 
 	@Autowired
 	private UndeployComponentInvoker undeployComponentInvoker;
+	
+	 @Autowired
+	 private WorkflowContextBuilder workflowContextBuilder;
 
 	@Override
 	public Integer call() throws Exception {
@@ -90,12 +94,9 @@ public class HyscaleUndeployAppCommand implements Callable<Integer> {
 	        return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
 	    
-		WorkflowContext workflowContext = new WorkflowContext();
-		workflowContext.setAppName(appName.trim());
-		workflowContext.setNamespace(namespace.trim());
+		WorkflowContext workflowContext = workflowContextBuilder.buildContext(appName, namespace, null);
 		workflowContext.addAttribute(WorkflowConstants.CLEAN_UP_APP_DIR, true);
-		
-		// TODO
+		workflowContext = workflowContextBuilder.updateAuthConfig(workflowContext);
         if (!clusterValidator.validate(workflowContext )) {
             WorkflowLogger.logPersistedActivities();
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
@@ -110,7 +111,7 @@ public class HyscaleUndeployAppCommand implements Callable<Integer> {
 		} finally {
 		    UndeployCommandUtil.logUndeployInfo();
         }	
-		return 0;
+		return ToolConstants.HYSCALE_SUCCESS_CODE;
 	}
 
 }

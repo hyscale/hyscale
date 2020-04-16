@@ -37,8 +37,10 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Status;
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.model.EffectiveServiceSpec;
+import io.hyscale.controller.model.HyscaleInputSpec;
 import io.hyscale.controller.util.ServiceProfileUtil;
 import io.hyscale.controller.util.ServiceSpecUtil;
 import io.hyscale.generator.services.model.ServiceMetadata;
@@ -52,10 +54,17 @@ public class ServiceSpecProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(ServiceSpecProcessor.class);
 
-    public List<EffectiveServiceSpec> getEffectiveServiceSpec(List<File> serviceSpecFiles, List<File> profileFiles)
+    public List<EffectiveServiceSpec> getEffectiveServiceSpec(HyscaleInputSpec hyscaleInputSpec)
             throws HyscaleException {
 
-        Map<String, Entry<String, File>> serviceVsProfile = validateAndGetDependencyMap(serviceSpecFiles, profileFiles);
+        Map<String, Entry<String, File>> serviceVsProfile = getDependencyMap(
+                hyscaleInputSpec.getServiceSpecFiles(), hyscaleInputSpec.getProfileFiles());
+        return mergeServiceSpec(hyscaleInputSpec.getServiceSpecFiles(), serviceVsProfile);
+    }
+
+    public List<EffectiveServiceSpec> getEffectiveServiceSpec(List<File> serviceSpecFiles, List<File> profileFiles)
+            throws HyscaleException {
+        Map<String, Entry<String, File>> serviceVsProfile = getDependencyMap(serviceSpecFiles, profileFiles);
         return mergeServiceSpec(serviceSpecFiles, serviceVsProfile);
 
     }
@@ -68,7 +77,6 @@ public class ServiceSpecProcessor {
 
         for (File serviceSpecFile : serviceSpecFiles) {
             EffectiveServiceSpec effectiveServiceSpec = new EffectiveServiceSpec();
-            effectiveServiceSpec.setServiceSpecFile(serviceSpecFile);
             ServiceMetadata serviceMetadata = new ServiceMetadata();
             effectiveServiceSpec.setServiceMetadata(serviceMetadata);
             mapper = ObjectMapperFactory.yamlMapper();
@@ -95,6 +103,9 @@ public class ServiceSpecProcessor {
                     throw e;
                 }
             }
+            if (serviceMetadata.getEnvName() == null) {
+                serviceMetadata.setEnvName(WorkflowConstants.DEV_ENV);
+            }
             try {
                 effectiveServiceSpec.setServiceSpec(new ServiceSpec(mapper.readTree(serviceSpecData)));
                 effectiveServiceSpecList.add(effectiveServiceSpec);
@@ -106,7 +117,7 @@ public class ServiceSpecProcessor {
         return effectiveServiceSpecList;
     }
 
-    private Map<String, Map.Entry<String, File>> validateAndGetDependencyMap(List<File> serviceSpecFiles,
+    private Map<String, Map.Entry<String, File>> getDependencyMap(List<File> serviceSpecFiles,
             List<File> profileFiles) throws HyscaleException {
         Map<String, Entry<String, File>> serviceVsProfile = new HashMap<String, Map.Entry<String, File>>();
         List<String> invalidServiceList = new ArrayList<String>();

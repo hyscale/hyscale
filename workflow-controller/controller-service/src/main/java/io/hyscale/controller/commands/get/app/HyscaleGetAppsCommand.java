@@ -37,6 +37,7 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
+import io.hyscale.controller.builder.WorkflowContextBuilder;
 import io.hyscale.deployer.core.model.AppMetadata;
 import io.hyscale.deployer.services.deployer.Deployer;
 import picocli.CommandLine.Command;
@@ -80,13 +81,14 @@ public class HyscaleGetAppsCommand implements Callable<Integer> {
 
     @Autowired
     private Deployer deployer;
+    
+    @Autowired
+    private WorkflowContextBuilder workflowContextBuilder;
 
     @Override
     public Integer call() throws Exception {
-        AuthConfig authConfig = authConfigBuilder.getAuthConfig();
-        WorkflowContext context = new WorkflowContext();
+        WorkflowContext context = workflowContextBuilder.updateAuthConfig(new WorkflowContext());
         
-        // TODO
         if (!clusterValidator.validate(context)) {
             WorkflowLogger.logPersistedActivities();
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
@@ -94,7 +96,7 @@ public class HyscaleGetAppsCommand implements Callable<Integer> {
         
         List<AppMetadata> appInfoList = null;
         try {
-            appInfoList = deployer.getAppsMetadata(authConfig);
+            appInfoList = deployer.getAppsMetadata(context.getAuthConfig());
         } catch (HyscaleException e) {
             WorkflowLogger.error(ControllerActivity.ERROR_WHILE_FETCHING_DEPLOYMENTS);
             throw e;
@@ -126,7 +128,7 @@ public class HyscaleGetAppsCommand implements Callable<Integer> {
         });
         WorkflowLogger.logTable(table);
 
-        return 0;
+        return ToolConstants.HYSCALE_SUCCESS_CODE;
     }
 
 }

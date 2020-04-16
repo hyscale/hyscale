@@ -36,7 +36,7 @@ public enum ControllerErrorCodes implements HyscaleErrorCode {
     UNIQUE_PROFILE_REQUIRED("Service {} cannot have multiple profiles"),
     INVALID_REPLICA_SELECTED_REACHED_MAX_RETRIES("Invalid input provided . Reached maximum retries. Please try again"),
     SERVICE_NOT_PROVIDED_FOR_PROFILE("Services {} mentioned in profiles not found"),
-    INVALID_PROFILE_NAME("Error while looking for profile {}. {}"),
+    ERROR_WHILE_PROCESSING_PROFILE("Error while looking for profile. {}"),
     INPUT_VALIDATION_FAILED("Input validation failed. Error messages {}");
 
     private String message;

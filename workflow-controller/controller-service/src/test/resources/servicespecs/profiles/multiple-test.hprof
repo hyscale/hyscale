@@ -1,5 +1,5 @@
 environment: multiple
-overrides: myservice
+overrides: test
 
 secrets:
     TEST_VALUE: TEST 

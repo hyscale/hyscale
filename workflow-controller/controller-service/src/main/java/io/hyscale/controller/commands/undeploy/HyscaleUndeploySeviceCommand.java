@@ -36,6 +36,7 @@ import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.builder.WorkflowContextBuilder;
 import io.hyscale.controller.invoker.UndeployComponentInvoker;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -63,59 +64,68 @@ import picocli.CommandLine.Option;
 @Command(name = "service", description = "Undeploy service from the configured kubernetes cluster")
 @Component
 public class HyscaleUndeploySeviceCommand implements Callable<Integer> {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(HyscaleUndeploySeviceCommand.class);
 
-	@Option(names = { "-h", "--help" }, usageHelp = true, description = "Displays the help information of the specified command")
-	private boolean helpRequested = false;
+    @Option(names = { "-h",
+            "--help" }, usageHelp = true, description = "Displays the help information of the specified command")
+    private boolean helpRequested = false;
 
-	@Pattern(regexp = ValidationConstants.NAMESPACE_REGEX, message = ValidationConstants.INVALID_NAMESPACE_MSG)
-	@Option(names = { "-n", "--namespace", "-ns" }, required = true, description = "Namespace of the deployed service")
-	private String namespace;
+    @Pattern(regexp = ValidationConstants.NAMESPACE_REGEX, message = ValidationConstants.INVALID_NAMESPACE_MSG)
+    @Option(names = { "-n", "--namespace", "-ns" }, required = true, description = "Namespace of the deployed service")
+    private String namespace;
 
-	@Pattern(regexp = ValidationConstants.APP_NAME_REGEX, message = ValidationConstants.INVALID_APP_NAME_MSG)
-	@Option(names = { "-a", "--app" }, required = true, description = "Application name")
-	private String appName;
+    @Pattern(regexp = ValidationConstants.APP_NAME_REGEX, message = ValidationConstants.INVALID_APP_NAME_MSG)
+    @Option(names = { "-a", "--app" }, required = true, description = "Application name")
+    private String appName;
 
-	@Option(names = { "-s", "--service" }, required = true, description = "Service names", split = ",")
-	private List<
-	@Pattern(regexp = ValidationConstants.SERVICE_NAME_REGEX, message = ValidationConstants.INVALID_SERVICE_NAME_MSG)
-	String> serviceList;
+    @Option(names = { "-s", "--service" }, required = true, description = "Service names", split = ",")
+    private List<
+    @Pattern(regexp = ValidationConstants.SERVICE_NAME_REGEX, message = ValidationConstants.INVALID_SERVICE_NAME_MSG) 
+    String> serviceList;
 
     @Autowired
     private ClusterValidator clusterValidator;
 
-	@Autowired
-	private UndeployComponentInvoker undeployComponentInvoker;
+    @Autowired
+    private UndeployComponentInvoker undeployComponentInvoker;
 
-	@Override
-	public Integer call() throws Exception {
-	    if (!CommandUtil.isInputValid(this)) {
-	        return ToolConstants.INVALID_INPUT_ERROR_CODE;
-        }
-	    boolean isFailed = false;
-		WorkflowContext workflowContext = new WorkflowContext();
-		workflowContext.addAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR, true);
-		workflowContext.setAppName(appName.trim());
-		workflowContext.setNamespace(namespace.trim());
-		// TODO
-        if (!clusterValidator.validate(workflowContext )) {
-            WorkflowLogger.logPersistedActivities();
+    @Autowired
+    private WorkflowContextBuilder workflowContextBuilder;
+
+    @Override
+    public Integer call() throws Exception {
+        if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-		for (String serviceName: serviceList) {
-		    WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
-		    workflowContext.setServiceName(serviceName);
-		    try {
-		        undeployComponentInvoker.execute(workflowContext);
-		    } catch (HyscaleException e) {
-		        logger.error("Error while undeploying app: {}, service: {}, in namespace: {}", appName, serviceName, namespace, e);
-		        isFailed = true;
+        boolean isFailed = false;
+        List<WorkflowContext> workflowContextList = workflowContextBuilder.buildContextList(appName, namespace,
+                serviceList);
+        workflowContextList = workflowContextBuilder.updateAuthConfig(workflowContextList);
+
+        workflowContextList.forEach(context -> context.addAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR, true));
+
+        for (WorkflowContext workflowContext : workflowContextList) {
+            if (!clusterValidator.validate(workflowContext)) {
+                WorkflowLogger.logPersistedActivities();
+                return ToolConstants.INVALID_INPUT_ERROR_CODE;
+            }
+        }
+
+        for (WorkflowContext workflowContext : workflowContextList) {
+            WorkflowLogger.header(ControllerActivity.SERVICE_NAME, workflowContext.getServiceName());
+            try {
+                undeployComponentInvoker.execute(workflowContext);
+            } catch (HyscaleException e) {
+                logger.error("Error while undeploying app: {}, service: {}, in namespace: {}", appName,
+                        workflowContext.getServiceName(), namespace, e);
+                isFailed = true;
             } finally {
                 UndeployCommandUtil.logUndeployInfo();
             }
-		}
-		return isFailed ? ToolConstants.HYSCALE_ERROR_CODE : 0;
-	}
+        }
+
+        return isFailed ? ToolConstants.HYSCALE_ERROR_CODE : 0;
+    }
 
 }

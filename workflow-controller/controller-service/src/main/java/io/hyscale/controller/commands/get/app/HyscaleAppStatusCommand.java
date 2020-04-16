@@ -33,6 +33,7 @@ import io.hyscale.commons.logger.TableFields;
 import io.hyscale.commons.logger.TableFormatter;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.builder.WorkflowContextBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.invoker.StatusComponentInvoker;
 import io.hyscale.controller.model.WorkflowContext;
@@ -79,15 +80,16 @@ public class HyscaleAppStatusCommand implements Callable<Integer> {
     @Autowired
     private StatusComponentInvoker statusComponentInvoker;
     
+    @Autowired
+    private WorkflowContextBuilder workflowContextBuilder;
+    
     @Override
     public Integer call() throws Exception{
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        WorkflowContext context = new WorkflowContext();
-        context.setAppName(appName);
-        context.setNamespace(namespace);
-        // TODO
+        WorkflowContext context = workflowContextBuilder.buildContext(appName, namespace, null);
+        context = workflowContextBuilder.updateAuthConfig(context);
         if (!clusterValidator.validate(context)) {
             WorkflowLogger.logPersistedActivities();
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
@@ -104,13 +106,13 @@ public class HyscaleAppStatusCommand implements Callable<Integer> {
             
             if (statusAttr == null) {
                 WorkflowLogger.info(ControllerActivity.NO_SERVICE_DEPLOYED);
-                return 0;
+                return ToolConstants.HYSCALE_SUCCESS_CODE;
             }
             List<DeploymentStatus> deploymentStatusList = (List<DeploymentStatus>) statusAttr;
 
             if (deploymentStatusList.isEmpty()) {
                 WorkflowLogger.info(ControllerActivity.NO_SERVICE_DEPLOYED);
-                return 0;
+                return ToolConstants.HYSCALE_SUCCESS_CODE;
             }
         	
             List<String[]> rowList = new ArrayList<String[]>();
@@ -135,7 +137,7 @@ public class HyscaleAppStatusCommand implements Callable<Integer> {
         } finally {
             WorkflowLogger.footer();
         }
-        return 0;
+        return ToolConstants.HYSCALE_SUCCESS_CODE;
     }
     
 }

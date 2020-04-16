@@ -22,6 +22,7 @@ import javax.validation.constraints.Pattern;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.builder.WorkflowContextBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
@@ -94,6 +95,9 @@ public class HyscaleServiceLogsCommand implements Callable<Integer> {
 
     @Autowired
     private LoggerUtility loggerUtility;
+    
+    @Autowired
+    private WorkflowContextBuilder workflowContextBuilder;
 
     @Override
     public Integer call() throws Exception {
@@ -101,15 +105,12 @@ public class HyscaleServiceLogsCommand implements Callable<Integer> {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
 
-        WorkflowContext workflowContext = new WorkflowContext();
-        workflowContext.setAppName(appName.trim());
-        workflowContext.setNamespace(namespace.trim());
-        workflowContext.setServiceName(serviceName);
+        WorkflowContext workflowContext = workflowContextBuilder.buildContext(appName, namespace, serviceName);
         workflowContext.addAttribute(WorkflowConstants.TAIL_LOGS, tail);
         workflowContext.addAttribute(WorkflowConstants.LINES, line);
         workflowContext.addAttribute(WorkflowConstants.REPLICA_NAME, replicaName);
-
-        // TODO
+        workflowContext = workflowContextBuilder.updateAuthConfig(workflowContext);
+        
         if (!clusterValidator.validate(workflowContext )) {
             WorkflowLogger.logPersistedActivities();
             return ToolConstants.INVALID_INPUT_ERROR_CODE;

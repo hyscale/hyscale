@@ -15,8 +15,6 @@
  */
 package io.hyscale.controller.model;
 
-import java.io.File;
-
 import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
@@ -24,7 +22,6 @@ public class EffectiveServiceSpec {
 
     private ServiceMetadata serviceMetadata;
     private ServiceSpec serviceSpec;
-    private File serviceSpecFile;
 
     public ServiceMetadata getServiceMetadata() {
         return serviceMetadata;
@@ -40,14 +37,6 @@ public class EffectiveServiceSpec {
 
     public void setServiceSpec(ServiceSpec serviceSpec) {
         this.serviceSpec = serviceSpec;
-    }
-
-    public File getServiceSpecFile() {
-        return serviceSpecFile;
-    }
-
-    public void setServiceSpecFile(File serviceSpecFile) {
-        this.serviceSpecFile = serviceSpecFile;
     }
 
 }

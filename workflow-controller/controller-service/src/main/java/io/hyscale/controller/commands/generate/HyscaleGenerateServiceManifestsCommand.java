@@ -16,7 +16,9 @@
 package io.hyscale.controller.commands.generate;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 import javax.annotation.PreDestroy;
@@ -33,17 +35,19 @@ import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.commands.input.ProfileInput;
+import io.hyscale.controller.builder.WorkflowContextBuilder;
+import io.hyscale.controller.commands.input.ProfileArg;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.invoker.ManifestGeneratorComponentInvoker;
 import io.hyscale.controller.model.HyscaleCommandSpec;
+import io.hyscale.controller.model.HyscaleInputSpec;
 import io.hyscale.controller.model.EffectiveServiceSpec;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.controller.processor.HyscaleInputSpecProcessor;
 import io.hyscale.controller.processor.ServiceSpecProcessor;
 import io.hyscale.controller.util.CommandUtil;
-import io.hyscale.controller.util.ManifestAndDeployHelper;
+import io.hyscale.controller.util.ServiceSpecUtil;
 import io.hyscale.controller.validator.impl.InputSpecPostValidator;
-import io.hyscale.controller.validator.impl.InputSpecValidator;
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 
@@ -84,10 +88,7 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
     private List<File> serviceSpecs;
 
     @ArgGroup(exclusive = true)
-    private ProfileInput profileInput;
-    
-    @Autowired
-    private InputSpecValidator inputSpecValidator;
+    private ProfileArg profileArg;
     
     @Autowired
     private InputSpecPostValidator inputSpecPostValidator;
@@ -99,7 +100,10 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
     private ManifestGeneratorComponentInvoker manifestGeneratorComponentInvoker;
     
     @Autowired
-    private ManifestAndDeployHelper manifestAndDeployHelper;
+    private HyscaleInputSpecProcessor hyscaleInputSpecProcessor;
+    
+    @Autowired
+    private WorkflowContextBuilder workflowContextBuilder;
     
     @Override
     public Integer call() throws Exception {
@@ -110,39 +114,38 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
         HyscaleCommandSpec commandSpec = new HyscaleCommandSpec();
         commandSpec.setAppName(appName);
         commandSpec.setServiceSpecFiles(serviceSpecs);
-        if (profileInput != null) {
-            commandSpec.setProfileFiles(profileInput.getProfiles());
-            commandSpec.setProfileName(profileInput.getProfileName());
+        if (profileArg != null) {
+            commandSpec.setProfileFiles(profileArg.getProfiles());
+            commandSpec.setProfileName(profileArg.getProfileName());
         }
         
-        if (!inputSpecValidator.validate(commandSpec)) {
+        // Does Everything
+        HyscaleInputSpec hyscaleInput = hyscaleInputSpecProcessor.process(commandSpec);
+        if (hyscaleInput == null) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        List<File> profiles = commandSpec.getProfileFiles();
         
-        List<EffectiveServiceSpec> effectiveServiceSpecList = serviceSpecProcessor.getEffectiveServiceSpec(serviceSpecs,
-                profiles);
+        Map<String, File> serviceVsSpecFile = new HashMap<String, File>();
+        for (File serviceSpec : serviceSpecs) {
+            serviceVsSpecFile.put(ServiceSpecUtil.getServiceName(serviceSpec), serviceSpec);
+        }
+        List<EffectiveServiceSpec> effectiveServiceSpecList = serviceSpecProcessor.getEffectiveServiceSpec(hyscaleInput);
         
-        List<WorkflowContext> contextList = manifestAndDeployHelper.getContextList(effectiveServiceSpecList, appName, null);
+        List<WorkflowContext> contextList = workflowContextBuilder.buildContextList(effectiveServiceSpecList, appName, null);
         
-        manifestAndDeployHelper.getManifestPostValidators().forEach( each -> inputSpecPostValidator.addValidator(each));
+        hyscaleInputSpecProcessor.getManifestPostValidators().forEach( each -> inputSpecPostValidator.addValidator(each));
+        
         if (!inputSpecPostValidator.validate(contextList)) {
             WorkflowLogger.logPersistedActivities();
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        
         boolean isFailed = false;
-        for (EffectiveServiceSpec effectiveServiceSpec : effectiveServiceSpecList) {
-            WorkflowContext workflowContext = new WorkflowContext();
-            String serviceName = effectiveServiceSpec.getServiceMetadata().getServiceName();
+        for (WorkflowContext workflowContext : contextList) {
+            String serviceName = workflowContext.getServiceName();
             WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
-            workflowContext.setServiceSpec(effectiveServiceSpec.getServiceSpec());
-            workflowContext.setServiceName(serviceName);
             SetupConfig.clearAbsolutePath();
-            SetupConfig.setAbsolutePath(effectiveServiceSpec.getServiceSpecFile().getAbsoluteFile().getParent());
+            SetupConfig.setAbsolutePath(serviceVsSpecFile.get(serviceName).getAbsoluteFile().getParent());
 
-            workflowContext.setAppName(appName.trim());
-            workflowContext.setEnvName(CommandUtil.getEnvName(effectiveServiceSpec.getServiceMetadata().getEnvName()));
             try {
                 manifestGeneratorComponentInvoker.execute(workflowContext);
             } catch (HyscaleException e) {
@@ -158,6 +161,7 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
                     SetupConfig.getMountPathOf((String) workflowContext.getAttribute(WorkflowConstants.MANIFESTS_PATH)),
                     ControllerActivity.MANIFESTS_GENERATION_PATH);
         }
+        
         return isFailed ? ToolConstants.HYSCALE_ERROR_CODE : 0;
     }
     

@@ -17,7 +17,7 @@ package io.hyscale.controller.exception;
 
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.controller.util.CommandUtil;
+import io.hyscale.controller.piccoli.ProfileArgsManipulator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +43,7 @@ public class ParameterExceptionHandler implements CommandLine.IParameterExceptio
             return ToolConstants.HYSCALE_SUCCESS_CODE;
         }
         String message = ex.getMessage();
-        message = CommandUtil.updateMessage(message);
+        message = ProfileArgsManipulator.updateMessage(message);
         logger.error(message);
 
         if (ex.getCause() instanceof HyscaleException) {

@@ -18,6 +18,7 @@ package io.hyscale.controller.commands.get.replica;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.controller.builder.WorkflowContextBuilder;
 import io.hyscale.controller.commands.get.service.HyscaleGetServiceCommand;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.service.ReplicaProcessingService;
@@ -78,14 +79,16 @@ public class HyscaleReplicaStatusCommand implements Callable<Integer> {
 
     @Autowired
     private ReplicaProcessingService replicaProcessingService;
+    
+    @Autowired
+    private WorkflowContextBuilder workflowContextBuilder;
 
     @Override
     public Integer call() throws Exception {
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        // TODO
-        WorkflowContext context = new WorkflowContext();
+        WorkflowContext context = workflowContextBuilder.updateAuthConfig(new WorkflowContext());
         if (!clusterValidator.validate(context )) {
             WorkflowLogger.logPersistedActivities();
             return ToolConstants.INVALID_INPUT_ERROR_CODE;

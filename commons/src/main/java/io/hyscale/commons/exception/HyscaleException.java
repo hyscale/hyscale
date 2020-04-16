@@ -72,7 +72,7 @@ public class HyscaleException extends Exception {
         } else {
             sb.append(hyscaleErrorCode.getErrorMessage());
         }
-        sb.append("\n Exit Code: ").append(code).append("]");
+        sb.append("]");
         return sb.toString();
     }
 

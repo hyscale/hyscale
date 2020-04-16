@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 public class HyscaleFilesUtilTests {
     private static URL sampleFileUrl;
@@ -40,7 +41,8 @@ public class HyscaleFilesUtilTests {
     private static String testFilePath;
     private static File testDir;
     private static final String SAMPLE_FILE_NAME = "sample.txt";
-    private static final String TEST_FILE_NAME = "testFile.txt";
+    private static final String TEST_FILE_NAME = "test-file.txt";
+    private static final String TEST_FILE_PATTERN = "^(test-).*(.txt)$";
 
 
     @BeforeAll
@@ -119,16 +121,17 @@ public class HyscaleFilesUtilTests {
         assertEquals(SAMPLE_FILE_NAME, HyscaleFilesUtil.getFileName(sampleFilePath));
     }
     
+    
     @Test
-    public void searchFileInDirTest() {
+    public void ListFileInDirTest() {
         File file = createFile(testFilePath);
-        File foundFile = HyscaleFilesUtil.searchForFileinDir(file.getParent(), TEST_FILE_NAME);
-        assertEquals(file.getAbsolutePath(), foundFile.getAbsolutePath());
+        List<File> foundFiles = HyscaleFilesUtil.listFilesWithPattern(file.getParent(), TEST_FILE_PATTERN);
+        assertEquals(file.getAbsolutePath(), foundFiles.get(0).getAbsolutePath());
         deleteDirectory(testDir);
-        foundFile = HyscaleFilesUtil.searchForFileinDir(file.getParent(), TEST_FILE_NAME);
-        assertNull(foundFile);
+        foundFiles = HyscaleFilesUtil.listFilesWithPattern(file.getParent(), TEST_FILE_PATTERN);
+        assertNull(foundFiles);
     }
-
+    
     @Test
     public void clearDirectoryTest() throws Exception {
         testDir = createDirectory(testDirPath);

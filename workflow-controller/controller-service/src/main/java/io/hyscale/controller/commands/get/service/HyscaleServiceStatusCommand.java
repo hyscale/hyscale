@@ -16,10 +16,9 @@
 package io.hyscale.controller.commands.get.service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.Pattern;
 
@@ -41,6 +40,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.TableFormatter;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.builder.WorkflowContextBuilder;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -90,6 +90,9 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
     
     @Autowired
     private StatusComponentInvoker statusComponentInvoker;
+    
+    @Autowired
+    private WorkflowContextBuilder workflowContextBuilder;
 
     @Override
     public Integer call() throws Exception {
@@ -97,14 +100,15 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        WorkflowContext context = new WorkflowContext();
-        context.setAppName(appName);
-        context.setNamespace(namespace);
-
-        // TODO
-        if (!clusterValidator.validate(context )) {
-            WorkflowLogger.logPersistedActivities();
-            return ToolConstants.INVALID_INPUT_ERROR_CODE;
+        List<WorkflowContext> contextList = workflowContextBuilder.buildContextList(appName, namespace,
+                serviceList.stream().distinct().collect(Collectors.toList()));
+        contextList = workflowContextBuilder.updateAuthConfig(contextList);
+        
+        for (WorkflowContext context : contextList) {
+            if (!clusterValidator.validate(context)) {
+                WorkflowLogger.logPersistedActivities();
+                return ToolConstants.INVALID_INPUT_ERROR_CODE;
+            }
         }
         
         WorkflowLogger.info(ControllerActivity.WAITING_FOR_SERVICE_STATUS);
@@ -112,10 +116,8 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
         WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
         try {
             boolean isLarge = false;
-            Set<String> services = new HashSet<String>(serviceList);
             List<String[]> rowList = new ArrayList<String[]>();
-            for (String serviceName : services) {
-                context.setServiceName(serviceName);
+            for (WorkflowContext context : contextList) {
                 statusComponentInvoker.execute(context);
                 Object statusAttr = context.getAttribute(
                         WorkflowConstants.DEPLOYMENT_STATUS);
@@ -136,7 +138,7 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
         } finally {
             WorkflowLogger.footer();
         }
-        return 0;
+        return ToolConstants.HYSCALE_SUCCESS_CODE;
     }
 
 }
