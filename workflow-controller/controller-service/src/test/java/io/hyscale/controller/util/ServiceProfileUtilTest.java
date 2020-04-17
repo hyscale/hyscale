@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -96,6 +97,8 @@ public class ServiceProfileUtilTest {
             assertNull(profiles);
             return;
         }
+        Collections.sort(expectedProfiles);
+        Collections.sort(profiles);
         assertTrue(expectedProfiles.equals(profiles));
     }
 
