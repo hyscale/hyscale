@@ -115,16 +115,20 @@ public class ImageUtil {
     }
 
 	public static boolean isImageBuildPushRequired(ServiceSpec serviceSpec) {
+	    if (serviceSpec == null) {
+	        return false;
+	    }
 		Image image = null;
 		try {
 			image = serviceSpec.get(HyscaleSpecFields.image, Image.class);
 		} catch (HyscaleException e) {
 			logger.info("Error while fetching buildSpec and registryUrl from serviceSpec ");
 		}
-		if (image != null && (image instanceof BuildSpecImage) || (image instanceof DockerBuildImage)) {
+		
+		if (image != null && ((image instanceof BuildSpecImage) || (image instanceof DockerBuildImage))) {
 			return true;
-		} else {
-			return false;
 		}
+		
+		return false;
 	}
 }

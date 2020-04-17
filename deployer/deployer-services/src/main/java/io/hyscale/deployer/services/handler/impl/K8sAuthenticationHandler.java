@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.deployer.services.handler;
+package io.hyscale.deployer.services.handler.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +25,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.deployer.core.model.ResourceOperation;
+import io.hyscale.deployer.services.handler.AuthenticationHandler;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.kubernetes.client.openapi.ApiClient;
@@ -34,22 +35,27 @@ import io.kubernetes.client.openapi.models.V1APIResourceList;
 
 @Component
 public class K8sAuthenticationHandler implements AuthenticationHandler {
+    
 	private static final Logger logger = LoggerFactory.getLogger(K8sAuthenticationHandler.class);
 
+	private static final String KUBERNETES_AUTHENTICATION = "Kubernetes authorisation";
+	
 	@Autowired
 	private K8sClientProvider clientProvider;
 
 	public boolean authenticate(AuthConfig authConfig) throws HyscaleException {
-		ApiClient apiClient = null;
-		apiClient = clientProvider.get((K8sAuthorisation) authConfig);
+	    if (authConfig == null || !(authConfig instanceof K8sAuthorisation)) {
+	        return false;
+	    }
+		ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
 		AuthenticationV1Api apiInstance = new AuthenticationV1Api(apiClient);
 		try {
 			V1APIResourceList result = apiInstance.getAPIResources();
 			return result != null ? true : false;
 		} catch (ApiException e) {
-			logger.error("Exception when calling AuthenticationV1Api#createTokenReview");
-			HyscaleException ex = new HyscaleException(e, CommonErrorCode.ERROR_OCCURED_WHILE_CONNECTING_TO_CLUSTER,
-					ExceptionHelper.getExceptionMessage("Falied to validate cluster", e, ResourceOperation.GET));
+			logger.error("Exception when calling " + KUBERNETES_AUTHENTICATION, e);
+			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_CONNECT_TO_CLUSTER,
+					ExceptionHelper.getExceptionMessage(KUBERNETES_AUTHENTICATION, e, ResourceOperation.GET));
 			throw ex; 
 		}
 	}

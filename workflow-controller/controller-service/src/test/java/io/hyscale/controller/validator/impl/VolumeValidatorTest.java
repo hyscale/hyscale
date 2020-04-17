@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.hooks;
+package io.hyscale.controller.validator.impl;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
@@ -24,42 +24,36 @@ import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.ServiceSpecTestUtil;
-import io.hyscale.controller.validator.impl.RegistryValidator;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @SpringBootTest
-public class RegistryValidatorTest {
+public class VolumeValidatorTest {
 
-	@MockBean
-	private RegistryValidator registryValidator;
-	
-	public static Stream<Arguments> input() {
-		WorkflowContext context = new WorkflowContext();
-		return Stream.of(Arguments.of(context));
-	}
+    @Autowired
+    private VolumeValidator volumeValidator;
 
-	
-	@ParameterizedTest
-	@MethodSource(value = "input")
-	void testInvalidValidate(WorkflowContext context) {
-		ServiceSpec serviceSpec = null;
-		try {
-			serviceSpec = ServiceSpecTestUtil.getServiceSpec("/servicespecs/validator/registry_validation.hspec");
-		} catch (IOException e) {
-			fail(e);
-		}
-		context.setServiceSpec(serviceSpec);
-		try {
-			assertFalse(registryValidator.validate(context));
-		} catch (HyscaleException e) {
-			fail(e);
-		}
-	}
+    public static Stream<Arguments> input() throws IOException {
+        return Stream.of(Arguments
+                .of(ServiceSpecTestUtil.getServiceSpec("/servicespecs/validator/registry_validation.hspec"), false),
+                Arguments.of(null, false));
+    }
+
+    @ParameterizedTest
+    @MethodSource(value = "input")
+    void testValidate(ServiceSpec serviceSpec, boolean expectedValue) {
+        WorkflowContext context = new WorkflowContext();
+        context.setServiceSpec(serviceSpec);
+        try {
+            assertEquals(expectedValue, volumeValidator.validate(context));
+        } catch (HyscaleException e) {
+            fail(e);
+        }
+    }
 
 }

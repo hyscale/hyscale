@@ -61,15 +61,13 @@ public class RegistryValidator implements Validator<WorkflowContext> {
 		boolean isRegistryAvailable = registries.contains(image.getRegistry());
 		if (isRegistryAvailable) {
 			return true;
-		} else {
-			isRegistryAvailable = registryManager.getImageRegistry(image.getRegistry()) != null ? true : false;
 		}
+		isRegistryAvailable = registryManager.getImageRegistry(image.getRegistry()) != null ? true : false;
 		if (isRegistryAvailable) {
 			registries.add(image.getRegistry());
 			return true;
-		} else {
-			WorkflowLogger.persistError(ValidatorActivity.REGISTRY_VALIDATION, "Registry validation failed");
-			return false;
 		}
+		WorkflowLogger.persistError(ValidatorActivity.REGISTRY_VALIDATION, "Registry validation failed");
+		return false;
 	}
 }

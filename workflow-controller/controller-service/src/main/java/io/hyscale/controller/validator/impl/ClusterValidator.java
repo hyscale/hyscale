@@ -25,14 +25,15 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.deployer.services.handler.AuthenticationHandler;
+import io.hyscale.deployer.services.deployer.Deployer;
 
 @Component
 public class ClusterValidator implements Validator<WorkflowContext> {
+    
 	private static final Logger logger = LoggerFactory.getLogger(ClusterValidator.class);
 
 	@Autowired
-	private AuthenticationHandler authenticationHandler;
+	private Deployer deployer;
 
 	/**
 	 * 1. It will try to connect to the cluster 
@@ -43,7 +44,7 @@ public class ClusterValidator implements Validator<WorkflowContext> {
 	@Override
 	public boolean validate(WorkflowContext context) throws HyscaleException {
 		logger.debug("Starting K8s cluster validation");
-		boolean flag = authenticationHandler.authenticate(context.getAuthConfig());
+		boolean flag = deployer.authenticate(context.getAuthConfig());
 		if (!flag) {
 			WorkflowLogger.persistError(ValidatorActivity.CLUSTER_VALIDATION, "Cluster validation failed");
 		}

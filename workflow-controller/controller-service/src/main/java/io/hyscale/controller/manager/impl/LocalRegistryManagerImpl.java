@@ -87,7 +87,6 @@ public class LocalRegistryManagerImpl implements RegistryManager {
         if (dockerConfig == null) {
             return null;
         }
-
         List<String> dockerRegistryAliases = DockerHubAliases.getDockerRegistryAliases(registry);
         List<String> registryPatterns = new ArrayList<>();
         for (String registryAlias : dockerRegistryAliases) {
@@ -106,7 +105,7 @@ public class LocalRegistryManagerImpl implements RegistryManager {
     }
 
     /**
-     * Returns credential helper if resgistry pattern found  in credHelpers if specified
+     * Returns credential helper if registry pattern found  in credHelpers if specified
      * or directly credsStore if specified else returns null.
      *
      * @param pattern
