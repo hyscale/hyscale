@@ -107,6 +107,7 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
     
     @Override
     public Integer call() throws Exception {
+        WorkflowLogger.header(ControllerActivity.PROCESSING_INPUT);
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
@@ -118,8 +119,8 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
             commandSpec.setProfileFiles(profileArg.getProfiles());
             commandSpec.setProfileName(profileArg.getProfileName());
         }
-        
-        // Does Everything
+
+        // Handles input preprocessing
         HyscaleInputSpec hyscaleInput = hyscaleInputSpecProcessor.process(commandSpec);
         if (hyscaleInput == null) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
@@ -136,9 +137,10 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
         hyscaleInputSpecProcessor.getManifestPostValidators().forEach( each -> inputSpecPostValidator.addValidator(each));
         
         if (!inputSpecPostValidator.validate(contextList)) {
-            WorkflowLogger.logPersistedActivities();
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
+        
+        WorkflowLogger.printLine();
         boolean isFailed = false;
         for (WorkflowContext workflowContext : contextList) {
             String serviceName = workflowContext.getServiceName();

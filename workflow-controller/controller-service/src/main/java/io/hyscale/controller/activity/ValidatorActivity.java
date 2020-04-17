@@ -18,18 +18,30 @@ package io.hyscale.controller.activity;
 import io.hyscale.commons.models.Activity;
 
 public enum ValidatorActivity implements Activity {
-	DOCKER_VALIDATION("Docker Validation"), CLUSTER_VALIDATION("Cluster Validation"),
-	MANIFEST_VALIDATION("Manifest Validation"), REGISTRY_VALIDATION("Registry Validation"),
-	VOLUME_VALIDATION("Volume ValiDation");
-	private String message;
+    VALIDATING_SERVICE_SPEC("Validating service spec(s) "),
+    VALIDATING_PROFILE("Validating profile(s) "),
+    VALIDATING_DOCKER("Validating docker "),
+    VALIDATING_CLUSTER("Validating cluster "),
+    VALIDATING_MANIFEST("Validating manifest for service {} "),
+    VALIDATING_REGISTRY("Validating registry {} "),
+    VALIDATING_VOLUME("Validating volumes for service {} "),
+    VOLUME_VALIDATION_FAILED("Volume validation failed. Error {}"),
+    MANIFEST_VALIDATION_FAILED("Manifest validation failed. Error {}"),
+    DOCKER_NOT_INSTALLED("Docker not installed. Install docker to continue "),
+    DOCKER_DAEMON_NOT_RUNNONG("Docker daemon not running. Start Docker to continue "),
+    MISSING_DOCKER_REGISTRY_CREDENTIALS("Cannot find {} credentials. Do 'docker login {}' to continue with the deployment"),
+    SERVICE_SPEC_VALIDATION_FAILED("Service spec validation failed. {} "),
+    PROFILE_VALIDATION_FAILED("Profile validation failed. {} ");
 
-	ValidatorActivity(String message) {
-		this.message = message;
-	}
+    private String message;
 
-	@Override
-	public String getActivityMessage() {
-		return message;
-	}
+    ValidatorActivity(String message) {
+        this.message = message;
+    }
+
+    @Override
+    public String getActivityMessage() {
+        return message;
+    }
 
 }

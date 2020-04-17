@@ -95,6 +95,7 @@ public class HyscaleUndeploySeviceCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
+        WorkflowLogger.header(ControllerActivity.PROCESSING_INPUT);
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
@@ -111,7 +112,7 @@ public class HyscaleUndeploySeviceCommand implements Callable<Integer> {
                 return ToolConstants.INVALID_INPUT_ERROR_CODE;
             }
         }
-
+        WorkflowLogger.printLine();
         for (WorkflowContext workflowContext : workflowContextList) {
             WorkflowLogger.header(ControllerActivity.SERVICE_NAME, workflowContext.getServiceName());
             try {

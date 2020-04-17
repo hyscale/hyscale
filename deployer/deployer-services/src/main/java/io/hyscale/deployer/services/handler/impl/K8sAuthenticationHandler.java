@@ -38,7 +38,7 @@ public class K8sAuthenticationHandler implements AuthenticationHandler {
     
 	private static final Logger logger = LoggerFactory.getLogger(K8sAuthenticationHandler.class);
 
-	private static final String KUBERNETES_AUTHENTICATION = "Kubernetes authorisation";
+	private static final String KUBERNETES_AUTHENTICATION = "Kubernetes authentication";
 	
 	@Autowired
 	private K8sClientProvider clientProvider;

@@ -24,6 +24,8 @@ import org.slf4j.LoggerFactory;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.Activity;
+import io.hyscale.commons.models.Status;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.exception.ControllerErrorCodes;
 
@@ -33,11 +35,12 @@ public abstract class InputSpecValidator implements Validator<List<File>> {
 
     @Override
     public boolean validate(List<File> inputSpecFiles) throws HyscaleException {
+        WorkflowLogger.startActivity(getValidatorActivity());
         logger.debug("Running validator: {}", this.getClass());
         if (inputSpecFiles == null) {
+            WorkflowLogger.endActivity(Status.FAILED);
             return false;
         }
-
         boolean isInvalid = false;
         boolean isFailed = false;
         StringBuilder exceptionMsg = new StringBuilder();
@@ -54,9 +57,11 @@ public abstract class InputSpecValidator implements Validator<List<File>> {
         if (isInvalid || isFailed) {
             logger.error("Input invalid : {}, failed: {}, error message : {}", isInvalid, isFailed,
                     exceptionMsg.toString());
-            WorkflowLogger.logPersistedActivities();
-
+            WorkflowLogger.endActivity(Status.FAILED);
+        } else {
+            WorkflowLogger.endActivity(Status.DONE);
         }
+        WorkflowLogger.logPersistedActivities();
         if (isFailed) {
             throw new HyscaleException(ControllerErrorCodes.INPUT_VALIDATION_FAILED,
                     ToolConstants.INVALID_INPUT_ERROR_CODE, exceptionMsg.toString());
@@ -64,8 +69,10 @@ public abstract class InputSpecValidator implements Validator<List<File>> {
         return !isInvalid;
     }
 
+    protected abstract Activity getValidatorActivity();
+
     protected abstract Validator<File> getFileValidator();
 
     protected abstract Validator<File> getSchemaValidator();
-
+    
 }

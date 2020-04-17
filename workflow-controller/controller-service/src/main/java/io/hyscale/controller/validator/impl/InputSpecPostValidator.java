@@ -49,27 +49,18 @@ public class InputSpecPostValidator implements Validator<List<WorkflowContext>> 
         StringBuilder exceptionMsg = new StringBuilder();
         for (Validator<WorkflowContext> validator : validators) {
             logger.debug("Running validator: {}", validator.getClass());
-            if (contextList == null) {
+            for (WorkflowContext context : contextList) {
                 try {
-                    isInvalid = validator.validate(null) ? isInvalid : true;
+                    isInvalid = validator.validate(context) ? isInvalid : true;
                 } catch (HyscaleException e) {
                     isFailed = true;
                     exceptionMsg.append(e.getMessage()).append("\n");
                 }
-            } else {
-                for (WorkflowContext context : contextList) {
-                    try {
-                        isInvalid = validator.validate(context) ? isInvalid : true;
-                    } catch (HyscaleException e) {
-                        isFailed = true;
-                        exceptionMsg.append(e.getMessage()).append("\n");
-                    }
-                }
             }
+            WorkflowLogger.logPersistedActivities();
             if (isInvalid || isFailed) {
                 logger.error("Input invalid : {}, failed: {}, error message : {}", isInvalid, isFailed,
                         exceptionMsg.toString());
-                WorkflowLogger.logPersistedActivities();
             }
             if (isFailed) {
                 throw new HyscaleException(ControllerErrorCodes.INPUT_VALIDATION_FAILED,

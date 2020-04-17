@@ -27,13 +27,13 @@ import com.github.fge.jsonschema.core.report.ProcessingReport;
 
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.LoggerTags;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.Activity;
 import io.hyscale.commons.models.HyscaleSpecType;
 import io.hyscale.commons.utils.DataFormatConverter;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.schema.validator.SchemaValidator;
-import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
-import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 
 public abstract class SpecSchemaValidator implements Validator<File> {
 
@@ -49,14 +49,14 @@ public abstract class SpecSchemaValidator implements Validator<File> {
             processingReport = schemaValidator.validateSpec(DataFormatConverter.yamlToJson(specFile),
                     getReferenceSchemaType());
         } catch (HyscaleException e) {
-            WorkflowLogger.persistError(ServiceSpecActivity.ERROR, e.getMessage());
+            WorkflowLogger.persist(getActivity(), LoggerTags.ERROR, e.getMessage());
             throw new HyscaleException(e.getHyscaleErrorCode(), ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE);
         }
         if (processingReport.isSuccess()) {
             try {
                 return validateData(specFile);
             } catch (HyscaleException e) {
-                WorkflowLogger.persistError(ServiceSpecActivity.ERROR, e.getMessage());
+                WorkflowLogger.persist(getActivity(), LoggerTags.ERROR, e.getMessage());
                 throw new HyscaleException(e.getHyscaleErrorCode(), ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE);
             }
         }
@@ -66,13 +66,15 @@ public abstract class SpecSchemaValidator implements Validator<File> {
             ProcessingMessage message = messageIterator.next();
             messageBuilder.append(message.toString());
         }
-        WorkflowLogger.persistError(ServiceSpecActivity.ERROR, messageBuilder.toString());
+        WorkflowLogger.persist(getActivity(), LoggerTags.ERROR, messageBuilder.toString());
         logger.error(messageBuilder.toString());
-        throw new HyscaleException(ServiceSpecErrorCodes.INVALID_FORMAT,
-                ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE, messageBuilder.toString());
+        
+        return false;
     }
 
     protected abstract boolean validateData(File inputFile) throws HyscaleException;
 
     protected abstract HyscaleSpecType getReferenceSchemaType();
+    
+    protected abstract Activity getActivity();
 }

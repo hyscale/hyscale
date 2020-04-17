@@ -24,7 +24,9 @@ import org.springframework.stereotype.Component;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.Activity;
 import io.hyscale.commons.models.HyscaleSpecType;
+import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.util.ServiceProfileUtil;
 import io.hyscale.controller.validator.SpecSchemaValidator;
 import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
@@ -55,6 +57,11 @@ public class ProfileSpecSchemaValidator extends SpecSchemaValidator {
             WorkflowLogger.persist(ServiceSpecActivity.PROFILE_NAME_MISMATCH, profileFile.getName());
         }
         return true;
+    }
+    
+    @Override
+    protected Activity getActivity() {
+        return ValidatorActivity.PROFILE_VALIDATION_FAILED;
     }
 
 }

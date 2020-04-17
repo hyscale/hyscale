@@ -96,7 +96,8 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-
+        WorkflowLogger.header(ControllerActivity.PROCESSING_INPUT);
+        
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
@@ -110,7 +111,7 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
                 return ToolConstants.INVALID_INPUT_ERROR_CODE;
             }
         }
-        
+        WorkflowLogger.printLine();
         WorkflowLogger.info(ControllerActivity.WAITING_FOR_SERVICE_STATUS);
         
         WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
@@ -123,7 +124,9 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
                         WorkflowConstants.DEPLOYMENT_STATUS);
                 if (statusAttr != null) {
                     DeploymentStatus serviceStatus = (DeploymentStatus) statusAttr;
-                    isLarge = isLarge ? isLarge : serviceStatus.getServiceAddress().length() > TableFields.SERVICE_ADDRESS.getLength();
+                    if (serviceStatus.getServiceAddress() != null) {
+                        isLarge = isLarge ? isLarge : serviceStatus.getServiceAddress().length() > TableFields.SERVICE_ADDRESS.getLength();
+                    }
                     String[] tableRow = StatusUtil.getRowData(serviceStatus);
                     rowList.add(tableRow);
                 }

@@ -27,6 +27,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.builder.DeploymentContextBuilder;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.hooks.AppDirCleanUpHook;
@@ -46,6 +47,9 @@ public class UndeployComponentInvoker extends ComponentInvoker<WorkflowContext> 
 
     @Autowired
     private Deployer deployer;
+    
+    @Autowired
+    private DeploymentContextBuilder deploymentContextBuilder;
 
     @Autowired
     private K8sAuthConfigBuilder authConfigBuilder;
@@ -76,11 +80,7 @@ public class UndeployComponentInvoker extends ComponentInvoker<WorkflowContext> 
         String serviceName = context.getServiceName();
         
         WorkflowLogger.header(ControllerActivity.STARTING_UNDEPLOYMENT);
-        DeploymentContext deploymentContext = new DeploymentContext();
-        deploymentContext.setAuthConfig(authConfigBuilder.getAuthConfig());
-        deploymentContext.setNamespace(namespace);
-        deploymentContext.setAppName(appName);
-        deploymentContext.setServiceName(serviceName);
+        DeploymentContext deploymentContext = deploymentContextBuilder.build(context);
 
         try {
             deployer.unDeploy(deploymentContext);

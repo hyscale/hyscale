@@ -36,7 +36,6 @@ import io.hyscale.commons.models.KubernetesResource;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.deployer.core.model.ResourceKind;
@@ -60,9 +59,6 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 	@Autowired
 	private K8sClientProvider clientProvider;
 
-	@Autowired
-	private K8sAuthConfigBuilder authConfigBuilder;
-
 	/**
 	 * Clean up old resources
 	 * 1.	Create map of resources in manifest
@@ -73,7 +69,7 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 	@Override
 	public void preHook(WorkflowContext context) throws HyscaleException {
 		logger.debug("Starting stale kubernetes resource cleanup");
-		ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfigBuilder.getAuthConfig());
+		ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
 		String serviceName = context.getServiceName();
 		String appName = context.getAppName();
 		String namespace = context.getNamespace();

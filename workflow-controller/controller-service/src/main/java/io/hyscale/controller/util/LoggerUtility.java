@@ -34,12 +34,10 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.utils.HyscaleStringUtil;
 import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.deployer.services.model.ReplicaInfo;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
-import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.hyscale.deployer.services.util.DeployerLogUtil;
 
 /**
@@ -54,13 +52,7 @@ public class LoggerUtility {
     private ImageLogUtil imageLogUtil;
 
     @Autowired
-    private K8sAuthConfigBuilder authConfigBuilder;
-
-    @Autowired
     private DeployerLogUtil deployerLogUtil;
-
-    @Autowired
-    private K8sClientProvider clientProvider;
 
     @Autowired
     private ServiceLogsInputHandler serviceLogsInputHandler;
@@ -92,7 +84,7 @@ public class LoggerUtility {
         Boolean isTail = (Boolean) context.getAttribute(WorkflowConstants.TAIL_LOGS);
         isTail = (isTail == null) ? false : isTail;
         Integer lines = (Integer) context.getAttribute(WorkflowConstants.LINES);
-        AuthConfig authConfig = authConfigBuilder.getAuthConfig();
+        AuthConfig authConfig = context.getAuthConfig();
 
         String selectedPod = null;
         try {

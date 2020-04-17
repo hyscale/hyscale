@@ -23,7 +23,9 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.Activity;
 import io.hyscale.commons.models.HyscaleSpecType;
+import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.util.ServiceSpecUtil;
 import io.hyscale.controller.validator.SpecSchemaValidator;
 import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
@@ -47,6 +49,11 @@ public class ServiceSpecSchemaValidator extends SpecSchemaValidator {
             WorkflowLogger.persist(ServiceSpecActivity.SERVICE_NAME_MISMATCH);
         }
         return true;
+    }
+
+    @Override
+    protected Activity getActivity() {
+        return ValidatorActivity.SERVICE_SPEC_VALIDATION_FAILED;
     }
 
 }

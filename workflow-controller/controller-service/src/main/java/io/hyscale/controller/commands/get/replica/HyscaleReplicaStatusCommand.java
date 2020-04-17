@@ -18,15 +18,13 @@ package io.hyscale.controller.commands.get.replica;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.WorkflowContextBuilder;
-import io.hyscale.controller.commands.get.service.HyscaleGetServiceCommand;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.service.ReplicaProcessingService;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.validator.impl.ClusterValidator;
 import io.hyscale.deployer.core.model.DeploymentStatus;
-import io.hyscale.deployer.services.deployer.Deployer;
-import io.hyscale.deployer.services.provider.K8sClientProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
@@ -85,6 +83,7 @@ public class HyscaleReplicaStatusCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
+        WorkflowLogger.header(ControllerActivity.PROCESSING_INPUT);
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }

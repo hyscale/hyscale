@@ -40,7 +40,7 @@ public class VolumeValidatorTest {
 
     public static Stream<Arguments> input() throws IOException {
         return Stream.of(Arguments
-                .of(ServiceSpecTestUtil.getServiceSpec("/servicespecs/validator/registry_validation.hspec"), false),
+                .of(ServiceSpecTestUtil.getServiceSpec("/servicespecs/validator/registry_validation.hspec"), true),
                 Arguments.of(null, false));
     }
 

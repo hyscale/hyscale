@@ -20,7 +20,6 @@ import java.util.concurrent.Callable;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 
-import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.WorkflowContextBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
@@ -101,6 +100,7 @@ public class HyscaleServiceLogsCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
+        WorkflowLogger.header(ControllerActivity.PROCESSING_INPUT);
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }

@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.Status;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
@@ -34,6 +35,8 @@ public class ClusterValidator implements Validator<WorkflowContext> {
 
 	@Autowired
 	private Deployer deployer;
+	
+	private boolean isClusterValidated = false;
 
 	/**
 	 * 1. It will try to connect to the cluster 
@@ -43,11 +46,25 @@ public class ClusterValidator implements Validator<WorkflowContext> {
 	 */
 	@Override
 	public boolean validate(WorkflowContext context) throws HyscaleException {
+	    if (isClusterValidated) {
+	        return isClusterValidated;
+	    }
+	    WorkflowLogger.startActivity(ValidatorActivity.VALIDATING_CLUSTER);
 		logger.debug("Starting K8s cluster validation");
-		boolean flag = deployer.authenticate(context.getAuthConfig());
-		if (!flag) {
-			WorkflowLogger.persistError(ValidatorActivity.CLUSTER_VALIDATION, "Cluster validation failed");
+		boolean isClusterValid = false;
+		try {
+		    isClusterValid = deployer.authenticate(context.getAuthConfig());
+		} catch(HyscaleException ex) {
+		    WorkflowLogger.endActivity(Status.FAILED);
+		    throw ex;
 		}
-		return flag;
+		if (isClusterValid) {
+		    WorkflowLogger.endActivity(Status.DONE);
+		    isClusterValidated = true;
+		}
+		if (!isClusterValid) {
+		    WorkflowLogger.endActivity(Status.FAILED);
+		}
+		return isClusterValid;
 	}
 }

@@ -15,7 +15,6 @@
  */
 package io.hyscale.controller.util;
 
-import io.hyscale.deployer.services.model.PodStatus;
 import org.joda.time.DateTime;
 import org.ocpsoft.prettytime.PrettyTime;
 

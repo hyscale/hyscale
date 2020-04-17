@@ -89,7 +89,7 @@ public class HyscaleUndeployAppCommand implements Callable<Integer> {
 
 	@Override
 	public Integer call() throws Exception {
-
+	    WorkflowLogger.header(ControllerActivity.PROCESSING_INPUT);
 	    if (!CommandUtil.isInputValid(this)) {
 	        return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }

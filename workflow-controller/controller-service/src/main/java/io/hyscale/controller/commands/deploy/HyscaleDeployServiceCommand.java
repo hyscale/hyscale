@@ -27,7 +27,6 @@ import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.constants.WorkflowConstants;
-import io.hyscale.controller.converters.ServiceSpecConverter;
 import io.hyscale.controller.invoker.DockerfileGeneratorComponentInvoker;
 import io.hyscale.controller.model.EffectiveServiceSpec;
 import io.hyscale.controller.model.HyscaleCommandSpec;
@@ -100,7 +99,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
     @CommandLine.Option(names = {"-v", "--verbose", "-verbose"}, required = false, description = "Verbose output")
     private boolean verbose = false;
 
-    @CommandLine.Option(names = {"-f", "--files"}, required = true, description = "Service specs files.", split = ",",converter = ServiceSpecConverter.class)
+    @CommandLine.Option(names = {"-f", "--files"}, required = true, description = "Service specs files.", split = ",")
     private List<File> serviceSpecs;
     
     @ArgGroup(exclusive = true)
@@ -132,6 +131,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
     
     @Override
     public Integer call() throws Exception {
+        WorkflowLogger.header(ControllerActivity.PROCESSING_INPUT);
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
@@ -143,7 +143,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
             commandSpec.setProfileFiles(profileArg.getProfiles());
             commandSpec.setProfileName(profileArg.getProfileName());
         }
-        // Do Everything
+        // Handles input preprocessing
         HyscaleInputSpec hyscaleInput = hyscaleInputSpecProcessor.process(commandSpec);
         if (hyscaleInput == null) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;

@@ -20,10 +20,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.hyscale.builder.core.models.ImageBuilderActivity;
 import io.hyscale.commons.commands.CommandExecutor;
 import io.hyscale.commons.commands.provider.ImageCommandProvider;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.LoggerTags;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.Status;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
@@ -31,43 +34,49 @@ import io.hyscale.servicespec.commons.util.ImageUtil;
 
 @Component
 public class DockerDaemonValidator implements Validator<WorkflowContext> {
-	private static final Logger logger = LoggerFactory.getLogger(DockerDaemonValidator.class);
+    private static final Logger logger = LoggerFactory.getLogger(DockerDaemonValidator.class);
 
-	@Autowired
-	private ImageCommandProvider commandGenerator;
+    @Autowired
+    private ImageCommandProvider commandProvider;
 
-	private boolean isDockerAvailable = false;;
+    private boolean isDockerAvailable = false;
 
-	/**
-	 * 1. It will check that spec has buildspec or dockerfile 
-	 * 2. If both is not then it will return true
-	 * 3. If any one is there then 
-	 *    3.1  It will verify that docker is installed or not
-	 *    3.2  It will run docker command 
-	 *    3.3  if command executed successfully then return true else false
-	 */
-	@Override
-	public boolean validate(WorkflowContext context) throws HyscaleException {
-		if (isDockerAvailable) {
-			return isDockerAvailable;
-		}
-		if (!ImageUtil.isImageBuildPushRequired(context.getServiceSpec())) {
-			return true;
-		}
-		String command = commandGenerator.dockerVersion();
-		logger.debug("Docker Installed check command: {}", command);
-		boolean success = CommandExecutor.execute(command);
-		if (!success) {
-			return false;
-		}
-		command = commandGenerator.dockerImages();
-		logger.debug("Docker Daemon running check command: {}", command);
-		success = CommandExecutor.execute(command);
-		if (!success) {
-			WorkflowLogger.error(ValidatorActivity.DOCKER_VALIDATION,"Docker validation failed");
-			return false;
-		}
-		isDockerAvailable = true;
-		return isDockerAvailable;
-	}
+    /**
+     * 1. It will check that spec has buildspec or dockerfile 
+     * 2. If both is not then it will return true
+     * 3. If any one is there then 
+     *    3.1  It will verify that docker is installed or not
+     *    3.2  It will run docker command 
+     *    3.3  if command executed successfully then return true else false
+     */
+    @Override
+    public boolean validate(WorkflowContext context) throws HyscaleException {
+        if (isDockerAvailable) {
+            return isDockerAvailable;
+        }
+        WorkflowLogger.startActivity(ValidatorActivity.VALIDATING_DOCKER);
+        if (!ImageUtil.isImageBuildPushRequired(context.getServiceSpec())) {
+            WorkflowLogger.endActivity(Status.SKIPPING);
+            return true;
+        }
+        String command = commandProvider.dockerVersion();
+        logger.debug("Docker Installed check command: {}", command);
+        boolean success = CommandExecutor.execute(command);
+        if (!success) {
+            WorkflowLogger.persist(ImageBuilderActivity.DOCKER_NOT_INSTALLED, LoggerTags.ERROR);
+            WorkflowLogger.endActivity(Status.FAILED);
+            return false;
+        }
+        command = commandProvider.dockerImages();
+        logger.debug("Docker Daemon running check command: {}", command);
+        success = CommandExecutor.execute(command);
+        if (!success) {
+            WorkflowLogger.persist(ImageBuilderActivity.DOCKER_DAEMON_NOT_RUNNING, LoggerTags.ERROR);
+            WorkflowLogger.endActivity(Status.FAILED);
+            return false;
+        }
+        isDockerAvailable = true;
+        WorkflowLogger.endActivity(Status.DONE);
+        return isDockerAvailable;
+    }
 }

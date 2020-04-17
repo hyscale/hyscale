@@ -16,6 +16,7 @@
 package io.hyscale.controller.validator.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -25,7 +26,9 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.LoggerTags;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.Status;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
@@ -34,35 +37,40 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.hyscale.servicespec.commons.model.service.Volume;
 
 @Component
-public class ManifestValidator implements Validator<WorkflowContext>{
-    
+public class ManifestValidator implements Validator<WorkflowContext> {
+
     private static final Logger logger = LoggerFactory.getLogger(ManifestValidator.class);
 
-	
-	@Override
-	public boolean validate(WorkflowContext context) throws HyscaleException {
-		 logger.debug("Executing Manifest Validator Hook");
-	        ServiceSpec serviceSpec = context.getServiceSpec();
-	        if (serviceSpec == null) {
-	            WorkflowLogger.persistError(ValidatorActivity.MANIFEST_VALIDATION, "Empty service spec found at manifest validator hook");
-	            return false;
-	        }
-	        boolean validate = true;
-	        TypeReference<List<Volume>> volumeTypeReference = new TypeReference<List<Volume>>() {
-	        };
-	        List<Volume> volumeList = serviceSpec.get(HyscaleSpecFields.volumes, volumeTypeReference);
-	        if (volumeList != null && !volumeList.isEmpty()) {
-	            for (Volume volume : volumeList) {
-	                validate = validate && volume != null && StringUtils.isNotBlank(volume.getName())
-	                        && StringUtils.isNotBlank(volume.getPath());
-	                if (!validate) {
-	    	            WorkflowLogger.persistError(ValidatorActivity.MANIFEST_VALIDATION, "Error validating volumes of service spec");
-	                    return false;
-	                }
-	            }
-	        }
-		return true;
-	
-	}
+    @Override
+    public boolean validate(WorkflowContext context) throws HyscaleException {
+        logger.debug("Executing Manifest Validator Hook");
+        WorkflowLogger.startActivity(ValidatorActivity.VALIDATING_MANIFEST, context.getServiceName());
+        ServiceSpec serviceSpec = context.getServiceSpec();
+        if (serviceSpec == null) {
+            WorkflowLogger.endActivity(Status.FAILED);
+            return false;
+        }
+        
+        TypeReference<List<Volume>> volumeTypeReference = new TypeReference<List<Volume>>() {
+        };
+        List<Volume> volumeList = serviceSpec.get(HyscaleSpecFields.volumes, volumeTypeReference);
+        List<String> invalidVolumes = null;
+        if (volumeList != null && !volumeList.isEmpty()) {
+            invalidVolumes = volumeList.stream()
+                    .filter(volume -> volume != null && StringUtils.isBlank(volume.getPath()))
+                    .map(each -> each.getName()).collect(Collectors.toList());
+
+        }
+        
+        if (invalidVolumes == null || invalidVolumes.isEmpty()) {
+            WorkflowLogger.endActivity(Status.DONE);
+            return true;
+        }
+        StringBuilder messageBuilder = new StringBuilder("Invalid volumes ").append(invalidVolumes);
+        WorkflowLogger.persist(ValidatorActivity.MANIFEST_VALIDATION_FAILED, LoggerTags.ERROR, messageBuilder.toString());
+        WorkflowLogger.endActivity(Status.FAILED);
+        return false;
+        
+    }
 
 }

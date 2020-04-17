@@ -33,20 +33,20 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.constants.K8SRuntimeConstants;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.LoggerTags;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.K8sAuthorisation;
+import io.hyscale.commons.models.Status;
 import io.hyscale.commons.models.StorageClassAnnotation;
 import io.hyscale.commons.utils.HyscaleStringUtil;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
-import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
-import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.handler.impl.V1PersistentVolumeClaimHandler;
 import io.hyscale.deployer.services.handler.impl.V1StorageClassHandler;
 import io.hyscale.deployer.services.model.DeployerActivity;
@@ -70,17 +70,15 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 	@Autowired
 	private K8sClientProvider clientProvider;
 
-	@Autowired
-	private K8sAuthConfigBuilder authConfigBuilder;
-
 	private List<V1StorageClass> storageClassList = new ArrayList<>();
 
 	@Override
 	public boolean validate(WorkflowContext context) throws HyscaleException {
+	    WorkflowLogger.startActivity(ValidatorActivity.VALIDATING_VOLUME, context.getServiceName());
 		logger.debug("Validating volumes from the service spec");
 		ServiceSpec serviceSpec = context.getServiceSpec();
 		if (serviceSpec == null) {
-			WorkflowLogger.persistError(ValidatorActivity.VOLUME_VALIDATION, "Service spec not found");
+		    WorkflowLogger.endActivity(Status.FAILED);
 			return false;
 		}
 		TypeReference<List<Volume>> volTypeRef = new TypeReference<List<Volume>>() {
@@ -88,24 +86,42 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 		List<Volume> volumeList = serviceSpec.get(HyscaleSpecFields.volumes, volTypeRef);
 
 		if (volumeList == null || volumeList.isEmpty()) {
-			WorkflowLogger.persistError(ValidatorActivity.VOLUME_VALIDATION, "No volumes found for validation");
-			return false;
+		    WorkflowLogger.endActivity(Status.SKIPPING);
+			return true;
 		}
-		ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfigBuilder.getAuthConfig());
-		boolean isValid=false;
-		isValid=initStorageClass(apiClient);
-		if(!isValid) return false;
-
+		ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
+		
+		try {
+		    if (!initStorageClass(apiClient)) {
+		        return printMsg(true);
+		    }
+		} catch (HyscaleException ex) {
+		    WorkflowLogger.endActivity(Status.FAILED);
+		    throw ex;
+		}
+		
 		// Validate Storage class
-		isValid=validateStorageClass(volumeList);
-		if(!isValid) return false;
+		if (!validateStorageClass(volumeList)) {
+		    return printMsg(true);
+		}
 
 		logger.debug("Storage class provided are valid");
 
 		// Validate volume edit
-		isValid=validateVolumeEdit(apiClient, context, volumeList);
-		if(!isValid) return false;
-		return true;
+		if (!validateVolumeEdit(apiClient, context, volumeList)) {
+            return printMsg(true);
+        }
+		
+		return printMsg(false);
+	}
+	
+	private boolean printMsg(boolean isFailed) {
+	    if (isFailed) {
+	        WorkflowLogger.endActivity(Status.FAILED);
+            return false;
+	    }
+	    WorkflowLogger.endActivity(Status.DONE);
+        return true;
 	}
 	
 
@@ -119,9 +135,8 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 	 * </ol>
 	 *
 	 * @param volumeList
-	 * @throws HyscaleException
 	 */
-	private boolean validateStorageClass(List<Volume> volumeList) throws HyscaleException {
+	private boolean validateStorageClass(List<Volume> volumeList) {
 		List<String> defaultStorageClass = getDefaultStorageClass();
 		Set<String> storageClassAllowed = storageClassList.stream().map(each -> each.getMetadata().getName())
 				.collect(Collectors.toSet());
@@ -150,8 +165,10 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 		}
 		if (isFailed) {
 			String failMsg = HyscaleStringUtil.removeSuffixStr(failMsgBuilder, ToolConstants.COMMA);
-			logger.info("StroageClass not found , errorCode : {} ,errorMsg : {}, allowed storageclass : {}",errorCode, failMsg, storageClassAllowed.toString());
-		    return false;
+			WorkflowLogger.persist(ValidatorActivity.VOLUME_VALIDATION_FAILED, LoggerTags.ERROR, failMsg);
+            logger.info("StroageClass not found , errorCode : {} ,errorMsg : {}, allowed storageclass : {}", errorCode,
+                    failMsg, storageClassAllowed.toString());
+            return false;
 		}
 		return true;
 	}
@@ -175,18 +192,14 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 	 */
 	private boolean validateVolumeEdit(ApiClient apiClient, WorkflowContext context, List<Volume> volumeList) {
 
-		ResourceLifeCycleHandler resourceHandler = ResourceHandlers
+	    V1PersistentVolumeClaimHandler pvcHandler = (V1PersistentVolumeClaimHandler) ResourceHandlers
 				.getHandlerOf(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind());
-		if (resourceHandler == null) {
-			return false;
-		}
 		String appName = context.getAppName();
 		String envName = context.getEnvName();
 		String serviceName = context.getServiceName();
 		String namespace = context.getNamespace();
 
 		String selector = ResourceSelectorUtil.getSelector(appName, envName, serviceName);
-		V1PersistentVolumeClaimHandler pvcHandler = (V1PersistentVolumeClaimHandler) resourceHandler;
 		List<V1PersistentVolumeClaim> pvcList = null;
 		try {
 			pvcList = pvcHandler.getBySelector(apiClient, selector, true, namespace);
@@ -195,7 +208,7 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 		}
 
 		if (pvcList == null || pvcList.isEmpty()) {
-			return false;
+			return true;
 		}
 		Map<String, V1PersistentVolumeClaim> volumeVsPVC = pvcList.stream().collect(
 				Collectors.toMap(pvc -> KubernetesVolumeUtil.getVolumeName(pvc), pvc -> pvc, (key1, key2) -> {
@@ -209,7 +222,7 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 
 			if (pvc == null) {
 				// new volume does not exist on cluster
-				return false;
+				continue;
 			}
 			String storageClass = pvc.getSpec().getStorageClassName();
 			if (StringUtils.isBlank(storageClass)) {
@@ -238,7 +251,6 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 			warnMsg = HyscaleStringUtil.removeSuffixStr(warnMsg, ToolConstants.COMMA + ToolConstants.SPACE);
 			logger.debug(DeployerActivity.IGNORING_VOLUME_MODIFICATION.getActivityMessage(), warnMsg);
 			WorkflowLogger.persist(DeployerActivity.IGNORING_VOLUME_MODIFICATION, warnMsg);
-			return false;
 		}
 		return true;
 	}
@@ -248,9 +260,7 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 	 * @param existingObj
 	 * @param newObj
 	 * @return String field has been changed from {} to {},
-	 * 
 	 */
-	
 	private Predicate<V1StorageClass> isDefaultStorageClass() {
 		return v1StorageClass -> {
 			Map<String, String> annotations = v1StorageClass.getMetadata().getAnnotations();
@@ -273,18 +283,18 @@ public class VolumeValidator implements Validator<WorkflowContext>{
     }
 
 	private boolean initStorageClass(ApiClient apiClient) throws HyscaleException {
-		ResourceLifeCycleHandler resourceHandler = ResourceHandlers.getHandlerOf(ResourceKind.STORAGE_CLASS.getKind());
-		if (resourceHandler == null) {
-			return false;
-		}
-		V1StorageClassHandler storageClassHandler = (V1StorageClassHandler) resourceHandler;
+	    if (storageClassList != null && !storageClassList.isEmpty()) {
+	        return true;
+	    }
+        V1StorageClassHandler storageClassHandler = (V1StorageClassHandler) ResourceHandlers
+                .getHandlerOf(ResourceKind.STORAGE_CLASS.getKind());
 
 		// Storage class are cluster based no need of selector and namespace
 		try {
 			storageClassList = storageClassHandler.getAll(apiClient);
 		} catch (HyscaleException ex) {
 			logger.error("Error while getting storage class list, error {}", ex.getMessage());
-			return false;
+			throw new HyscaleException(DeployerErrorCodes.NO_STORAGE_CLASS_IN_K8S);
 		}
 
 		if (storageClassList == null || storageClassList.isEmpty()) {

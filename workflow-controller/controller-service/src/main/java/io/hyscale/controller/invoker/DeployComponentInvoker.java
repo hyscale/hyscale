@@ -40,7 +40,7 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.builder.K8sAuthConfigBuilder;
+import io.hyscale.controller.builder.DeploymentContextBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.hooks.K8SResourcesCleanUpHook;
@@ -69,7 +69,7 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
     private Deployer deployer;
 
     @Autowired
-    private K8sAuthConfigBuilder authConfigBuilder;
+    private DeploymentContextBuilder deploymentContextBuilder;
 
     @Autowired
     private DeployerConfig deployerConfig;
@@ -104,6 +104,7 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
         if (context == null || context.isFailed()) {
             return;
         }
+        DeploymentContext deploymentContext = deploymentContextBuilder.build(context);
 
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
@@ -112,32 +113,15 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
             throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_REQUIRED);
         }
 
-        List<Manifest> mainfestList = (List<Manifest>) context.getAttribute(WorkflowConstants.GENERATED_MANIFESTS);
+        List<Manifest> mainfestList = deploymentContext.getManifests();
         if (mainfestList == null || mainfestList.isEmpty()) {
             context.setFailed(true);
             logger.error("Manifest is required for deployment");
             throw new HyscaleException(ControllerErrorCodes.MANIFEST_REQUIRED);
         }
-        Boolean verbose = (Boolean) context.getAttribute(WorkflowConstants.VERBOSE);
 
-        verbose = (verbose != null) ? verbose : false;
+        String serviceName = deploymentContext.getServiceName();
 
-        DeploymentContext deploymentContext = new DeploymentContext();
-        deploymentContext.setAuthConfig(authConfigBuilder.getAuthConfig());
-        deploymentContext.setNamespace(context.getNamespace());
-        deploymentContext.setAppName(context.getAppName());
-        deploymentContext.setManifests(mainfestList);
-
-        String serviceName;
-        try {
-            serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
-        } catch (HyscaleException e) {
-            logger.error("Failed to get service name, error {}", e.toString());
-            return;
-        }
-
-        deploymentContext.setServiceName(serviceName);
-        context.setServiceName(serviceName);
         /*
          * Deploys and waits for the deployment completion
          */

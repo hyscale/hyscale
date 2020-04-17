@@ -20,7 +20,9 @@ import java.io.File;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.hyscale.commons.models.Activity;
 import io.hyscale.commons.validator.Validator;
+import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.validator.InputSpecValidator;
 
 @Component
@@ -40,6 +42,11 @@ public class ProfileSpecInputValidator extends InputSpecValidator {
     @Override
     protected Validator<File> getSchemaValidator() {
         return profileSpecSchemaValidator;
+    }
+
+    @Override
+    protected Activity getValidatorActivity() {
+        return ValidatorActivity.VALIDATING_PROFILE;
     }
 
 }

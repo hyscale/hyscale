@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.LoggerTags;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Activity;
 import io.hyscale.commons.validator.Validator;
@@ -46,23 +47,23 @@ public abstract class FileValidator implements Validator<File> {
 
         String inputFilePath = inputFile.getAbsolutePath();
         if (StringUtils.isBlank(inputFilePath)) {
-            WorkflowLogger.error(ControllerActivity.EMPTY_FILE_PATH);
+            WorkflowLogger.persist(ControllerActivity.EMPTY_FILE_PATH, LoggerTags.ERROR);
             throw new HyscaleException(CommonErrorCode.EMPTY_FILE_PATH,
                     ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE);
         }
 
         if (!inputFile.exists()) {
-            WorkflowLogger.persistError(ControllerActivity.CANNOT_FIND_FILE, inputFilePath);
+            WorkflowLogger.persist(ControllerActivity.CANNOT_FIND_FILE, LoggerTags.ERROR, inputFilePath);
             throw new HyscaleException(CommonErrorCode.FILE_NOT_FOUND,
                     ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE, inputFilePath);
         }
         if (inputFile.isDirectory()) {
-            WorkflowLogger.persistError(ControllerActivity.DIRECTORY_INPUT_FOUND, inputFilePath);
+            WorkflowLogger.persist(ControllerActivity.DIRECTORY_INPUT_FOUND, LoggerTags.ERROR, inputFilePath);
             throw new HyscaleException(CommonErrorCode.FOUND_DIRECTORY_INSTEAD_OF_FILE,
                     ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE, inputFilePath);
         }
         if (!inputFile.isFile()) {
-            WorkflowLogger.persistError(ControllerActivity.INVALID_FILE_INPUT, inputFilePath);
+            WorkflowLogger.persist(ControllerActivity.INVALID_FILE_INPUT, LoggerTags.ERROR, inputFilePath);
             throw new HyscaleException(CommonErrorCode.INVALID_FILE_INPUT,
                     ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE, inputFilePath);
         }
@@ -72,7 +73,7 @@ public abstract class FileValidator implements Validator<File> {
             logger.warn(getWarnMessage().getActivityMessage(), fileName);
         }
         if (inputFile.length() == 0) {
-            WorkflowLogger.persistError(ControllerActivity.EMPTY_FILE_FOUND, inputFilePath);
+            WorkflowLogger.persist(ControllerActivity.EMPTY_FILE_FOUND, LoggerTags.ERROR, inputFilePath);
             throw new HyscaleException(CommonErrorCode.EMPTY_FILE_FOUND,
                     ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE, inputFilePath);
         }
