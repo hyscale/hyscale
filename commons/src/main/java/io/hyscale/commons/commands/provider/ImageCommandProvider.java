@@ -78,7 +78,7 @@ public class ImageCommandProvider {
 		StringBuilder buildCommand = new StringBuilder();
 		buildCommand.append(DOCKER_BUILD);
 		if (target != null) {
-			buildCommand.append(SPACE).append(HYPHEN).append(HYPHEN).append(TARGET);
+			buildCommand.append(SPACE).append(HYPHEN).append(HYPHEN).append(TARGET).append(SPACE).append(target);
 		}
 		buildCommand.append(SPACE).append(HYPHEN).append(HYPHEN).append(LABEL_ARGS).append(SPACE).append(IMAGE_OWNER)
 				.append(EQUALS).append(HYSCALE);
