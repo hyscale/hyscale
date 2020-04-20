@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.hooks;
+package io.hyscale.controller.validator.impl;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -34,47 +33,26 @@ import io.hyscale.controller.util.ServiceSpecTestUtil;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @SpringBootTest
-public class BuildSpecValidatorTest {
+public class VolumeValidatorTest {
 
     @Autowired
-    private BuildSpecValidatorHook buildSpecValidatorHook;
+    private VolumeValidator volumeValidator;
 
-    public static Stream<Arguments> input() {
-        return Stream.of(Arguments.of(null, HyscaleException.class),
-                Arguments.of("/servicespecs/invalid_buildSpec1.hspec", HyscaleException.class),
-                Arguments.of("/servicespecs/invalid_buildSpec2.hspec", HyscaleException.class));
+    public static Stream<Arguments> input() throws IOException {
+        return Stream.of(Arguments
+                .of(ServiceSpecTestUtil.getServiceSpec("/servicespecs/validator/registry_validation.hspec"), true),
+                Arguments.of(null, false));
     }
 
     @ParameterizedTest
     @MethodSource(value = "input")
-    public void testInvalidServiceSpec(String serviceSpecPath, Class exception) {
+    void testValidate(ServiceSpec serviceSpec, boolean expectedValue) {
         WorkflowContext context = new WorkflowContext();
-        ServiceSpec serviceSpec = null;
-        try {
-            serviceSpec = ServiceSpecTestUtil.getServiceSpec(serviceSpecPath);
-        } catch (IOException e1) {
-            fail();
-        }
-        context.setServiceSpec(serviceSpec);
-        assertThrows(exception, () -> {
-            buildSpecValidatorHook.preHook(context);
-        });
-    }
-
-    @Test
-    public void validBuildSpec() {
-        WorkflowContext context = new WorkflowContext();
-        ServiceSpec serviceSpec = null;
-        try {
-            serviceSpec = ServiceSpecTestUtil.getServiceSpec("/servicespecs/myservice.hspec");
-        } catch (IOException e1) {
-            fail();
-        }
         context.setServiceSpec(serviceSpec);
         try {
-            buildSpecValidatorHook.preHook(context);
+            assertEquals(expectedValue, volumeValidator.validate(context));
         } catch (HyscaleException e) {
-            fail();
+            fail(e);
         }
     }
 

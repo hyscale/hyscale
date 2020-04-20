@@ -16,18 +16,15 @@
 package io.hyscale.deployer.services.deployer.impl;
 
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import io.hyscale.commons.models.*;
-import io.hyscale.deployer.services.builder.PodBuilder;
-import io.hyscale.deployer.services.handler.impl.V1PersistentVolumeClaimHandler;
-import io.hyscale.deployer.services.model.*;
-import io.hyscale.deployer.services.util.*;
-import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
-import io.kubernetes.client.openapi.models.V1Volume;
-import io.kubernetes.client.openapi.models.V1VolumeMount;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,24 +34,50 @@ import org.springframework.stereotype.Component;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.ActivityContext;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.DeploymentContext;
+import io.hyscale.commons.models.K8sAuthorisation;
+import io.hyscale.commons.models.KubernetesResource;
+import io.hyscale.commons.models.Manifest;
+import io.hyscale.commons.models.Status;
+import io.hyscale.commons.models.YAMLManifest;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.commons.utils.ThreadPoolUtil;
 import io.hyscale.deployer.core.model.AppMetadata;
 import io.hyscale.deployer.core.model.DeploymentStatus;
-import io.hyscale.deployer.services.model.ReplicaInfo;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.builder.AppMetadataBuilder;
+import io.hyscale.deployer.services.builder.PodBuilder;
 import io.hyscale.deployer.services.config.DeployerConfig;
 import io.hyscale.deployer.services.deployer.Deployer;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
+import io.hyscale.deployer.services.handler.AuthenticationHandler;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
+import io.hyscale.deployer.services.handler.impl.V1PersistentVolumeClaimHandler;
 import io.hyscale.deployer.services.handler.impl.V1PodHandler;
 import io.hyscale.deployer.services.handler.impl.V1ServiceHandler;
+import io.hyscale.deployer.services.model.Container;
+import io.hyscale.deployer.services.model.DeployerActivity;
+import io.hyscale.deployer.services.model.Pod;
+import io.hyscale.deployer.services.model.PodCondition;
+import io.hyscale.deployer.services.model.ReplicaInfo;
+import io.hyscale.deployer.services.model.ResourceStatus;
+import io.hyscale.deployer.services.model.ServiceAddress;
+import io.hyscale.deployer.services.model.Volume;
+import io.hyscale.deployer.services.model.VolumeMount;
 import io.hyscale.deployer.services.predicates.PodPredicates;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
+import io.hyscale.deployer.services.util.DeploymentStatusUtil;
+import io.hyscale.deployer.services.util.K8sDeployerUtil;
+import io.hyscale.deployer.services.util.K8sPodUtil;
+import io.hyscale.deployer.services.util.K8sReplicaUtil;
+import io.hyscale.deployer.services.util.K8sResourceDispatcher;
+import io.hyscale.deployer.services.util.KubernetesResourceUtil;
 import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
 import io.kubernetes.client.openapi.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1Volume;
+import io.kubernetes.client.openapi.models.V1VolumeMount;
 
 /**
  * {@link Deployer} implementation for K8s Cluster
@@ -75,6 +98,9 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
 
     @Autowired
     private AppMetadataBuilder appMetadataBuilder;
+    
+    @Autowired
+    private AuthenticationHandler authenticationHandler;
 
     @Override
     public void deploy(DeploymentContext context) throws HyscaleException {
@@ -197,10 +223,10 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
         }
     }
 
+
     @Override
-    public boolean authenticate(K8sAuthorisation authConfig) {
-        // TODO
-        return false;
+    public boolean authenticate(K8sAuthorisation authConfig) throws HyscaleException {
+        return authenticationHandler.authenticate(authConfig);
     }
 
     @Override

@@ -13,26 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.piccoli;
+package io.hyscale.controller.validator.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import picocli.CommandLine;
+
+import io.hyscale.commons.constants.ValidationConstants;
+import io.hyscale.controller.validator.FileValidator;
+import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
 
 @Component
-public class ExitCodeMapper implements CommandLine.IExitCodeExceptionMapper {
-
-    private static final Logger logger = LoggerFactory.getLogger(ExitCodeMapper.class);
+public class ServiceSpecFileValidator extends FileValidator {
 
     @Override
-    public int getExitCode(Throwable throwable) {
-        if (throwable != null) {
-            logger.error("Erro observed setting exit code to 1", throwable);
-            return 1;
-        } else {
-            logger.error("Error not observed");
-            return 0;
-        }
+    public String getFilePattern() {
+        return ValidationConstants.SERVICE_SPEC_NAME_REGEX;
     }
+
+    @Override
+    public ServiceSpecActivity getWarnMessage() {
+        return ServiceSpecActivity.IMPROPER_SERVICE_FILE_NAME;
+    }
+
 }

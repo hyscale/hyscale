@@ -15,12 +15,7 @@ image:
     runCommandsScript: /abc/def/run.sh
     runCommands: |-
       echo "Hello, I'm run commands"
-  dockerfile:
-    path: /abc
-    dockerfilePath: /Dockerfile
-    args:
-       key1: value1
-
+      
 startCommand: "a,bc,def"
 replicas: 2
 memory: 123Mi-456Mi
@@ -34,7 +29,8 @@ volumes:
 
 external: true
 ports:
-  - healthCheck:
+  - port: 8080/tcp
+    healthCheck:
       httpPath: /sample
   - port : 8081
 

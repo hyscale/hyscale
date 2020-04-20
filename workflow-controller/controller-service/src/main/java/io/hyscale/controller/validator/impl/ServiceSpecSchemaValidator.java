@@ -13,32 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.converters;
-
-import io.hyscale.commons.constants.ValidationConstants;
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.HyscaleSpecType;
-import io.hyscale.controller.util.ServiceSpecUtil;
-import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package io.hyscale.controller.validator.impl;
 
 import java.io.File;
 
-/*
-Provides parameters and funtions such as profile reference schema,Regex for profile file naming,
-data validation and respective error messages for service spec validation.
- */
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
-public class ServiceSpecConverter extends Converter {
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.Activity;
+import io.hyscale.commons.models.HyscaleSpecType;
+import io.hyscale.controller.activity.ValidatorActivity;
+import io.hyscale.controller.util.ServiceSpecUtil;
+import io.hyscale.controller.validator.SpecSchemaValidator;
+import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
 
-    private static final Logger logger = LoggerFactory.getLogger(ServiceSpecConverter.class);
+@Component
+public class ServiceSpecSchemaValidator extends SpecSchemaValidator {
 
-    @Override
-    public String getFilePattern() {
-        return ValidationConstants.SERVICE_SPEC_NAME_REGEX;
-    }
+    private static final Logger logger = LoggerFactory.getLogger(ServiceSpecSchemaValidator.class);
 
     @Override
     public HyscaleSpecType getReferenceSchemaType() {
@@ -46,20 +41,19 @@ public class ServiceSpecConverter extends Converter {
     }
 
     @Override
-    public ServiceSpecActivity getWarnMessage() {
-        return ServiceSpecActivity.IMPROPER_SERVICE_FILE_NAME;
+    public boolean validateData(File serviceSpecFile) throws HyscaleException {
+        String serviceFileName = serviceSpecFile.getName();
+        String serviceName = serviceFileName.split("\\.")[0];
+        if (!serviceName.equals(ServiceSpecUtil.getServiceName(serviceSpecFile))) {
+            logger.warn(ServiceSpecActivity.SERVICE_NAME_MISMATCH.getActivityMessage());
+            WorkflowLogger.persist(ServiceSpecActivity.SERVICE_NAME_MISMATCH);
+        }
+        return true;
     }
 
     @Override
-    public boolean validateData(File serviceSpecFile) throws HyscaleException {
-        String serviceFileName = serviceSpecFile.getName();
-        String serviceName =  serviceFileName.split("\\.")[0];
-        if(!serviceName.equals(ServiceSpecUtil.getServiceName(serviceSpecFile))){
-            logger.warn(ServiceSpecActivity.SERVICE_NAME_MISMATCH.getActivityMessage());
-            WorkflowLogger.persist(ServiceSpecActivity.SERVICE_NAME_MISMATCH);
-            return false;
-        }
-        return true;
+    protected Activity getActivity() {
+        return ValidatorActivity.SERVICE_SPEC_VALIDATION_FAILED;
     }
 
 }

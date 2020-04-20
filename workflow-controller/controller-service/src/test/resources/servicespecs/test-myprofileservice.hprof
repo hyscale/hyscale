@@ -1,0 +1,7 @@
+environment: test
+overrides: myprofileservice
+
+secrets:
+    TEST_VALUE: TEST 
+    
+memory: 512Mi

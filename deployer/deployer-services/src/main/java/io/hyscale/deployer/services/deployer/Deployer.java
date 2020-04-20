@@ -21,7 +21,6 @@ import java.util.List;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.models.DeploymentContext;
-import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.deployer.core.model.AppMetadata;
 import io.hyscale.deployer.core.model.DeploymentStatus;

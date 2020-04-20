@@ -33,7 +33,6 @@ public enum ControllerActivity implements Activity {
     STARTING_UNDEPLOYMENT(" Undeployment "),
     SERVICE_LOGS("Service Logs from {}"),
     APP_NAME("APP: {}"),
-    DEPLOYMENT_FAILED("DEPLOYMENT FAILED {} "),
     UNDEPLOYMENT_DONE(" Undeployment completed "),
     UNDEPLOYMENT_FAILED(" UNDEPLOYMENT FAILED {} "),
     SERVICE_NAME("SERVICE: {}"),
@@ -47,11 +46,10 @@ public enum ControllerActivity implements Activity {
     MANIFESTS_GENERATION_PATH("Manifests  path : {} "),
     DOCKERFILE_PATH("Dockerfile path : {}"),
     DEPLOY_LOGS_AT("Deploy Logs : {} "),
-    CANNOT_PROCESS_SERVICE_SPEC("Service spec cannot be processed :: {} "),
-    CANNOT_PROCESS_SERVICE_PROFILE("Service Profile cannot be processed:: {} "),
-    NO_SERVICE_FOUND_FOR_PROFILE("Service spec not provided for service {}, their profiles are ignored"),
-    APPLYING_PROFILE_FOR_SERVICE("Applying Profile {} for service {} "),
-    PROFILE_NOT_FOUND("Profile {} not found for service {}"),
+    NO_SERVICE_FOUND_FOR_PROFILE("Service spec not provided for services {}."),
+    APPLYING_PROFILE_FOR_SERVICE("Applying profile \"{}\" for service \"{}\" "),
+    ERROR_WHILE_PROCESSING_PROFILE("Error while looking for profile. {}"),
+    MULIPLE_PROFILES_FOUND("Multiple profiles found for services {}. Only one profile is allowed per deployment"),
     ERROR_WHILE_READING("Error while reading {} due to {}"),
     ERROR_WHILE_FETCHING_STATUS("Error while fetching status"),
     ERROR_WHILE_FETCHING_DEPLOYMENTS("Error while fetching deployments from cluster"),
@@ -65,16 +63,15 @@ public enum ControllerActivity implements Activity {
     UNEXPECTED_ERROR("Unexpected error occurred. For details refer to log file at {}"),
     INVALID_INPUT("Invalid input:: {}"),
     TOTAL_TIME("Total time : {}"),
-    FAILED_TO_FETCH_DEPLOY_LOGS("Failed to fetch deploy logs {}"),
     INPUT_REPLICA_DETAIL("Enter replica index or name to continue..."),
     INVALID_INPUT_RETRY("Input {} is invalid, please retry"),
-    UNABLE_TO_PROCESS_INPUT("Error occured while processing given input {}"),
     EMPTY_FILE_PATH("Empty file path given"),
     EMPTY_FILE_FOUND("Empty file {} cannot be processed."),
     INVALID_FILE_INPUT("Given input {} is not a file.Expecting file input."),
     DIRECTORY_INPUT_FOUND("Found directory {} instead of file"),
     WAITING_FOR_SERVICE_STATUS("It might take some time as it runs diagnosis for services"),
-    TROUBLESHOOT("{}");
+    TROUBLESHOOT("{}"), 
+    PROCESSING_INPUT("Processing Input");
 
     private String message;
 

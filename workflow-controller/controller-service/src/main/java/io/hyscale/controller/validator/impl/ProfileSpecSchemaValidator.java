@@ -13,37 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.converters;
-
-import io.hyscale.commons.constants.ToolConstants;
-import io.hyscale.commons.constants.ValidationConstants;
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.HyscaleSpecType;
-import io.hyscale.controller.util.ServiceProfileUtil;
-import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.info.BuildProperties;
+package io.hyscale.controller.validator.impl;
 
 import java.io.File;
 
-/**
-Provides parameters and funtions such as profile reference schema,Regex for profile file naming,
-data validation and respective error messages  for profile file validation.
- */
-public class ProfileConverter extends Converter {
-    @Autowired
-    BuildProperties buildProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
-    private static final Logger logger = LoggerFactory.getLogger(ProfileConverter.class);
+import io.hyscale.commons.constants.ToolConstants;
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.Activity;
+import io.hyscale.commons.models.HyscaleSpecType;
+import io.hyscale.controller.activity.ValidatorActivity;
+import io.hyscale.controller.util.ServiceProfileUtil;
+import io.hyscale.controller.validator.SpecSchemaValidator;
+import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
 
-    @Override
-    public String getFilePattern() {
-        return ValidationConstants.PROFILE_FILENAME_REGEX;
-    }
+@Component
+public class ProfileSpecSchemaValidator extends SpecSchemaValidator {
 
+    private static final Logger logger = LoggerFactory.getLogger(ProfileSpecSchemaValidator.class);
 
     @Override
     public HyscaleSpecType getReferenceSchemaType() {
@@ -51,26 +42,26 @@ public class ProfileConverter extends Converter {
     }
 
     @Override
-    public ServiceSpecActivity getWarnMessage() {
-        return ServiceSpecActivity.IMPROPER_PROFILE_FILE_NAME;
-    }
-
-    @Override
     public boolean validateData(File profileFile) throws HyscaleException {
         String profileFileName = profileFile.getName().split("\\.")[0];
         int dashIndex = profileFileName.indexOf(ToolConstants.DASH);
         if (dashIndex < 0) {
-            WorkflowLogger.warn(ServiceSpecActivity.PROFILE_NAME_MISMATCH, profileFile.getName());
             logger.warn(ServiceSpecActivity.PROFILE_NAME_MISMATCH.getActivityMessage(), profileFileName);
-            return false;
+            WorkflowLogger.persist(ServiceSpecActivity.PROFILE_NAME_MISMATCH, profileFile.getName());
         }
         StringBuilder profileNameBuilder = new StringBuilder();
-        profileNameBuilder.append(ServiceProfileUtil.getProfileName(profileFile)).append(ToolConstants.DASH).append(ServiceProfileUtil.getServiceNameFromProfile(profileFile));
+        profileNameBuilder.append(ServiceProfileUtil.getProfileName(profileFile)).append(ToolConstants.DASH)
+                .append(ServiceProfileUtil.getServiceNameFromProfile(profileFile));
         if (!profileFileName.equals(profileNameBuilder.toString())) {
             logger.warn(ServiceSpecActivity.PROFILE_NAME_MISMATCH.getActivityMessage(), profileFile.getName());
             WorkflowLogger.persist(ServiceSpecActivity.PROFILE_NAME_MISMATCH, profileFile.getName());
-            return false;
         }
         return true;
     }
+    
+    @Override
+    protected Activity getActivity() {
+        return ValidatorActivity.PROFILE_VALIDATION_FAILED;
+    }
+
 }

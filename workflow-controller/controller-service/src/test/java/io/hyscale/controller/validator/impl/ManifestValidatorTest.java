@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.hooks;
+package io.hyscale.controller.validator.impl;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -31,48 +30,28 @@ import org.springframework.boot.test.context.SpringBootTest;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.ServiceSpecTestUtil;
-import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @SpringBootTest
 public class ManifestValidatorTest {
 
     @Autowired
-    private ManifestValidatorHook manifestValidatorHook;
+    private ManifestValidator manifestValidator;
 
     public static Stream<Arguments> input() {
-        return Stream.of(Arguments.of(null, HyscaleException.class),
-                Arguments.of("/servicespecs/invalid_vol.hspec", HyscaleException.class),
-                Arguments.of("/servicespecs/invalid_ports.hspec", HyscaleException.class));
+        return Stream.of(Arguments.of(null, false),
+                Arguments.of("/servicespecs/invalid_vol.hspec", false),
+                Arguments.of("/servicespecs/myservice.hspec", true));
     }
 
     @ParameterizedTest
     @MethodSource(value = "input")
-    public void testInvalidManifest(String serviceSpecPath, Class klazz) {
-        WorkflowContext context = new WorkflowContext();
-        ServiceSpec serviceSpec = null;
-        try {
-            serviceSpec = ServiceSpecTestUtil.getServiceSpec(serviceSpecPath);
-        } catch (IOException e1) {
-            fail();
-        }
-        context.setServiceSpec(serviceSpec);
-        assertThrows(klazz, () -> {
-            manifestValidatorHook.preHook(context);
-        });
-    }
-
-    @Test
-    public void validManifest() {
+    public void testManifestValidator(String serviceSpecPath, boolean expectedResult) {
         WorkflowContext context = new WorkflowContext();
         try {
-            context.setServiceSpec(ServiceSpecTestUtil.getServiceSpec("/servicespecs/myservice.hspec"));
-        } catch (IOException e) {
-            fail();
-        }
-        try {
-            manifestValidatorHook.preHook(context);
-        } catch (HyscaleException e) {
-            fail();
+            context.setServiceSpec(ServiceSpecTestUtil.getServiceSpec(serviceSpecPath));
+            assertEquals(expectedResult, manifestValidator.validate(context));
+        } catch (IOException | HyscaleException e ) {
+            fail(e);
         }
     }
 

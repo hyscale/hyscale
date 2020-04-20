@@ -16,34 +16,40 @@
 package io.hyscale.controller.commands.generate;
 
 import java.io.File;
-import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
-import io.hyscale.controller.constants.WorkflowConstants;
-import io.hyscale.controller.converters.ProfileConverter;
-import io.hyscale.controller.converters.ServiceSpecConverter;
-import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.util.CommandUtil;
-import io.hyscale.controller.util.ServiceProfileUtil;
-import io.hyscale.controller.util.ServiceSpecMapper;
-import io.hyscale.controller.util.ServiceSpecUtil;
+import javax.annotation.PreDestroy;
+import javax.validation.constraints.Pattern;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.builder.WorkflowContextBuilder;
+import io.hyscale.controller.commands.input.ProfileArg;
+import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.invoker.ManifestGeneratorComponentInvoker;
-import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+import io.hyscale.controller.model.HyscaleCommandSpec;
+import io.hyscale.controller.model.HyscaleInputSpec;
+import io.hyscale.controller.model.EffectiveServiceSpec;
+import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.controller.processor.HyscaleInputSpecProcessor;
+import io.hyscale.controller.processor.ServiceSpecProcessor;
+import io.hyscale.controller.util.CommandUtil;
+import io.hyscale.controller.util.ServiceSpecUtil;
+import io.hyscale.controller.validator.impl.InputSpecPostValidator;
 import picocli.CommandLine;
-import javax.annotation.PreDestroy;
-import javax.validation.constraints.Pattern;
+import picocli.CommandLine.ArgGroup;
 
 /**
  * This class executes 'hyscale generate service manifests' command
@@ -78,51 +84,70 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
     @CommandLine.Option(names = {"-a", "--app"}, required = true, description = "Application name")
     private String appName;
 
-    @CommandLine.Option(names = {"-f", "--files"}, required = true, description = "Service specs files.", split = ",",converter = ServiceSpecConverter.class)
+    @CommandLine.Option(names = {"-f", "--files"}, required = true, description = "Service specs files.", split = ",")
     private List<File> serviceSpecs;
 
-    @CommandLine.Option(names = {"-p", "--profile"}, required = false, description = "Profile for service.", split = ",",converter = ProfileConverter.class)
-    private List<File> profiles;
-
-
+    @ArgGroup(exclusive = true)
+    private ProfileArg profileArg;
+    
+    @Autowired
+    private InputSpecPostValidator inputSpecPostValidator;
+    
+    @Autowired
+    private ServiceSpecProcessor serviceSpecProcessor;
+    
     @Autowired
     private ManifestGeneratorComponentInvoker manifestGeneratorComponentInvoker;
     
     @Autowired
-    private ServiceSpecMapper serviceSpecMapper;
-
+    private HyscaleInputSpecProcessor hyscaleInputSpecProcessor;
+    
+    @Autowired
+    private WorkflowContextBuilder workflowContextBuilder;
+    
     @Override
     public Integer call() throws Exception {
+        WorkflowLogger.header(ControllerActivity.PROCESSING_INPUT);
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
         
-        Map<String, File> serviceProfileMap = new HashMap<String, File>();
-        try {
-            serviceProfileMap = ServiceProfileUtil.getServiceProfileMap(profiles);
-        } catch (HyscaleException e) {
-            WorkflowLogger.error(ControllerActivity.CANNOT_PROCESS_SERVICE_PROFILE, e.getMessage());
-            throw e;
+        HyscaleCommandSpec commandSpec = new HyscaleCommandSpec();
+        commandSpec.setAppName(appName);
+        commandSpec.setServiceSpecFiles(serviceSpecs);
+        if (profileArg != null) {
+            commandSpec.setProfileFiles(profileArg.getProfiles());
+            commandSpec.setProfileName(profileArg.getProfileName());
         }
-        boolean isFailed = false;
-        for (File serviceSpecFile:serviceSpecs) {
-            WorkflowContext workflowContext = new WorkflowContext();
-            String serviceName = ServiceSpecUtil.getServiceName(serviceSpecFile);
-            WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
-            File profile = serviceProfileMap.remove(serviceName);
-            try {
-                ServiceSpec serviceSpec = serviceSpecMapper.from(serviceSpecFile,profile);
-                workflowContext.setServiceSpec(serviceSpec);
-                workflowContext.setServiceName(serviceName);
-            } catch (HyscaleException e) {
-                WorkflowLogger.error(ControllerActivity.CANNOT_PROCESS_SERVICE_SPEC, e.getMessage());
-                throw e;
-            }
-            SetupConfig.clearAbsolutePath();
-            SetupConfig.setAbsolutePath(serviceSpecFile.getAbsoluteFile().getParent());
 
-            workflowContext.setAppName(appName.trim());
-            workflowContext.setEnvName(CommandUtil.getEnvName(ServiceProfileUtil.getProfileName(profile)));
+        // Handles input preprocessing
+        HyscaleInputSpec hyscaleInput = hyscaleInputSpecProcessor.process(commandSpec);
+        if (hyscaleInput == null) {
+            return ToolConstants.INVALID_INPUT_ERROR_CODE;
+        }
+        
+        Map<String, File> serviceVsSpecFile = new HashMap<String, File>();
+        for (File serviceSpec : serviceSpecs) {
+            serviceVsSpecFile.put(ServiceSpecUtil.getServiceName(serviceSpec), serviceSpec);
+        }
+        List<EffectiveServiceSpec> effectiveServiceSpecList = serviceSpecProcessor.getEffectiveServiceSpec(hyscaleInput);
+        
+        List<WorkflowContext> contextList = workflowContextBuilder.buildContextList(effectiveServiceSpecList, appName, null);
+        
+        hyscaleInputSpecProcessor.getManifestPostValidators().forEach( each -> inputSpecPostValidator.addValidator(each));
+        
+        if (!inputSpecPostValidator.validate(contextList)) {
+            return ToolConstants.INVALID_INPUT_ERROR_CODE;
+        }
+        
+        WorkflowLogger.printLine();
+        boolean isFailed = false;
+        for (WorkflowContext workflowContext : contextList) {
+            String serviceName = workflowContext.getServiceName();
+            WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
+            SetupConfig.clearAbsolutePath();
+            SetupConfig.setAbsolutePath(serviceVsSpecFile.get(serviceName).getAbsoluteFile().getParent());
+
             try {
                 manifestGeneratorComponentInvoker.execute(workflowContext);
             } catch (HyscaleException e) {
@@ -134,16 +159,14 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
             }
             WorkflowLogger.footer();
             WorkflowLogger.logPersistedActivities();
-            CommandUtil.logMetaInfo(SetupConfig.getMountPathOf((String) workflowContext.getAttribute(WorkflowConstants.MANIFESTS_PATH)),
+            CommandUtil.logMetaInfo(
+                    SetupConfig.getMountPathOf((String) workflowContext.getAttribute(WorkflowConstants.MANIFESTS_PATH)),
                     ControllerActivity.MANIFESTS_GENERATION_PATH);
         }
-
-        if (!serviceProfileMap.isEmpty()) {
-            ServiceProfileUtil.printWarnMsg(serviceProfileMap);
-        }
+        
         return isFailed ? ToolConstants.HYSCALE_ERROR_CODE : 0;
     }
-
+    
     @PreDestroy
     public void clear() {
         SetupConfig.clearAbsolutePath();

@@ -18,8 +18,8 @@ package io.hyscale.controller.commands.deploy;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import io.hyscale.commons.component.ComponentInvoker;
 import io.hyscale.commons.config.SetupConfig;
@@ -27,15 +27,17 @@ import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.constants.WorkflowConstants;
-import io.hyscale.controller.converters.ProfileConverter;
-import io.hyscale.controller.converters.ServiceSpecConverter;
 import io.hyscale.controller.invoker.DockerfileGeneratorComponentInvoker;
+import io.hyscale.controller.model.EffectiveServiceSpec;
+import io.hyscale.controller.model.HyscaleCommandSpec;
+import io.hyscale.controller.model.HyscaleInputSpec;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.controller.processor.HyscaleInputSpecProcessor;
+import io.hyscale.controller.processor.ServiceSpecProcessor;
 import io.hyscale.controller.util.CommandUtil;
-import io.hyscale.controller.util.ServiceProfileUtil;
-import io.hyscale.controller.util.ServiceSpecMapper;
 import io.hyscale.controller.util.ServiceSpecUtil;
-import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+import io.hyscale.controller.validator.impl.InputSpecPostValidator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,10 +45,14 @@ import org.springframework.stereotype.Component;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.builder.WorkflowContextBuilder;
+import io.hyscale.controller.commands.input.ProfileArg;
 import io.hyscale.controller.invoker.DeployComponentInvoker;
 import io.hyscale.controller.invoker.ImageBuildComponentInvoker;
 import io.hyscale.controller.invoker.ManifestGeneratorComponentInvoker;
 import picocli.CommandLine;
+import picocli.CommandLine.ArgGroup;
+
 import javax.annotation.PreDestroy;
 import javax.validation.constraints.Pattern;
 /**
@@ -93,11 +99,17 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
     @CommandLine.Option(names = {"-v", "--verbose", "-verbose"}, required = false, description = "Verbose output")
     private boolean verbose = false;
 
-    @CommandLine.Option(names = {"-f", "--files"}, required = true, description = "Service specs files.", split = ",",converter = ServiceSpecConverter.class)
+    @CommandLine.Option(names = {"-f", "--files"}, required = true, description = "Service specs files.", split = ",")
     private List<File> serviceSpecs;
-
-    @CommandLine.Option(names = {"-p", "--profile"}, required = false, description = "Profile for service.", split = ",",converter = ProfileConverter.class)
-    private List<File> profiles;
+    
+    @ArgGroup(exclusive = true)
+    private ProfileArg profileArg;
+    
+    @Autowired
+    private InputSpecPostValidator inputSpecPostValidator;
+    
+    @Autowired
+    private ServiceSpecProcessor serviceSpecProcessor;
 
     @Autowired
     private ImageBuildComponentInvoker imageBuildComponentInvoker;
@@ -112,78 +124,90 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
     private DeployComponentInvoker deployComponentInvoker;
     
     @Autowired
-    private ServiceSpecMapper serviceSpecMapper;
-
+    private HyscaleInputSpecProcessor hyscaleInputSpecProcessor;
+    
+    @Autowired
+    private WorkflowContextBuilder workflowContextBuilder;
+    
     @Override
     public Integer call() throws Exception {
+        WorkflowLogger.header(ControllerActivity.PROCESSING_INPUT);
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
+        HyscaleCommandSpec commandSpec = new HyscaleCommandSpec();
+        commandSpec.setAppName(appName);
+        commandSpec.setServiceSpecFiles(serviceSpecs);
         
-        Map<String, File> serviceProfileMap = new HashMap<String, File>();
-        try {
-            serviceProfileMap = ServiceProfileUtil.getServiceProfileMap(profiles);
-        } catch (HyscaleException e) {
-            WorkflowLogger.error(ControllerActivity.CANNOT_PROCESS_SERVICE_PROFILE, e.getMessage());
-            throw e;
+        if (profileArg != null) {
+            commandSpec.setProfileFiles(profileArg.getProfiles());
+            commandSpec.setProfileName(profileArg.getProfileName());
+        }
+        // Handles input preprocessing
+        HyscaleInputSpec hyscaleInput = hyscaleInputSpecProcessor.process(commandSpec);
+        if (hyscaleInput == null) {
+            return ToolConstants.INVALID_INPUT_ERROR_CODE;
+        }
+        
+        Map<String, File> serviceVsSpecFile = new HashMap<String, File>();
+        for (File serviceSpec : serviceSpecs) {
+            serviceVsSpecFile.put(ServiceSpecUtil.getServiceName(serviceSpec), serviceSpec);
+        }
+        List<EffectiveServiceSpec> effectiveServiceSpecList = serviceSpecProcessor.getEffectiveServiceSpec(hyscaleInput);
+        
+        List<WorkflowContext> contextList = workflowContextBuilder.buildContextList(effectiveServiceSpecList, appName, namespace);
+        
+        contextList = workflowContextBuilder.updateAuthConfig(contextList);
+        
+        hyscaleInputSpecProcessor.getDeployPostValidators().forEach( each -> inputSpecPostValidator.addValidator(each)); 
+        
+        if (!inputSpecPostValidator.validate(contextList)) {
+            WorkflowLogger.logPersistedActivities();
+            return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
         
         boolean isCommandFailed = false;
-        for (File serviceSpecFile : serviceSpecs) {
-            boolean isServiceFailed = false;
-            String serviceName = ServiceSpecUtil.getServiceName(serviceSpecFile);
+        for (WorkflowContext workflowContext : contextList) {
+            String serviceName = workflowContext.getServiceName();
             WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
 
-            WorkflowContext workflowContext = new WorkflowContext();
             workflowContext.addAttribute(WorkflowConstants.DEPLOY_START_TIME, System.currentTimeMillis());
-            File profile = serviceProfileMap.remove(serviceName);
-            try {
-                ServiceSpec serviceSpec = serviceSpecMapper.from(serviceSpecFile, profile);
-                workflowContext.setServiceSpec(serviceSpec);
-            } catch (HyscaleException e) {
-                WorkflowLogger.error(ControllerActivity.CANNOT_PROCESS_SERVICE_SPEC, e.getMessage());
-                throw e;
-            }
-            workflowContext.setServiceName(serviceName);
             SetupConfig.clearAbsolutePath();
-            SetupConfig.setAbsolutePath(serviceSpecFile.getAbsoluteFile().getParent());
-            workflowContext.setAppName(appName.trim());
-            workflowContext.setNamespace(namespace.trim());
-            workflowContext.setEnvName(CommandUtil.getEnvName(ServiceProfileUtil.getProfileName(profile)));
+            SetupConfig.setAbsolutePath(serviceVsSpecFile.get(serviceName).getAbsoluteFile().getParent());
             workflowContext.addAttribute(WorkflowConstants.VERBOSE, verbose);
 
             // clean up service dir before dockerfileGen
             workflowContext.addAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR, true);
 
-            // TODO Handle invoker delta processing through callback
-            isServiceFailed = isServiceFailed ? isServiceFailed : !executeInvoker(dockerfileGeneratorComponentInvoker, workflowContext);
+            executeInvoker(dockerfileGeneratorComponentInvoker, workflowContext);
             
-            isServiceFailed = isServiceFailed ? isServiceFailed : !executeInvoker(imageBuildComponentInvoker, workflowContext);
+            executeInvoker(imageBuildComponentInvoker, workflowContext);
             
-            isServiceFailed = isServiceFailed ? isServiceFailed : !executeInvoker(manifestGeneratorComponentInvoker, workflowContext);
+            executeInvoker(manifestGeneratorComponentInvoker, workflowContext);
             
-            if (!isServiceFailed) {
+            if (!workflowContext.isFailed()) {
                 List<Manifest> manifestList = (List<Manifest>) workflowContext.getAttribute(WorkflowConstants.OUTPUT);
                 workflowContext.addAttribute(WorkflowConstants.GENERATED_MANIFESTS, manifestList);
                 WorkflowLogger.header(ControllerActivity.STARTING_DEPLOYMENT);
-                isServiceFailed = isServiceFailed ? isServiceFailed : !executeInvoker(deployComponentInvoker, workflowContext);
+                executeInvoker(deployComponentInvoker, workflowContext);
             }
             logWorkflowInfo(workflowContext);
-            isCommandFailed = isCommandFailed ? isCommandFailed : isServiceFailed;
+            isCommandFailed = isCommandFailed ? isCommandFailed : workflowContext.isFailed();
         }
-        if (!serviceProfileMap.isEmpty()) {
-            ServiceProfileUtil.printWarnMsg(serviceProfileMap);
-        }
+        
         return isCommandFailed ? ToolConstants.HYSCALE_ERROR_CODE : 0;
     }
     
-    private boolean executeInvoker(ComponentInvoker invoker, WorkflowContext context) {
+    private boolean executeInvoker(ComponentInvoker<WorkflowContext> invoker, WorkflowContext context) {
+        if (context.isFailed()) {
+            return false;
+        }
         try {
             invoker.execute(context);
         } catch (HyscaleException e) {
             logger.error("Error while executing component invoker: {}, for app: {}, service: {}", 
                     invoker.getClass(), appName, context.getServiceName(), e);
-            return false;
+            context.setFailed(true);
         }
         return context.isFailed() ? false : true;
     }
@@ -209,8 +233,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
         CommandUtil.logMetaInfo((String) workflowContext.getAttribute(WorkflowConstants.SERVICE_IP),
                 ControllerActivity.SERVICE_URL);
     }
-
-
+    
     @PreDestroy
     public void clear() {
         SetupConfig.clearAbsolutePath();

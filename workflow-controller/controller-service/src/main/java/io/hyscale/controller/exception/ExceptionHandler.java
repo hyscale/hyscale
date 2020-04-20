@@ -44,8 +44,7 @@ public class ExceptionHandler implements IExecutionExceptionHandler {
 	@Override
 	public int handleExecutionException(Exception ex, CommandLine commandLine, ParseResult parseResult)
 			throws Exception {
-	    int exitCode = 1;
-		logger.error("Unexpected error: ", ex);
+		logger.error("Caught Error: ", ex);
 		
 		if (!(ex instanceof HyscaleException)) {
 		    WorkflowLogger.footer();
@@ -55,8 +54,7 @@ public class ExceptionHandler implements IExecutionExceptionHandler {
 		    WorkflowLogger.footer();
 		}
 
-		exitCode = exitCodeExceptionMapper.getExitCode(ex);
+		return exitCodeExceptionMapper.getExitCode(ex);
 		        
-		return exitCode;
 	}
 }

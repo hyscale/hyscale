@@ -36,7 +36,7 @@ import io.hyscale.controller.constants.WorkflowConstants;
  *
  */
 public class CommandUtil {
-
+    
 	public static String getEnvName(String profile){
 		if (StringUtils.isNotBlank(profile)) {
 			return profile;
@@ -75,5 +75,5 @@ public class CommandUtil {
         
         return true;
 	}
-
+	
 }
