@@ -27,30 +27,31 @@ import io.hyscale.commons.constants.ToolConstants;
 @Component
 public class ImageCommandProvider {
 
-    private static final String HYSCALE_IO_URL = "hyscale.io";
-    private static final String SLASH = "/";
-    private static final String EQUALS = "=";
-    private static final String DOCKER_COMMAND = "docker";
-    private static final String VERSION_COMMAND = "-v";
-    private static final String IMAGES = "images";
-    private static final String SUDO_COMMAND = "sudo";
-    private static final String PUSH_COMMAND = "push";
-    private static final String INSPECT_COMMAND = "inspect";
-    private static final String TAG_COMMAND = "tag";
-    private static final String SPACE = " ";
-    private static final String DOCKER_BUILD = "docker build";
-    private static final String TAG_ARG = " -t ";
-    private static final String BUILD_ARGS = " --build-arg ";
-    private static final String REMOVE_IMAGE = "rmi";
-    private static final String PULL_COMMAND = "pull";
-    private static final String LABEL_ARGS = "label";
-    private static final String IMAGE_OWNER = "imageowner";
-    private static final String HYSCALE = "hyscale";
-    private static final String HYPHEN = "-";
-    private static final String FORCE_FLAG = "f";
-    private static final String QUIET = "q";
-    private static final String FILTER = "filter";
-    private static final boolean USE_SUDO = false;
+	private static final String HYSCALE_IO_URL = "hyscale.io";
+	private static final String SLASH = "/";
+	private static final String EQUALS = "=";
+	private static final String DOCKER_COMMAND = "docker";
+	private static final String VERSION_COMMAND = "-v";
+	private static final String IMAGES = "images";
+	private static final String SUDO_COMMAND = "sudo";
+	private static final String PUSH_COMMAND = "push";
+	private static final String INSPECT_COMMAND = "inspect";
+	private static final String TAG_COMMAND = "tag";
+	private static final String SPACE = " ";
+	private static final String DOCKER_BUILD = "docker build";
+	private static final String TAG_ARG = " -t ";
+	private static final String BUILD_ARGS = " --build-arg ";
+	private static final String REMOVE_IMAGE = "rmi";
+	private static final String PULL_COMMAND = "pull";
+	private static final String LABEL_ARGS = "label";
+	private static final String IMAGE_OWNER = "imageowner";
+	private static final String HYSCALE = "hyscale";
+	private static final String HYPHEN = "-";
+	private static final String FORCE_FLAG = "f";
+	private static final String QUIET = "q";
+	private static final String FILTER = "filter";
+	private static final boolean USE_SUDO = false;
+	private static final String TARGET = "target";
 
     public String getBuildImageName(String appName, String serviceName) {
         StringBuilder sb = new StringBuilder();
@@ -68,16 +69,19 @@ public class ImageCommandProvider {
     }
 
     public String dockerBuildCommand(String appName, String serviceName, String tag, String dockerFilePath) {
-        return dockerBuildCommand(appName, serviceName, tag, dockerFilePath, null);
+        return dockerBuildCommand(appName, serviceName, tag, dockerFilePath, null, null);
     }
 
     // --label “imageowner=hyscale"
-    public String dockerBuildCommand(String appName, String serviceName, String tag, String dockerFilePath,
+    public String dockerBuildCommand(String appName, String serviceName, String tag, String dockerFilePath,String target,
                                      Map<String, String> buildArgs) {
-        StringBuilder buildCommand = new StringBuilder();
-        buildCommand.append(DOCKER_BUILD);
-        buildCommand.append(SPACE).append(HYPHEN).append(HYPHEN).append(LABEL_ARGS).append(SPACE).
-                append(IMAGE_OWNER).append(EQUALS).append(HYSCALE);
+		StringBuilder buildCommand = new StringBuilder();
+		buildCommand.append(DOCKER_BUILD);
+		if (target != null) {
+			buildCommand.append(SPACE).append(HYPHEN).append(HYPHEN).append(TARGET).append(SPACE).append(target);
+		}
+		buildCommand.append(SPACE).append(HYPHEN).append(HYPHEN).append(LABEL_ARGS).append(SPACE).append(IMAGE_OWNER)
+				.append(EQUALS).append(HYSCALE);
 
         if (buildArgs != null && !buildArgs.isEmpty()) {
             buildCommand.append(getBuildArgs(buildArgs));
@@ -88,7 +92,7 @@ public class ImageCommandProvider {
         buildCommand.append(SPACE).append(dockerFilePath).append(ToolConstants.FILE_SEPARATOR);
         return buildCommand.toString();
     }
-
+    
     private String getBuildArgs(Map<String, String> buildArgs) {
         StringBuilder buildArgsCmd = new StringBuilder();
         buildArgs.entrySet().stream().forEach(each -> {
