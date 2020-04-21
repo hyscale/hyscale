@@ -54,14 +54,26 @@ public class ServiceSpecProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(ServiceSpecProcessor.class);
 
+    /**
+     * Calls {@link #getEffectiveServiceSpec(List, List)} 
+     * For service spec and profile in {@link HyscaleInputSpec}
+     * @param hyscaleInputSpec
+     * @return List of {@link EffectiveServiceSpec}
+     * @throws HyscaleException
+     */
     public List<EffectiveServiceSpec> getEffectiveServiceSpec(HyscaleInputSpec hyscaleInputSpec)
             throws HyscaleException {
-
-        Map<String, Entry<String, File>> serviceVsProfile = getDependencyMap(
-                hyscaleInputSpec.getServiceSpecFiles(), hyscaleInputSpec.getProfileFiles());
-        return mergeServiceSpec(hyscaleInputSpec.getServiceSpecFiles(), serviceVsProfile);
+        return getEffectiveServiceSpec(hyscaleInputSpec.getServiceSpecFiles(), hyscaleInputSpec.getProfileFiles());
     }
 
+    /**
+     * From List of service specs and profiles create a dependency graph of service to profile
+     * Using service spec files and dependency graph merge service spec and profile to get effective service spec
+     * @param serviceSpecFiles
+     * @param profileFiles
+     * @return List of {@link EffectiveServiceSpec}
+     * @throws HyscaleException
+     */
     public List<EffectiveServiceSpec> getEffectiveServiceSpec(List<File> serviceSpecFiles, List<File> profileFiles)
             throws HyscaleException {
         Map<String, Entry<String, File>> serviceVsProfile = getDependencyMap(serviceSpecFiles, profileFiles);
@@ -69,6 +81,19 @@ public class ServiceSpecProcessor {
 
     }
 
+    /**
+     * For each service spec file, read service spec data
+     * if profile available for service spec
+     * uses {@link EffectiveServiceSpecBuilder} to merge profile and spec
+     * to get updated service spec data
+     * 
+     * Uses service spec data to create {@link ServiceSpec}
+     * 
+     * @param serviceSpecFiles
+     * @param serviceVsProfile
+     * @return List of {@link EffectiveServiceSpec}
+     * @throws HyscaleException
+     */
     private List<EffectiveServiceSpec> mergeServiceSpec(List<File> serviceSpecFiles,
             Map<String, Entry<String, File>> serviceVsProfile) throws HyscaleException {
 
@@ -117,8 +142,8 @@ public class ServiceSpecProcessor {
         return effectiveServiceSpecList;
     }
 
-    private Map<String, Map.Entry<String, File>> getDependencyMap(List<File> serviceSpecFiles,
-            List<File> profileFiles) throws HyscaleException {
+    private Map<String, Map.Entry<String, File>> getDependencyMap(List<File> serviceSpecFiles, List<File> profileFiles)
+            throws HyscaleException {
         Map<String, Entry<String, File>> serviceVsProfile = new HashMap<String, Map.Entry<String, File>>();
         List<String> invalidServiceList = new ArrayList<String>();
         if (profileFiles != null && !profileFiles.isEmpty()) {
@@ -136,7 +161,6 @@ public class ServiceSpecProcessor {
         if (!invalidServiceList.isEmpty()) {
             String invalidServices = invalidServiceList.toString();
             logger.error("Multiple profiles found for services {}", invalidServices);
-            WorkflowLogger.error(ControllerActivity.MULIPLE_PROFILES_FOUND, invalidServices);
             throw new HyscaleException(ControllerErrorCodes.UNIQUE_PROFILE_REQUIRED, invalidServices);
         }
 
@@ -153,7 +177,6 @@ public class ServiceSpecProcessor {
         if (invalidServiceList != null && !invalidServiceList.isEmpty()) {
             String invalidServices = invalidServiceList.toString();
             logger.error("Services {} mentioned in profiles not available in deployment", invalidServices);
-            WorkflowLogger.error(ControllerActivity.NO_SERVICE_FOUND_FOR_PROFILE, invalidServices);
             throw new HyscaleException(ControllerErrorCodes.SERVICE_NOT_PROVIDED_FOR_PROFILE, invalidServices);
         }
         return serviceVsProfile;

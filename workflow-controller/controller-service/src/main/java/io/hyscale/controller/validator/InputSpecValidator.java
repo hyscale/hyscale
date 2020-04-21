@@ -28,7 +28,14 @@ import io.hyscale.commons.models.Activity;
 import io.hyscale.commons.models.Status;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.exception.ControllerErrorCodes;
+import io.hyscale.schema.validator.SchemaValidator;
 
+/**
+ * Parent level validator to combine {@link FileValidator} as well as {@link SchemaValidator}
+ * Ensures validators are called for all the input files even if some fails validation
+ * @author tushar
+ *
+ */
 public abstract class InputSpecValidator implements Validator<List<File>> {
 
     private static final Logger logger = LoggerFactory.getLogger(InputSpecValidator.class);

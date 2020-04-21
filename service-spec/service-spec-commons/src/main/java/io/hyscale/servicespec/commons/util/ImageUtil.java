@@ -114,6 +114,13 @@ public class ImageUtil {
         return stringBuilder.toString();
     }
 
+    /**
+     * Checks if service spec requires image build or push operation
+     * Build or push required if service spec contains build spec or dockerfile filed in image
+     * 
+     * @param serviceSpec
+     * @return true if build or push required else false
+     */
 	public static boolean isImageBuildPushRequired(ServiceSpec serviceSpec) {
 	    if (serviceSpec == null) {
 	        return false;
@@ -125,7 +132,11 @@ public class ImageUtil {
 			logger.info("Error while fetching buildSpec and registryUrl from serviceSpec ");
 		}
 		
-		if (image != null && ((image instanceof BuildSpecImage) || (image instanceof DockerBuildImage))) {
+		if (image == null) {
+		    return false;
+		}
+		
+		if (image instanceof BuildSpecImage || image instanceof DockerBuildImage) {
 			return true;
 		}
 		

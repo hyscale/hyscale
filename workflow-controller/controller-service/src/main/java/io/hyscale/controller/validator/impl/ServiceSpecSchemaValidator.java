@@ -30,6 +30,10 @@ import io.hyscale.controller.util.ServiceSpecUtil;
 import io.hyscale.controller.validator.SpecSchemaValidator;
 import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
 
+/**
+ * Provides Service spec schema related implementation to {@link SpecSchemaValidator}
+ *
+ */
 @Component
 public class ServiceSpecSchemaValidator extends SpecSchemaValidator {
 
@@ -43,10 +47,11 @@ public class ServiceSpecSchemaValidator extends SpecSchemaValidator {
     @Override
     public boolean validateData(File serviceSpecFile) throws HyscaleException {
         String serviceFileName = serviceSpecFile.getName();
-        String serviceName = serviceFileName.split("\\.")[0];
-        if (!serviceName.equals(ServiceSpecUtil.getServiceName(serviceSpecFile))) {
-            logger.warn(ServiceSpecActivity.SERVICE_NAME_MISMATCH.getActivityMessage());
-            WorkflowLogger.persist(ServiceSpecActivity.SERVICE_NAME_MISMATCH);
+        String serviceNameFromFile = serviceFileName.split("\\.")[0];
+        String serviceName = ServiceSpecUtil.getServiceName(serviceSpecFile);
+        if (!serviceNameFromFile.equals(serviceName)) {
+            logger.warn(ServiceSpecActivity.SERVICE_NAME_MISMATCH.getActivityMessage(), serviceFileName);
+            WorkflowLogger.persist(ServiceSpecActivity.SERVICE_NAME_MISMATCH, serviceFileName);
         }
         return true;
     }

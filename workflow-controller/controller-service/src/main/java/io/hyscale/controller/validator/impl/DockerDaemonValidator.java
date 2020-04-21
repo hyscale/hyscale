@@ -32,6 +32,11 @@ import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.servicespec.commons.util.ImageUtil;
 
+/**
+ * Validates if docker is installed as well as running
+ * In case docker is not required,
+ * skips validation and returns true
+ */
 @Component
 public class DockerDaemonValidator implements Validator<WorkflowContext> {
     private static final Logger logger = LoggerFactory.getLogger(DockerDaemonValidator.class);
@@ -40,6 +45,8 @@ public class DockerDaemonValidator implements Validator<WorkflowContext> {
     private ImageCommandProvider commandProvider;
 
     private boolean isDockerAvailable = false;
+    
+    private boolean isDockerUnavailable = false;
 
     /**
      * 1. It will check that spec has buildspec or dockerfile 
@@ -54,6 +61,9 @@ public class DockerDaemonValidator implements Validator<WorkflowContext> {
         if (isDockerAvailable) {
             return isDockerAvailable;
         }
+        if (isDockerUnavailable) {
+            return false;
+        }
         WorkflowLogger.startActivity(ValidatorActivity.VALIDATING_DOCKER);
         if (!ImageUtil.isImageBuildPushRequired(context.getServiceSpec())) {
             WorkflowLogger.endActivity(Status.SKIPPING);
@@ -65,6 +75,7 @@ public class DockerDaemonValidator implements Validator<WorkflowContext> {
         if (!success) {
             WorkflowLogger.persist(ImageBuilderActivity.DOCKER_NOT_INSTALLED, LoggerTags.ERROR);
             WorkflowLogger.endActivity(Status.FAILED);
+            isDockerUnavailable = true;
             return false;
         }
         command = commandProvider.dockerImages();
@@ -73,6 +84,7 @@ public class DockerDaemonValidator implements Validator<WorkflowContext> {
         if (!success) {
             WorkflowLogger.persist(ImageBuilderActivity.DOCKER_DAEMON_NOT_RUNNING, LoggerTags.ERROR);
             WorkflowLogger.endActivity(Status.FAILED);
+            isDockerUnavailable = true;
             return false;
         }
         isDockerAvailable = true;

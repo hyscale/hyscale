@@ -31,6 +31,10 @@ import io.hyscale.controller.util.ServiceProfileUtil;
 import io.hyscale.controller.validator.SpecSchemaValidator;
 import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
 
+/**
+ * Provides Profile spec schema related implementation to {@link SpecSchemaValidator}
+ *
+ */
 @Component
 public class ProfileSpecSchemaValidator extends SpecSchemaValidator {
 
@@ -46,7 +50,7 @@ public class ProfileSpecSchemaValidator extends SpecSchemaValidator {
         String profileFileName = profileFile.getName().split("\\.")[0];
         int dashIndex = profileFileName.indexOf(ToolConstants.DASH);
         if (dashIndex < 0) {
-            logger.warn(ServiceSpecActivity.PROFILE_NAME_MISMATCH.getActivityMessage(), profileFileName);
+            logger.warn(ServiceSpecActivity.PROFILE_NAME_MISMATCH.getActivityMessage(), profileFile.getName());
             WorkflowLogger.persist(ServiceSpecActivity.PROFILE_NAME_MISMATCH, profileFile.getName());
         }
         StringBuilder profileNameBuilder = new StringBuilder();

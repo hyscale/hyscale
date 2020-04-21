@@ -25,6 +25,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.models.K8sConfigFileAuth;
+import io.hyscale.commons.utils.WindowsUtil;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.config.ControllerConfig;
 import io.hyscale.controller.exception.ControllerErrorCodes;
@@ -67,6 +68,7 @@ public class K8sAuthConfigBuilder {
         File confFile = new File(path);
         if (confFile != null && !confFile.exists()) {
             String confPath = SetupConfig.getMountPathOfKubeConf(path) ;
+            confPath = WindowsUtil.updateToHostFileSeparator(confPath);
             WorkflowLogger.error(ControllerActivity.CANNOT_FIND_FILE,
                     confPath);
             throw new HyscaleException(ControllerErrorCodes.KUBE_CONFIG_NOT_FOUND, confPath);

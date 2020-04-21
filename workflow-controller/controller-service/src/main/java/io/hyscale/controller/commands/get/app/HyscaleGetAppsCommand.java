@@ -15,7 +15,6 @@
  */
 package io.hyscale.controller.commands.get.app;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -59,6 +58,7 @@ import picocli.CommandLine.Option;
  * Eg: hyscale get apps
  *
  * Displays all the apps along with namespace deployed on the cluster.
+ * Ignores system namespace {@link K8SRuntimeConstants#SYSTEM_NAMESPACE} on the cluster
  * 
  * @author tushar
  *
@@ -91,7 +91,7 @@ public class HyscaleGetAppsCommand implements Callable<Integer> {
             WorkflowLogger.logPersistedActivities();
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        WorkflowLogger.printLine();
+        WorkflowLogger.header(ControllerActivity.APPLICATION_DETAILS);
         List<AppMetadata> appInfoList = null;
         try {
             appInfoList = deployer.getAppsMetadata(context.getAuthConfig());
@@ -117,6 +117,7 @@ public class HyscaleGetAppsCommand implements Callable<Integer> {
             WorkflowLogger.info(ControllerActivity.NO_DEPLOYMENTS);
             return ToolConstants.HYSCALE_SUCCESS_CODE;
         }
+        
         
         Builder tableBuilder = new TableFormatter.Builder()
                 .addField(TableFields.APPLICATION.getFieldName(), TableFields.APPLICATION.getLength())

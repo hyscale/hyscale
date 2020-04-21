@@ -93,6 +93,8 @@ public class HyscaleReplicaStatusCommand implements Callable<Integer> {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
         
+        WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
+        
         replicaProcessingService.logReplicas(replicaProcessingService.getReplicas(appName, serviceName, namespace, true), false);
 
         return ToolConstants.HYSCALE_SUCCESS_CODE;

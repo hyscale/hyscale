@@ -40,6 +40,7 @@ import io.hyscale.commons.models.DockerCredHelper;
 import io.hyscale.commons.models.DockerHubAliases;
 import io.hyscale.commons.models.ImageRegistry;
 import io.hyscale.commons.utils.ObjectMapperFactory;
+import io.hyscale.commons.utils.WindowsUtil;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.ImageRegistryBuilder;
 import io.hyscale.controller.config.ControllerConfig;
@@ -137,10 +138,11 @@ public class LocalRegistryManagerImpl implements RegistryManager {
     private void validate(String path) throws HyscaleException {
         File confFile = new File(path);
         if (confFile != null && !confFile.exists()) {
-            String confpath = SetupConfig.getMountOfDockerConf(path);
+            String confPath = SetupConfig.getMountOfDockerConf(path);
+            confPath = WindowsUtil.updateToHostFileSeparator(confPath);
             WorkflowLogger.error(ControllerActivity.CANNOT_FIND_FILE,
-                    confpath);
-            throw new HyscaleException(ControllerErrorCodes.DOCKER_CONFIG_NOT_FOUND, confpath);
+                    confPath);
+            throw new HyscaleException(ControllerErrorCodes.DOCKER_CONFIG_NOT_FOUND, confPath);
         }
     }
 

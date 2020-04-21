@@ -27,9 +27,19 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.LoggerTags;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Activity;
+import io.hyscale.commons.utils.WindowsUtil;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.validator.impl.ProfileFileValidator;
+import io.hyscale.controller.validator.impl.ServiceSpecFileValidator;
 
+/**
+ * Parent validator to validate file provided as input such as service spec etc
+ * Validates if file is present, non empty among other things
+ * @see {@link ServiceSpecFileValidator}  {@link ProfileFileValidator}
+ * @author tushar
+ *
+ */
 public abstract class FileValidator implements Validator<File> {
 
     private static final Logger logger = LoggerFactory.getLogger(FileValidator.class);
@@ -40,12 +50,12 @@ public abstract class FileValidator implements Validator<File> {
         if (inputFile == null) {
             return false;
         }
-        // TODO is this required ?
-        //        if (WindowsUtil.isHostWindows()) {
-        //            inputFilePath = WindowsUtil.updateToUnixFileSeparator(inputFilePath);
-        //        }
-
         String inputFilePath = inputFile.getAbsolutePath();
+        
+        if (WindowsUtil.isHostWindows()) {
+            inputFilePath = WindowsUtil.updateToUnixFileSeparator(inputFilePath);
+        }
+
         if (StringUtils.isBlank(inputFilePath)) {
             WorkflowLogger.persist(ControllerActivity.EMPTY_FILE_PATH, LoggerTags.ERROR);
             throw new HyscaleException(CommonErrorCode.EMPTY_FILE_PATH,

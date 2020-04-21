@@ -100,7 +100,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
     private AppMetadataBuilder appMetadataBuilder;
     
     @Autowired
-    private AuthenticationHandler authenticationHandler;
+    private AuthenticationHandler<K8sAuthorisation> authenticationHandler;
 
     @Override
     public void deploy(DeploymentContext context) throws HyscaleException {

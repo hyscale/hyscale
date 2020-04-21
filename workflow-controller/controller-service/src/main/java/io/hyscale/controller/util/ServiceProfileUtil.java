@@ -36,6 +36,7 @@ import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.io.HyscaleFilesUtil;
+import io.hyscale.commons.logger.LoggerTags;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.utils.HyscaleStringUtil;
 import io.hyscale.controller.activity.ControllerActivity;
@@ -48,14 +49,19 @@ public class ServiceProfileUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(ServiceProfileUtil.class);
 
+    private static final String NO_PROFILE_FOUND_MSG = "No profile found. Profiles are required";
+    
+    private static final String NO_PROFILE_FOR_SERVICES = "No profile file found for services ";
+    
+    private static final String MULTIPLE_PROFILES_FOR_SERVICES = "Multiple profile files found for services ";
+    
     /**
      * Returns all files that matches profile naming pattern in service specs directory
      * @param serviceSpecs
      * @param profileName
      * @return
-     * @throws HyscaleException
      */
-    public static List<File> getAllProfiles(List<File> serviceSpecs, String profileName) throws HyscaleException{
+    public static List<File> getAllProfiles(List<File> serviceSpecs, String profileName) {
         if (serviceSpecs == null || StringUtils.isBlank(profileName)) {
             return null;
         }
@@ -96,22 +102,20 @@ public class ServiceProfileUtil {
      * Every Service in service spec must have one profile
      * @param serviceSpecs
      * @param profiles
-     * @return
+     * @return List of filtered profiles which are referred by service spec
      */
-    public static List<File> validateAndFilter(List<File> serviceSpecs, List<File> profiles) throws HyscaleException {
+    public static List<File> validateAndFilter(List<File> serviceSpecs, List<File> profiles, String profileName) throws HyscaleException {
         if (serviceSpecs == null && profiles == null) {
             return null;
         }
         if (serviceSpecs == null || serviceSpecs.isEmpty()) {
             return null;
         }
-        
         if (profiles == null || profiles.isEmpty()) {
-            String errorMessage = "No profiles found. Profiles are required";
             // no profiles found throw exception
-            WorkflowLogger.error(ControllerActivity.ERROR_WHILE_PROCESSING_PROFILE, errorMessage );
+            WorkflowLogger.persist(ControllerActivity.ERROR_WHILE_PROCESSING_PROFILE, LoggerTags.ERROR, profileName, NO_PROFILE_FOUND_MSG );
             HyscaleException hyscaleException = new HyscaleException(ControllerErrorCodes.ERROR_WHILE_PROCESSING_PROFILE,
-                    ToolConstants.INVALID_INPUT_ERROR_CODE, errorMessage);
+                    ToolConstants.INVALID_INPUT_ERROR_CODE, NO_PROFILE_FOUND_MSG);
             logger.error(hyscaleException.getMessage());
             throw hyscaleException;
         }
@@ -141,7 +145,7 @@ public class ServiceProfileUtil {
 
         if (!servicesWithoutProfile.isEmpty() || !servicesWithMultipleProfile.isEmpty()) {
             String errorMessage = getErrorMessage(servicesWithoutProfile, servicesWithMultipleProfile);
-            WorkflowLogger.error(ControllerActivity.ERROR_WHILE_PROCESSING_PROFILE, errorMessage);
+            WorkflowLogger.persist(ControllerActivity.ERROR_WHILE_PROCESSING_PROFILE, LoggerTags.ERROR, profileName, errorMessage);
             HyscaleException hyscaleException = new HyscaleException(ControllerErrorCodes.ERROR_WHILE_PROCESSING_PROFILE,
                     ToolConstants.INVALID_INPUT_ERROR_CODE, errorMessage);
             logger.error(hyscaleException.getMessage());
@@ -156,11 +160,11 @@ public class ServiceProfileUtil {
         StringBuilder errMsg = new StringBuilder();
 
         if (!servicesWithoutProfile.isEmpty()) {
-            errMsg.append("No profile file found for services ");
+            errMsg.append(NO_PROFILE_FOR_SERVICES);
             servicesWithoutProfile.forEach(each -> errMsg.append(each).append(", "));
         }
         if (!servicesWithMultipleProfile.isEmpty()) {
-            errMsg.append("Multiple profile files found for services ");
+            errMsg.append(MULTIPLE_PROFILES_FOR_SERVICES);
             servicesWithMultipleProfile.forEach(each -> errMsg.append(each).append(", "));
         }
         return HyscaleStringUtil.removeSuffixStr(errMsg, ", ");

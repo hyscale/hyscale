@@ -87,11 +87,7 @@ public class ServiceProfileUtilTest {
     @MethodSource("profileListInput")
     public void profileListTest(String profileName, List<File> expectedProfiles) {
         List<File> profiles = null;
-        try {
-            profiles = ServiceProfileUtil.getAllProfiles(SERVICE_SPEC_FILES, profileName);
-        } catch (HyscaleException e) {
-            fail(e);
-        }
+        profiles = ServiceProfileUtil.getAllProfiles(SERVICE_SPEC_FILES, profileName);
 
         if (expectedProfiles == null) {
             assertNull(profiles);
@@ -119,7 +115,7 @@ public class ServiceProfileUtilTest {
             HyscaleException expectedException) {
         List<File> filteredProfiles = null;
         try {
-            filteredProfiles = ServiceProfileUtil.validateAndFilter(serviceSpec, profiles);
+            filteredProfiles = ServiceProfileUtil.validateAndFilter(serviceSpec, profiles, "test");
         } catch (HyscaleException e) {
             if (expectedException == null) {
                 fail(e);

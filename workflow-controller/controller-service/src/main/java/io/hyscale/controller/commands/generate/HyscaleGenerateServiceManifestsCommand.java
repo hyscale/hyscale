@@ -39,12 +39,13 @@ import io.hyscale.controller.builder.WorkflowContextBuilder;
 import io.hyscale.controller.commands.input.ProfileArg;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.invoker.ManifestGeneratorComponentInvoker;
-import io.hyscale.controller.model.HyscaleCommandSpec;
+import io.hyscale.controller.model.HyscaleCommandSpecBuilder;
 import io.hyscale.controller.model.HyscaleInputSpec;
 import io.hyscale.controller.model.EffectiveServiceSpec;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.processor.HyscaleInputSpecProcessor;
 import io.hyscale.controller.processor.ServiceSpecProcessor;
+import io.hyscale.controller.provider.PostValidatorsProvider;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.ServiceSpecUtil;
 import io.hyscale.controller.validator.impl.InputSpecPostValidator;
@@ -62,9 +63,13 @@ import picocli.CommandLine.ArgGroup;
  * @option appName  name of the app
  * @option serviceSpecs  list of service specs
  * @option profiles  list of profiles for services
+ * @option profile profile name to look for. Profile file should be present for all services in service spec
+ * (profiles and profile are mutually exclusive)
  *
- * Eg: hyscale generate service manifests -f svc.hspec -f svcb.hspec -p dev-svc.hprof -a sample
+ * Eg 1: hyscale generate service manifests -f svc.hspec -f svcb.hspec -p dev-svc.hprof -a sample
+ * Eg 2: hyscale generate service manifests -f svc.hspec -P dev -a sample
  *
+ * Performs a validation of input before starting manifest generation.
  * Generates the manifests from the given hspec and writes the manifests
  * to <USER.HOME/hyscale/apps/[<appName]/[serviceName]/generated-files/manifests/
  *
@@ -103,6 +108,9 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
     private HyscaleInputSpecProcessor hyscaleInputSpecProcessor;
     
     @Autowired
+    private PostValidatorsProvider postValidatorsProvider;
+    
+    @Autowired
     private WorkflowContextBuilder workflowContextBuilder;
     
     @Override
@@ -112,16 +120,16 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
         
-        HyscaleCommandSpec commandSpec = new HyscaleCommandSpec();
-        commandSpec.setAppName(appName);
-        commandSpec.setServiceSpecFiles(serviceSpecs);
+        HyscaleCommandSpecBuilder commandSpecBuilder = new HyscaleCommandSpecBuilder();
+        commandSpecBuilder.setAppName(appName);
+        commandSpecBuilder.setServiceSpecFiles(serviceSpecs);
         if (profileArg != null) {
-            commandSpec.setProfileFiles(profileArg.getProfiles());
-            commandSpec.setProfileName(profileArg.getProfileName());
+            commandSpecBuilder.setProfileFiles(profileArg.getProfiles());
+            commandSpecBuilder.setProfileName(profileArg.getProfileName());
         }
 
         // Handles input preprocessing
-        HyscaleInputSpec hyscaleInput = hyscaleInputSpecProcessor.process(commandSpec);
+        HyscaleInputSpec hyscaleInput = hyscaleInputSpecProcessor.process(commandSpecBuilder);
         if (hyscaleInput == null) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
@@ -134,7 +142,7 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
         
         List<WorkflowContext> contextList = workflowContextBuilder.buildContextList(effectiveServiceSpecList, appName, null);
         
-        hyscaleInputSpecProcessor.getManifestPostValidators().forEach( each -> inputSpecPostValidator.addValidator(each));
+        postValidatorsProvider.getManifestPostValidators().forEach( each -> inputSpecPostValidator.addValidator(each));
         
         if (!inputSpecPostValidator.validate(contextList)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;

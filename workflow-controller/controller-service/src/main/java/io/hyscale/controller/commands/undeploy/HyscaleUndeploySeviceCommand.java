@@ -126,7 +126,7 @@ public class HyscaleUndeploySeviceCommand implements Callable<Integer> {
             }
         }
 
-        return isFailed ? ToolConstants.HYSCALE_ERROR_CODE : 0;
+        return isFailed ? ToolConstants.HYSCALE_ERROR_CODE : ToolConstants.HYSCALE_SUCCESS_CODE;
     }
 
 }

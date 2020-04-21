@@ -19,9 +19,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ManifestGenCommandSpec {
+public class HyscaleCommandSpecBuilder {
 
     private String appName;
+    private String namespace;
     private List<File> serviceSpecFiles;
     private List<File> profileFiles;
     private String profileName;
@@ -32,6 +33,14 @@ public class ManifestGenCommandSpec {
 
     public void setAppName(String appName) {
         this.appName = appName;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
 
     public List<File> getServiceSpecFiles() {
@@ -71,5 +80,5 @@ public class ManifestGenCommandSpec {
     public void setProfileName(String profileName) {
         this.profileName = profileName;
     }
-    
+
 }

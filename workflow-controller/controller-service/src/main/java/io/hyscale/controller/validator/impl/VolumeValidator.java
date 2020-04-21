@@ -61,6 +61,16 @@ import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
 import io.kubernetes.client.openapi.models.V1ResourceRequirements;
 import io.kubernetes.client.openapi.models.V1StorageClass;
 
+/**
+ * Validate Volumes:
+ * Storage Class should be valid
+ *      persist error message and returns false
+ * Size and Storage class modification 
+ *      persist warn message and returns true
+ * 
+ * @author tushar
+ *
+ */
 @Component
 public class VolumeValidator implements Validator<WorkflowContext>{
 	private static final Logger logger = LoggerFactory.getLogger(VolumeValidator.class);
@@ -159,15 +169,15 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 			if (storageClass != null && !storageClassAllowed.contains(storageClass)) {
 				isFailed = true;
 				errorCode = DeployerErrorCodes.INVALID_STORAGE_CLASS_FOR_VOLUME;
-				failMsgBuilder.append(storageClass);
+				failMsgBuilder.append(storageClass).append(" in volume ").append(volume.getName());
 				failMsgBuilder.append(ToolConstants.COMMA);
 			}
 		}
 		if (isFailed) {
 			String failMsg = HyscaleStringUtil.removeSuffixStr(failMsgBuilder, ToolConstants.COMMA);
+			failMsg = new HyscaleException(errorCode, failMsg, storageClassAllowed.toString()).getMessage();
 			WorkflowLogger.persist(ValidatorActivity.VOLUME_VALIDATION_FAILED, LoggerTags.ERROR, failMsg);
-            logger.info("StroageClass not found , errorCode : {} ,errorMsg : {}, allowed storageclass : {}", errorCode,
-                    failMsg, storageClassAllowed.toString());
+            logger.info("StroageClass validation failed. Message : {}", failMsg);
             return false;
 		}
 		return true;
@@ -249,8 +259,8 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 		String warnMsg = warnMsgBuilder.toString();
 		if (StringUtils.isNotBlank(warnMsg)) {
 			warnMsg = HyscaleStringUtil.removeSuffixStr(warnMsg, ToolConstants.COMMA + ToolConstants.SPACE);
-			logger.debug(DeployerActivity.IGNORING_VOLUME_MODIFICATION.getActivityMessage(), warnMsg);
-			WorkflowLogger.persist(DeployerActivity.IGNORING_VOLUME_MODIFICATION, warnMsg);
+			logger.debug(DeployerActivity.IGNORING_VOLUME_MODIFICATION.getActivityMessage(), serviceName, warnMsg);
+			WorkflowLogger.persist(DeployerActivity.IGNORING_VOLUME_MODIFICATION, serviceName, warnMsg);
 		}
 		return true;
 	}

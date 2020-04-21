@@ -29,6 +29,13 @@ import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.model.WorkflowContext;
 
+/**
+ * Aggregator class to call post validators
+ * such as cluster validator, volume validator among others
+ * 
+ * @author tushar
+ *
+ */
 @Component
 public class InputSpecPostValidator implements Validator<List<WorkflowContext>> {
 
@@ -42,8 +49,14 @@ public class InputSpecPostValidator implements Validator<List<WorkflowContext>> 
         }
     }
 
+    /**
+     * For each context calls all the available validators
+     */
     @Override
     public boolean validate(List<WorkflowContext> contextList) throws HyscaleException {
+        if (validators.isEmpty()) {
+            return true;
+        }
         boolean isInvalid = false;
         boolean isFailed = false;
         StringBuilder exceptionMsg = new StringBuilder();

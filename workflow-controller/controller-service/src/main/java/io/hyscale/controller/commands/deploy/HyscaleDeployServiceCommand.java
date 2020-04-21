@@ -29,11 +29,12 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.invoker.DockerfileGeneratorComponentInvoker;
 import io.hyscale.controller.model.EffectiveServiceSpec;
-import io.hyscale.controller.model.HyscaleCommandSpec;
+import io.hyscale.controller.model.HyscaleCommandSpecBuilder;
 import io.hyscale.controller.model.HyscaleInputSpec;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.processor.HyscaleInputSpecProcessor;
 import io.hyscale.controller.processor.ServiceSpecProcessor;
+import io.hyscale.controller.provider.PostValidatorsProvider;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.ServiceSpecUtil;
 import io.hyscale.controller.validator.impl.InputSpecPostValidator;
@@ -67,15 +68,18 @@ import javax.validation.constraints.Pattern;
  * @option appName   name of the app to logically group your services
  * @option serviceSpecs   list of service specs that are to be deployed
  * @option profiles list of profiles for services
+ * @option profile profile name to look for. Profile file should be present for all services in service spec
+ * (profiles and profile are mutually exclusive)
  * @option verbose  prints the verbose output of the deployment
  *
- *  Eg: hyscale deploy service -f svca.hspec -f svcb.hspec -p dev-svca.hprof -n dev -a sample
- *
+ *  Eg 1: hyscale deploy service -f svca.hspec -f svcb.hspec -p dev-svca.hprof -n dev -a sample
+ *  Eg 2: hyscale deploy service -f svca.hspec -f svcb.hspec -P dev -n dev -a sample
  *
  *  Responsible for deploying a service with the given 'hspec' to
- *  the configured kubernetes cluster ,starting from image building to manifest generation
- *  to deployment. Creates a WorkflowContext to communicate across
- *  all deployment stages.
+ *  the configured kubernetes cluster.
+ *  performs a validation of input before starting deployment.
+ *  Performs functions ranging from image building to manifest generation to deployment.
+ *  Creates a WorkflowContext to communicate across all deployment stages.
  *
  */
 @CommandLine.Command(name = "service", aliases = {"services"},
@@ -127,6 +131,9 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
     private HyscaleInputSpecProcessor hyscaleInputSpecProcessor;
     
     @Autowired
+    private PostValidatorsProvider postValidatorsProvider;
+    
+    @Autowired
     private WorkflowContextBuilder workflowContextBuilder;
     
     @Override
@@ -135,16 +142,16 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        HyscaleCommandSpec commandSpec = new HyscaleCommandSpec();
-        commandSpec.setAppName(appName);
-        commandSpec.setServiceSpecFiles(serviceSpecs);
+        HyscaleCommandSpecBuilder commandSpecBuilder = new HyscaleCommandSpecBuilder();
+        commandSpecBuilder.setAppName(appName);
+        commandSpecBuilder.setServiceSpecFiles(serviceSpecs);
         
         if (profileArg != null) {
-            commandSpec.setProfileFiles(profileArg.getProfiles());
-            commandSpec.setProfileName(profileArg.getProfileName());
+            commandSpecBuilder.setProfileFiles(profileArg.getProfiles());
+            commandSpecBuilder.setProfileName(profileArg.getProfileName());
         }
         // Handles input preprocessing
-        HyscaleInputSpec hyscaleInput = hyscaleInputSpecProcessor.process(commandSpec);
+        HyscaleInputSpec hyscaleInput = hyscaleInputSpecProcessor.process(commandSpecBuilder);
         if (hyscaleInput == null) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
@@ -159,7 +166,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
         
         contextList = workflowContextBuilder.updateAuthConfig(contextList);
         
-        hyscaleInputSpecProcessor.getDeployPostValidators().forEach( each -> inputSpecPostValidator.addValidator(each)); 
+        postValidatorsProvider.getDeployPostValidators().forEach( each -> inputSpecPostValidator.addValidator(each)); 
         
         if (!inputSpecPostValidator.validate(contextList)) {
             WorkflowLogger.logPersistedActivities();

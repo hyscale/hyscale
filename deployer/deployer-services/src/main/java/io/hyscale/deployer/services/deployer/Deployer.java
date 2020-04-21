@@ -73,7 +73,7 @@ public interface Deployer<T extends AuthConfig> {
      * Check if User can access cluster
      *
      * @param authConfig
-     * @return true if user can access cluster
+     * @return true if user can access cluster else false
      * @throws HyscaleException
      */
     public boolean authenticate(T authConfig) throws HyscaleException;

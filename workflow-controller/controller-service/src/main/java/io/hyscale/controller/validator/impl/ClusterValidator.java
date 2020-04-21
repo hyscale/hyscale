@@ -21,13 +21,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.LoggerTags;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.models.Status;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.deployer.services.deployer.Deployer;
 
+/**
+ * Validate cluster information using {@link AuthConfig}
+ * provided by {@link WorkflowContext}
+ * Checks if access to cluster is allowed.
+ *
+ */
 @Component
 public class ClusterValidator implements Validator<WorkflowContext> {
     
@@ -36,33 +44,32 @@ public class ClusterValidator implements Validator<WorkflowContext> {
 	@Autowired
 	private Deployer deployer;
 	
-	private boolean isClusterValidated = false;
+	private boolean isClusterValid = false;
+	
+	private boolean isClusterInValid = false;
 
-	/**
-	 * 1. It will try to connect to the cluster 
-	 * 2. It will take cluster details which is provided by user
-	 * 3. Try to fetch V1APIResourceList from cluster
-	 * 4. If  V1APIResourceList null then it will return true otherwise false
-	 */
 	@Override
 	public boolean validate(WorkflowContext context) throws HyscaleException {
-	    if (isClusterValidated) {
-	        return isClusterValidated;
+	    if (isClusterValid) {
+	        return isClusterValid;
 	    }
+	    if (isClusterInValid) {
+            return false;
+        }
 	    WorkflowLogger.startActivity(ValidatorActivity.VALIDATING_CLUSTER);
 		logger.debug("Starting K8s cluster validation");
-		boolean isClusterValid = false;
 		try {
 		    isClusterValid = deployer.authenticate(context.getAuthConfig());
 		} catch(HyscaleException ex) {
+		    WorkflowLogger.persist(ValidatorActivity.CLUSTER_AUTHENTICATION_FAILED, LoggerTags.ERROR);
 		    WorkflowLogger.endActivity(Status.FAILED);
 		    throw ex;
 		}
 		if (isClusterValid) {
 		    WorkflowLogger.endActivity(Status.DONE);
-		    isClusterValidated = true;
-		}
-		if (!isClusterValid) {
+		} else {
+		    isClusterInValid = true;
+		    WorkflowLogger.persist(ValidatorActivity.CLUSTER_AUTHENTICATION_FAILED, LoggerTags.ERROR);
 		    WorkflowLogger.endActivity(Status.FAILED);
 		}
 		return isClusterValid;

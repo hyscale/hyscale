@@ -30,7 +30,7 @@ public enum ControllerErrorCodes implements HyscaleErrorCode {
     UNEXPECTED_ERROR("Unexpected error occurred"),
     UNDEPLOYMENT_FAILED("Failed to Undeploy"),
     UNIQUE_PROFILE_REQUIRED("Service {} cannot have multiple profiles"),
-    INVALID_REPLICA_SELECTED_REACHED_MAX_RETRIES("Invalid input provided . Reached maximum retries. Please try again"),
+    INVALID_REPLICA_SELECTED_REACHED_MAX_RETRIES("Invalid input provided. Reached maximum retries. Please try again"),
     SERVICE_NOT_PROVIDED_FOR_PROFILE("Services {} mentioned in profiles not found"),
     ERROR_WHILE_PROCESSING_PROFILE("Error while looking for profile. {}"),
     INPUT_VALIDATION_FAILED("Input validation failed. Error messages {}");

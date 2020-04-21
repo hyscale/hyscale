@@ -38,7 +38,7 @@ public enum CommonErrorCode implements HyscaleErrorCode {
     FAILED_TO_READ_LOGFILE("Failed to read logs at log file {}"),
     OUTPUTSTREAM_NOT_FOUND("Cannot find output stream and so cannot write to stream"),
     STRATEGIC_MERGE_KEY_NOT_FOUND("Merge key not found while merging {}"),
-    YAML_TO_JSON_CONVERSION_FAILURE("Error occured while converting given yaml to json.{}"),
+    YAML_TO_JSON_CONVERSION_FAILURE("Error occured while converting given yaml to json. {}"),
     EMPTY_REFERENCE_SCHEMA_FOUND("Cannot be process empty schema"),
     SCHEMA_PROCESSING_ERROR("Unable process schema path,missing node"),
     EMPTY_FILE_FOUND("Empty file:{} cannot be processed."),

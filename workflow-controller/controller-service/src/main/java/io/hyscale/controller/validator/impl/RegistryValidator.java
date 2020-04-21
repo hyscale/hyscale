@@ -35,6 +35,12 @@ import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Image;
 import io.hyscale.servicespec.commons.util.ImageUtil;
 
+/**
+ * Validates registry related details
+ * Returns true if registry details are not required
+ * i.e. image build or push not required
+ * 
+ */
 @Component
 public class RegistryValidator implements Validator<WorkflowContext> {
 	private static final Logger logger = LoggerFactory.getLogger(ClusterValidator.class);
@@ -42,7 +48,9 @@ public class RegistryValidator implements Validator<WorkflowContext> {
 	@Autowired
 	private RegistryManager registryManager;
 	
-	private Set<String> registriesValidated = new HashSet<String>();
+	private Set<String> validRegistries = new HashSet<String>();
+	
+	private Set<String> inValidRegistries = new HashSet<String>();
 
 	/**
 	 * 1. It will check that spec has buildspec or dockerfile 
@@ -59,8 +67,12 @@ public class RegistryValidator implements Validator<WorkflowContext> {
 	    
 	    String registry = image.getRegistry();
 	    
-	    if (registriesValidated.contains(registry)) {
+	    if (validRegistries.contains(registry)) {
 	        return true;
+	    }
+	    
+	    if (inValidRegistries.contains(registry)) {
+	        return false;
 	    }
 	    WorkflowLogger.startActivity(ValidatorActivity.VALIDATING_REGISTRY, registry);
 		if (!ImageUtil.isImageBuildPushRequired(context.getServiceSpec())) {
@@ -69,9 +81,11 @@ public class RegistryValidator implements Validator<WorkflowContext> {
 		}
 		boolean isRegistryAvailable = registryManager.getImageRegistry(registry) != null ? true : false;
 		if (isRegistryAvailable) {
-			registriesValidated.add(registry);
+			validRegistries.add(registry);
 			WorkflowLogger.endActivity(Status.DONE);
 			return true;
+		} else {
+		    inValidRegistries.add(registry);
 		}
 		WorkflowLogger.persist(ValidatorActivity.MISSING_DOCKER_REGISTRY_CREDENTIALS, LoggerTags.ERROR, registry, registry);
 		WorkflowLogger.endActivity(Status.FAILED);

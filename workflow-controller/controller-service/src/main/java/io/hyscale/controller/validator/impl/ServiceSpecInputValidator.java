@@ -25,6 +25,10 @@ import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.validator.InputSpecValidator;
 
+/**
+ * Provides Service spec related details to {@link InputSpecValidator}
+ *
+ */
 @Component
 public class ServiceSpecInputValidator extends InputSpecValidator{
 

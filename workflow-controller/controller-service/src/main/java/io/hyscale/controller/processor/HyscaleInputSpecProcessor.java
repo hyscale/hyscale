@@ -16,15 +16,10 @@
 package io.hyscale.controller.processor;
 
 import java.io.File;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,22 +28,26 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.validator.Validator;
+import io.hyscale.commons.models.Status;
 import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.exception.ControllerErrorCodes;
-import io.hyscale.controller.model.HyscaleCommandSpec;
+import io.hyscale.controller.model.HyscaleCommandSpecBuilder;
 import io.hyscale.controller.model.HyscaleInputSpec;
-import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.ServiceProfileUtil;
 import io.hyscale.controller.util.ServiceSpecUtil;
-import io.hyscale.controller.validator.impl.ClusterValidator;
-import io.hyscale.controller.validator.impl.DockerDaemonValidator;
-import io.hyscale.controller.validator.impl.ManifestValidator;
 import io.hyscale.controller.validator.impl.ProfileSpecInputValidator;
-import io.hyscale.controller.validator.impl.RegistryValidator;
 import io.hyscale.controller.validator.impl.ServiceSpecInputValidator;
-import io.hyscale.controller.validator.impl.VolumeValidator;
 
+/**
+ * Provides input processing funtionality
+ * like processing service spec, profiles
+ * Processing includes validating input,
+ * looking for profiles among others
+ * 
+ * @author tushar
+ *
+ */
 @Component
 public class HyscaleInputSpecProcessor {
     
@@ -58,7 +57,6 @@ public class HyscaleInputSpecProcessor {
      * This class extracts out common functionality between manifest generation and deployer
      * Especially related to service and profile spec validation and processing
      * 
-     * Also provides a list of post processors
      */
 
     @Autowired
@@ -67,46 +65,7 @@ public class HyscaleInputSpecProcessor {
     @Autowired
     private ProfileSpecInputValidator profileSpecInputValidator;
     
-    @Autowired
-    private DockerDaemonValidator dockerValidator;
-    
-    @Autowired
-    private RegistryValidator registryValidator;
-    
-    @Autowired
-    private ManifestValidator manifestValidator;
-    
-    @Autowired
-    private ClusterValidator clusterValidator;
-    
-    @Autowired
-    private VolumeValidator volumeValidator;
-    
-    private List<Validator<WorkflowContext>> generateManifestPostValidators = new ArrayList<Validator<WorkflowContext>>();
-    
-    private List<Validator<WorkflowContext>> deployPostValidators = new ArrayList<Validator<WorkflowContext>>();
-    
-    @PostConstruct
-    public void init() {
-        // Post validators
-        deployPostValidators.add(dockerValidator);
-        deployPostValidators.add(registryValidator);
-        deployPostValidators.add(manifestValidator);
-        deployPostValidators.add(clusterValidator);
-        deployPostValidators.add(volumeValidator);
-        
-        generateManifestPostValidators.add(manifestValidator);
-    }
-    
-    public List<Validator<WorkflowContext>> getManifestPostValidators() {
-        return generateManifestPostValidators;
-    }
-    
-    public List<Validator<WorkflowContext>> getDeployPostValidators() {
-        return deployPostValidators;
-    }
-
-    public HyscaleInputSpec process(HyscaleCommandSpec commandSpec) throws HyscaleException {
+    public HyscaleInputSpec process(HyscaleCommandSpecBuilder commandSpec) throws HyscaleException {
         if (commandSpec == null) {
             return null;
         }
@@ -118,13 +77,23 @@ public class HyscaleInputSpecProcessor {
         HyscaleInputSpec inputSpec = new HyscaleInputSpec();
         inputSpec.setServiceSpecFiles(serviceSpecs);
         List<File> profiles = commandSpec.getProfileFiles();
-        if (profiles == null && commandSpec.getProfileName() == null) {
+        String profileName = commandSpec.getProfileName();
+        if (profiles == null && profileName == null) {
             return inputSpec;
         }
 
-        if (profiles == null && commandSpec.getProfileName() != null) {
-            profiles = ServiceProfileUtil.getAllProfiles(serviceSpecs, commandSpec.getProfileName());
-            profiles = ServiceProfileUtil.validateAndFilter(serviceSpecs, profiles);
+        if (profiles == null && profileName != null) {
+            WorkflowLogger.startActivity(ControllerActivity.LOOKING_FOR_PROFILE, profileName);
+            profiles = ServiceProfileUtil.getAllProfiles(serviceSpecs, profileName);
+            try {
+                profiles = ServiceProfileUtil.validateAndFilter(serviceSpecs, profiles, profileName);
+            } catch (HyscaleException ex) {
+                WorkflowLogger.endActivity(Status.FAILED);
+                WorkflowLogger.logPersistedActivities();
+                throw ex;
+            } 
+            WorkflowLogger.endActivity(Status.DONE);
+            WorkflowLogger.logPersistedActivities();
         }
         
         if (!profileSpecInputValidator.validate(profiles)) {
@@ -142,43 +111,48 @@ public class HyscaleInputSpecProcessor {
     
     private boolean validateDependency(List<File> serviceSpecFiles,
             List<File> profileFiles) throws HyscaleException {
-        Map<String, Entry<String, File>> serviceVsProfile = new HashMap<String, Map.Entry<String, File>>();
-        List<String> invalidServiceList = new ArrayList<String>();
-        if (profileFiles != null && !profileFiles.isEmpty()) {
-            for (File profileFile : profileFiles) {
-                String profileName = ServiceProfileUtil.getProfileName(profileFile);
-                String serviceName = ServiceProfileUtil.getServiceNameFromProfile(profileFile);
-                if (serviceVsProfile.get(serviceName) != null) {
-                    // Multiple profiles for a single service
-                    invalidServiceList.add(serviceName);
-                }
-                serviceVsProfile.put(serviceName, new SimpleEntry<String, File>(profileName, profileFile));
-            }
-        }
-
-        if (!invalidServiceList.isEmpty()) {
-            String invalidServices = invalidServiceList.toString();
-            logger.error("Multiple profiles found for services {}", invalidServices);
-            WorkflowLogger.error(ControllerActivity.MULIPLE_PROFILES_FOUND, invalidServices);
-            throw new HyscaleException(ControllerErrorCodes.UNIQUE_PROFILE_REQUIRED, invalidServices);
-        }
-
-        Map<String, File> serviceVsSpecFile = new HashMap<String, File>();
+        WorkflowLogger.startActivity(ValidatorActivity.VALIDATING_MAPPING);
+        
+        List<String> serviceFromSpec = new ArrayList<String>();
+        List<String> serviceFromProfiles = new ArrayList<String>();
 
         for (File serviceSpecFile : serviceSpecFiles) {
-            serviceVsSpecFile.put(ServiceSpecUtil.getServiceName(serviceSpecFile), serviceSpecFile);
+            serviceFromSpec.add(ServiceSpecUtil.getServiceName(serviceSpecFile));
         }
-
-        // Services specified in profile not found
-        invalidServiceList = serviceVsProfile.entrySet().stream().map(entrySet -> entrySet.getKey())
-                .filter(service -> !serviceVsSpecFile.containsKey(service)).collect(Collectors.toList());
-
-        if (invalidServiceList != null && !invalidServiceList.isEmpty()) {
-            String invalidServices = invalidServiceList.toString();
+        Set<String> multipleProfilesServices = new HashSet<String>();
+        Set<String> profileWithoutServices = new HashSet<String>();
+        
+        if (profileFiles != null && !profileFiles.isEmpty()) {
+            for (File profileFile : profileFiles) {
+                String serviceName = ServiceProfileUtil.getServiceNameFromProfile(profileFile);
+                if (serviceFromProfiles.contains(serviceName)) {
+                    multipleProfilesServices.add(serviceName);
+                } else {
+                    serviceFromProfiles.add(serviceName);
+                }
+                if (!serviceFromSpec.contains(serviceName)) {
+                    profileWithoutServices.add(serviceName);
+                }
+            }
+        }
+        
+        if (!profileWithoutServices.isEmpty()) {
+            String invalidServices = profileWithoutServices.toString();
             logger.error("Services {} mentioned in profiles not available in deployment", invalidServices);
+            WorkflowLogger.endActivity(Status.FAILED);
             WorkflowLogger.error(ControllerActivity.NO_SERVICE_FOUND_FOR_PROFILE, invalidServices);
             throw new HyscaleException(ControllerErrorCodes.SERVICE_NOT_PROVIDED_FOR_PROFILE, invalidServices);
         }
+        
+        if (!multipleProfilesServices.isEmpty() ) {
+            String invalidServices = multipleProfilesServices.toString();
+            logger.error("Multiple profiles found for services {}", invalidServices);
+            WorkflowLogger.endActivity(Status.FAILED);
+            WorkflowLogger.error(ControllerActivity.MULIPLE_PROFILES_FOUND, invalidServices);
+            throw new HyscaleException(ControllerErrorCodes.UNIQUE_PROFILE_REQUIRED, invalidServices);
+        }
+        
+        WorkflowLogger.endActivity(Status.DONE);
         return true;
     }
 

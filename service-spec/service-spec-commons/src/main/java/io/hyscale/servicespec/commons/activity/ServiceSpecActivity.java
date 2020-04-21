@@ -19,8 +19,8 @@ import io.hyscale.commons.models.Activity;
 
 public enum ServiceSpecActivity implements Activity {
     FAILED_TO_DESERIALIZE_REPLICAS("Cannot process the field 'replicas' with error {} , deployment continued with min 1 replica"),
-    SERVICE_NAME_MISMATCH("Service name mismatch with hspec file name convention as <service-name>.hspec"),
-    PROFILE_NAME_MISMATCH("profile name mismatch with hprof file name convention as <environment-name>-<service-name>.hprof"),
+    SERVICE_NAME_MISMATCH("Service name mismatch with hspec file {}. Naming convention as <service-name>.hspec"),
+    PROFILE_NAME_MISMATCH("Profile name mismatch with hprof file {}. Naming convention as <environment-name>-<service-name>.hprof"),
     IMPROPER_SERVICE_FILE_NAME("Recommended file name pattern for service spec is <service-name>.hspec"),
     IMPROPER_PROFILE_FILE_NAME("Recommended file name pattern for profile is <environment>-<service-name>.hprof"),
     ERROR("{}");

@@ -21,6 +21,10 @@ import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.controller.validator.FileValidator;
 import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
 
+/**
+ * Provides Service spec file related implementation to {@link FileValidator}
+ *
+ */
 @Component
 public class ServiceSpecFileValidator extends FileValidator {
 

@@ -24,6 +24,10 @@ import io.hyscale.commons.models.Manifest;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
 
+/**
+ * Builder to create {@link DeploymentContext} from {@link WorkflowContext}
+ *
+ */
 @Component
 public class DeploymentContextBuilder {
 

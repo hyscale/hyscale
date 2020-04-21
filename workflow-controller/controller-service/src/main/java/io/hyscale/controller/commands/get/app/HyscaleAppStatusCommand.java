@@ -55,8 +55,9 @@ import picocli.CommandLine.Option;
  * @option namespace  namespace in which the app is deployed
  * @option appName   name of the app
  *
- * Fetches the deployment status {@link DeploymentStatus} of each service in the app and displays
- * in a table format to the user.
+ * Fetches the deployment status {@link DeploymentStatus} of each service in the app
+ * Displays app data in a table format to the user.
+ * 
  */
 @Command(name = "status", description = "Get App Deployment status")
 public class HyscaleAppStatusCommand implements Callable<Integer> {

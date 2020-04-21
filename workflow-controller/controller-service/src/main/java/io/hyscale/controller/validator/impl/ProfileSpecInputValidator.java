@@ -25,6 +25,10 @@ import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.validator.InputSpecValidator;
 
+/**
+ * Provides Profile spec related implementation to {@link InputSpecValidator}
+ *
+ */
 @Component
 public class ProfileSpecInputValidator extends InputSpecValidator {
 
