@@ -17,27 +17,19 @@ At HyScale, we believe all complexities around deployment can be abstracted and 
 
 ## Contribute
 
-Do you have any inputs that can make HyScale better? Say, a bug or a feature request? Please open a new issue here. See our architecture & contributor documentation here.
+Do you have any inputs that can make HyScale better? Say, a bug or a feature request? Please open a new issue [here](https://github.com/hyscale/hyscale/issues). See our architecture & contributor documentation [here](https://github.com/hyscale/hyscale/blob/master/docs/contributor-guide.md).
 
 ## Community
 Let us know your experiences with HyScale! Questions, Issues, Suggestions - we look forward to them all!
-* Follow @hyscaleio updates on Twitter 
-* Read @teamhyscale  updates and musings on Medium
+* Follow [@hyscaleio](https://twitter.com/hyscaleio) updates on Twitter 
+* Read [@teamhyscale](https://medium.com/@teamhyscale)  updates and musings on Medium
 * Write to us at connect@hyscale.io  and we will respond as quickly as we can.
-
-## Overview
-
-**The K8s App Deployment Tool**
-
-Kubernetes (K8s) has emerged as the de facto container orchestration platform offering excellent abstraction over infrastructure. But app deployments and delivery mechanisms to K8s are still way too complex. Delivery tools should simplify things for a developer so that developers can focus on writing apps & building value. This is best achieved if all the complexity of deployment completely disappears! 
-HyScale is a starting point for how a simplified service spec can allow developers to easily deploy the various (micro-)services in their app to K8s without having to wade through K8s complexities and also without having to write or maintain hundreds of lines of manifest YAML.
 
 ## Capabilities
 
 **Automatic containerization & auto-generation of K8s yamls**
 
 HyScale offers a declarative spec for K8s abstraction using which K8s manifests & docker files are automatically generated, docker images are built & pushed to the target docker registry, and the manifests are deployed to the K8s cluster resulting in a URL.
-
 
 **App-centric abstraction**
 
