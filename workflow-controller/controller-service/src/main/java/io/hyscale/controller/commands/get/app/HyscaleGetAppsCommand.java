@@ -87,8 +87,9 @@ public class HyscaleGetAppsCommand implements Callable<Integer> {
             WorkflowLogger.info(ControllerActivity.NO_DEPLOYMENTS);
         }
         Builder tableBuilder = new TableFormatter.Builder()
-                .addField(TableFields.APPLICATION.getFieldName(), TableFields.APPLICATION.getLength())
-                .addField(TableFields.NAMESPACE.getFieldName(), TableFields.NAMESPACE.getLength());
+                .addField(TableFields.APPLICATION.getFieldName())
+                .addField(TableFields.PROFILE.getFieldName())
+                .addField(TableFields.NAMESPACE.getFieldName());
 
         if (wide) {
             tableBuilder.addField(TableFields.SERVICES.getFieldName(), TableFields.SERVICES.getLength());
@@ -104,7 +105,7 @@ public class HyscaleGetAppsCommand implements Callable<Integer> {
         }).sorted(Comparator.comparing(AppMetadata::getAppName)).forEach(appInfo -> {
             String services = appInfo.getServices() == null || appInfo.getServices().isEmpty() ? null
                     : appInfo.getServices().toString().replace("[", "").replace("]", "");
-            String[] row = new String[] { appInfo.getAppName(), appInfo.getNamespace(), services };
+            String[] row = new String[] { appInfo.getAppName(), appInfo.getEnvName() ,appInfo.getNamespace(), services };
             table.addRow(row);
         });
         WorkflowLogger.logTable(table);
