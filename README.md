@@ -2,7 +2,9 @@
 
 [![Actions Status](https://github.com/hyscale/hyscale/workflows/Build/badge.svg)](https://github.com/hyscale/hyscale/actions?query=workflow%3ABuild)
 
-HyScale is a starting point for how a simplified service spec can allow developers to easily deploy the various (micro-)services in their app to K8s without having to wade through K8s complexities and also without having to write or maintain hundreds of lines of manifest yamls.
+HyScale is an application deployment tool that helps you effortlessly deploy to Kubernetes. It offers a high-level abstraction on top of Kubernetes so that teams can deploy software to K8s while focusing more on code rather than on low-level details.
+
+**You can use HyScale to:**
 
 + Generate Docker files & images from packaged code like binaries, jar, war, scripts etc 
 + Generate Kubernetes manifests from an app-centric declarative description of services/applications & configurations
