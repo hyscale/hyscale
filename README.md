@@ -2,7 +2,9 @@
 
 [![Actions Status](https://github.com/hyscale/hyscale/workflows/Build/badge.svg)](https://github.com/hyscale/hyscale/actions?query=workflow%3ABuild)
 
-HyScale is a starting point for how a simplified service spec can allow developers to easily deploy the various (micro-)services in their app to K8s without having to wade through K8s complexities and also without having to write or maintain hundreds of lines of manifest yamls.
+HyScale is an application deployment tool that helps you effortlessly deploy to Kubernetes. It offers a high-level abstraction on top of Kubernetes so that teams can deploy software to K8s while focusing more on code rather than on low-level details.
+
+**You can use HyScale to:**
 
 + Generate Docker files & images from packaged code like binaries, jar, war, scripts etc 
 + Generate Kubernetes manifests from an app-centric declarative description of services/applications & configurations
@@ -25,13 +27,13 @@ Let us know your experiences with HyScale! Questions, Issues, Suggestions - we l
 
 ## Capabilities
 
-**Automatic containerization & auto-generation of K8s yamls**
+**1. Automatic containerization & auto-generation of K8s yamls**
 
 HyScale offers a declarative spec for K8s abstraction using which K8s manifests & docker files are automatically generated, docker images are built & pushed to the target docker registry, and the manifests are deployed to the K8s cluster resulting in a URL.
 
-**App-centric abstraction**
+**2. App-centric abstraction**
 
-Some useful things you can achieve in just a few lines with HyScale's app-centric abstraction:
+HyScale's app centric abstraction helps you achieve the folowing with just a few lines of declaration:
 
 + Setting up resource-limits and enabling auto-scaling.
 
@@ -48,7 +50,7 @@ Some useful things you can achieve in just a few lines with HyScale's app-centri
 + Override or add different configurations for different environments using profiles.
 
 
-**App-centric troubleshooting**
+**3. App-centric troubleshooting**
 
 Deployment failures at Kubernetes are cryptic and not intuitive for debugging. Users have to refer many things to identify the root cause of the failure like pod status, describe pod , statuses of other kinds etc. When issues occur abstraction is needed to simplify troubleshooting. So instead of presenting users with an error like "CrashLoopBackOff", HyScale executes a troubleshooting flowchart that will basically try to figure out the possible causes and inform the user in plain terms. 
 Hyscale abstracts Kubernetes errors to an app-centric model eg.: a "Pending" state may mean one of many things such as "New services cannot be accommodated as cluster capacity is full" or "Specified volume cannot be attached to the service"
