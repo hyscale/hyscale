@@ -18,6 +18,7 @@ package io.hyscale.controller.validator.impl;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import io.hyscale.controller.model.WorkflowContextBuilder;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,7 +36,7 @@ public class ClusterValidatorTest {
     @Test
     void testValidate() {
         try {
-            assertFalse(clusterValidator.validate(new WorkflowContext()));
+            assertFalse(clusterValidator.validate(new WorkflowContextBuilder(null).get()));
         } catch (HyscaleException e) {
             fail(e);
         }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.processor;
+package io.hyscale.controller.provider;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,9 +50,9 @@ import io.hyscale.servicespec.commons.builder.ServiceInputType;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @Component
-public class ServiceSpecProcessor {
+public class EffectiveServiceSpecProvider {
 
-    private static final Logger logger = LoggerFactory.getLogger(ServiceSpecProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(EffectiveServiceSpecProvider.class);
 
     /**
      * Calls {@link #getEffectiveServiceSpec(List, List)} 

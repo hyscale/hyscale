@@ -18,6 +18,8 @@ package io.hyscale.controller.model;
 import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
+import java.util.Objects;
+
 public class EffectiveServiceSpec {
 
     private ServiceMetadata serviceMetadata;
@@ -39,4 +41,17 @@ public class EffectiveServiceSpec {
         this.serviceSpec = serviceSpec;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        EffectiveServiceSpec that = (EffectiveServiceSpec) o;
+        return Objects.equals(serviceMetadata, that.serviceMetadata) &&
+                Objects.equals(serviceSpec, that.serviceSpec);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(serviceMetadata, serviceSpec);
+    }
 }

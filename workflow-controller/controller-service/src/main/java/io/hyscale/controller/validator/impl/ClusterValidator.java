@@ -56,21 +56,17 @@ public class ClusterValidator implements Validator<WorkflowContext> {
 	    if (isClusterInValid) {
             return false;
         }
-	    WorkflowLogger.startActivity(ValidatorActivity.VALIDATING_CLUSTER);
 		logger.debug("Starting K8s cluster validation");
 		try {
 		    isClusterValid = deployer.authenticate(context.getAuthConfig());
 		} catch(HyscaleException ex) {
 		    WorkflowLogger.persist(ValidatorActivity.CLUSTER_AUTHENTICATION_FAILED, LoggerTags.ERROR);
-		    WorkflowLogger.endActivity(Status.FAILED);
 		    throw ex;
 		}
 		if (isClusterValid) {
-		    WorkflowLogger.endActivity(Status.DONE);
 		} else {
 		    isClusterInValid = true;
 		    WorkflowLogger.persist(ValidatorActivity.CLUSTER_AUTHENTICATION_FAILED, LoggerTags.ERROR);
-		    WorkflowLogger.endActivity(Status.FAILED);
 		}
 		return isClusterValid;
 	}

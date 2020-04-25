@@ -84,11 +84,9 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 
 	@Override
 	public boolean validate(WorkflowContext context) throws HyscaleException {
-	    WorkflowLogger.startActivity(ValidatorActivity.VALIDATING_VOLUME, context.getServiceName());
 		logger.debug("Validating volumes from the service spec");
 		ServiceSpec serviceSpec = context.getServiceSpec();
 		if (serviceSpec == null) {
-		    WorkflowLogger.endActivity(Status.FAILED);
 			return false;
 		}
 		TypeReference<List<Volume>> volTypeRef = new TypeReference<List<Volume>>() {
@@ -96,7 +94,6 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 		List<Volume> volumeList = serviceSpec.get(HyscaleSpecFields.volumes, volTypeRef);
 
 		if (volumeList == null || volumeList.isEmpty()) {
-		    WorkflowLogger.endActivity(Status.SKIPPING);
 			return true;
 		}
 		ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
@@ -106,7 +103,6 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 		        return printMsg(true);
 		    }
 		} catch (HyscaleException ex) {
-		    WorkflowLogger.endActivity(Status.FAILED);
 		    throw ex;
 		}
 		
@@ -127,10 +123,8 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 	
 	private boolean printMsg(boolean isFailed) {
 	    if (isFailed) {
-	        WorkflowLogger.endActivity(Status.FAILED);
             return false;
 	    }
-	    WorkflowLogger.endActivity(Status.DONE);
         return true;
 	}
 	
@@ -265,12 +259,6 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 		return true;
 	}
 
-	/**
-	 * @param field
-	 * @param existingObj
-	 * @param newObj
-	 * @return String field has been changed from {} to {},
-	 */
 	private Predicate<V1StorageClass> isDefaultStorageClass() {
 		return v1StorageClass -> {
 			Map<String, String> annotations = v1StorageClass.getMetadata().getAnnotations();

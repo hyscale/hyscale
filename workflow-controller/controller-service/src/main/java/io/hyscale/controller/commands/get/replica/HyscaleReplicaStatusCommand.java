@@ -19,7 +19,8 @@ import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.builder.WorkflowContextBuilder;
+import io.hyscale.controller.builder.K8sAuthConfigBuilder;
+import io.hyscale.controller.model.WorkflowContextBuilder;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.service.ReplicaProcessingService;
 import io.hyscale.controller.util.CommandUtil;
@@ -71,15 +72,15 @@ public class HyscaleReplicaStatusCommand implements Callable<Integer> {
     @Pattern(regexp = ValidationConstants.SERVICE_NAME_REGEX, message = ValidationConstants.INVALID_SERVICE_NAME_MSG)
     @CommandLine.Option(names = {"-s", "--service"}, required = true, description = "Service name")
     private String serviceName;
-    
+
     @Autowired
     private ClusterValidator clusterValidator;
 
     @Autowired
     private ReplicaProcessingService replicaProcessingService;
-    
+
     @Autowired
-    private WorkflowContextBuilder workflowContextBuilder;
+    private K8sAuthConfigBuilder authConfigBuilder;
 
     @Override
     public Integer call() throws Exception {
@@ -87,14 +88,15 @@ public class HyscaleReplicaStatusCommand implements Callable<Integer> {
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        WorkflowContext context = workflowContextBuilder.updateAuthConfig(new WorkflowContext());
-        if (!clusterValidator.validate(context )) {
+        WorkflowContext context = new WorkflowContextBuilder(appName)
+                .withNamespace(namespace).withServiceName(serviceName).withAuthConfig(authConfigBuilder.getAuthConfig()).get();
+        if (!clusterValidator.validate(context)) {
             WorkflowLogger.logPersistedActivities();
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        
+
         WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
-        
+
         replicaProcessingService.logReplicas(replicaProcessingService.getReplicas(appName, serviceName, namespace, true), false);
 
         return ToolConstants.HYSCALE_SUCCESS_CODE;

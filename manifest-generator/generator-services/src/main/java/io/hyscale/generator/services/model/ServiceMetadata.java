@@ -15,12 +15,13 @@
  */
 package io.hyscale.generator.services.model;
 
+import java.util.Objects;
+
 public class ServiceMetadata {
 
 	private String serviceName;
 	private String appName;
 	private String envName;
-
 
 	public String getServiceName() {
 		return serviceName;
@@ -44,5 +45,20 @@ public class ServiceMetadata {
 
 	public void setEnvName(String envName) {
 		this.envName = envName;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		ServiceMetadata that = (ServiceMetadata) o;
+		return serviceName.equals(that.serviceName) &&
+				appName.equals(that.appName) &&
+				envName.equals(that.envName);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(serviceName, appName, envName);
 	}
 }

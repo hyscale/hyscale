@@ -21,7 +21,8 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 
 import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.builder.WorkflowContextBuilder;
+import io.hyscale.controller.builder.K8sAuthConfigBuilder;
+import io.hyscale.controller.model.WorkflowContextBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
@@ -88,15 +89,15 @@ public class HyscaleServiceLogsCommand implements Callable<Integer> {
     @Min(value = ValidationConstants.MIN_LOG_LINES, message = ValidationConstants.MIN_LOG_LINES_ERROR_MSG)
     @Option(names = {"-l", "--line"}, required = false, description = "Number of lines of logs")
     private Integer line = 100;
-    
+
     @Autowired
     private ClusterValidator clusterValidator;
 
     @Autowired
     private LoggerUtility loggerUtility;
-    
+
     @Autowired
-    private WorkflowContextBuilder workflowContextBuilder;
+    private K8sAuthConfigBuilder authConfigBuilder;
 
     @Override
     public Integer call() throws Exception {
@@ -105,17 +106,16 @@ public class HyscaleServiceLogsCommand implements Callable<Integer> {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
 
-        WorkflowContext workflowContext = workflowContextBuilder.buildContext(appName, namespace, serviceName);
+        WorkflowContext workflowContext = new WorkflowContextBuilder(appName).withNamespace(namespace).withServiceName(serviceName).withAuthConfig(authConfigBuilder.getAuthConfig()).get();
         workflowContext.addAttribute(WorkflowConstants.TAIL_LOGS, tail);
         workflowContext.addAttribute(WorkflowConstants.LINES, line);
         workflowContext.addAttribute(WorkflowConstants.REPLICA_NAME, replicaName);
-        workflowContext = workflowContextBuilder.updateAuthConfig(workflowContext);
-        
-        if (!clusterValidator.validate(workflowContext )) {
+
+        if (!clusterValidator.validate(workflowContext)) {
             WorkflowLogger.logPersistedActivities();
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        
+
         WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
         loggerUtility.deploymentLogs(workflowContext);
 

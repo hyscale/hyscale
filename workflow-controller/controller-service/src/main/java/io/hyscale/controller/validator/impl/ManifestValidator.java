@@ -44,10 +44,8 @@ public class ManifestValidator implements Validator<WorkflowContext> {
     @Override
     public boolean validate(WorkflowContext context) throws HyscaleException {
         logger.debug("Executing Manifest Validator Hook");
-        WorkflowLogger.startActivity(ValidatorActivity.VALIDATING_MANIFEST, context.getServiceName());
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
-            WorkflowLogger.endActivity(Status.FAILED);
             return false;
         }
         
@@ -63,12 +61,10 @@ public class ManifestValidator implements Validator<WorkflowContext> {
         }
         
         if (invalidVolumes == null || invalidVolumes.isEmpty()) {
-            WorkflowLogger.endActivity(Status.DONE);
             return true;
         }
         StringBuilder messageBuilder = new StringBuilder("Invalid volumes ").append(invalidVolumes);
         WorkflowLogger.persist(ValidatorActivity.MANIFEST_VALIDATION_FAILED, LoggerTags.ERROR, messageBuilder.toString());
-        WorkflowLogger.endActivity(Status.FAILED);
         return false;
         
     }

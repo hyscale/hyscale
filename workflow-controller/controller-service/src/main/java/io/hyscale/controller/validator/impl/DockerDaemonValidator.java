@@ -64,7 +64,7 @@ public class DockerDaemonValidator implements Validator<WorkflowContext> {
         if (isDockerUnavailable) {
             return false;
         }
-        WorkflowLogger.startActivity(ValidatorActivity.VALIDATING_DOCKER);
+
         if (!ImageUtil.isImageBuildPushRequired(context.getServiceSpec())) {
             WorkflowLogger.endActivity(Status.SKIPPING);
             return true;
@@ -83,12 +83,10 @@ public class DockerDaemonValidator implements Validator<WorkflowContext> {
         success = CommandExecutor.execute(command);
         if (!success) {
             WorkflowLogger.persist(ImageBuilderActivity.DOCKER_DAEMON_NOT_RUNNING, LoggerTags.ERROR);
-            WorkflowLogger.endActivity(Status.FAILED);
             isDockerUnavailable = true;
             return false;
         }
         isDockerAvailable = true;
-        WorkflowLogger.endActivity(Status.DONE);
         return isDockerAvailable;
     }
 }

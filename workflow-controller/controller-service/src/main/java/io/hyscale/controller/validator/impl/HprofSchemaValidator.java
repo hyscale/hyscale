@@ -36,9 +36,9 @@ import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
  *
  */
 @Component
-public class ProfileSpecSchemaValidator extends SpecSchemaValidator {
+public class HprofSchemaValidator extends SpecSchemaValidator {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProfileSpecSchemaValidator.class);
+    private static final Logger logger = LoggerFactory.getLogger(HprofSchemaValidator.class);
 
     @Override
     public HyscaleSpecType getReferenceSchemaType() {

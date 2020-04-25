@@ -74,21 +74,17 @@ public class RegistryValidator implements Validator<WorkflowContext> {
 	    if (inValidRegistries.contains(registry)) {
 	        return false;
 	    }
-	    WorkflowLogger.startActivity(ValidatorActivity.VALIDATING_REGISTRY, registry);
 		if (!ImageUtil.isImageBuildPushRequired(context.getServiceSpec())) {
-		    WorkflowLogger.endActivity(Status.SKIPPING);
 			return true;
 		}
 		boolean isRegistryAvailable = registryManager.getImageRegistry(registry) != null ? true : false;
 		if (isRegistryAvailable) {
 			validRegistries.add(registry);
-			WorkflowLogger.endActivity(Status.DONE);
 			return true;
 		} else {
 		    inValidRegistries.add(registry);
 		}
 		WorkflowLogger.persist(ValidatorActivity.MISSING_DOCKER_REGISTRY_CREDENTIALS, LoggerTags.ERROR, registry, registry);
-		WorkflowLogger.endActivity(Status.FAILED);
 		return false;
 	}
 }

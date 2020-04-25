@@ -35,13 +35,13 @@ import io.hyscale.commons.models.Activity;
 import io.hyscale.commons.models.HyscaleSpecType;
 import io.hyscale.commons.utils.DataFormatConverter;
 import io.hyscale.commons.validator.Validator;
-import io.hyscale.controller.validator.impl.ProfileSpecSchemaValidator;
-import io.hyscale.controller.validator.impl.ServiceSpecSchemaValidator;
+import io.hyscale.controller.validator.impl.HprofSchemaValidator;
+import io.hyscale.controller.validator.impl.HSpecSchemaValidator;
 import io.hyscale.schema.validator.SchemaValidator;
 
 /**
  * Parent level validator to validate schema such as
- * {@link ServiceSpecSchemaValidator} , {@link ProfileSpecSchemaValidator}
+ * {@link HSpecSchemaValidator} , {@link HprofSchemaValidator}
  *  
  */
 public abstract class SpecSchemaValidator implements Validator<File> {

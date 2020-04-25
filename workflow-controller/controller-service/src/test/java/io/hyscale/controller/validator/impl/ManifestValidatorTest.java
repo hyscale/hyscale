@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.util.stream.Stream;
 
+import io.hyscale.controller.model.WorkflowContextBuilder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -46,11 +47,10 @@ public class ManifestValidatorTest {
     @ParameterizedTest
     @MethodSource(value = "input")
     public void testManifestValidator(String serviceSpecPath, boolean expectedResult) {
-        WorkflowContext context = new WorkflowContext();
         try {
-            context.setServiceSpec(ServiceSpecTestUtil.getServiceSpec(serviceSpecPath));
+            WorkflowContext context = new WorkflowContextBuilder(null).withService(ServiceSpecTestUtil.getServiceSpec(serviceSpecPath)).get();
             assertEquals(expectedResult, manifestValidator.validate(context));
-        } catch (IOException | HyscaleException e ) {
+        } catch (IOException | HyscaleException e) {
             fail(e);
         }
     }

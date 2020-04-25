@@ -35,9 +35,9 @@ import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
  *
  */
 @Component
-public class ServiceSpecSchemaValidator extends SpecSchemaValidator {
+public class HSpecSchemaValidator extends SpecSchemaValidator {
 
-    private static final Logger logger = LoggerFactory.getLogger(ServiceSpecSchemaValidator.class);
+    private static final Logger logger = LoggerFactory.getLogger(HSpecSchemaValidator.class);
 
     @Override
     public HyscaleSpecType getReferenceSchemaType() {

@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.util.stream.Stream;
 
+import io.hyscale.controller.model.WorkflowContextBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -48,8 +49,6 @@ public class RegistryValidatorTest {
 
     @MockBean
     private RegistryManager registryManager;
-
-    private static WorkflowContext context = new WorkflowContext();
 
     private static ServiceSpec validServiceSpec = null;
 
@@ -80,8 +79,8 @@ public class RegistryValidatorTest {
     @ParameterizedTest
     @MethodSource("input")
     public void validateRegistry(ServiceSpec serviceSpec, boolean expectedResult) {
-        context.setServiceSpec(serviceSpec);
         try {
+            WorkflowContext context = new WorkflowContextBuilder(null).withService(serviceSpec).get();
             assertEquals(expectedResult, registryValidator.validate(context));
         } catch (HyscaleException ex) {
             fail(ex);
