@@ -1,0 +1,102 @@
+#!/bin/bash
+set -e
+
+# User who is running this script
+USER=$(id -un 2> /dev/null)
+
+DOCKER_MIN_VERSION=1.7
+HYS_DIR=$HOME/.hyscale
+HYSCALE=hyscale
+USER_DIR=$(pwd)
+DOCKER_CONF=$HOME/.docker/config.json
+KUBE_CONF=$HOME/.kube/config
+DOCKER_SOCK=/var/run/docker.sock
+ERROR_MSG="ERROR: "
+DOCKER_REPO_PATH=@@HYSCALE_DOCKER_REPO_PATH@@
+HYSCALE_BUILD_VERSION=@@HYSCALE_BUILD_VERSION@@
+HYSCALE_DATA_VOL=hyscale
+USER_INTERACTIVE=""
+HYS_SERVICE_LOGS="get service logs"
+USER_MAP=""
+HYS_DOCKER_CONF_VOL=""
+HYS_KUBE_CONF_VOL=""
+HYS_LB_TIMEOUT=""
+
+command_exists() {
+  command -v "$@" > /dev/null 2>&1
+}
+
+# TODO KUBECONFIG is append with multiple configs.
+if [ ! -z "$KUBECONFIG" ]; then
+   KUBE_CONF=$KUBECONFIG
+fi
+
+if [ -s "$DOCKER_CONF" ]; then
+   HYS_DOCKER_CONF_VOL="-v ${DOCKER_CONF}:/hyscale/.docker/config.json:ro"
+fi
+
+if [ -s "$KUBE_CONF" ]; then
+   HYS_KUBE_CONF_VOL="-v ${KUBE_CONF}:/hyscale/.kube/config:ro"
+fi
+
+if [ "$USER" != "root" ]; then
+
+        docker_socket_owner=$(stat -c "%U" "$DOCKER_SOCK")
+
+        if [ "$docker_socket_owner" == "root" ]; then
+
+                if [[ -n $(printf '%s\n' "$( echo `getent group docker` | tr ":" "\n" )" | grep -w $USER) ]]; then
+                        USER_MAP="-u $(id -u ${USER}):$(getent group docker |cut -d ':' -f3)"
+                else
+                        echo -e "Permission Denied while accessing docker socket located at /var/run/docker.sock.\nPlease either add $USER to docker group and retry in the new terminal or run hyscale with sudo."
+                        exit 1
+                fi
+
+        elif [ "$docker_socket_owner" == "$USER" ]; then
+                USER_MAP="-u $(id -u ${USER}):$(id -g ${USER})"
+        else
+                echo Docker socket is owned by $docker_socket_owner and not accessible to $USER. Please re-run with sudo.
+                exit 1
+        fi
+fi
+
+# create a directory for hyscale to generate files & logs
+mkdir -p $HYS_DIR/$HYSCALE_DATA_VOL 
+
+docker pull $DOCKER_REPO_PATH/$HYSCALE:$HYSCALE_BUILD_VERSION >/dev/null
+
+if [ "$#" -ge 3 ]; then
+   if [[ "$@" == *"$HYS_SERVICE_LOGS"* ]]; then
+      USER_INTERACTIVE="-it"
+   fi
+fi
+
+if [ -n "$IMAGE_CLEANUP_POLICY" ]; then
+	IMAGE_CLEANUP_POLICY="$IMAGE_CLEANUP_POLICY"
+else
+        IMAGE_CLEANUP_POLICY=""
+fi
+
+if [ -n "$HYS_LB_READY_TIMEOUT" ]; then
+        HYS_LB_TIMEOUT="-e HYS_LB_READY_TIMEOUT=$HYS_LB_READY_TIMEOUT"
+fi
+
+# TODO: generate a random string/number to add to name
+docker run \
+  $USER_MAP \
+  $USER_INTERACTIVE \
+  --net=host \
+  --rm \
+  --label name=$HYSCALE \
+  $HYS_DOCKER_CONF_VOL \
+  $HYS_KUBE_CONF_VOL \
+  -v ${USER_DIR}:/hyscale/app:ro \
+  -v ${HYS_DIR}/${HYSCALE_DATA_VOL}:/hyscale/hyscale \
+  $HYS_LB_TIMEOUT \
+  -e IMAGE_CLEANUP_POLICY=$IMAGE_CLEANUP_POLICY \
+  -e HYSCALECTL_HOME=$HYS_DIR \
+  -e HYSCALECTL_KUBECONF=$KUBE_CONF \
+  -e HYSCALECTL_DOCKERCONF=$DOCKER_CONF \
+  -e DOCKER_CONFIG=/hyscale/.docker \
+  -v $DOCKER_SOCK:$DOCKER_SOCK:ro \
+  $DOCKER_REPO_PATH/$HYSCALE:$HYSCALE_BUILD_VERSION $@

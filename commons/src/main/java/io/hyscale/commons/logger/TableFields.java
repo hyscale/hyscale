@@ -22,7 +22,8 @@ public enum TableFields {
 	SERVICE("Service Name", 30), STATUS("Status", 15), AGE("Age"), REASON("Reason"), MESSAGE("Message"),
 	SERVICE_ADDRESS("Service Address", 40), SERVICE_ADDRESS_LARGE("Service Address", 75), REPLICA_NAME("Replica name", 50), 
 	INDEX("Index", 7), NAMESPACE("Namespace", ValidationConstants.NAMESPACE_LENGTH_MAX), 
-	APPLICATION("Application", ValidationConstants.APP_NAME_LENGTH_MAX), SERVICES("Services", 40);
+	APPLICATION("Application", ValidationConstants.APP_NAME_LENGTH_MAX), SERVICES("Services", 40),
+	PROFILE("Profile",ValidationConstants.PROFILE_NAME_LENGTH_MAX);
 
 	private TableFields(String fieldName, Integer length) {
 		this.fieldName = fieldName;

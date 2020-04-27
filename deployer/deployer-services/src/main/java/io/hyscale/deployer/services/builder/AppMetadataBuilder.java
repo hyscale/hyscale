@@ -46,6 +46,7 @@ public class AppMetadataBuilder {
             String namespace = pod.getMetadata().getNamespace();
             String appName = ResourceLabelUtil.getAppName(pod.getMetadata().getLabels());
             String serviceName = ResourceLabelUtil.getServiceName(pod.getMetadata().getLabels());
+            String envName = ResourceLabelUtil.getEnvName(pod.getMetadata().getLabels());
 
             if (mapping.get(namespace) == null) {
                 AppMetadata appData = new AppMetadata();
@@ -57,6 +58,9 @@ public class AppMetadataBuilder {
             }
             // One namespace can have only one app
             mapping.get(namespace).setAppName(appName);
+            if (StringUtils.isNotBlank(envName)) {
+                mapping.get(namespace).setEnvName(envName);
+            }
             if (mapping.get(namespace).getServices() == null
                     || !mapping.get(namespace).getServices().contains(serviceName)) {
                 mapping.get(namespace).addServices(serviceName);
