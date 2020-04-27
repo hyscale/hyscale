@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Pramati Prism, Inc.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,7 +31,8 @@ public enum ControllerErrorCodes implements HyscaleErrorCode {
     UNDEPLOYMENT_FAILED("Failed to Undeploy"),
     UNIQUE_PROFILE_REQUIRED("Service {} cannot have multiple profiles"),
     INVALID_REPLICA_SELECTED_REACHED_MAX_RETRIES("Invalid input provided. Reached maximum retries. Please try again"),
-    SERVICE_NOT_PROVIDED_FOR_PROFILE("Services {} mentioned in profiles not found"),
+    PROFILE_NOT_PROVIDED_FOR_SERVICES("Profile not found for services {}"),
+    SERVICES_NOT_PROVIDED_FOR_PROFILE("Services {} mentioned in profile are not found"),
     ERROR_WHILE_PROCESSING_PROFILE("Error while looking for profile. {}"),
     INPUT_VALIDATION_FAILED("Input validation failed. Error messages {}"),
     PROFILE_VALIDATION_FAILED("Profile validation failed");

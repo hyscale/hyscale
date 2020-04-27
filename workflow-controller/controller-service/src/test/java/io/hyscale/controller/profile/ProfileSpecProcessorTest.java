@@ -15,33 +15,21 @@
  */
 package io.hyscale.controller.profile;
 
-import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.models.HyscaleSpecType;
 import io.hyscale.controller.commands.input.ProfileArg;
 import io.hyscale.controller.exception.ControllerErrorCodes;
-import io.hyscale.controller.model.EffectiveServiceSpec;
 import io.hyscale.controller.model.HyscaleInputSpec;
 import io.hyscale.controller.validator.impl.HprofSchemaValidator;
-import io.hyscale.schema.validator.SchemaValidator;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import javax.annotation.PostConstruct;
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -90,7 +78,7 @@ public class ProfileSpecProcessorTest {
             HyscaleInputSpec hyscaleInputSpec = profileSpecProcessor.process(withName("test"), serviceSpecList);
             assertFalse(hyscaleInputSpec != null);
         } catch (HyscaleException e) {
-            assertTrue(ControllerErrorCodes.SERVICE_NOT_PROVIDED_FOR_PROFILE.equals(e.getHyscaleErrorCode()));
+            assertTrue(ControllerErrorCodes.PROFILE_NOT_PROVIDED_FOR_SERVICES.equals(e.getHyscaleErrorCode()));
         } catch (IllegalAccessException | NoSuchFieldException e) {
             fail();
         }

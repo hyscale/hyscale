@@ -16,8 +16,6 @@
 package io.hyscale.controller.profile;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.commands.args.ProfileLocator;
 import io.hyscale.controller.commands.input.ProfileArg;
 import io.hyscale.controller.exception.ControllerErrorCodes;
@@ -102,7 +100,7 @@ public class ProfileSpecProcessor {
         if (strictProfile) {
             serviceFromSpec.removeAll(serviceFromProfiles);
             if (!serviceFromSpec.isEmpty()) {
-                throw new HyscaleException(ControllerErrorCodes.SERVICE_NOT_PROVIDED_FOR_PROFILE, serviceFromSpec.stream().collect(Collectors.joining(",")));
+                throw new HyscaleException(ControllerErrorCodes.PROFILE_NOT_PROVIDED_FOR_SERVICES, serviceFromSpec.stream().collect(Collectors.joining(",")));
             }
         }
     }

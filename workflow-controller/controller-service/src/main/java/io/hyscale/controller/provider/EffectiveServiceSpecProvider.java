@@ -177,7 +177,7 @@ public class EffectiveServiceSpecProvider {
         if (invalidServiceList != null && !invalidServiceList.isEmpty()) {
             String invalidServices = invalidServiceList.toString();
             logger.error("Services {} mentioned in profiles not available in deployment", invalidServices);
-            throw new HyscaleException(ControllerErrorCodes.SERVICE_NOT_PROVIDED_FOR_PROFILE, invalidServices);
+            throw new HyscaleException(ControllerErrorCodes.SERVICES_NOT_PROVIDED_FOR_PROFILE, invalidServices);
         }
         return serviceVsProfile;
     }
