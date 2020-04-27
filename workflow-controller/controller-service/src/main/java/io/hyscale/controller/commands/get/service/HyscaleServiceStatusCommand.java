@@ -16,19 +16,21 @@
 package io.hyscale.controller.commands.get.service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.Pattern;
 
 import io.hyscale.commons.logger.TableFields;
+import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.invoker.StatusComponentInvoker;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.StatusUtil;
+import io.hyscale.controller.validator.impl.ClusterValidator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.TableFormatter;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.model.WorkflowContextBuilder;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -84,36 +87,49 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
                     String> serviceList;
 
     @Autowired
+    private ClusterValidator clusterValidator;
+
+    @Autowired
     private StatusComponentInvoker statusComponentInvoker;
+
+    @Autowired
+    private K8sAuthConfigBuilder authConfigBuilder;
 
     @Override
     public Integer call() throws Exception {
+        WorkflowLogger.header(ControllerActivity.PROCESSING_INPUT);
 
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
 
+        List<WorkflowContext> contextList = new ArrayList<>();
+        for (String each : serviceList) {
+            WorkflowContext context = new WorkflowContextBuilder(appName).withNamespace(namespace)
+                    .withServiceName(each).withAuthConfig(authConfigBuilder.getAuthConfig()).get();
+            if (!clusterValidator.validate(context)) {
+                WorkflowLogger.logPersistedActivities();
+                return ToolConstants.INVALID_INPUT_ERROR_CODE;
+            }
+            contextList.add(context);
+        }
+
+        WorkflowLogger.printLine();
         WorkflowLogger.info(ControllerActivity.WAITING_FOR_SERVICE_STATUS);
 
         WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
-
-
-        WorkflowContext context = new WorkflowContext();
-        context.setAppName(appName);
-        context.setNamespace(namespace);
-
         try {
             boolean isLarge = false;
-            Set<String> services = new HashSet<String>(serviceList);
             List<String[]> rowList = new ArrayList<String[]>();
-            for (String serviceName : services) {
-                context.setServiceName(serviceName);
+            for (WorkflowContext context : contextList) {
                 statusComponentInvoker.execute(context);
                 Object statusAttr = context.getAttribute(
                         WorkflowConstants.DEPLOYMENT_STATUS);
                 if (statusAttr != null) {
                     DeploymentStatus serviceStatus = (DeploymentStatus) statusAttr;
-                    isLarge = isLarge ? isLarge : serviceStatus.getServiceAddress().length() > TableFields.SERVICE_ADDRESS.getLength();
+                    if (serviceStatus.getServiceAddress() != null) {
+                        isLarge = isLarge ? isLarge : serviceStatus.getServiceAddress().length() > TableFields.SERVICE_ADDRESS.getLength();
+                    }
                     String[] tableRow = StatusUtil.getRowData(serviceStatus);
                     rowList.add(tableRow);
                 }
@@ -128,7 +144,7 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
         } finally {
             WorkflowLogger.footer();
         }
-        return 0;
+        return ToolConstants.HYSCALE_SUCCESS_CODE;
     }
 
 }

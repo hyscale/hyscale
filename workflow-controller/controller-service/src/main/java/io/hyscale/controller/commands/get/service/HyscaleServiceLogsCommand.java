@@ -20,12 +20,15 @@ import java.util.concurrent.Callable;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 
-import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.builder.K8sAuthConfigBuilder;
+import io.hyscale.controller.model.WorkflowContextBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.LoggerUtility;
+import io.hyscale.controller.validator.impl.ClusterValidator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,23 +91,32 @@ public class HyscaleServiceLogsCommand implements Callable<Integer> {
     private Integer line = 100;
 
     @Autowired
+    private ClusterValidator clusterValidator;
+
+    @Autowired
     private LoggerUtility loggerUtility;
+
+    @Autowired
+    private K8sAuthConfigBuilder authConfigBuilder;
 
     @Override
     public Integer call() throws Exception {
+        WorkflowLogger.header(ControllerActivity.PROCESSING_INPUT);
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
 
-        WorkflowContext workflowContext = new WorkflowContext();
-        WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
-        workflowContext.setAppName(appName.trim());
-        workflowContext.setNamespace(namespace.trim());
-        workflowContext.setServiceName(serviceName);
+        WorkflowContext workflowContext = new WorkflowContextBuilder(appName).withNamespace(namespace).withServiceName(serviceName).withAuthConfig(authConfigBuilder.getAuthConfig()).get();
         workflowContext.addAttribute(WorkflowConstants.TAIL_LOGS, tail);
         workflowContext.addAttribute(WorkflowConstants.LINES, line);
         workflowContext.addAttribute(WorkflowConstants.REPLICA_NAME, replicaName);
 
+        if (!clusterValidator.validate(workflowContext)) {
+            WorkflowLogger.logPersistedActivities();
+            return ToolConstants.INVALID_INPUT_ERROR_CODE;
+        }
+
+        WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
         loggerUtility.deploymentLogs(workflowContext);
 
         return workflowContext.isFailed() ? ToolConstants.HYSCALE_ERROR_CODE : ToolConstants.HYSCALE_SUCCESS_CODE;

@@ -17,7 +17,6 @@ package io.hyscale.deployer.services.handler;
 
 import java.util.List;
 
-import com.google.protobuf.Api;
 import io.hyscale.commons.utils.ResourceLabelUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.kubernetes.client.openapi.ApiClient;

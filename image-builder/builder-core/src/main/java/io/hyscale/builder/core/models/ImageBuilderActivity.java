@@ -26,8 +26,8 @@ public enum ImageBuilderActivity implements Activity {
 	IMAGE_PULL("Pulling image "),
 	IMAGE_PUSH("Pushing image "),
 	IMAGE_PUSH_LOG("Push logs "),
-	LOGIN("Log in to registry "),
-	DOCKER_DAEMON_NOT_RUNNING("Docker daemon not running");
+	DOCKER_NOT_INSTALLED("Docker not installed. Install docker to continue"),
+	DOCKER_DAEMON_NOT_RUNNING("Docker daemon not running. Start Docker to continue");
 
 	private String message;
 

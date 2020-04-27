@@ -15,10 +15,12 @@
  */
 package io.hyscale.controller.commands.undeploy;
 
+import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.UndeployCommandUtil;
+import io.hyscale.controller.validator.impl.ClusterValidator;
 
 import java.util.concurrent.Callable;
 
@@ -34,6 +36,7 @@ import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.model.WorkflowContextBuilder;
 import io.hyscale.controller.invoker.UndeployComponentInvoker;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -62,44 +65,55 @@ import picocli.CommandLine.Option;
 @Command(name = "app", description = "Undeploys app from the kubernetes cluster")
 @Component
 public class HyscaleUndeployAppCommand implements Callable<Integer> {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(HyscaleUndeployAppCommand.class);
 
-	@Option(names = { "-h", "--help" }, usageHelp = true, description = "Display the help information of the specified command")
-	private boolean helpRequested = false;
+    @Option(names = {"-h", "--help"}, usageHelp = true, description = "Display the help information of the specified command")
+    private boolean helpRequested = false;
 
-	@Pattern(regexp = ValidationConstants.NAMESPACE_REGEX, message = ValidationConstants.INVALID_NAMESPACE_MSG)
-	@Option(names = { "-n", "--namespace", "-ns" }, required = true, description = "Namespace of the deployed app")
-	private String namespace;
+    @Pattern(regexp = ValidationConstants.NAMESPACE_REGEX, message = ValidationConstants.INVALID_NAMESPACE_MSG)
+    @Option(names = {"-n", "--namespace", "-ns"}, required = true, description = "Namespace of the deployed app")
+    private String namespace;
 
-	@Pattern(regexp = ValidationConstants.APP_NAME_REGEX, message = ValidationConstants.INVALID_APP_NAME_MSG)
-	@Option(names = { "-a", "--app" }, required = true, description = "Application name")
-	private String appName;
+    @Pattern(regexp = ValidationConstants.APP_NAME_REGEX, message = ValidationConstants.INVALID_APP_NAME_MSG)
+    @Option(names = {"-a", "--app"}, required = true, description = "Application name")
+    private String appName;
 
-	@Autowired
-	private UndeployComponentInvoker undeployComponentInvoker;
+    @Autowired
+    private ClusterValidator clusterValidator;
 
-	@Override
-	public Integer call() throws Exception {
+    @Autowired
+    private UndeployComponentInvoker undeployComponentInvoker;
 
-	    if (!CommandUtil.isInputValid(this)) {
-	        return ToolConstants.INVALID_INPUT_ERROR_CODE;
+    @Autowired
+    private K8sAuthConfigBuilder authConfigBuilder;
+
+    @Override
+    public Integer call() throws Exception {
+        WorkflowLogger.header(ControllerActivity.PROCESSING_INPUT);
+        if (!CommandUtil.isInputValid(this)) {
+            return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-	    
-		WorkflowContext workflowContext = new WorkflowContext();
-		workflowContext.setAppName(appName.trim());
-		workflowContext.setNamespace(namespace.trim());
-		workflowContext.addAttribute(WorkflowConstants.CLEAN_UP_APP_DIR, true);
-		WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
-		try {
-		    undeployComponentInvoker.execute(workflowContext);
-		} catch (HyscaleException e) {
-		    logger.error("Error while undeploying app: {}, in namespace: {}", appName, namespace, e);
-		    throw e; 
-		} finally {
-		    UndeployCommandUtil.logUndeployInfo();
-        }	
-		return 0;
-	}
+
+		WorkflowContext workflowContext = new WorkflowContextBuilder(appName).withNamespace(namespace).
+				withAuthConfig(authConfigBuilder.getAuthConfig()).get();
+        workflowContext.addAttribute(WorkflowConstants.CLEAN_UP_APP_DIR, true);
+
+        if (!clusterValidator.validate(workflowContext)) {
+            WorkflowLogger.logPersistedActivities();
+            return ToolConstants.INVALID_INPUT_ERROR_CODE;
+        }
+
+        WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
+        try {
+            undeployComponentInvoker.execute(workflowContext);
+        } catch (HyscaleException e) {
+            logger.error("Error while undeploying app: {}, in namespace: {}", appName, namespace, e);
+            throw e;
+        } finally {
+            UndeployCommandUtil.logUndeployInfo();
+        }
+        return ToolConstants.HYSCALE_SUCCESS_CODE;
+    }
 
 }

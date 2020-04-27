@@ -27,12 +27,13 @@ public class ExitCodeExceptionMapper implements IExitCodeExceptionMapper {
     @Override
     public int getExitCode(Throwable exception) {
         if (exception == null) {
-            return 0;
+            return ToolConstants.HYSCALE_SUCCESS_CODE;
         }
         if (exception instanceof HyscaleException) {
-            return ToolConstants.HYSCALE_ERROR_CODE;
+            HyscaleException he = (HyscaleException) exception;
+            return he.getCode();
         }
-        return 1;
+        return ToolConstants.HYSCALE_FAILURE_CODE;
     }
 
 }

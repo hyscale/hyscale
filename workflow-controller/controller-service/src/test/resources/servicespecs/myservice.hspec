@@ -11,15 +11,10 @@ image:
         destination: /abc/def/ghi/sample.txt
     configCommands: |-
       echo "Hello, I'm configure commands"
-    configCommandsScript: /abc/def/configure.sh
     runCommandsScript: /abc/def/run.sh
     runCommands: |-
       echo "Hello, I'm run commands"
-  dockerfile:
-    path: /abc
-    dockerfilePath: /Dockerfile
-    args:
-       key1: value1
+
 
 startCommand: "a,bc,def"
 replicas: 2

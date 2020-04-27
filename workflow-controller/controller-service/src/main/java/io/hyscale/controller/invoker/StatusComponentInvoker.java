@@ -29,9 +29,9 @@ import io.hyscale.commons.component.ComponentInvoker;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.K8sAuthorisation;
+import io.hyscale.controller.builder.DeploymentContextBuilder;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
-import io.hyscale.controller.hooks.K8SClusterValidatorHook;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.TroubleshootUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
@@ -56,28 +56,16 @@ public class StatusComponentInvoker extends ComponentInvoker<WorkflowContext> {
     private Deployer deployer;
     
     @Autowired
-    private K8sAuthConfigBuilder authConfigBuilder;
+    private DeploymentContextBuilder deploymentContextBuilder;
     
     @Autowired
     private TroubleshootService troubleshootService;
-    
-    @Autowired
-    private K8SClusterValidatorHook k8SClusterValidatorHook;
-
-    @PostConstruct
-    public void init() {
-        super.addHook(k8SClusterValidatorHook);
-    }
     
     @Override
     protected void doExecute(WorkflowContext context) throws HyscaleException {
         String serviceName = context.getServiceName();
         
-        DeploymentContext deploymentContext = new DeploymentContext();
-        deploymentContext.setAuthConfig(authConfigBuilder.getAuthConfig());
-        deploymentContext.setNamespace(context.getNamespace());
-        deploymentContext.setAppName(context.getAppName());
-        deploymentContext.setServiceName(serviceName);
+        DeploymentContext deploymentContext = deploymentContextBuilder.build(context);
         deploymentContext.setWaitForReadiness(false);
         
         if (StringUtils.isNotBlank(serviceName)) {

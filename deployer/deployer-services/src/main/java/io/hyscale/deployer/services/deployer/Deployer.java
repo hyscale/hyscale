@@ -21,7 +21,6 @@ import java.util.List;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.models.DeploymentContext;
-import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.deployer.core.model.AppMetadata;
 import io.hyscale.deployer.core.model.DeploymentStatus;
@@ -74,7 +73,7 @@ public interface Deployer<T extends AuthConfig> {
      * Check if User can access cluster
      *
      * @param authConfig
-     * @return true if user can access cluster
+     * @return true if user can access cluster else false
      * @throws HyscaleException
      */
     public boolean authenticate(T authConfig) throws HyscaleException;

@@ -1,0 +1,7 @@
+environment: multiple
+overrides: test
+
+secrets:
+    TEST_VALUE: TEST 
+    
+memory: 512Mi
