@@ -16,10 +16,7 @@
 package io.hyscale.controller.commands.deploy;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
@@ -180,19 +177,22 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
         List<EffectiveServiceSpec> effectiveServiceSpecs = serviceSpecProcessor.process(profileArg, serviceSpecsFiles);
 
         // Construct WorkflowContext
-        List<WorkflowContext> contextList = effectiveServiceSpecs.stream().filter(each -> {
-            return each != null && each.getServiceSpec() != null && each.getServiceMetadata() != null;
-        }).map(each -> {
-            WorkflowContextBuilder builder = new WorkflowContextBuilder(appName);
-            try {
-                builder.withProfile(each.getServiceMetadata().getEnvName());
-                builder.withAuthConfig(authConfigBuilder.getAuthConfig());
-                builder.withService(each.getServiceSpec());
-                builder.withNamespace(namespace);
-            } catch (HyscaleException e) {
+        List<WorkflowContext> contextList = new ArrayList<>();
+        for (EffectiveServiceSpec each : effectiveServiceSpecs) {
+            if (each != null && each.getServiceSpec() != null && each.getServiceMetadata() != null) {
+                WorkflowContextBuilder builder = new WorkflowContextBuilder(appName);
+                try {
+                    builder.withProfile(each.getServiceMetadata().getEnvName());
+                    builder.withAuthConfig(authConfigBuilder.getAuthConfig());
+                    builder.withService(each.getServiceSpec());
+                    builder.withNamespace(namespace);
+                    contextList.add(builder.get());
+                } catch (HyscaleException e) {
+                    logger.error("Error while preparing workflow context ", e);
+                    throw e;
+                }
             }
-            return builder.get();
-        }).collect(Collectors.toList());
+        }
 
         postValidators.forEach(each -> inputSpecPostValidator.addValidator(each));
 

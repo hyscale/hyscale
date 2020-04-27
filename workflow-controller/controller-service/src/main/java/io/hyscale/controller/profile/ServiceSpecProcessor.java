@@ -35,9 +35,6 @@ import java.util.List;
 public class ServiceSpecProcessor {
 
     @Autowired
-    private ProfileLocator profileLocator;
-
-    @Autowired
     private ProfileSpecProcessor profileSpecProcessor;
 
     @Autowired
@@ -46,7 +43,6 @@ public class ServiceSpecProcessor {
     public List<EffectiveServiceSpec> process(ProfileArg profileArg, List<File> serviceSpecsFiles) throws HyscaleException {
         List<EffectiveServiceSpec> effectiveServiceSpecs = null;
         if (profileArg != null) {
-
             effectiveServiceSpecs = effectiveServiceSpecProvider.getEffectiveServiceSpec(
                     profileSpecProcessor.process(profileArg, serviceSpecsFiles));
         } else {

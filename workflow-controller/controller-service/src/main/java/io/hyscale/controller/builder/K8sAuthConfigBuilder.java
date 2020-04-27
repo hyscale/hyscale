@@ -42,25 +42,27 @@ public class K8sAuthConfigBuilder {
 
     @Autowired
     private ControllerConfig controllerConfig;
-  
+
+    private AuthConfig defaultAuthConfig;
+
     /**
      * Gets {@link K8sConfigFileAuth} from {@link ControllerConfig} default config
      * @return {@link K8sConfigFileAuth}
      */
-    public AuthConfig getAuthConfig() throws HyscaleException{
-    	validate(controllerConfig.getDefaultKubeConf());
-        K8sConfigFileAuth k8sAuth = new K8sConfigFileAuth();
-        k8sAuth.setK8sConfigFile(new File(controllerConfig.getDefaultKubeConf()));
-        return k8sAuth;
+    public AuthConfig getAuthConfig() throws HyscaleException {
+        if (defaultAuthConfig == null) {
+            defaultAuthConfig = getAuthConfig(controllerConfig.getDefaultKubeConf());
+        }
+        return defaultAuthConfig;
     }
-    
+
     public AuthConfig getAuthConfig(String kubeConfigPath) throws HyscaleException{
     	validate(kubeConfigPath);
         K8sConfigFileAuth k8sAuth = new K8sConfigFileAuth();
         k8sAuth.setK8sConfigFile(new File(kubeConfigPath));
         return k8sAuth;
     }
-    
+
     private void validate(String path) throws HyscaleException {
     	if(path==null) {
     		throw new HyscaleException(ControllerErrorCodes.KUBE_CONFIG_PATH_EMPTY);
@@ -69,10 +71,8 @@ public class K8sAuthConfigBuilder {
         if (confFile != null && !confFile.exists()) {
             String confPath = SetupConfig.getMountPathOfKubeConf(path) ;
             confPath = WindowsUtil.updateToHostFileSeparator(confPath);
-            WorkflowLogger.error(ControllerActivity.CANNOT_FIND_FILE,
-                    confPath);
             throw new HyscaleException(ControllerErrorCodes.KUBE_CONFIG_NOT_FOUND, confPath);
         }
     }
-   
+
 }

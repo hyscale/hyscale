@@ -85,16 +85,6 @@ public class ProfileSpecProcessor {
             }
         }).collect(toSet());
 
-        serviceFromProfiles = profileFiles.stream().map(eachFile -> {
-            try {
-                return ServiceProfileUtil.getServiceNameFromProfile(eachFile);
-            } catch (HyscaleException e) {
-                return null;
-            }
-        }).collect(Collectors.filtering(each -> {
-            return each.equals(this);
-        }, toSet()));
-
         boolean multipleProfileOfSameService = false;
         Set<String> multipleProfilesServices = new HashSet<String>();
         for (File eachProfile : profileFiles) {

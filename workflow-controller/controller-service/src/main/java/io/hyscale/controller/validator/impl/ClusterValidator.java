@@ -30,44 +30,48 @@ import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.deployer.services.deployer.Deployer;
 
+import javax.annotation.PostConstruct;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Validate cluster information using {@link AuthConfig}
  * provided by {@link WorkflowContext}
  * Checks if access to cluster is allowed.
- *
  */
 @Component
 public class ClusterValidator implements Validator<WorkflowContext> {
-    
-	private static final Logger logger = LoggerFactory.getLogger(ClusterValidator.class);
 
-	@Autowired
-	private Deployer deployer;
-	
-	private boolean isClusterValid = false;
-	
-	private boolean isClusterInValid = false;
+    private static final Logger logger = LoggerFactory.getLogger(ClusterValidator.class);
 
-	@Override
-	public boolean validate(WorkflowContext context) throws HyscaleException {
-	    if (isClusterValid) {
-	        return isClusterValid;
-	    }
-	    if (isClusterInValid) {
-            return false;
+    @Autowired
+    private Deployer deployer;
+
+    private boolean isClusterValid = false;
+
+    private Map<AuthConfig, Boolean> clusterValidationMap;
+
+    @PostConstruct
+    public void init() {
+        clusterValidationMap = new HashMap<>();
+    }
+
+    @Override
+    public boolean validate(WorkflowContext context) throws HyscaleException {
+
+        if (clusterValidationMap.containsKey(context.getAuthConfig())) {
+            return clusterValidationMap.get(context.getAuthConfig());
         }
-		logger.debug("Starting K8s cluster validation");
-		try {
-		    isClusterValid = deployer.authenticate(context.getAuthConfig());
-		} catch(HyscaleException ex) {
-		    WorkflowLogger.persist(ValidatorActivity.CLUSTER_AUTHENTICATION_FAILED, LoggerTags.ERROR);
-		    throw ex;
-		}
-		if (isClusterValid) {
-		} else {
-		    isClusterInValid = true;
-		    WorkflowLogger.persist(ValidatorActivity.CLUSTER_AUTHENTICATION_FAILED, LoggerTags.ERROR);
-		}
-		return isClusterValid;
-	}
+
+        logger.debug("Starting K8s cluster validation");
+        try {
+            isClusterValid = deployer.authenticate(context.getAuthConfig());
+            clusterValidationMap.put(context.getAuthConfig(), isClusterValid);
+        } catch (HyscaleException ex) {
+            logger.error("Error while validating cluster", ex);
+            clusterValidationMap.put(context.getAuthConfig(), false);
+            throw ex;
+        }
+        return isClusterValid;
+    }
 }

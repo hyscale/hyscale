@@ -18,13 +18,6 @@ package io.hyscale.controller.commands.args;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.io.HyscaleFilesUtil;
-import io.hyscale.commons.logger.LoggerTags;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.Status;
-import io.hyscale.commons.utils.HyscaleStringUtil;
-import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.exception.ControllerErrorCodes;
-import io.hyscale.controller.util.ServiceProfileUtil;
 import io.hyscale.controller.util.ServiceSpecUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -33,18 +26,23 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.util.*;
-import java.util.stream.Collectors;
+
+/*
+ * Locates the profile files with the given profile name
+ * The directory of search if with respect to the relative
+ * directory of servicespec or the relative directory of servicespec's
+ * profiles directory.
+ *
+ * Example : /a/b/c/myservice.hspec is my service spec directory.
+ * Profile is searched under
+ *      1.  /a/b/c
+ *      2.  /a/b/c/profiles directory
+ */
 
 @Component
 public class ProfileLocator {
 
     private static final Logger logger = LoggerFactory.getLogger(ProfileLocator.class);
-
-    private static final String NO_PROFILE_FOUND_MSG = "No profile found. Profiles are required";
-
-    private static final String NO_PROFILE_FOR_SERVICES = "No profile file found for services ";
-
-    private static final String MULTIPLE_PROFILES_FOR_SERVICES = "Multiple profile files found for services ";
 
     public List<File> locateProfiles(String profileName, List<File> serviceSpecs) throws HyscaleException {
         List<File> profiles = new ArrayList<>();
@@ -73,7 +71,7 @@ public class ProfileLocator {
 
             // Search for profile relative to servicespec directory
             List<File> serviceProfileFiles = HyscaleFilesUtil.listFilesWithPattern(serviceSpecPath, profileFilePattern);
-            if (serviceProfileFiles != null) {
+            if (serviceProfileFiles != null && !serviceProfileFiles.isEmpty()) {
                 profileFiles.addAll(serviceProfileFiles);
             }
 
@@ -81,7 +79,7 @@ public class ProfileLocator {
             serviceSpecPath = serviceSpecPath.concat(ToolConstants.FILE_SEPARATOR)
                     .concat(ToolConstants.PROFILES_DIR_NAME);
             serviceProfileFiles = HyscaleFilesUtil.listFilesWithPattern(serviceSpecPath, profileFilePattern);
-            if (serviceProfileFiles != null) {
+            if (serviceProfileFiles != null && !serviceProfileFiles.isEmpty()) {
                 profileFiles.addAll(serviceProfileFiles);
             }
         }

@@ -102,23 +102,18 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        List<WorkflowContext> contextList =
-                serviceList.stream().distinct().map(each -> {
-                    try {
-                        return new WorkflowContextBuilder(appName).withNamespace(namespace)
-                                .withServiceName(each).withAuthConfig(authConfigBuilder.getAuthConfig()).get();
-                    } catch (HyscaleException e) {
-                        return null;
-                    }
-                }).collect(Collectors.toList());
 
-
-        for (WorkflowContext context : contextList) {
+        List<WorkflowContext> contextList = new ArrayList<>();
+        for (String each : serviceList) {
+            WorkflowContext context = new WorkflowContextBuilder(appName).withNamespace(namespace)
+                    .withServiceName(each).withAuthConfig(authConfigBuilder.getAuthConfig()).get();
             if (!clusterValidator.validate(context)) {
                 WorkflowLogger.logPersistedActivities();
                 return ToolConstants.INVALID_INPUT_ERROR_CODE;
             }
+            contextList.add(context);
         }
+
         WorkflowLogger.printLine();
         WorkflowLogger.info(ControllerActivity.WAITING_FOR_SERVICE_STATUS);
 

@@ -32,9 +32,8 @@ import io.hyscale.controller.model.WorkflowContext;
 /**
  * Aggregator class to call post validators
  * such as cluster validator, volume validator among others
- * 
- * @author tushar
  *
+ * @author tushar
  */
 @Component
 public class InputSpecPostValidator implements Validator<List<WorkflowContext>> {
@@ -59,7 +58,7 @@ public class InputSpecPostValidator implements Validator<List<WorkflowContext>> 
         }
         boolean isInvalid = false;
         boolean isFailed = false;
-        StringBuilder exceptionMsg = new StringBuilder();
+        StringBuilder exceptionMsg = new StringBuilder().append(": \n");
         for (Validator<WorkflowContext> validator : validators) {
             logger.debug("Running validator: {}", validator.getClass());
             for (WorkflowContext context : contextList) {

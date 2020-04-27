@@ -16,6 +16,7 @@
 package io.hyscale.commons.models;
 
 import java.io.Reader;
+import java.util.Objects;
 
 public class K8sConfigReaderAuth implements K8sAuthorisation {
 
@@ -34,4 +35,16 @@ public class K8sConfigReaderAuth implements K8sAuthorisation {
 		return K8sAuthType.KUBE_CONFIG_READER;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		K8sConfigReaderAuth that = (K8sConfigReaderAuth) o;
+		return k8sConfigReader.equals(that.k8sConfigReader);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(k8sConfigReader);
+	}
 }

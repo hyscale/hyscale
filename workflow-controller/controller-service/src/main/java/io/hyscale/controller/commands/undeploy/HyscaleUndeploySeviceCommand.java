@@ -22,6 +22,7 @@ import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.UndeployCommandUtil;
 import io.hyscale.controller.validator.impl.ClusterValidator;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
@@ -101,21 +102,17 @@ public class HyscaleUndeploySeviceCommand implements Callable<Integer> {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
         boolean isFailed = false;
-        List<WorkflowContext> workflowContextList = serviceList.stream().map(each -> {
-            try {
-                WorkflowContext context = new WorkflowContextBuilder(appName).withServiceName(each).withNamespace(namespace).withAuthConfig(authConfigBuilder.getAuthConfig()).get();
-                context.addAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR, true);
-                return context;
-            } catch (HyscaleException e) {
-                return null;
-            }
-        }).collect(Collectors.toList());
 
-        for (WorkflowContext workflowContext : workflowContextList) {
-            if (!clusterValidator.validate(workflowContext)) {
+        List<WorkflowContext> workflowContextList = new ArrayList<>();
+
+        for (String each : serviceList) {
+            WorkflowContext context = new WorkflowContextBuilder(appName).withServiceName(each).withNamespace(namespace).withAuthConfig(authConfigBuilder.getAuthConfig()).get();
+            context.addAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR, true);
+            if (!clusterValidator.validate(context)) {
                 WorkflowLogger.logPersistedActivities();
                 return ToolConstants.INVALID_INPUT_ERROR_CODE;
             }
+            workflowContextList.add(context);
         }
         WorkflowLogger.printLine();
         for (WorkflowContext workflowContext : workflowContextList) {

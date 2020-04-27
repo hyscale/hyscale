@@ -36,10 +36,9 @@ import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.schema.validator.SchemaValidator;
 
 /**
- *
  * Ensures validators are called for all the input files even if some fails validation
- * @author tushar
  *
+ * @author tushar
  */
 public abstract class InputSpecValidator implements Validator<List<File>> {
 
@@ -53,7 +52,7 @@ public abstract class InputSpecValidator implements Validator<List<File>> {
         }
         boolean isInvalid = false;
         boolean isFailed = false;
-        StringBuilder exceptionMsg = new StringBuilder();
+        StringBuilder exceptionMsg = new StringBuilder().append(": \n");
         for (File inputSpecFile : inputSpecFiles) {
             try {
                 if (!validateFile(inputSpecFile) || !getSchemaValidator().validate(inputSpecFile)) {
