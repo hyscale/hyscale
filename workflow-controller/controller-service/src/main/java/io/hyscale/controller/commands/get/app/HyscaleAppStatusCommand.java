@@ -86,7 +86,6 @@ public class HyscaleAppStatusCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        WorkflowLogger.header(ControllerActivity.PROCESSING_INPUT);
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
@@ -99,8 +98,6 @@ public class HyscaleAppStatusCommand implements Callable<Integer> {
             WorkflowLogger.logPersistedActivities();
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        WorkflowLogger.printLine();
-
         WorkflowLogger.info(ControllerActivity.WAITING_FOR_SERVICE_STATUS);
 
         WorkflowLogger.header(ControllerActivity.APP_NAME, appName);

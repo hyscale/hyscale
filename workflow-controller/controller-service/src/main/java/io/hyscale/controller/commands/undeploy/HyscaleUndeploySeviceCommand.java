@@ -25,7 +25,6 @@ import io.hyscale.controller.validator.impl.ClusterValidator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 
 import javax.validation.constraints.Pattern;
 
@@ -97,7 +96,6 @@ public class HyscaleUndeploySeviceCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        WorkflowLogger.header(ControllerActivity.PROCESSING_INPUT);
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
@@ -114,7 +112,6 @@ public class HyscaleUndeploySeviceCommand implements Callable<Integer> {
             }
             workflowContextList.add(context);
         }
-        WorkflowLogger.printLine();
         for (WorkflowContext workflowContext : workflowContextList) {
             WorkflowLogger.header(ControllerActivity.SERVICE_NAME, workflowContext.getServiceName());
             try {

@@ -18,7 +18,6 @@ package io.hyscale.controller.commands.generate;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -46,7 +45,6 @@ import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.invoker.ManifestGeneratorComponentInvoker;
 import io.hyscale.controller.model.EffectiveServiceSpec;
 import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.provider.EffectiveServiceSpecProvider;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.ServiceSpecUtil;
 import io.hyscale.controller.validator.impl.InputSpecPostValidator;
@@ -98,9 +96,6 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
     private InputSpecPostValidator inputSpecPostValidator;
 
     @Autowired
-    private EffectiveServiceSpecProvider effectiveServiceSpecProvider;
-
-    @Autowired
     private ManifestGeneratorComponentInvoker manifestGeneratorComponentInvoker;
 
     @Autowired
@@ -126,7 +121,6 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
 
     @Override
     public Integer call() throws Exception {
-        WorkflowLogger.header(ControllerActivity.PROCESSING_INPUT);
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
@@ -165,7 +159,6 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
 
-        WorkflowLogger.printLine();
         boolean isFailed = false;
         for (WorkflowContext workflowContext : contextList) {
             String serviceName = workflowContext.getServiceName();

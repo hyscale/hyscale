@@ -222,7 +222,4 @@ public class WorkflowLogger {
         persistedActivities.clear();
     }
     
-    public static void printLine() {
-        System.out.println();
-    }
 }

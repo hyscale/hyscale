@@ -50,8 +50,8 @@ public class ProfileArgsManipulator {
             return args;
         }
         for (int i = 0; i < args.length; i++) {
-            if (args[i].equals(PROFILE_DIR_OPTION)) {
-                args[i] = TEMP_PROFILE_DIR_OPTION;
+            if (args[i].startsWith(PROFILE_DIR_OPTION)) {
+                args[i] = args[i].replace(PROFILE_DIR_OPTION, TEMP_PROFILE_DIR_OPTION);
             }
         }
         return args;
