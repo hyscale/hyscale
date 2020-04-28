@@ -72,7 +72,6 @@ public enum ControllerActivity implements Activity {
     DIRECTORY_INPUT_FOUND("Found directory {} instead of file"),
     WAITING_FOR_SERVICE_STATUS("It might take some time as it runs diagnosis for services"),
     TROUBLESHOOT("{}"), 
-    PROCESSING_INPUT("Processing Input"),
     APPLICATION_DETAILS("Applications");
 
     private String message;
