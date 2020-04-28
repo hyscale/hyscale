@@ -81,14 +81,17 @@ public class LocalRegistryManagerImpl implements RegistryManager {
 
     public ImageRegistry getImageRegistry(DockerConfig dockerConfig, String registry) {
 
-        if (StringUtils.isBlank(registry)) {
-            return null;
-        }
-
         if (dockerConfig == null) {
             return null;
         }
-        List<String> dockerRegistryAliases = DockerHubAliases.getDockerRegistryAliases(registry);
+        
+		List<String> dockerRegistryAliases = null;
+		if (registry != null) {
+			dockerRegistryAliases = DockerHubAliases.getDockerRegistryAliases(registry);
+		} else {
+			dockerRegistryAliases = DockerHubAliases.getDefaultDockerRegistryAlias();
+		}
+        
         List<String> registryPatterns = new ArrayList<>();
         for (String registryAlias : dockerRegistryAliases) {
             registryPatterns.addAll(getRegistryPatterns(registryAlias));
