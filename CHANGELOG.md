@@ -1,3 +1,18 @@
+# v0.9.5 Release
+
+ ### Features:
+
+* Support for multi-stage dockerfiles in hspec   
+* Support for profiles with ProfileName(-P) option
+* Upfront validations for cluster,registry etc. entities
+* Get Apps include profile column
+* Get replica status of a particular service 
+
+### Fixes
+
+* Fix for fetching schema from remote repository
+* Included JDK TLS set property during application startup
+
 # v0.9.4.1 Release
 
 This is a minor release to support listing applications in a cluster,https healthcheck for services,troubleshooting failures with pod exitcodes, 
