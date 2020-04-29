@@ -35,7 +35,8 @@ public enum ControllerErrorCodes implements HyscaleErrorCode {
     SERVICES_NOT_PROVIDED_FOR_PROFILE("Services {} mentioned in profile are not found"),
     ERROR_WHILE_PROCESSING_PROFILE("Error while looking for profile. {}"),
     INPUT_VALIDATION_FAILED("Input validation failed. Error messages {}"),
-    PROFILE_VALIDATION_FAILED("Profile validation failed");
+    PROFILE_VALIDATION_FAILED("Profile validation failed"),
+    PROFILE_NAMES_MISMATCHED_WITH_FILES("Profile name mismatched with environment in {}");
 
     private String message;
 

@@ -63,7 +63,7 @@
 		<copyright.year>2019</copyright.year>
 		<copyright.company>Pramati Prism, Inc.</copyright.company>
 		<release.name>First Light</release.name>
-		<hspec.supported.version>0.6.2</hspec.supported.version>
+		<hspec.supported.version>0.6.2.1</hspec.supported.version>
 	</properties>
 
 	<dependencies>
