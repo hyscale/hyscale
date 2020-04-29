@@ -4,14 +4,14 @@
 
 * Support for multi-stage dockerfiles in hspec   
 * Support for profiles with ProfileName(-P) option
-* Upfront validations for cluster,registry etc. entities
 * Get Apps include profile column
 * Get replica status of a particular service 
 
 ### Fixes
 
 * Fix for fetching schema from remote repository
-* Included JDK TLS set property during application startup
+* Fix for validating for cluster,registry etc. entities upfront
+* Fix for using TLS 1.2 as default protocol while communcicating with kubernetes cluster as temporary workaround for [OpenJDK bug](https://bugs.openjdk.java.net/browse/JDK-8236039) 
 
 # v0.9.4.1 Release
 
