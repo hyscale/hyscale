@@ -91,7 +91,7 @@ public class ProfileSpecProcessor {
             String serviceName = ServiceProfileUtil.getServiceNameFromProfile(eachProfile);
             if (strictProfile) {
                 String profileName = ServiceProfileUtil.getProfileName(eachProfile);
-                String fileName = HyscaleFilesUtil.getFileName(eachProfile.getPath());
+                String fileName = eachProfile.getName();
                 if (!fileName.matches(profileLocator.getProfileNamePattern(profileName))) {
                     mismatchedFileAndProfileNameSet.add(fileName);
                 }
