@@ -138,11 +138,28 @@ Usage: hyscale get apps
 
 Display application along with the namespace they are deployed in.
 
-
 ```
 #### Description
 
 To get all the deployed applications, use "get apps" command. The command will display all the applications along with namespace deployed through hyscale.
+
+## get replica status
+
+```markdown
+Usage:  hyscale get replica status [OPTIONS]
+
+Status of an Application Service.
+
+Options:
+  -s --service string         name of service `<serviceName>`. Can be repeated for multiple services.
+  -n --namespace string       name of namespace `<namespace>`
+  -a --application string     name of application `<applicationName>`   
+```
+
+###Description:
+
+To get the replica status of a particular deployed service, use "get replica status" command. The command requires service name, Kubernetes namespace and application name as inputs.
+
 
 ## Tool Options Description:
 

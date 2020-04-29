@@ -16,6 +16,7 @@
 package io.hyscale.controller.profile;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.io.HyscaleFilesUtil;
 import io.hyscale.controller.commands.args.ProfileLocator;
 import io.hyscale.controller.commands.input.ProfileArg;
 import io.hyscale.controller.exception.ControllerErrorCodes;
@@ -84,13 +85,25 @@ public class ProfileSpecProcessor {
         }).collect(toSet());
 
         boolean multipleProfileOfSameService = false;
+        Set<String> mismatchedFileAndProfileNameSet = new HashSet<>();
         Set<String> multipleProfilesServices = new HashSet<String>();
         for (File eachProfile : profileFiles) {
             String serviceName = ServiceProfileUtil.getServiceNameFromProfile(eachProfile);
+            if (strictProfile) {
+                String profileName = ServiceProfileUtil.getProfileName(eachProfile);
+                String fileName = eachProfile.getName();
+                if (!fileName.matches(profileLocator.getProfileNamePattern(profileName))) {
+                    mismatchedFileAndProfileNameSet.add(fileName);
+                }
+            }
             multipleProfileOfSameService = serviceFromProfiles.add(serviceName);
             if (!multipleProfileOfSameService) {
                 multipleProfilesServices.add(serviceName);
             }
+        }
+
+        if (!mismatchedFileAndProfileNameSet.isEmpty()) {
+            throw new HyscaleException(ControllerErrorCodes.PROFILE_NAMES_MISMATCHED_WITH_FILES, mismatchedFileAndProfileNameSet.stream().collect(Collectors.joining(",")));
         }
 
         if (!multipleProfilesServices.isEmpty()) {

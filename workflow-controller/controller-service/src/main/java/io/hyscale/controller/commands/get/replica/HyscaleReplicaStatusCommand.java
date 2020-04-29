@@ -66,7 +66,7 @@ public class HyscaleReplicaStatusCommand implements Callable<Integer> {
     private String namespace;
 
     @Pattern(regexp = ValidationConstants.APP_NAME_REGEX, message = ValidationConstants.INVALID_APP_NAME_MSG)
-    @CommandLine.Option(names = {"-a", "--app"}, required = true, description = "Application name")
+    @CommandLine.Option(names = {"-a", "--app","--application"}, required = true, description = "Application name")
     private String appName;
 
     @Pattern(regexp = ValidationConstants.SERVICE_NAME_REGEX, message = ValidationConstants.INVALID_SERVICE_NAME_MSG)

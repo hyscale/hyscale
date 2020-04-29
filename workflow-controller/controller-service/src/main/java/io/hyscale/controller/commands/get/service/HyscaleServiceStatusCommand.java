@@ -78,7 +78,7 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
     private String namespace;
 
     @Pattern(regexp = ValidationConstants.APP_NAME_REGEX, message = ValidationConstants.INVALID_APP_NAME_MSG)
-    @Option(names = {"-a", "--app"}, required = true, description = "Application name")
+    @Option(names = {"-a", "--app","--application"}, required = true, description = "Application name")
     private String appName;
 
     @Option(names = {"-s", "--service"}, required = true, description = "Service names", split = ",")
