@@ -20,34 +20,37 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.hyscale.builder.services.util.ImageLogUtil;
-import io.hyscale.commons.models.CommandResult;
-import io.hyscale.commons.utils.ObjectMapperFactory;
-import io.hyscale.servicespec.commons.util.ImageUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.commons.commands.provider.ImageCommandProvider;
-import io.hyscale.builder.services.config.ImageBuilderConfig;
-import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.hyscale.builder.core.models.BuildContext;
 import io.hyscale.builder.core.models.DockerImage;
 import io.hyscale.builder.core.models.ImageBuilderActivity;
+import io.hyscale.builder.services.config.ImageBuilderConfig;
+import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
+import io.hyscale.builder.services.service.ImagePushService;
+import io.hyscale.builder.services.util.DockerImageUtil;
+import io.hyscale.builder.services.util.ImageLogUtil;
 import io.hyscale.commons.commands.CommandExecutor;
+import io.hyscale.commons.commands.provider.ImageCommandProvider;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.CommandResult;
+import io.hyscale.commons.models.FileMeta;
+import io.hyscale.commons.models.ImageRegistry;
 import io.hyscale.commons.models.Status;
-import io.hyscale.builder.services.util.DockerImageUtil;
-import io.hyscale.builder.services.service.ImagePushService;
+import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+import io.hyscale.servicespec.commons.util.ImageUtil;
 
 @Component
 public class LocalImagePushServiceImpl implements ImagePushService {
@@ -89,14 +92,12 @@ public class LocalImagePushServiceImpl implements ImagePushService {
         if (buildContext.isStackAsServiceImage()) {
             pullImage(sourceImage);
         }
-
         tagImage(sourceImage, imageFullPath);
-
-        if (buildContext.getImageRegistry() == null) {
-            WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_PUSH);
-            WorkflowLogger.endActivity(Status.SKIPPING);
-            return;
-        }
+		if (buildContext.getImageRegistry() == null) {
+			WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_PUSH);
+			WorkflowLogger.endActivity(Status.SKIPPING);
+			return;
+		}
         WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_PUSH);
         String appName = buildContext.getAppName();
         String serviceName = buildContext.getServiceName();

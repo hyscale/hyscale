@@ -61,14 +61,13 @@ public class ImagePullSecretHandler implements ManifestHandler {
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         ImageRegistry imageRegistry = manifestContext.getImageRegistry();
-        if (imageRegistry == null) {
-            logger.debug("ImageRegistry is found to be null, skipping image pull secret creation ");
-            String registry = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.registry), String.class);
-            if (StringUtils.isBlank(registry)) {
-                WorkflowLogger.persist(ManifestGeneratorActivity.FAILED_TO_CREATE_IMAGE_PULL_SECRET, registry, registry);
-            }
-            return null;
-        }
+		if (imageRegistry == null) {
+			logger.debug("ImageRegistry is found to be null, skipping image pull secret creation ");
+			String registry = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.registry), String.class);
+			registry = registry == null ? "" : registry;
+			WorkflowLogger.persist(ManifestGeneratorActivity.FAILED_TO_CREATE_IMAGE_PULL_SECRET, registry, registry);
+			return null;
+		}
 
         String name = imageRegistry.getName() == null ? imageRegistry.getUrl() : imageRegistry.getName();
         ServiceMetadata serviceMetadata = new ServiceMetadata();
