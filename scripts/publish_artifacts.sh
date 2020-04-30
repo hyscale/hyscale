@@ -22,8 +22,3 @@ aws_cp_upload()
 
 docker_build_push
 aws_cp_upload $artifactory_version
-
-if [ $GITHUB_WORKFLOW == "Release"  ]
-then
-  aws_cp_upload latest
-fi

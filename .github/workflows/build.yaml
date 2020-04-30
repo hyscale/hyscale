@@ -10,6 +10,7 @@ on:
     - docs/*
     - LICENSE
     - README.md
+    - scripts/release_version.txt
     branches: 
     - master
     - release/HyScale*
@@ -21,7 +22,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Hyscale Docker image build and push to DockerHub, Build Binary and upload to S3 Bucket
+    - name: Build Images and Hyscale Binary for DEV
+      if: github.ref == 'refs/heads/master'
       run: |
           ./scripts/publish_artifacts.sh
       env:
@@ -33,10 +35,40 @@ jobs:
         DOCKER_PASSWORD: ${{ secrets.HYS_DEV_DOCKER_PASSWORD }}
         DOCKER_REPO: 'hyscaledev'
 
+    - name: Build Images and Hyscale Binary for Release
+      if: github.ref != 'refs/heads/master'
+      run: |
+          ./scripts/publish_artifacts.sh
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.HYS_STABLE_AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.HYS_STABLE_AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: 'us-west-2'
+        AWS_S3_BUCKET: ${{ secrets.HYS_STABLE_AWS_S3_BUCKET }}
+        DOCKER_USERNAME: ${{ secrets.HYS_STABLE_DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.HYS_STABLE_DOCKER_PASSWORD }}
+        DOCKER_REPO: 'hyscale'
+
+    #If branch is release, the upload the hyscale binary to DEV latest
+    - name: Release Pointing to the Latest of DEV
+      if: github.ref != 'refs/heads/master'
+      run: |
+          aws s3 cp scripts/hyscale s3://$AWS_S3_BUCKET/hyscale/release/latest/hyscale
+          aws s3api put-object-tagging --bucket $AWS_S3_BUCKET  --key hyscale/release/latest/hyscale --tagging 'TagSet=[{Key=hyscalepubliccontent,Value=true}]' 
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.HYS_DEV_AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.HYS_DEV_AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: 'us-west-2'
+        AWS_S3_BUCKET: ${{ secrets.HYS_DEV_AWS_S3_BUCKET }}
+
     - name: URL to Download Hyscale Artifact
       run: |
-          echo -en "CHANGE LOG: \n$(git log -1 --pretty=format:"%s") \n-------------------------------------------------------- \n" >> hyscale_version.txt
-          echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \ncurl -sSL ${{ secrets.HYS_DEV_BINARY_URL }} | HYS_VERSION=$IMAGE_VERSION  bash" >> hyscale_version.txt
+          if [ $(echo ${GITHUB_REF##*/}) == "master" ]
+          then
+            echo -en "CHANGE LOG: \n$(git log -1 --pretty=format:"%s") \n-------------------------------------------------------- \n" >> hyscale_version.txt
+            echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \ncurl -sSL ${{ secrets.HYS_DEV_BINARY_URL }} | HYS_VERSION=$IMAGE_VERSION  bash" >> hyscale_version.txt
+          else
+            echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \ncurl -sSL ${{ secrets.HYS_STABLE_BINARY_URL }} | HYS_VERSION=$IMAGE_VERSION  bash" >> hyscale_version.txt
+          fi
 
     - name: SendGrid
       uses: peter-evans/sendgrid-action@v1
