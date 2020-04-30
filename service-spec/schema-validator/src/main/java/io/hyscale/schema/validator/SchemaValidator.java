@@ -75,9 +75,9 @@ public class SchemaValidator {
     private String getSchemaPath(HyscaleSpecType type){
         StringBuilder schemaPathBuilder = new StringBuilder();
         if(type == HyscaleSpecType.SERVICE){
-         schemaPathBuilder.append("hspec/").append(buildProperties.get(ToolConstants.HSPEC_VERSION)).append("/service-spec.json");
+         schemaPathBuilder.append("/hspec/").append(buildProperties.get(ToolConstants.HSPEC_VERSION)).append("/service-spec.json");
         }else if (type == HyscaleSpecType.PROFILE){
-            schemaPathBuilder.append("hprof/").append(buildProperties.get(ToolConstants.HSPEC_VERSION)).append("/profile-spec.json");
+            schemaPathBuilder.append("/hprof/").append(buildProperties.get(ToolConstants.HSPEC_VERSION)).append("/profile-spec.json");
         }
         return schemaPathBuilder.toString();
     }
