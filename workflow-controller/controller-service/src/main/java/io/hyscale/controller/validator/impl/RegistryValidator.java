@@ -85,6 +85,7 @@ public class RegistryValidator implements Validator<WorkflowContext> {
 		} else {
 		    inValidRegistries.add(registry);
 		}
+		registry=registry!=null?registry:"";
 		WorkflowLogger.persist(ValidatorActivity.MISSING_DOCKER_REGISTRY_CREDENTIALS, LoggerTags.ERROR, registry, registry);
 		return false;
 	}
