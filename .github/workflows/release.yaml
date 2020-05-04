@@ -21,7 +21,6 @@ jobs:
     - name: release_info
       id: release_info
       run: |
-         sudo usermod -a -G docker runner
          IMAGE_VERSION=`cat scripts/release_version.txt`
          pom_version=`cat pom.xml | grep "<version>.*</version>" | head -1 |awk -F'[><]' '{print $3}'`
          echo ::set-output name=PREVIOUS_TAG::$(curl --silent "https://api.github.com/repos/Srujankumar5140/test_pub/releases/latest" | grep 'tag_name' | sed -E 's/.*"([^"]+)".*/\1/')
@@ -74,7 +73,6 @@ jobs:
           echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \ncurl -sSL ${{ secrets.HYS_DEV_BINARY_URL }} | bash" >> hyscale_version.txt
       env:
          PREVIOUS_TAG: ${{ steps.release_info.outputs.PREVIOUS_TAG }}
-         NEW_TAG: v${{ steps.release_info.outputs.RELEASE_VERSION }}
 
     - name: SendGrid
       uses: peter-evans/sendgrid-action@v1
