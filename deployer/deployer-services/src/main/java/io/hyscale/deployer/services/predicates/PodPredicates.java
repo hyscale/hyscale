@@ -37,6 +37,10 @@ public class PodPredicates {
 	public static Predicate<V1Pod> isPodReady() {
 		return pod -> K8sPodUtil.checkForPodCondition(pod, PodCondition.READY);
 	}
+	
+	public static Predicate<V1Pod> isPodInitialized() {
+		return pod -> K8sPodUtil.checkForPodCondition(pod, PodCondition.INITIALIZED);
+	}
 
 	public static Predicate<V1Pod> isPodCreated() {
 		return pod -> K8sPodUtil.checkForPodCreation(pod);
@@ -52,5 +56,17 @@ public class PodPredicates {
 	
 	public static BiPredicate<V1Pod, Map<String, String>> podContainsLabel(){
 	    return (pod, labels) -> K8sPodUtil.checkPodLabels(pod, labels);
+	}
+	
+	/**
+	 * Pods are in failed state or not
+	 * @return {@link Predicate} return true if pod is in failed state, else false
+	 */
+	public static Predicate<V1Pod> isPodFailed(){
+		return pod->K8sPodUtil.checkForPodFailure(pod);
+	}
+	
+	public static BiPredicate<V1Pod, Long> isPodRestarted(){
+		return (pod,restartCount)->K8sPodUtil.checkForPodRestart(pod, restartCount);
 	}
 }

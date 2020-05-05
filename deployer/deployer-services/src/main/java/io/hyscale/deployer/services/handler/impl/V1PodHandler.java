@@ -17,7 +17,9 @@ package io.hyscale.deployer.services.handler.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -25,39 +27,53 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
+
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.ActivityContext;
+import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.AnnotationKey;
+import io.hyscale.commons.models.ResourceLabelKey;
+import io.hyscale.commons.models.Status;
+import io.hyscale.commons.utils.ResourceSelectorUtil;
+import io.hyscale.deployer.core.model.ResourceKind;
+import io.hyscale.deployer.core.model.ResourceOperation;
+import io.hyscale.deployer.services.config.DeployerEnvConfig;
+import io.hyscale.deployer.services.exception.DeployerErrorCodes;
+import io.hyscale.deployer.services.factory.PodParentFactory;
+import io.hyscale.deployer.services.handler.PodParentHandler;
+import io.hyscale.deployer.services.handler.ResourceHandlers;
+import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
+import io.hyscale.deployer.services.model.DeployerActivity;
+import io.hyscale.deployer.services.model.PodParent;
+import io.hyscale.deployer.services.predicates.PodPredicates;
+import io.hyscale.deployer.services.util.ExceptionHelper;
+import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
+import io.kubernetes.client.PodLogs;
+import io.kubernetes.client.custom.V1Patch;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.apis.CoreV1Api;
+import io.kubernetes.client.openapi.models.V1ContainerStatus;
+import io.kubernetes.client.openapi.models.V1DeleteOptions;
+import io.kubernetes.client.openapi.models.V1Deployment;
+import io.kubernetes.client.openapi.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1PodList;
+import io.kubernetes.client.openapi.models.V1StatefulSet;
+import io.kubernetes.client.util.Watch;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
 import okhttp3.Response;
 
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.AnnotationKey;
-import io.hyscale.commons.models.ResourceLabelKey;
-import io.hyscale.commons.models.Status;
-import io.hyscale.deployer.core.model.ResourceKind;
-import io.hyscale.deployer.core.model.ResourceOperation;
-import io.hyscale.deployer.services.exception.DeployerErrorCodes;
-import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
-import io.hyscale.deployer.services.model.DeployerActivity;
-import io.hyscale.deployer.services.util.ExceptionHelper;
-import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
-import io.kubernetes.client.openapi.ApiClient;
-import io.kubernetes.client.openapi.ApiException;
-import io.kubernetes.client.PodLogs;
-import io.kubernetes.client.openapi.apis.CoreV1Api;
-import io.kubernetes.client.openapi.models.V1ContainerStatus;
-import io.kubernetes.client.openapi.models.V1DeleteOptions;
-import io.kubernetes.client.openapi.models.V1Pod;
-import io.kubernetes.client.openapi.models.V1PodList;
-import io.kubernetes.client.custom.V1Patch;
-
 public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(V1PodHandler.class);
-
 	private static final long MAX_TIME_TO_CONTAINER_READY = 120 * 1000;
+	private static final long POD_RESTART_COUNT = DeployerEnvConfig.getPodRestartCount();
+	private static final Integer POD_ACTIVITY_WAITING_TIME =100;
 
+	
 	@Override
 	public V1Pod create(ApiClient apiClient, V1Pod resource, String namespace) throws HyscaleException {
 		if (resource == null) {
@@ -372,4 +388,179 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 	public int getWeight() {
 	    return ResourceKind.POD.getWeight();
 	}
+	
+	/**
+     * It will fetch pod parent by using of servicename and namespace, based on pod parent it will get  latestpodselector.
+     * Now it will start watching pod event changes on cluster based on namespace and latestpodselector.
+     * While watching pods it is reading status, here we are mainly reading three status (initialization, creations and readiness),
+     * after completion of each status we are showing status done message, whenever we get any pod has failed status immediately come out from watch
+     * and show deployment fail message. 
+     * 
+     * @param apiClient
+     * @param appName
+     * @param serviceName
+     * @param namespace
+     */
+
+	public void watch(ApiClient apiClient, String appName, String serviceName, String namespace)
+			throws HyscaleException {
+		 OkHttpClient httpClient=getUpdatedHttpClient(apiClient.getHttpClient());
+		 apiClient.setHttpClient(httpClient);
+		 CoreV1Api api = new CoreV1Api(apiClient);
+
+		String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
+		PodParent podParent=getPodParent(apiClient, serviceName, namespace);
+
+		Integer replicas = null;
+		String latestPodSelector = null;
+		
+		PodParentHandler podParentHandler = PodParentFactory.getHandler(podParent.getKind());
+		latestPodSelector = podParentHandler.getPodSelector(apiClient, podParent.getParent(), selector);
+		replicas = podParentHandler.getReplicas(podParent.getParent());
+
+		if(latestPodSelector==null) {
+			throw new HyscaleException(DeployerErrorCodes.POD_SELECTOR_NOT_FOUND);
+		}
+		Watch<V1Pod> watch = null;
+
+		Set<String> readyPods = new HashSet<String>();
+		Set<String> initializedPods = new HashSet<String>();
+		Set<String> createdPods = new HashSet<String>();
+
+		ActivityContext initializedActivityContext = new ActivityContext(DeployerActivity.POD_INITIALIZED);
+		ActivityContext creationActivityContext = new ActivityContext(DeployerActivity.POD_CREATION);
+		ActivityContext readyActivityContext = new ActivityContext(DeployerActivity.POD_READINESS);
+		ActivityContext activityContext = null;
+
+		boolean initializationActivityDone = false, creationActivityStarted = false, creationActivityDone = false,
+				readyActivityStarted = false;
+		
+		try {
+			watch = Watch.createWatch(apiClient,
+					api.listNamespacedPodCall(namespace, null, false, null, null, latestPodSelector, null, null, replicas*POD_ACTIVITY_WAITING_TIME, Boolean.TRUE, null),
+					new TypeToken<Watch.Response<V1Pod>>() {
+					}.getType());
+		} catch (ApiException e) {
+			logger.error("Failed to watch pod events ",e);
+			throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_POD);
+		}
+		try {
+			WorkflowLogger.startActivity(initializedActivityContext);
+			activityContext=initializedActivityContext;
+			for (Watch.Response<V1Pod> item : watch) {
+				WorkflowLogger.continueActivity(activityContext);
+				/*if pod  status is failed then watch will exit*/
+				if (PodPredicates.isPodFailed().test(item.object)) {
+					break;
+				}
+				
+				/*if pod restart count is reached to specified pod_restart_count then watch will exit*/
+				if (PodPredicates.isPodRestarted().test(item.object, POD_RESTART_COUNT)) {
+					break;
+				}
+
+				if (PodPredicates.isPodInitialized().test(item.object)) {
+					initializedPods.add(item.object.getMetadata().getName());
+					/*pod initialization activity completed*/
+					if (initializedPods.size() == replicas && !initializationActivityDone) {
+						initializationActivityDone = true;
+						WorkflowLogger.endActivity(initializedActivityContext, Status.DONE);
+					}
+				}
+
+				if (initializationActivityDone && !creationActivityStarted) {
+					activityContext=creationActivityContext;
+					WorkflowLogger.startActivity(creationActivityContext);
+					creationActivityStarted = true;
+				}
+				if (PodPredicates.isPodCreated().test(item.object)) {
+					createdPods.add(item.object.getMetadata().getName());
+					/*pod creation activity completed*/
+					if (createdPods.size() == replicas && !creationActivityDone) {
+						WorkflowLogger.endActivity(creationActivityContext, Status.DONE);
+						creationActivityDone = true;
+					}
+				}
+
+				if (creationActivityDone && !readyActivityStarted) {
+					activityContext=readyActivityContext;
+					WorkflowLogger.startActivity(readyActivityContext);
+					readyActivityStarted = true;
+				}
+				if (PodPredicates.isPodReady().test(item.object)) {
+					readyPods.add(item.object.getMetadata().getName());
+					/*pod readiness activity completed*/
+					if (readyPods.size() == replicas) {
+						WorkflowLogger.endActivity(readyActivityContext, Status.DONE);
+						break;
+					}
+				}
+
+				if (readyPods.size() == replicas) {
+					break;
+				}
+
+			}
+			
+			if(!initializationActivityDone) {
+				WorkflowLogger.endActivity(initializedActivityContext, Status.FAILED);
+				throw new HyscaleException(DeployerErrorCodes.FAILED_TO_INITIALIZE_POD);
+			}
+			if(!creationActivityDone) {
+				WorkflowLogger.endActivity(creationActivityContext, Status.FAILED);
+				throw new HyscaleException(DeployerErrorCodes.FAILED_TO_CREATE_POD);
+			}
+			if(readyPods.size()!=replicas) {
+				WorkflowLogger.endActivity(readyActivityContext, Status.FAILED);
+				throw new HyscaleException(DeployerErrorCodes.POD_FAILED_READINESS);
+			}
+			
+		} finally {
+			try {
+				watch.close();
+			} catch (IOException e) {
+				LOGGER.error("Error while watcing the service {} in namespace {}, error {}", serviceName, namespace, e);
+			}
+		}
+	}
+
+
+	/**
+	 * It will read object(v1Deployment or v1StatefulSet) from cluster and return along with their resource kind
+	 * 
+	 * @param apiClient
+	 * @param appName
+	 * @param namespace
+	 * @return podParent
+	 */
+	private PodParent getPodParent(ApiClient apiClient, String serviceName, String namespace) throws HyscaleException {
+		V1StatefulSet v1StatefulSet = null;
+		V1Deployment v1Deployment = null;
+		PodParent podParent = new PodParent();
+		try {
+			V1StatefulSetHandler v1StatefulSetHandler = (V1StatefulSetHandler) ResourceHandlers
+					.getHandlerOf(ResourceKind.STATEFUL_SET.getKind());
+			v1StatefulSet = v1StatefulSetHandler.get(apiClient, serviceName, namespace);
+			podParent.setKind(ResourceKind.STATEFUL_SET.getKind());
+			podParent.setParent(v1StatefulSet);
+		} catch (HyscaleException e) {
+			if (!e.getHyscaleErrorCode().equals(DeployerErrorCodes.RESOURCE_NOT_FOUND)) {
+				throw e;
+			}
+		}
+		if (podParent.getKind() == null) {
+			try {
+				V1DeploymentHandler v1DeploymentHandler = (V1DeploymentHandler) ResourceHandlers
+						.getHandlerOf(ResourceKind.DEPLOYMENT.getKind());
+				v1Deployment = v1DeploymentHandler.get(apiClient, serviceName, namespace);
+				podParent.setKind(ResourceKind.DEPLOYMENT.getKind());
+				podParent.setParent(v1Deployment);
+			} catch (HyscaleException e) {
+				throw e;
+			}
+		}
+		return podParent;
+	}
+	
+	
 }

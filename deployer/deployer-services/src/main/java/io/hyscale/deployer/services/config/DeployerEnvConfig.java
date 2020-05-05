@@ -31,6 +31,16 @@ public class DeployerEnvConfig {
             return DeployerConstants.DEFAULT_LB_READY_TIMEOUT;
         }
     }
+    
+    
+    public static long getPodRestartCount() {
+        try {
+            return Long.parseLong(getEnv(DeployerConstants.POD_RESTART_COUNT));
+        } catch (NumberFormatException e) {
+            logger.error("Error while parsing pod restart count {} so defaulting to {}", DeployerConstants.POD_RESTART_COUNT, DeployerConstants.DEFAULT_POD_RESTART_COUNT);
+            return DeployerConstants.DEFAULT_POD_RESTART_COUNT;
+        }
+    }
 
     private static String getEnv(String key) {
         return System.getenv(key);

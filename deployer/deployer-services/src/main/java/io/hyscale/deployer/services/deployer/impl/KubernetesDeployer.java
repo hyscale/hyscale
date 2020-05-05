@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -32,16 +31,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.ActivityContext;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.KubernetesResource;
 import io.hyscale.commons.models.Manifest;
-import io.hyscale.commons.models.Status;
 import io.hyscale.commons.models.YAMLManifest;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
-import io.hyscale.commons.utils.ThreadPoolUtil;
 import io.hyscale.deployer.core.model.AppMetadata;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ResourceKind;
@@ -65,7 +61,6 @@ import io.hyscale.deployer.services.model.ResourceStatus;
 import io.hyscale.deployer.services.model.ServiceAddress;
 import io.hyscale.deployer.services.model.Volume;
 import io.hyscale.deployer.services.model.VolumeMount;
-import io.hyscale.deployer.services.predicates.PodPredicates;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.hyscale.deployer.services.util.DeploymentStatusUtil;
 import io.hyscale.deployer.services.util.K8sDeployerUtil;
@@ -86,9 +81,7 @@ import io.kubernetes.client.openapi.models.V1VolumeMount;
 public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
 
     private static final Logger logger = LoggerFactory.getLogger(KubernetesDeployer.class);
-    private static final long DELTA_WAIT_MILLIS = 5000;
-    private static final long MAX_POD_WAIT_SLEEP_INTERVAL_IN_MILLIS = 3000;
-    private static final String STORAGE = "storage";
+	private static final String STORAGE = "storage";
 
     @Autowired
     private DeployerConfig deployerConfig;
@@ -122,50 +115,39 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
      */
     @Override
     public void waitForDeployment(DeploymentContext context) throws HyscaleException {
-
         ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
         V1PodHandler podHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
         String serviceName = context.getServiceName();
         String namespace = context.getNamespace();
         String appName = context.getAppName();
         WorkflowLogger.header(DeployerActivity.WAITING_FOR_DEPLOYMENT);
-
-        String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
-        deltaWait(DELTA_WAIT_MILLIS);
-        // Pod Scheduling
-        ActivityContext podInitContext = new ActivityContext(DeployerActivity.POD_INITIALIZED);
-        waitForPodActivity(apiClient, podHandler, namespace, selector, PodPredicates.isPodschedulingCondition(),
-                podInitContext);
-
-        // Pod Creation
-        ActivityContext podCreationContext = new ActivityContext(DeployerActivity.POD_CREATION);
-        waitForPodActivity(apiClient, podHandler, namespace, selector, PodPredicates.isPodCreated(),
-                podCreationContext);
-        // Pod readiness
-        ActivityContext podReadinessContext = new ActivityContext(DeployerActivity.POD_READINESS);
-        waitForPodActivity(apiClient, podHandler, namespace, selector, PodPredicates.isPodReady(), podReadinessContext);
-    }
-
-    @Override
-    public ResourceStatus status(String namespace, Manifest manifest, K8sAuthorisation authConfig) throws Exception {
-        /*
-         * For each resource kind and name, using resource handler Get resource from
-         * cluster Get status of the fetched resource
-         */
-        ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
-        YAMLManifest yamlManifest = (YAMLManifest) manifest;
         try {
-            KubernetesResource resource = KubernetesResourceUtil.getKubernetesResource(yamlManifest, namespace);
-            String kind = resource.getKind();
-            ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(kind);
-            String resourceName = resource.getV1ObjectMeta().getName();
-
-            return lifeCycleHandler.status(lifeCycleHandler.get(apiClient, resourceName, namespace));
-        } catch (Exception e) {
-            logger.error("Error while preparing client, error {} ", e.toString());
-            throw e;
-        }
+            podHandler.watch(apiClient,appName, serviceName, namespace);
+		} catch (HyscaleException e) {
+			throw new HyscaleException(DeployerErrorCodes.FAILED_TO_INITIALIZE_POD);
+		}
     }
+
+	@Override
+	public ResourceStatus status(String namespace, Manifest manifest, K8sAuthorisation authConfig) throws Exception {
+		/*
+		 * For each resource kind and name, using resource handler Get resource from
+		 * cluster Get status of the fetched resource
+		 */
+		ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
+		YAMLManifest yamlManifest = (YAMLManifest) manifest;
+		try {
+			KubernetesResource resource = KubernetesResourceUtil.getKubernetesResource(yamlManifest, namespace);
+			String kind = resource.getKind();
+			ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(kind);
+			String resourceName = resource.getV1ObjectMeta().getName();
+
+			return lifeCycleHandler.status(lifeCycleHandler.get(apiClient, resourceName, namespace));
+		} catch (Exception e) {
+			logger.error("Error while preparing client, error {} ", e.toString());
+			throw e;
+		}
+	}
 
     @Override
     public List<Pod> getPods(String namespace, String appName, String serviceName, K8sAuthorisation k8sAuthorisation) throws Exception {
@@ -339,42 +321,6 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
         }
 
         return deploymentStatus;
-    }
-
-    public static void waitForPodActivity(ApiClient apiClient, V1PodHandler podHandler, String namespace,
-                                          String selector, Predicate predicate, ActivityContext activityContext) throws HyscaleException {
-        boolean podCondition = false;
-        long startTime = System.currentTimeMillis();
-        WorkflowLogger.startActivity(activityContext);
-        while (!podCondition
-                && (System.currentTimeMillis() - startTime < ResourceLifeCycleHandler.MAX_WAIT_TIME_IN_MILLISECONDS)) {
-            WorkflowLogger.continueActivity(activityContext);
-            try {
-                List<V1Pod> podList = podHandler.getBySelector(apiClient, selector, true, namespace);
-                if (podList != null && !podList.isEmpty()) {
-                    podCondition = podList.stream().allMatch(predicate);
-                }
-            } catch (HyscaleException e) {
-                logger.error("Error while waiting for Pod Activity for selector {} in namespace {}, error {}", selector,
-                        namespace, e);
-                WorkflowLogger.endActivity(activityContext, Status.FAILED);
-                throw e;
-            }
-            ThreadPoolUtil.sleepSilently(MAX_POD_WAIT_SLEEP_INTERVAL_IN_MILLIS);
-        }
-        if (podCondition) {
-            WorkflowLogger.endActivity(activityContext, Status.DONE);
-        } else {
-            WorkflowLogger.endActivity(activityContext, Status.FAILED);
-            throw new HyscaleException(DeployerErrorCodes.FAILED_TO_INITIALIZE_POD);
-        }
-    }
-
-    private void deltaWait(long milliSeconds) {
-        try {
-            Thread.sleep(milliSeconds);
-        } catch (InterruptedException e) {
-        }
     }
 
     /**

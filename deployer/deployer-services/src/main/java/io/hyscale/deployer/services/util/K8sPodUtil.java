@@ -189,6 +189,29 @@ public class K8sPodUtil {
         }
         return false;
     }
+    
+    /**
+     * @param v1Pod
+     * @return return true if pod is in failed state, else false
+     */
+	public static boolean checkForPodFailure(V1Pod v1Pod) {
+		return K8SRuntimeConstants.POD_ERROR_SATES.contains(getAggregatedStatusOfContainersForPod(v1Pod));
+	}
+
+
+    /**
+     * @param v1Pod
+     * @param restartPodCount
+     * @return If pod restart count is greater than to given restartPodCount then it will return true, else false
+     */
+	public static boolean checkForPodRestart(V1Pod pod, Long restartPodCount) {
+		if(pod==null ||pod.getStatus()==null||pod.getStatus().getContainerStatuses()==null) {
+			return false;
+		}
+		return pod.getStatus().getContainerStatuses().stream().anyMatch(s -> s.getRestartCount() > restartPodCount);
+
+	}
+	
 
     public static boolean checkForContainersRestart(List<V1ContainerStatus> containerStatuses) {
         if (containerStatuses == null) {
@@ -321,7 +344,7 @@ public class K8sPodUtil {
 
         return podOwner != null ? podOwner.getKind() : null;
     }
-
+  
     /**
      *
      * @param podList
