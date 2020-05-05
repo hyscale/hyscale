@@ -70,7 +70,7 @@ jobs:
           . .github/workflows/release_info.sh
           echo -e ${CHANGELOG}
           echo -en "CHANGE LOG: \n${CHANGELOG} \n-------------------------------------------------------- \n" >> hyscale_version.txt
-          echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \ncurl -sSL ${{ secrets.HYS_DEV_BINARY_URL }} | bash" >> hyscale_version.txt
+          echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \ncurl -sSL ${{ secrets.HYS_DEV_BINARY_URL }} | bash\nJar can be Downloaded using\nwget https://github.com/hyscale/hyscale/releases/download/v${{ steps.release_info.outputs.RELEASE_VERSION }}/hyscale.jar" >> hyscale_version.txt
       env:
          PREVIOUS_TAG: ${{ steps.release_info.outputs.PREVIOUS_TAG }}
 
