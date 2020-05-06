@@ -1,4 +1,4 @@
-$HYS_VERSION="0.9.4.1.183"
+$HYS_VERSION="@@HYSCALE_BUILD_VERSION@@"
 $HYS_JAR_BIN="hyscale-${HYS_VERSION}.jar"
 $dir= "$env:LOCALAPPDATA\hyscale"
 $fileToCheck = "$dir\$HYS_JAR_BIN"
