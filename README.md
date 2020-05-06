@@ -113,7 +113,7 @@ Usage Pre-Requisites:
 
 * JDK version 11 and above
 
-1.Download the latest stable release from this link Or if you have curl installed, use this command:
+1.Download the latest stable release from this [link](https://get.hyscale.io/win) Or if you have curl installed, use this command:
               
     curl -L https://get.hyscale.io/win -o hyscale.ps1
 
