@@ -119,8 +119,12 @@ Usage Pre-Requisites:
 
 3.Add the binary into your PATH.
 
-4.Open the powershell windows and run the below command to ensure hyscale is installed:
-        
+4.Open the windows powershell. 
+ 
+*Note:To Set execution policy*
+
+*Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine*   
+
     hyscale.ps1 --version  
 
 Note: Verified on CentOS, Ubuntu and Debian Linux, Mac, Windows.
