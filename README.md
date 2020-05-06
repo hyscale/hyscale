@@ -113,13 +113,13 @@ Usage Pre-Requisites:
 
 * JDK version 11 and above
 
-1.Download the latest stable release from this [link](https://get.hyscale.io/win) Or if you have curl installed, use this command:
+1.Download the latest stable release from this [link](https://get.hyscale.io/win)
               
-    curl -L https://get.hyscale.io/win -o hyscale.ps1
+2.Rename the downloaded file to hyscale.ps1
 
-2.Add the binary into your PATH.
+3.Add the binary into your PATH.
 
-3.Test to ensure hyscale is installed:
+4.Open the powershell windows and run the below command to ensure hyscale is installed:
         
     hyscale.ps1 --version  
 
