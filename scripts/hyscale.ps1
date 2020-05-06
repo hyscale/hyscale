@@ -31,7 +31,6 @@ Function download_hyscale_jar
      "Downloading jar file"
      $url="https://github.com/hyscale/hyscale/releases/latest/download/hyscale.jar" 
      try {
-       Write-host "Verifying $url" -ForegroundColor Yellow
        $checkConnection = Invoke-WebRequest -Uri $url -UseBasicParsing
        if ($checkConnection.StatusCode -eq 200) {
          Write-Host "Connection Verified!" -ForegroundColor Green
