@@ -1,11 +1,12 @@
 #!/bin/bash
 set -euo pipefail
-HYS_VERSION="@@HYSCALE_BUILD_VERSION@@"
+HYS_VERSION="@@HYS_BUILD_VERSION@@"
 HYS_JAR_BIN="hyscale-${HYS_VERSION}.jar"
-HYS_CONF_DIR="$HOME/.hyscale" 
+HYS_CONF_DIR="$HOME/.hyscale"
+HYS_DOWNLOAD_URL="@@HYS_URL@@"
 
 check_java_version(){
-  java --version > /dev/null 2>&1
+  java -version > /dev/null 2>&1
   if [ $? != 0  ]
   then
     echo "Java is not installed"
@@ -27,11 +28,12 @@ download_hyscale_jar(){
   if [ ! -f ${HYS_CONF_DIR}/${HYS_JAR_BIN} ]
   then
     rm -rf ${HYS_CONF_DIR}/hyscale-*.jar
-    if [[  ! `wget --server-response https://github.com/hyscale/hyscale/releases/latest/download/hyscale.jar -O ${HYS_JAR_BIN}  2>&1 | grep 'HTTP/1.1 200 OK'` ]];
-    then
-         echo "Download failed"
-	 exit 1
+    echo "Downloading hyscale ..."
+    if [ $(curl -L -w "%{http_code}" $HYS_DOWNLOAD_URL -o ${HYS_JAR_BIN}) != 200 ];then
+     echo -e "\nDownload Failed !!!"
+     exit 1
     fi
+    echo -e "Download successful\n"
     mv ${HYS_JAR_BIN} ${HYS_CONF_DIR}
   fi
 }
