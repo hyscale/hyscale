@@ -92,7 +92,7 @@ public class JsonSchemaValidator {
         }
         try {
             JsonSchema schema = factory.getJsonSchema(referenceSchema);
-            return schema.validate(inputSpecNode);
+            return schema.validate(inputSpecNode, true);
         }catch (ProcessingException p){
             LOGGER.error(p.getMessage());
             throw new HyscaleException(p,CommonErrorCode.SCHEMA_PROCESSING_ERROR);

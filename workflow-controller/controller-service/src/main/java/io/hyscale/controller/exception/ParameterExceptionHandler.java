@@ -17,6 +17,8 @@ package io.hyscale.controller.exception;
 
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.controller.piccoli.ProfileArgsManipulator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -40,14 +42,17 @@ public class ParameterExceptionHandler implements CommandLine.IParameterExceptio
         if (ex == null) {
             return ToolConstants.HYSCALE_SUCCESS_CODE;
         }
+        String message = ex.getMessage();
+        message = ProfileArgsManipulator.updateMessage(message);
+        logger.error(message);
+
         if (ex.getCause() instanceof HyscaleException) {
-            logger.error(ex.getMessage());
             return ((HyscaleException) ex.getCause()).getCode();
         }
         CommandLine commandLine = ex.getCommandLine();
         PrintWriter writer = commandLine.getErr();
-        writer.printf(commandLine.getUsageMessage());
-        logger.error(ex.getMessage());
+        writer.println(message);
+        writer.println(commandLine.getUsageMessage());
         return ToolConstants.INVALID_INPUT_ERROR_CODE;
     }
 }

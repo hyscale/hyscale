@@ -21,6 +21,7 @@ import java.util.concurrent.Callable;
 
 import javax.validation.constraints.Pattern;
 
+import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,32 +34,34 @@ import io.hyscale.commons.logger.TableFields;
 import io.hyscale.commons.logger.TableFormatter;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.model.WorkflowContextBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.invoker.StatusComponentInvoker;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.StatusUtil;
+import io.hyscale.controller.validator.impl.ClusterValidator;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 /**
- *  This class executes the 'hyscale get app status' command
- *  It is a sub-command of the 'hyscale get app' command
- *  @see HyscaleGetAppCommand
- *  Every command/sub-command has to implement the {@link Callable} so that
- *  whenever the command is executed the {@link #call()}
- *  method will be invoked
+ * This class executes the 'hyscale get app status' command
+ * It is a sub-command of the 'hyscale get app' command
  *
  * @option namespace  namespace in which the app is deployed
  * @option appName   name of the app
- *
- * Fetches the deployment status {@link DeploymentStatus} of each service in the app and displays
- * in a table format to the user.
+ * <p>
+ * Fetches the deployment status {@link DeploymentStatus} of each service in the app
+ * Displays app data in a table format to the user.
+ * @see HyscaleGetAppsCommand
+ * Every command/sub-command has to implement the {@link Callable} so that
+ * whenever the command is executed the {@link #call()}
+ * method will be invoked
  */
 @Command(name = "status", description = "Get App Deployment status")
 public class HyscaleAppStatusCommand implements Callable<Integer> {
-    
+
     private final Logger logger = LoggerFactory.getLogger(HyscaleAppStatusCommand.class);
 
     @Option(names = {"-h", "--help"}, usageHelp = true, description = "Display help message")
@@ -73,38 +76,48 @@ public class HyscaleAppStatusCommand implements Callable<Integer> {
     private String appName;
 
     @Autowired
+    private ClusterValidator clusterValidator;
+
+    @Autowired
     private StatusComponentInvoker statusComponentInvoker;
 
+    @Autowired
+    private K8sAuthConfigBuilder authConfigBuilder;
+
     @Override
-    public Integer call() throws Exception{
+    public Integer call() throws Exception {
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        
-        WorkflowLogger.info(ControllerActivity.WAITING_FOR_SERVICE_STATUS);
-        
-        WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
 
-        WorkflowContext context = new WorkflowContext();
-        context.setAppName(appName);
-        context.setNamespace(namespace);
+        WorkflowContextBuilder builder = new WorkflowContextBuilder(appName);
+        builder.withNamespace(namespace);
+        builder.withAuthConfig(authConfigBuilder.getAuthConfig());
+        WorkflowContext context = builder.get();
+        if (!clusterValidator.validate(context)) {
+            WorkflowLogger.logPersistedActivities();
+            return ToolConstants.INVALID_INPUT_ERROR_CODE;
+        }
+        WorkflowLogger.info(ControllerActivity.WAITING_FOR_SERVICE_STATUS);
+
+        WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
         try {
             statusComponentInvoker.execute(context);
-            
+
             Object statusAttr = context.getAttribute(
                     WorkflowConstants.DEPLOYMENT_STATUS_LIST);
-            
+
             if (statusAttr == null) {
                 WorkflowLogger.info(ControllerActivity.NO_SERVICE_DEPLOYED);
-                return 0;
+                return ToolConstants.HYSCALE_SUCCESS_CODE;
             }
             List<DeploymentStatus> deploymentStatusList = (List<DeploymentStatus>) statusAttr;
 
             if (deploymentStatusList.isEmpty()) {
                 WorkflowLogger.info(ControllerActivity.NO_SERVICE_DEPLOYED);
-                return 0;
+                return ToolConstants.HYSCALE_SUCCESS_CODE;
             }
-        	
+
             List<String[]> rowList = new ArrayList<String[]>();
             boolean isLarge = false;
             for (DeploymentStatus deploymentStatus : deploymentStatusList) {
@@ -118,7 +131,7 @@ public class HyscaleAppStatusCommand implements Callable<Integer> {
                 rowList.add(tableRow);
             }
             TableFormatter table = StatusUtil.getStatusTable(isLarge);
-            rowList.forEach( each -> table.addRow(each));
+            rowList.forEach(each -> table.addRow(each));
             WorkflowLogger.logTable(table);
         } catch (HyscaleException e) {
             WorkflowLogger.error(ControllerActivity.ERROR_WHILE_FETCHING_STATUS, e.toString());
@@ -127,7 +140,7 @@ public class HyscaleAppStatusCommand implements Callable<Integer> {
         } finally {
             WorkflowLogger.footer();
         }
-        return 0;
+        return ToolConstants.HYSCALE_SUCCESS_CODE;
     }
-    
+
 }

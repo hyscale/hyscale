@@ -20,14 +20,17 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
 
-import io.hyscale.commons.constants.ToolConstants;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 
@@ -241,4 +244,36 @@ public class HyscaleFilesUtil {
             throw ex;
         }
 	}
+	
+	/**
+	 * List all files present in directory which matches filename regex pattern
+	 * @param directory
+	 * @param fileNamePattern
+	 * @return List of files
+	 */
+	public static List<File> listFilesWithPattern(String directory, String fileNamePattern) {
+        if (directory == null || StringUtils.isBlank(fileNamePattern)) {
+            return null;
+        }
+        return listFilesWithPattern(new File(directory), fileNamePattern);
+    }
+	
+	/**
+     * List all files present in directory which matches filename regex pattern
+     * @param directory
+     * @param fileNamePattern
+     * @return List of files
+     */
+	public static List<File> listFilesWithPattern(File directory, String fileNamePattern){
+	    if (directory == null || !directory.isDirectory()|| StringUtils.isBlank(fileNamePattern)) {
+            return null;
+        }
+	    
+	    File[] matchingFile = directory.listFiles((dir, name) -> {
+	          return name.matches(fileNamePattern);
+	        });
+	    
+	    return matchingFile == null ? null : Arrays.asList(matchingFile);
+	}
+	
 }

@@ -15,8 +15,6 @@
  */
 package io.hyscale.controller.config;
 
-import java.io.File;
-
 import javax.annotation.PostConstruct;
 
 import io.hyscale.commons.constants.ToolConstants;
@@ -27,11 +25,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.config.SetupConfig;
-import io.hyscale.commons.exception.HyscaleErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.exception.ControllerErrorCodes;
 
 /**
  * Controller level config details such as docker registry config, kube config

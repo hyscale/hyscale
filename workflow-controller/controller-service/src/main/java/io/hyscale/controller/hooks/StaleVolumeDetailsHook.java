@@ -29,7 +29,6 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
-import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
@@ -54,9 +53,6 @@ public class StaleVolumeDetailsHook implements InvokerHook<WorkflowContext> {
 	@Autowired
 	private K8sClientProvider clientProvider;
 
-	@Autowired
-	private K8sAuthConfigBuilder authConfigBuilder;
-
 	@Override
 	public void preHook(WorkflowContext context) throws HyscaleException {
 
@@ -73,7 +69,7 @@ public class StaleVolumeDetailsHook implements InvokerHook<WorkflowContext> {
 		String namespace = context.getNamespace();
 		String envName = context.getEnvName();
 
-		ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfigBuilder.getAuthConfig());
+		ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
 
 		V1PersistentVolumeClaimHandler pvcHandler = (V1PersistentVolumeClaimHandler) ResourceHandlers
 				.getHandlerOf(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind());
