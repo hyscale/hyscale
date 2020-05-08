@@ -6,11 +6,13 @@ HYS_CONF_DIR="$HOME/.hyscale"
 HYS_DOWNLOAD_URL="@@HYS_URL@@"
 
 check_java_version(){
+  set +e
   java -version > /dev/null 2>&1
   if [ $? != 0  ]
   then
-    echo "Java is not installed"
+    echo "Either Java is not installed or found a lesser version of java"
     exit 1
+  set -e
   elif [ $(java  -version 2>&1 | awk -F '"' '/version/ {print $2}'| awk -F '.' '{print $1}') -lt 11 ]
   then
      echo "JDK version 11 and above is required but found lesser version"
