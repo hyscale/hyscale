@@ -126,7 +126,7 @@ Usage Pre-Requisites:
 *Note: The first time run would take time as the script downloads the required binary file. If you get execution error, please set execution policy for current user, for more info refer [here](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies?view=powershell-7) *
 
 
-Note: Verified on CentOS, Ubuntu and Debian Linux, Mac, Windows.
+Note: Verified on CentOS, Ubuntu, Debian Linux, Mac and Windows.
 
 ## Deploying to K8s
 
