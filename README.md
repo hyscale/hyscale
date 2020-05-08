@@ -87,27 +87,46 @@ Open your terminal and enter the following:
 curl -sSL https://get.hyscale.io | bash
 ```
 
-#### Mac & Windows
+#### Mac 
 Usage Pre-Requisites:
 
 * JDK version 11 and above
-* Download the [hyscale jar](https://github.com/hyscale/hyscale/releases/latest/download/hyscale.jar) to your local machine
 
-Usage:
+1.Download the latest stable release:
 
-`java -Djdk.tls.client.protocols=TLSv1.2 -jar </path/to/hyscale.jar> <commands>` 
+    curl -L https://get.hyscale.io/mac -o hyscale
 
-Note:
-jdk.tls.client.protocols property is set to overcome a known issue in open jdk.
+2.Make the hyscale binary executable.
+
+    chmod +x ./hyscale
+
+3.Move the binary in to your PATH.
+
+    sudo mv ./hyscale /usr/local/bin/hyscale
+4.Test to ensure hyscale is installed.
+   
+    hyscale --version
 
 
-For commands refer [here](https://github.com/hyscale/hyscale/blob/master/docs/hyscale-commands-reference.md) by replacing `hyscale` with `java command`.  
+### Windows
+Usage Pre-Requisites:
 
-```
-Example :  java -Djdk.tls.client.protocols=TLSv1.2 -jar </path/to/hyscale.jar> deploy service -f myservice.hspec -n my-namespace -a my-app
-```
+* JDK version 11 and above
 
-Verified on CentOS, Ubuntu and Debian Linux, Mac, Windows.
+1.Download the latest stable release from this [link](https://get.hyscale.io/win) Or run the below command in powershell.
+
+     Invoke-WebRequest -Uri https://get.hyscale.io/win -OutFile hyscale.ps1               
+
+2.Add the downloaded hyscale.ps1 to your PATH
+
+3.Verify the installation by running the below command in the powershell window.
+
+    hyscale.ps1 --version
+
+*Note: The first time run would take time as the script downloads the required binary file. If you get execution error, please set execution policy for current user, for more info refer [here](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies?view=powershell-7) *
+
+
+Note: Verified on CentOS, Ubuntu, Debian Linux, Mac and Windows.
 
 ## Deploying to K8s
 
