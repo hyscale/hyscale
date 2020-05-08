@@ -10,7 +10,7 @@ check_java_version(){
   java -version > /dev/null 2>&1
   if [ $? != 0  ]
   then
-    echo "Either Java is not installed or found a lesser version of java"
+    echo "Java is not installed"
     exit 1
   set -e
   elif [ $(java  -version 2>&1 | awk -F '"' '/version/ {print $2}'| awk -F '.' '{print $1}') -lt 11 ]
