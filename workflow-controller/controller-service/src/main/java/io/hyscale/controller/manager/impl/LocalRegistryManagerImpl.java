@@ -40,6 +40,7 @@ import io.hyscale.commons.models.DockerCredHelper;
 import io.hyscale.commons.models.DockerHubAliases;
 import io.hyscale.commons.models.ImageRegistry;
 import io.hyscale.commons.utils.ObjectMapperFactory;
+import io.hyscale.commons.utils.WindowsUtil;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.ImageRegistryBuilder;
 import io.hyscale.controller.config.ControllerConfig;
@@ -80,15 +81,17 @@ public class LocalRegistryManagerImpl implements RegistryManager {
 
     public ImageRegistry getImageRegistry(DockerConfig dockerConfig, String registry) {
 
-        if (StringUtils.isBlank(registry)) {
-            return null;
-        }
-
         if (dockerConfig == null) {
             return null;
         }
-
-        List<String> dockerRegistryAliases = DockerHubAliases.getDockerRegistryAliases(registry);
+        
+		List<String> dockerRegistryAliases = null;
+		if (registry != null) {
+			dockerRegistryAliases = DockerHubAliases.getDockerRegistryAliases(registry);
+		} else {
+			dockerRegistryAliases = DockerHubAliases.getDefaultDockerRegistryAlias();
+		}
+        
         List<String> registryPatterns = new ArrayList<>();
         for (String registryAlias : dockerRegistryAliases) {
             registryPatterns.addAll(getRegistryPatterns(registryAlias));
@@ -106,7 +109,7 @@ public class LocalRegistryManagerImpl implements RegistryManager {
     }
 
     /**
-     * Returns credential helper if resgistry pattern found  in credHelpers if specified
+     * Returns credential helper if registry pattern found  in credHelpers if specified
      * or directly credsStore if specified else returns null.
      *
      * @param pattern
@@ -138,10 +141,11 @@ public class LocalRegistryManagerImpl implements RegistryManager {
     private void validate(String path) throws HyscaleException {
         File confFile = new File(path);
         if (confFile != null && !confFile.exists()) {
-            String confpath = SetupConfig.getMountOfDockerConf(path);
+            String confPath = SetupConfig.getMountOfDockerConf(path);
+            confPath = WindowsUtil.updateToHostFileSeparator(confPath);
             WorkflowLogger.error(ControllerActivity.CANNOT_FIND_FILE,
-                    confpath);
-            throw new HyscaleException(ControllerErrorCodes.DOCKER_CONFIG_NOT_FOUND, confpath);
+                    confPath);
+            throw new HyscaleException(ControllerErrorCodes.DOCKER_CONFIG_NOT_FOUND, confPath);
         }
     }
 

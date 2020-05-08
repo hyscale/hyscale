@@ -16,6 +16,7 @@
 package io.hyscale.commons.models;
 
 import java.io.File;
+import java.util.Objects;
 
 public class K8sConfigFileAuth implements K8sAuthorisation {
 
@@ -34,4 +35,17 @@ public class K8sConfigFileAuth implements K8sAuthorisation {
 		return K8sAuthType.KUBE_CONFIG_FILE;
 	}
 
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		K8sConfigFileAuth that = (K8sConfigFileAuth) o;
+		return k8sConfigFile.equals(that.k8sConfigFile);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(k8sConfigFile);
+	}
 }

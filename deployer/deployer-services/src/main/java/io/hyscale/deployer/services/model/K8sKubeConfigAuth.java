@@ -20,6 +20,8 @@ import io.hyscale.commons.models.K8sAuthType;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.kubernetes.client.util.KubeConfig;
 
+import java.util.Objects;
+
 public class K8sKubeConfigAuth implements K8sAuthorisation {
 
     private KubeConfig kubeConfig;
@@ -33,4 +35,16 @@ public class K8sKubeConfigAuth implements K8sAuthorisation {
         return K8sAuthType.KUBE_CONFIG_OBJECT;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        K8sKubeConfigAuth that = (K8sKubeConfigAuth) o;
+        return kubeConfig.equals(that.kubeConfig);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(kubeConfig);
+    }
 }

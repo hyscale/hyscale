@@ -40,12 +40,11 @@ public class ControllerTestConfiguration {
 
     @MockBean
     public ControllerConfig controllerConfig;
-    
+
     @PostConstruct
     public void init() {
         Mockito.when(controllerConfig.getDefaultKubeConf()).thenReturn(null);
         URL resourceAsUrl = ControllerTestConfiguration.class.getResource(TEST_DOCKER_CONFIG);
         Mockito.when(controllerConfig.getDefaultRegistryConf()).thenReturn(resourceAsUrl.getPath());
-        
     }
 }

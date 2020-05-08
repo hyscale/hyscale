@@ -16,15 +16,21 @@
 package io.hyscale.servicespec.commons.util;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.service.BuildSpecImage;
+import io.hyscale.servicespec.commons.model.service.DockerBuildImage;
 import io.hyscale.servicespec.commons.model.service.Image;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 
 public class ImageUtil {
+	private static final Logger logger = LoggerFactory.getLogger(ImageUtil.class);
+
 
     private static final String DELIMITER = "/";
 
@@ -107,4 +113,33 @@ public class ImageUtil {
         }
         return stringBuilder.toString();
     }
+
+    /**
+     * Checks if service spec requires image build or push operation
+     * Build or push required if service spec contains build spec or dockerfile filed in image
+     * 
+     * @param serviceSpec
+     * @return true if build or push required else false
+     */
+	public static boolean isImageBuildPushRequired(ServiceSpec serviceSpec) {
+	    if (serviceSpec == null) {
+	        return false;
+	    }
+		Image image = null;
+		try {
+			image = serviceSpec.get(HyscaleSpecFields.image, Image.class);
+		} catch (HyscaleException e) {
+			logger.info("Error while fetching buildSpec and registryUrl from serviceSpec ");
+		}
+		
+		if (image == null) {
+		    return false;
+		}
+		
+		if (image instanceof BuildSpecImage || image instanceof DockerBuildImage) {
+			return true;
+		}
+		
+		return false;
+	}
 }

@@ -23,7 +23,6 @@ import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.manager.RegistryManager;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.hooks.ManifestCleanUpHook;
-import io.hyscale.controller.hooks.ManifestValidatorHook;
 import io.hyscale.generator.services.config.ManifestConfig;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.exception.ManifestErrorCodes;
@@ -63,12 +62,8 @@ public class ManifestGeneratorComponentInvoker extends ComponentInvoker<Workflow
     @Autowired
     private ManifestCleanUpHook manifestCleanUpHook;
 
-    @Autowired
-    private ManifestValidatorHook manifestValidatorHook;
-
     @PostConstruct
     public void init() {
-        super.addHook(manifestValidatorHook);
         super.addHook(manifestCleanUpHook);
     }
 

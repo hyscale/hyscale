@@ -15,6 +15,8 @@
  */
 package io.hyscale.commons.models;
 
+import java.util.Objects;
+
 public class K8sBasicAuth implements K8sAuthorisation {
 	private String userName;
 	private String password;
@@ -65,5 +67,22 @@ public class K8sBasicAuth implements K8sAuthorisation {
 	@Override
 	public K8sAuthType getK8sAuthType() {
 		return K8sAuthType.BASIC_AUTH;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		K8sBasicAuth that = (K8sBasicAuth) o;
+		return Objects.equals(userName, that.userName) &&
+				Objects.equals(password, that.password) &&
+				Objects.equals(masterURL, that.masterURL) &&
+				Objects.equals(token, that.token) &&
+				Objects.equals(caCert, that.caCert);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(userName, password, masterURL, token, caCert);
 	}
 }

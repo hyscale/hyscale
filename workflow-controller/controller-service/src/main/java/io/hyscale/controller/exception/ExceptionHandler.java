@@ -15,6 +15,7 @@
  */
 package io.hyscale.controller.exception;
 
+import io.hyscale.controller.model.HyscaleInputSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,32 +32,35 @@ import picocli.CommandLine.ParseResult;
 
 /**
  * Utility Class to handle exception
+ *
  * @author tushart
  */
 @Component
 public class ExceptionHandler implements IExecutionExceptionHandler {
 
-	private static final Logger logger = LoggerFactory.getLogger(ExceptionHandler.class);
-	
-	@Autowired
+    private static final Logger logger = LoggerFactory.getLogger(ExceptionHandler.class);
+
+    @Autowired
     private ExitCodeExceptionMapper exitCodeExceptionMapper;
 
-	@Override
-	public int handleExecutionException(Exception ex, CommandLine commandLine, ParseResult parseResult)
-			throws Exception {
-	    int exitCode = 1;
-		logger.error("Unexpected error: ", ex);
-		
-		if (!(ex instanceof HyscaleException)) {
-		    WorkflowLogger.footer();
-		    String logDir = SetupConfig.getMountPathOf(SetupConfig.getToolLogDir());
-		    logDir = WindowsUtil.updateToHostFileSeparator(logDir);
-		    WorkflowLogger.error(ControllerActivity.UNEXPECTED_ERROR, logDir);
-		    WorkflowLogger.footer();
-		}
+    @Override
+    public int handleExecutionException(Exception ex, CommandLine commandLine, ParseResult parseResult)
+            throws Exception {
+        logger.error("Caught Error: ", ex);
 
-		exitCode = exitCodeExceptionMapper.getExitCode(ex);
-		        
-		return exitCode;
-	}
+        if (!(ex instanceof HyscaleException)) {
+            WorkflowLogger.footer();
+            String logDir = SetupConfig.getMountPathOf(SetupConfig.getToolLogDir());
+            logDir = WindowsUtil.updateToHostFileSeparator(logDir);
+            WorkflowLogger.error(ControllerActivity.UNEXPECTED_ERROR, logDir);
+            WorkflowLogger.footer();
+        }
+
+        if (ex instanceof HyscaleException) {
+            WorkflowLogger.error(ControllerActivity.TROUBLESHOOT, ex.toString());
+        }
+
+        return exitCodeExceptionMapper.getExitCode(ex);
+
+    }
 }

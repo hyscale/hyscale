@@ -201,8 +201,12 @@ public class WorkflowLogger {
     }
 
     public static void persist(Activity activity, String... args) {
+        persist(activity, LoggerTags.WARN, args);
+    }
+    
+    public static void persist(Activity activity, LoggerTags loggerTags, String... args) {
         if (activity != null) {
-            persistedActivities.add(getActivityMessage(activity, LoggerTags.WARN, args));
+            persistedActivities.add(getActivityMessage(activity, loggerTags, args));
         }
     }
 
@@ -217,4 +221,5 @@ public class WorkflowLogger {
         }
         persistedActivities.clear();
     }
+    
 }

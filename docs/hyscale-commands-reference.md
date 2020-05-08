@@ -15,11 +15,14 @@ Options:
   -n, --namespace string     name of namespace `<namespace>`
   -a, --application string   name of application `<applicationName>`
   -v  --verbose              `Optional` verbose mode
+  -P                         'Optional' profile name 
 ```
 
 #### Description
 
 To deploy an application service which is defined in the hspec file, use the "deploy" command. The command requires hspec file, Kubernetes namespace and application name as inputs, additionally profile can also be provided for a service.  Multiple hspec files (-f `<serviceName1>`.hspec -f `<serviceName2>`.hspec -f `<serviceNameN>`.hspec or comma separated -f `<serviceName1>`.hspec,`<serviceName2>`.hspec) can be provided to deploy multiple services. Similarly profiles files (-p `<profileName1>-<serviceName1>`.hprof -p `<profileName2>-<serviceName2>`.hprof -p `<profileNameN>-<serviceNameN>`.hprof or comma separated -p `<profileName1>-<serviceName1>`.hprof,`<profileName2>-<serviceName2>`.hprof) can also be provided for services. At max one profile is allowed per service.
+
+-P profilename option lookups for the profile files in the format `<profilename>-<servicename>`.hprof in the directory of hspec ,say dir(hspec) or in the dir(hspec)/profiles
 
 Images that are built part of hyscale deploy are handled based on the IMAGE_CLEANUP_POLICY environment variable. Possible values of the policy are 
 * PRESERVE_N_RECENTLY_USED (default) , preserves the last 3 recently used images
@@ -135,11 +138,28 @@ Usage: hyscale get apps
 
 Display application along with the namespace they are deployed in.
 
-
 ```
 #### Description
 
 To get all the deployed applications, use "get apps" command. The command will display all the applications along with namespace deployed through hyscale.
+
+## get replica status
+
+```markdown
+Usage:  hyscale get replica status [OPTIONS]
+
+Status of an Application Service.
+
+Options:
+  -s --service string         name of service `<serviceName>`. Can be repeated for multiple services.
+  -n --namespace string       name of namespace `<namespace>`
+  -a --application string     name of application `<applicationName>`   
+```
+
+###Description:
+
+To get the replica status of a particular deployed service, use "get replica status" command. The command requires service name, Kubernetes namespace and application name as inputs.
+
 
 ## Tool Options Description:
 

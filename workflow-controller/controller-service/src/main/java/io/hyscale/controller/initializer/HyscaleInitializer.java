@@ -16,6 +16,10 @@
 package io.hyscale.controller.initializer;
 
 import io.hyscale.controller.exception.ParameterExceptionHandler;
+import io.hyscale.controller.piccoli.ProfileArgsManipulator;
+
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +39,7 @@ import io.hyscale.controller.util.ResourceCleanUpUtil;
 import io.hyscale.controller.util.ShutdownHook;
 import picocli.CommandLine;
 import picocli.CommandLine.IFactory;
+import picocli.CommandLine.IHelpSectionRenderer;
 import picocli.CommandLine.ParameterException;
 
 /**
@@ -73,6 +78,7 @@ public class HyscaleInitializer implements CommandLineRunner {
         app.run(args);
     }
 
+
     public void run(String... args) {
         int exitCode = 1;
         try {
@@ -80,6 +86,9 @@ public class HyscaleInitializer implements CommandLineRunner {
             CommandLine commandLine = new CommandLine(new HyscaleCommand(), factory);
             commandLine.setExecutionExceptionHandler(exceptionHandler);
             commandLine.setParameterExceptionHandler(parameterExceptionHandler);
+            Map<String, IHelpSectionRenderer> updatedHelp = ProfileArgsManipulator.updateHelp(commandLine);
+            commandLine.setHelpSectionMap(updatedHelp);
+            args = ProfileArgsManipulator.updateArgs(args);
             exitCode = commandLine.execute(args);
         } catch (ParameterException e) {
             logger.error("Error while processing command, error {}", ControllerErrorCodes.INVALID_COMMAND.getErrorMessage(), e);
@@ -91,5 +100,5 @@ public class HyscaleInitializer implements CommandLineRunner {
 		}
         System.exit(exitCode);
     }
-
+    
 }

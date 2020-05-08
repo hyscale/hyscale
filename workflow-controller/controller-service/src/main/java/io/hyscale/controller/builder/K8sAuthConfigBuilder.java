@@ -25,6 +25,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.models.K8sConfigFileAuth;
+import io.hyscale.commons.utils.WindowsUtil;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.config.ControllerConfig;
 import io.hyscale.controller.exception.ControllerErrorCodes;
@@ -41,25 +42,27 @@ public class K8sAuthConfigBuilder {
 
     @Autowired
     private ControllerConfig controllerConfig;
-  
+
+    private AuthConfig defaultAuthConfig;
+
     /**
      * Gets {@link K8sConfigFileAuth} from {@link ControllerConfig} default config
      * @return {@link K8sConfigFileAuth}
      */
-    public AuthConfig getAuthConfig() throws HyscaleException{
-    	validate(controllerConfig.getDefaultKubeConf());
-        K8sConfigFileAuth k8sAuth = new K8sConfigFileAuth();
-        k8sAuth.setK8sConfigFile(new File(controllerConfig.getDefaultKubeConf()));
-        return k8sAuth;
+    public AuthConfig getAuthConfig() throws HyscaleException {
+        if (defaultAuthConfig == null) {
+            defaultAuthConfig = getAuthConfig(controllerConfig.getDefaultKubeConf());
+        }
+        return defaultAuthConfig;
     }
-    
+
     public AuthConfig getAuthConfig(String kubeConfigPath) throws HyscaleException{
     	validate(kubeConfigPath);
         K8sConfigFileAuth k8sAuth = new K8sConfigFileAuth();
         k8sAuth.setK8sConfigFile(new File(kubeConfigPath));
         return k8sAuth;
     }
-    
+
     private void validate(String path) throws HyscaleException {
     	if(path==null) {
     		throw new HyscaleException(ControllerErrorCodes.KUBE_CONFIG_PATH_EMPTY);
@@ -67,10 +70,9 @@ public class K8sAuthConfigBuilder {
         File confFile = new File(path);
         if (confFile != null && !confFile.exists()) {
             String confPath = SetupConfig.getMountPathOfKubeConf(path) ;
-            WorkflowLogger.error(ControllerActivity.CANNOT_FIND_FILE,
-                    confPath);
+            confPath = WindowsUtil.updateToHostFileSeparator(confPath);
             throw new HyscaleException(ControllerErrorCodes.KUBE_CONFIG_NOT_FOUND, confPath);
         }
     }
-   
+
 }
