@@ -113,19 +113,18 @@ Usage Pre-Requisites:
 
 * JDK version 11 and above
 
-1.Download the latest stable release from this [link](https://get.hyscale.io/win)
-              
-2.Rename the downloaded file to hyscale.ps1
+1.Download the latest stable release from this [link](https://get.hyscale.io/win) Or run the below command in powershell.
 
-3.Add the binary into your PATH.
+     Invoke-WebRequest -Uri https://get.hyscale.io/win -OutFile hyscale.ps1               
 
-4.Open the windows powershell. 
- 
-*Note:To Set execution policy*
+2.Add the downloaded hyscale.ps1 to your PATH
 
-*Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine*   
+3.Verify the installation by running the below command in the powershell window.
 
-    hyscale.ps1 --version  
+    hyscale.ps1 --version
+
+*Note: The first time run would take time as the script downloads the required binary file. If you get execution error, please set execution policy for current user, for more info refer [here](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies?view=powershell-7) *
+
 
 Note: Verified on CentOS, Ubuntu and Debian Linux, Mac, Windows.
 
