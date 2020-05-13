@@ -34,7 +34,7 @@ public enum DeployerErrorCodes implements HyscaleErrorCode {
     FAILED_TO_DELETE_RESOURCE("Failed to delete resource {}"),
     FAILED_TO_UPDATE_RESOURCE("Failed to update resource {}"),
     FAILED_TO_PATCH_RESOURCE("Failed to patch resource {}"),
-    FAILED_TO_GET_SERVICE_ADDRESS("Failed to get service address of service {} "),
+    FAILED_TO_GET_SERVICE_ADDRESS("Failed to get service address of service \"{}\" in namespace \"{}\""),
     MANIFEST_REQUIRED("Manifest required"),
     FAILED_TO_APPLY_MANIFEST("Failed to apply manifests"),
     FAILED_TO_READ_MANIFEST("Failed to read manifests"),
