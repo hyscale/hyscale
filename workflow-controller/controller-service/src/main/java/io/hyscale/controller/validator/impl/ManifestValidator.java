@@ -28,7 +28,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.LoggerTags;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.Status;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;

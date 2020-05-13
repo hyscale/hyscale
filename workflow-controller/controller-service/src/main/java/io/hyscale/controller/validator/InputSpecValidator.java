@@ -30,10 +30,8 @@ import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Activity;
-import io.hyscale.commons.models.Status;
 import io.hyscale.commons.validator.Validator;
-import io.hyscale.controller.exception.ControllerErrorCodes;
-import io.hyscale.schema.validator.SchemaValidator;
+import io.hyscale.controller.util.ValidatorMessageHandler;
 
 /**
  * Ensures validators are called for all the input files even if some fails validation
@@ -52,7 +50,7 @@ public abstract class InputSpecValidator implements Validator<List<File>> {
         }
         boolean isInvalid = false;
         boolean isFailed = false;
-        StringBuilder exceptionMsg = new StringBuilder().append(": \n");
+        StringBuilder exceptionMsgBuilder = new StringBuilder().append(": \n");
         for (File inputSpecFile : inputSpecFiles) {
             try {
                 if (!validateFile(inputSpecFile) || !getSchemaValidator().validate(inputSpecFile)) {
@@ -60,22 +58,13 @@ public abstract class InputSpecValidator implements Validator<List<File>> {
                 }
             } catch (HyscaleException e) {
                 isFailed = true;
-                exceptionMsg.append(e.getMessage()).append("\n");
+                exceptionMsgBuilder.append(e.getMessage()).append(ToolConstants.NEW_LINE);
             }
         }
-        if (isInvalid || isFailed) {
-            logger.error("Input invalid : {}, failed: {}, error message : {}", isInvalid, isFailed,
-                    exceptionMsg.toString());
-
-        }
-        WorkflowLogger.logPersistedActivities();
-        if (isFailed) {
-            throw new HyscaleException(ControllerErrorCodes.INPUT_VALIDATION_FAILED,
-                    ToolConstants.INVALID_INPUT_ERROR_CODE, exceptionMsg.toString());
-        }
+        ValidatorMessageHandler.handleErrMsg(exceptionMsgBuilder, isInvalid, isFailed);
         return !isInvalid;
     }
-
+    
     private boolean validateFile(File inputFile) throws HyscaleException {
         logger.debug("Running Validator {}", getClass());
         if (inputFile == null) {
