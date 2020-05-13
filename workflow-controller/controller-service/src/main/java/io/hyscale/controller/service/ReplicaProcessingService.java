@@ -67,8 +67,11 @@ public class ReplicaProcessingService {
     }
 
     public Optional<Map<Integer, ReplicaInfo>> logReplicas(List<ReplicaInfo> replicaInfoList, boolean indexed) {
-        TableFormatter.Builder builder = new TableFormatter.Builder();
         Optional<Map<Integer, ReplicaInfo>> optionalMap = Optional.empty();
+        if (replicaInfoList == null || replicaInfoList.isEmpty()) {
+            return optionalMap;
+        }
+        TableFormatter.Builder builder = new TableFormatter.Builder();
         if (indexed) {
             builder.addField(TableFields.INDEX.getFieldName(), TableFields.INDEX.getLength());
         }
