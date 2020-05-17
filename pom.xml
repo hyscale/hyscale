@@ -49,13 +49,11 @@
 		<flipkart.zjsonpatch.version>0.4.5</flipkart.zjsonpatch.version>
 		<spullara.mustache.compiler.version>0.9.6</spullara.mustache.compiler.version>
 		<picocli.spring-boot.version>4.2.0</picocli.spring-boot.version>
-		<spring-boot.version>2.1.6.RELEASE</spring-boot.version>
-		<spring-boot-maven-plugin.version>2.1.6.RELEASE</spring-boot-maven-plugin.version>
-		<spring.core.version>5.1.9.RELEASE</spring.core.version>
+		<spring-boot.version>2.2.6.RELEASE</spring-boot.version>
+		<spring-boot-maven-plugin.version>2.2.6.RELEASE</spring-boot-maven-plugin.version>
+		<spring.core.version>5.2.6.RELEASE</spring.core.version>
 		<hibernate-validator.version>6.0.17.Final</hibernate-validator.version>
 		<org.skyscreamer.jsonassert.version>1.5.0</org.skyscreamer.jsonassert.version>
-		<junit.version>5.4.2</junit.version>
-		<junit.platform.version>1.4.0</junit.platform.version>
 		<ocpsoft.prettytime.version>4.0.2.Final</ocpsoft.prettytime.version>
 		<main.basedir>.</main.basedir>
 		<main.dist.dir>${main.basedir}/_dist</main.dist.dir>
@@ -109,45 +107,9 @@
 		</dependency>
 		<!-- Test dependencies start -->
 		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-api</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-params</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<version>${spring-boot.version}</version>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>junit</groupId>
-					<artifactId>junit</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-commons</artifactId>
-			<version>${junit.platform.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-launcher</artifactId>
-			<version>${junit.platform.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- Test dependencies end -->
@@ -213,7 +175,7 @@
 				<plugin>
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-maven-plugin</artifactId>
-					<version>2.1.8.RELEASE</version>
+					<version>${spring-boot-maven-plugin.version}</version>
 					<executions>
 						<execution>
 							<goals>
