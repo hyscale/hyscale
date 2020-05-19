@@ -44,6 +44,7 @@ import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.PodParentHandler;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
+import io.hyscale.deployer.services.mapper.ResourceServiceStatusMapper;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.model.PodCondition;
 import io.hyscale.deployer.services.model.ResourceStatus;
@@ -296,23 +297,22 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
 
     @Override
     public ResourceStatus status(V1StatefulSet statefulSet) {
-        if (statefulSet.getStatus() == null) {
+        V1StatefulSetStatus stsStatus = statefulSet.getStatus();
+        if (stsStatus == null) {
             return ResourceStatus.FAILED;
-        } else {
-            V1StatefulSetStatus stsStatus = statefulSet.getStatus();
-            String currentRevision = stsStatus.getCurrentRevision();
-            String updateRevision = stsStatus.getUpdateRevision();
-            // stsStatus.getConditions()
-            Integer currentReplicas = stsStatus.getCurrentReplicas();
-            Integer readyReplicas = stsStatus.getReadyReplicas();
-            Integer intendedReplicas = statefulSet.getSpec().getReplicas();
-            // Success case update remaining pods status and return
-            if (updateRevision != null && updateRevision.equals(currentRevision) && intendedReplicas != null
-                    && intendedReplicas == currentReplicas && intendedReplicas == readyReplicas) {
-                return ResourceStatus.STABLE;
-            }
-            return ResourceStatus.PENDING;
         }
+        String currentRevision = stsStatus.getCurrentRevision();
+        String updateRevision = stsStatus.getUpdateRevision();
+        // stsStatus.getConditions()
+        Integer currentReplicas = stsStatus.getCurrentReplicas();
+        Integer readyReplicas = stsStatus.getReadyReplicas();
+        Integer intendedReplicas = statefulSet.getSpec().getReplicas();
+        // Success case update remaining pods status and return
+        if (updateRevision != null && updateRevision.equals(currentRevision) && intendedReplicas != null
+                && intendedReplicas == currentReplicas && intendedReplicas == readyReplicas) {
+            return ResourceStatus.STABLE;
+        }
+        return ResourceStatus.PENDING;
     }
 
     @Override
@@ -354,7 +354,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         if (statefulSet == null) {
             return null;
         }
-        return buildStatusFromMetadata(statefulSet.getMetadata(), DeploymentStatus.ServiceStatus.NOT_RUNNING);
+        return buildStatusFromMetadata(statefulSet.getMetadata(), ResourceServiceStatusMapper.getServiceStatus(status(statefulSet)));
     }
 
     @Override

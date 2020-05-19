@@ -17,8 +17,6 @@ package io.hyscale.controller.invoker;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,14 +28,15 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.controller.builder.DeploymentContextBuilder;
-import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.TroubleshootUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.services.deployer.Deployer;
+import io.hyscale.troubleshooting.integration.actions.ServiceNotDeployedAction;
 import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
 import io.hyscale.troubleshooting.integration.models.ServiceInfo;
+import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
 import io.hyscale.troubleshooting.integration.service.TroubleshootService;
 
 /**
@@ -60,6 +59,9 @@ public class StatusComponentInvoker extends ComponentInvoker<WorkflowContext> {
     
     @Autowired
     private TroubleshootService troubleshootService;
+    
+    @Autowired
+    private ServiceNotDeployedAction serviceNotDeployedAction;
     
     @Override
     protected void doExecute(WorkflowContext context) throws HyscaleException {
@@ -94,18 +96,20 @@ public class StatusComponentInvoker extends ComponentInvoker<WorkflowContext> {
         if (serviceStatus == null) {
             return null;
         }
-        String message = null;
         /*
          * Fetch service name from service status as
          * context can have the previous service name in case of app deploy
          */
         context.setServiceName(serviceStatus.getServiceName());
-        if (!DeploymentStatus.ServiceStatus.RUNNING.equals(serviceStatus.getServiceStatus())) {
-            List<DiagnosisReport> diagnosisReports = troubleshoot(context);
-            message = TroubleshootUtil.getTroubleshootMessage(diagnosisReports);
+        List<DiagnosisReport> diagnosisReports = null;
+        if (DeploymentStatus.ServiceStatus.NOT_DEPLOYED.equals(serviceStatus.getServiceStatus())) {
+            TroubleshootingContext toubleshootingContext = new TroubleshootingContext();
+            serviceNotDeployedAction.process(toubleshootingContext);
+            diagnosisReports = toubleshootingContext.getDiagnosisReports();
+        } else if (!DeploymentStatus.ServiceStatus.RUNNING.equals(serviceStatus.getServiceStatus())) {
+            diagnosisReports = troubleshoot(context);
         }
-        
-        return message;
+        return TroubleshootUtil.getTroubleshootMessage(diagnosisReports);
     }
     
     private List<DiagnosisReport> troubleshoot(DeploymentContext deploymentContext) {

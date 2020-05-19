@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.validator.impl.ClusterValidator;
 
 @SpringBootTest

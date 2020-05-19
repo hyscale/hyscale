@@ -21,10 +21,9 @@ import javax.annotation.PostConstruct;
 
 import io.hyscale.deployer.services.handler.PodParentHandler;
 
-/* TODO
-  need to inject the parentHandlers
-  to parenthandler list. Until then , this
-  class is incomplete
+/**
+ * Factory Class to provide PodParentHandlers based on Kind
+ *
  */
 public class PodParentFactory {
 

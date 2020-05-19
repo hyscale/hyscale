@@ -41,6 +41,7 @@ import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.PodParentHandler;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
+import io.hyscale.deployer.services.mapper.ResourceServiceStatusMapper;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.model.ResourceStatus;
 import io.hyscale.deployer.services.model.ScaleOperation;
@@ -343,7 +344,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         if (deployment == null) {
             return null;
         }
-        return buildStatusFromMetadata(deployment.getMetadata(), DeploymentStatus.ServiceStatus.NOT_RUNNING);
+        return buildStatusFromMetadata(deployment.getMetadata(), ResourceServiceStatusMapper.getServiceStatus(status(deployment)));
     }
 
     @Override

@@ -30,7 +30,7 @@ public enum AbstractedErrorMessage implements IMessage, IReason {
     FIX_IMAGE_NAME("Invalid Image name or tag provided", "Recheck the image name or tag in {} service spec"),
     INVALID_PULL_REGISTRY_CREDENTIALS("Invalid target registry credentials for \"{}\"", "Check them at {}"),
     DOCKERFILE_CMD_UNCERTAINITY("Service observed to be crashing. Possible errors in ENTRYPOINT/ CMD in Dockerfile or missing ENTRYPOINT", ""),
-    SERVICE_NOT_DEPLOYED("No such service found in this cluster.", "Ensure you are querying for the correct service name in the correct namespace and cluster"),
+    SERVICE_NOT_DEPLOYED("No such service found in this cluster", "Ensure you are querying for the correct service name in the correct namespace and cluster"),
     CANNOT_FIND_EVENTS("Cannot determine cause of failure since this service deployment is older than 60 minutes", "Try redeploying to troubleshoot"),
     INVALID_VOLUME_NAME("Volume name provided in service spec is invalid", "Volume name must be less than 63 characters and must follow the regex [a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*"),
     MULTIPLE_DEFAULT_STORAGE_CLASS("Volume creation failed. More than 1 default storage class configured on the cluster","Provide a storage class name in the service spec or contact your cluster administrator to configure a single default storage class"),
