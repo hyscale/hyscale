@@ -43,6 +43,7 @@ public enum DeployerErrorCodes implements HyscaleErrorCode {
     FAILED_TO_GET_LOGS("Failed to get pod logs"),
     FAILED_TO_INITIALIZE_POD("Failed to initialize pod"),
     POD_FAILED_READINESS("Pod Readiness failed"),
+    POD_SELECTOR_NOT_FOUND("Pod selector not found"),
     FAILED_TO_CREATE_POD("Failed to create pod"),
     OPERATION_NOT_SUPPORTED("Operation {} not supported for resource {}"),
     INVALID_STORAGE_CLASS_FOR_VOLUME("Storage class {} in your hspec is found to be invalid , allowed values from your cluster are {}"),

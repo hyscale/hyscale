@@ -13,15 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.deployer.services.constants;
+package io.hyscale.commons.models;
 
-public class DeployerConstants {
+public enum MetadataFieldSelector implements ResourceFieldSelectorKey{
+	METADATA_NAMESPACE("metadata.namespace");
 
-    public static final String LB_READY_TIMEOUT = "HYS_LB_READY_TIMEOUT";
-    
-    public static final String POD_RESTART_COUNT="HYS_POD_RESTART_COUNT";
+	private String name;
 
-    public static final long DEFAULT_LB_READY_TIMEOUT = 90000;
-    
-    public static final long DEFAULT_POD_RESTART_COUNT = 3;
+	MetadataFieldSelector(String name) {
+		this.name = name;
+	}
+
+	@Override
+	public String getFieldName() {
+		return name;
+	}
 }

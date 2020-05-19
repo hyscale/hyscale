@@ -15,8 +15,17 @@
  */
 package io.hyscale.deployer.services.handler.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.Lists;
 import com.google.gson.JsonSyntaxException;
+
 import io.hyscale.commons.constants.K8SRuntimeConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.ActivityContext;
@@ -39,20 +48,15 @@ import io.hyscale.deployer.services.model.ResourceStatus;
 import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.hyscale.deployer.services.util.K8sPodUtil;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
+import io.kubernetes.client.custom.V1Patch;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.apis.AppsV1Api;
 import io.kubernetes.client.openapi.models.V1DeleteOptions;
 import io.kubernetes.client.openapi.models.V1Pod;
-import io.kubernetes.client.custom.V1Patch;
-import io.kubernetes.client.openapi.models.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import io.kubernetes.client.openapi.models.V1StatefulSet;
+import io.kubernetes.client.openapi.models.V1StatefulSetList;
+import io.kubernetes.client.openapi.models.V1StatefulSetStatus;
 
 /**
  * @author tushart
@@ -372,35 +376,21 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
     }
 
     @Override
-    public String getPodSelector(ApiClient apiClient, String selector, boolean label, String namespace) {
+    protected String getPodRevision(ApiClient apiClient, String selector, boolean label, String namespace) {
         List<V1StatefulSet> statefulSetList = null;
         try {
             statefulSetList = getBySelector(apiClient, selector, label, namespace);
         } catch (HyscaleException e) {
             logger.error("Error fetching deployment for pod selection, ignoring", e);
-            return selector;
+            return null;
         }
         if (statefulSetList == null || statefulSetList.isEmpty()) {
-            return selector;
+            return null;
         }
-
         V1StatefulSet v1StatefulSet = statefulSetList.get(0);
-        if (v1StatefulSet == null) {
-            return selector;
-        }
-        V1StatefulSetStatus stsStatus = v1StatefulSet.getStatus();
-        if (stsStatus == null) {
-            return selector;
-        }
-
-        String currentRevision = stsStatus.getCurrentRevision();
-        String updateRevision = stsStatus.getUpdateRevision();
-        logger.debug("Current Revision = " + currentRevision);
-        logger.debug("Updated Revision = " + updateRevision);
-
-        return selector
-                .concat("," + K8SRuntimeConstants.K8s_STS_CONTROLLER_REVISION_HASH + "=" + updateRevision);
+        return getPodRevision(null, v1StatefulSet);
     }
+    
 
     public String getControllerRevisoionHash(V1StatefulSet v1StatefulSet) {
         if (v1StatefulSet == null) {
@@ -413,4 +403,37 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         }
         return annotations.get(K8SRuntimeConstants.K8s_STS_CONTROLLER_REVISION_HASH);
     }
+
+    /**
+     * @param apiClient
+     * @param v1StatefulSet
+     * @return It will return revision of pod
+     */
+    
+	@Override
+	protected String getPodRevision(ApiClient apiClient, V1StatefulSet v1StatefulSet) {
+		if (v1StatefulSet == null) {
+			return null;
+		}
+		V1StatefulSetStatus stsStatus = v1StatefulSet.getStatus();
+		if (stsStatus == null) {
+			return null;
+		}
+		String currentRevision = stsStatus.getCurrentRevision();
+		String updateRevision = stsStatus.getUpdateRevision();
+		logger.debug("Current Revision = " + currentRevision);
+		logger.debug("Updated Revision = " + updateRevision);
+		return K8SRuntimeConstants.K8s_STS_CONTROLLER_REVISION_HASH + "=" + updateRevision;
+	}
+
+	/**
+	 * @param v1StatefulSet
+	 * @return It will return replica of pod, if replica is not there then it will
+	 *         return default value 1
+	 */
+
+	@Override
+	public Integer getReplicas(V1StatefulSet t) {
+		return t != null ? t.getSpec().getReplicas() : K8SRuntimeConstants.DEFAULT_REPLICA_COUNT;
+	}
 }

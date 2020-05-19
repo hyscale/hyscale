@@ -13,15 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.deployer.services.constants;
+package io.hyscale.deployer.services.model;
 
-public class DeployerConstants {
+public class PodParent {
+	private String kind;
+	private Object parent;
 
-    public static final String LB_READY_TIMEOUT = "HYS_LB_READY_TIMEOUT";
-    
-    public static final String POD_RESTART_COUNT="HYS_POD_RESTART_COUNT";
+	public String getKind() {
+		return kind;
+	}
 
-    public static final long DEFAULT_LB_READY_TIMEOUT = 90000;
-    
-    public static final long DEFAULT_POD_RESTART_COUNT = 3;
+	public void setKind(String kind) {
+		this.kind = kind;
+	}
+
+	public Object getParent() {
+		return parent;
+	}
+
+	public void setParent(Object pod) {
+		this.parent = pod;
+	}
 }

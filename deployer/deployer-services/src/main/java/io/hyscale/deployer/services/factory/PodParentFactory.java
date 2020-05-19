@@ -15,12 +15,14 @@
  */
 package io.hyscale.deployer.services.factory;
 
-import io.hyscale.deployer.services.handler.PodParentHandler;
-
-import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
+
+import javax.annotation.PostConstruct;
+
+import io.hyscale.deployer.services.handler.PodParentHandler;
 
 /* TODO
   need to inject the parentHandlers
@@ -31,7 +33,7 @@ public class PodParentFactory {
 
     private List<PodParentHandler> parentHandlerList;
 
-    Map<String, PodParentHandler> kindVsHandlerMap;
+    private static Map<String, PodParentHandler> kindVsHandlerMap;
 
     @PostConstruct
     public void init() {
@@ -40,8 +42,17 @@ public class PodParentFactory {
             kindVsHandlerMap.put(each.getKind(), each);
         });
     }
+    
+	public static void registerHandlers() {
+		if (kindVsHandlerMap == null) {
+			kindVsHandlerMap = new HashMap();
+			for (PodParentHandler handler : ServiceLoader.load(PodParentHandler.class, PodParentFactory.class.getClassLoader())) {
+				kindVsHandlerMap.put(handler.getKind(), handler);
+			}
+		}
+	}
 
-    public PodParentHandler getHandler(String kind) {
+    public static PodParentHandler getHandler(String kind) {
         return kindVsHandlerMap.get(kind);
     }
 }
