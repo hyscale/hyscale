@@ -15,21 +15,22 @@
  */
 package io.hyscale.deployer.services.model;
 
-public class PodParent {
-    private String kind;
-    private Object parent;
+public class ScaleSpec {
 
-    public PodParent(String kind, Object parent) {
-        this.kind = kind;
-        this.parent = parent;
+    private ScaleOperation scaleOp;
+    private int value;
+
+    public ScaleSpec(ScaleOperation scaleOp, int value) {
+        this.scaleOp = scaleOp;
+        this.value = value;
     }
 
-    public String getKind() {
-        return kind;
+    public ScaleOperation getScaleOp() {
+        return scaleOp;
     }
 
-    public Object getParent() {
-        return parent;
+    public int getValue() {
+        return value;
     }
 
 }

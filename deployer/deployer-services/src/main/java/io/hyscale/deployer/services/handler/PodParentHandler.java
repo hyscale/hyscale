@@ -19,9 +19,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ServiceLoader;
 
+import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.ResourceLabelUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
+import io.hyscale.deployer.services.model.ScaleOperation;
 import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.models.V1Deployment;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 
 public abstract class PodParentHandler<T> {
@@ -31,12 +34,14 @@ public abstract class PodParentHandler<T> {
     public abstract DeploymentStatus buildStatus(T t);
 
     public abstract List<DeploymentStatus> buildStatus(List<T> t);
-    
-    protected abstract String getPodRevision(ApiClient apiClient,T t);
-    
+
+    protected abstract String getPodRevision(ApiClient apiClient, T t);
+
     public abstract Integer getReplicas(T t);
-    
+
     protected abstract String getPodRevision(ApiClient apiClient, String selector, boolean label, String namespace);
+
+    public abstract boolean scale(ApiClient apiClient, T t, String namespace, ScaleOperation scaleOp, int value) throws HyscaleException;
 
     public DeploymentStatus buildStatusFromMetadata(V1ObjectMeta metadata, DeploymentStatus.ServiceStatus serviceStatus) {
         if (metadata == null) {
@@ -51,23 +56,23 @@ public abstract class PodParentHandler<T> {
     }
 
     public abstract String getKind();
-    
-	public String getPodSelector(ApiClient apiClient, String selector, boolean label, String namespace) {
-		if(selector==null) {
-			return null;
-		}
-		String revision = getPodRevision(apiClient, selector, label, namespace);
-		return revision != null ? selector.concat("," + revision) : selector;
-	}
-    
-	public String getPodSelector(ApiClient apiClient,T t, String selector) {
-		if(t==null) {
-			return selector;
-		}
-		String revision = getPodRevision(apiClient,t);
-		if(selector==null && revision!=null) {
-			return revision;
-		}
-		return revision != null ? selector.concat("," + revision) : selector;
-	}
+
+    public String getPodSelector(ApiClient apiClient, String selector, boolean label, String namespace) {
+        if (selector == null) {
+            return null;
+        }
+        String revision = getPodRevision(apiClient, selector, label, namespace);
+        return revision != null ? selector.concat("," + revision) : selector;
+    }
+
+    public String getPodSelector(ApiClient apiClient, T t, String selector) {
+        if (t == null) {
+            return selector;
+        }
+        String revision = getPodRevision(apiClient, t);
+        if (selector == null && revision != null) {
+            return revision;
+        }
+        return revision != null ? selector.concat("," + revision) : selector;
+    }
 }

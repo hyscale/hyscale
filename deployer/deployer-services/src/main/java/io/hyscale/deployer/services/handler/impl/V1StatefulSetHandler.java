@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.hyscale.deployer.services.model.ScaleOperation;
+import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,11 +54,6 @@ import io.kubernetes.client.custom.V1Patch;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.apis.AppsV1Api;
-import io.kubernetes.client.openapi.models.V1DeleteOptions;
-import io.kubernetes.client.openapi.models.V1Pod;
-import io.kubernetes.client.openapi.models.V1StatefulSet;
-import io.kubernetes.client.openapi.models.V1StatefulSetList;
-import io.kubernetes.client.openapi.models.V1StatefulSetStatus;
 
 /**
  * @author tushart
@@ -390,7 +387,6 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         V1StatefulSet v1StatefulSet = statefulSetList.get(0);
         return getPodRevision(null, v1StatefulSet);
     }
-    
 
     public String getControllerRevisoionHash(V1StatefulSet v1StatefulSet) {
         if (v1StatefulSet == null) {
@@ -409,31 +405,77 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
      * @param v1StatefulSet
      * @return It will return revision of pod
      */
-    
-	@Override
-	protected String getPodRevision(ApiClient apiClient, V1StatefulSet v1StatefulSet) {
-		if (v1StatefulSet == null) {
-			return null;
-		}
-		V1StatefulSetStatus stsStatus = v1StatefulSet.getStatus();
-		if (stsStatus == null) {
-			return null;
-		}
-		String currentRevision = stsStatus.getCurrentRevision();
-		String updateRevision = stsStatus.getUpdateRevision();
-		logger.debug("Current Revision = " + currentRevision);
-		logger.debug("Updated Revision = " + updateRevision);
-		return K8SRuntimeConstants.K8s_STS_CONTROLLER_REVISION_HASH + "=" + updateRevision;
-	}
 
-	/**
-	 * @param v1StatefulSet
-	 * @return It will return replica of pod, if replica is not there then it will
-	 *         return default value 1
-	 */
+    @Override
+    protected String getPodRevision(ApiClient apiClient, V1StatefulSet v1StatefulSet) {
+        if (v1StatefulSet == null) {
+            return null;
+        }
+        V1StatefulSetStatus stsStatus = v1StatefulSet.getStatus();
+        if (stsStatus == null) {
+            return null;
+        }
+        String currentRevision = stsStatus.getCurrentRevision();
+        String updateRevision = stsStatus.getUpdateRevision();
+        logger.debug("Current Revision = " + currentRevision);
+        logger.debug("Updated Revision = " + updateRevision);
+        return K8SRuntimeConstants.K8s_STS_CONTROLLER_REVISION_HASH + "=" + updateRevision;
+    }
 
-	@Override
-	public Integer getReplicas(V1StatefulSet t) {
-		return t != null ? t.getSpec().getReplicas() : K8SRuntimeConstants.DEFAULT_REPLICA_COUNT;
-	}
+    /**
+     * @param v1StatefulSet
+     * @return It will return replica of pod, if replica is not there then it will
+     *         return default value 1
+     */
+
+    @Override
+    public Integer getReplicas(V1StatefulSet t) {
+        return t != null ? t.getSpec().getReplicas() : K8SRuntimeConstants.DEFAULT_REPLICA_COUNT;
+    }
+
+    @Override
+    public boolean scale(ApiClient apiClient, V1StatefulSet v1StatefulSet, String namespace, ScaleOperation scaleOp, int value) throws HyscaleException {
+        if (v1StatefulSet == null) {
+            logger.error("Cannot scale 'null' deployment");
+            return false;
+        }
+        AppsV1Api appsV1Api = new AppsV1Api(apiClient);
+        String name = v1StatefulSet.getMetadata().getName();
+        String patch = "";
+        try {
+            switch (scaleOp) {
+                case SCALE_TO:
+                    patch = " {\"spec\":{\"replicas\":" + value + "}}";
+                    break;
+                case SCALE_UP:
+                    int scaledUpReplicas = v1StatefulSet.getSpec().getReplicas() + 1;
+                    patch = " {\"spec\":{\"replicas\":" + scaledUpReplicas + "}}";
+                    break;
+                case SCALE_DOWN:
+                    int scaledDownReplicas = v1StatefulSet.getSpec().getReplicas() - 1;
+                    patch = " {\"spec\":{\"replicas\":" + scaledDownReplicas + "}}";
+                    break;
+            }
+            appsV1Api.patchNamespacedDeploymentScale(name, namespace, patch, TRUE, null, null, null);
+            return waitForDesiredState(apiClient, name, namespace);
+        } catch (ApiException e) {
+            logger.error("Error while applying PATCH scale to {}", name);
+            return false;
+        }
+    }
+
+    private boolean waitForDesiredState(ApiClient apiClient, String name, String namespace) throws HyscaleException {
+        Long startTime = System.currentTimeMillis();
+        boolean stable = false;
+        while (System.currentTimeMillis() - startTime < MAX_WAIT_TIME_IN_MILLISECONDS) {
+            V1StatefulSet updatedStatefulset = null;
+            updatedStatefulset = get(apiClient, name, namespace);
+            if (status(updatedStatefulset) == ResourceStatus.STABLE) {
+                stable = true;
+                break;
+            }
+        }
+        return stable;
+    }
+
 }

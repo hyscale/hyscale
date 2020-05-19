@@ -43,6 +43,7 @@ import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.model.ResourceStatus;
+import io.hyscale.deployer.services.model.ScaleOperation;
 import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
 import io.kubernetes.client.custom.V1Patch;
@@ -57,6 +58,8 @@ import io.kubernetes.client.openapi.models.V1ReplicaSet;
 
 public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implements ResourceLifeCycleHandler<V1Deployment> {
     private static final Logger LOGGER = LoggerFactory.getLogger(V1DeploymentHandler.class);
+
+    private static final Long MAX_WAIT_TIME = 120000L;
 
     @Override
     public V1Deployment create(ApiClient apiClient, V1Deployment resource, String namespace) throws HyscaleException {
@@ -377,7 +380,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         }
         return getPodTemplateHash(apiClient, namespace, selector, revision);
     }
-    
+
     private String getPodTemplateHash(ApiClient apiClient, String namespace, String selector, String revision) {
     	  V1ReplicaSetHandler v1ReplicaSetHandler = (V1ReplicaSetHandler) ResourceHandlers
                   .getHandlerOf(ResourceKind.REPLICA_SET.getKind());
@@ -414,4 +417,50 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
 	public Integer getReplicas(V1Deployment t) {
 		return t != null ? t.getSpec().getReplicas() : K8SRuntimeConstants.DEFAULT_REPLICA_COUNT;
 	}
+
+    @Override
+    public boolean scale(ApiClient apiClient, V1Deployment deployment, String namespace, ScaleOperation scaleOp, int value) throws HyscaleException {
+        if (deployment == null) {
+            logger.error("Cannot scale 'null' deployment");
+            return false;
+        }
+        AppsV1Api appsV1Api = new AppsV1Api(apiClient);
+        String name = deployment.getMetadata().getName();
+        String patch = "";
+        try {
+            switch (scaleOp) {
+                case SCALE_TO:
+                    patch = " {\"spec\":{\"replicas\":" + value + "}}";
+                    break;
+                case SCALE_UP:
+                    int scaledUpReplicas = deployment.getSpec().getReplicas() + 1;
+                    patch = " {\"spec\":{\"replicas\":" + scaledUpReplicas + "}}";
+                    break;
+                case SCALE_DOWN:
+                    int scaledDownReplicas = deployment.getSpec().getReplicas() - 1;
+                    patch = " {\"spec\":{\"replicas\":" + scaledDownReplicas + "}}";
+                    break;
+            }
+            appsV1Api.patchNamespacedDeploymentScale(name, namespace, patch, TRUE, null, null, null);
+            return waitForDesiredState(apiClient, name, namespace);
+        } catch (ApiException e) {
+            logger.error("Error while applying PATCH scale to {}",name);
+            return false;
+        }
+
+    }
+
+    private boolean waitForDesiredState(ApiClient apiClient, String name, String namespace) throws HyscaleException {
+        Long startTime = System.currentTimeMillis();
+        boolean stable = false;
+        while (System.currentTimeMillis() - startTime < MAX_WAIT_TIME_IN_MILLISECONDS) {
+            V1Deployment updatedDeployment = null;
+            updatedDeployment = get(apiClient, name, namespace);
+            if (status(updatedDeployment) == ResourceStatus.STABLE) {
+                stable = true;
+                break;
+            }
+        }
+        return stable;
+    }
 }
