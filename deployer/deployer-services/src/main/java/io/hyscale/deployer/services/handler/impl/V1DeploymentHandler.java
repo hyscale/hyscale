@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.google.gson.reflect.TypeToken;
+import io.kubernetes.client.openapi.models.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,11 +53,6 @@ import io.kubernetes.client.custom.V1Patch;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.apis.AppsV1Api;
-import io.kubernetes.client.openapi.models.V1DeleteOptions;
-import io.kubernetes.client.openapi.models.V1Deployment;
-import io.kubernetes.client.openapi.models.V1DeploymentList;
-import io.kubernetes.client.openapi.models.V1DeploymentStatus;
-import io.kubernetes.client.openapi.models.V1ReplicaSet;
 
 public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implements ResourceLifeCycleHandler<V1Deployment> {
     private static final Logger LOGGER = LoggerFactory.getLogger(V1DeploymentHandler.class);
@@ -383,85 +380,97 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
     }
 
     private String getPodTemplateHash(ApiClient apiClient, String namespace, String selector, String revision) {
-    	  V1ReplicaSetHandler v1ReplicaSetHandler = (V1ReplicaSetHandler) ResourceHandlers
-                  .getHandlerOf(ResourceKind.REPLICA_SET.getKind());
-          V1ReplicaSet replicaSet = null;
-          try {
-              replicaSet = v1ReplicaSetHandler.getReplicaSetByRevision(apiClient, namespace, selector, true, revision);
-          } catch (HyscaleException e) {
-              logger.error("Error fetching replica set with revision {} for pod filtering, ignoring", revision, e);
-              return null;
-          }
-          if (replicaSet == null) {
-              logger.debug("No Replica set found with revision: {} for filtering pods, returning empty list", revision);
-              return null;
-          }
-          String podTemplateHash = replicaSet.getMetadata().getLabels()
-                  .get(K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH);
+        V1ReplicaSetHandler v1ReplicaSetHandler = (V1ReplicaSetHandler) ResourceHandlers
+                .getHandlerOf(ResourceKind.REPLICA_SET.getKind());
+        V1ReplicaSet replicaSet = null;
+        try {
+            replicaSet = v1ReplicaSetHandler.getReplicaSetByRevision(apiClient, namespace, selector, true, revision);
+        } catch (HyscaleException e) {
+            logger.error("Error fetching replica set with revision {} for pod filtering, ignoring", revision, e);
+            return null;
+        }
+        if (replicaSet == null) {
+            logger.debug("No Replica set found with revision: {} for filtering pods, returning empty list", revision);
+            return null;
+        }
+        String podTemplateHash = replicaSet.getMetadata().getLabels()
+                .get(K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH);
 
-          logger.debug("pod-template-hash: {}", podTemplateHash);
-          return K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH + "=" + podTemplateHash;
+        logger.debug("pod-template-hash: {}", podTemplateHash);
+        return K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH + "=" + podTemplateHash;
     }
 
-	@Override
-	protected String getPodRevision(ApiClient apiClient, V1Deployment deployment) {
-		if (deployment == null) {
-			return null;
-		}
-		String revision = getDeploymentRevision(deployment);
-		String selector = deployment.getSpec().getSelector().getMatchLabels().entrySet().stream()
-				.map((entry) -> entry.getKey() + "=" + entry.getValue()).collect(Collectors.joining(","));
-		return getPodTemplateHash(apiClient, deployment.getMetadata().getNamespace(), selector, revision);
-	}
-
-	@Override
-	public Integer getReplicas(V1Deployment t) {
-		return t != null ? t.getSpec().getReplicas() : K8SRuntimeConstants.DEFAULT_REPLICA_COUNT;
-	}
+    @Override
+    protected String getPodRevision(ApiClient apiClient, V1Deployment deployment) {
+        if (deployment == null) {
+            return null;
+        }
+        String revision = getDeploymentRevision(deployment);
+        String selector = deployment.getSpec().getSelector().getMatchLabels().entrySet().stream()
+                .map((entry) -> entry.getKey() + "=" + entry.getValue()).collect(Collectors.joining(","));
+        return getPodTemplateHash(apiClient, deployment.getMetadata().getNamespace(), selector, revision);
+    }
 
     @Override
-    public boolean scale(ApiClient apiClient, V1Deployment deployment, String namespace, ScaleOperation scaleOp, int value) throws HyscaleException {
-        if (deployment == null) {
+    public Integer getReplicas(V1Deployment t) {
+        return t != null ? t.getSpec().getReplicas() : K8SRuntimeConstants.DEFAULT_REPLICA_COUNT;
+    }
+
+    @Override
+    public boolean scale(ApiClient apiClient, V1Deployment v1Deployment, String namespace, ScaleOperation scaleOp, int value) throws HyscaleException {
+        if (v1Deployment == null) {
             logger.error("Cannot scale 'null' deployment");
             return false;
         }
+        String name = v1Deployment.getMetadata().getName();
         AppsV1Api appsV1Api = new AppsV1Api(apiClient);
-        String name = deployment.getMetadata().getName();
-        String patch = "";
+        ActivityContext activityContext = new ActivityContext(DeployerActivity.SCALING_SERVICE);
+        WorkflowLogger.startActivity(activityContext);
+        boolean status =false;
         try {
-            switch (scaleOp) {
-                case SCALE_TO:
-                    patch = " {\"spec\":{\"replicas\":" + value + "}}";
-                    break;
-                case SCALE_UP:
-                    int scaledUpReplicas = deployment.getSpec().getReplicas() + 1;
-                    patch = " {\"spec\":{\"replicas\":" + scaledUpReplicas + "}}";
-                    break;
-                case SCALE_DOWN:
-                    int scaledDownReplicas = deployment.getSpec().getReplicas() - 1;
-                    patch = " {\"spec\":{\"replicas\":" + scaledDownReplicas + "}}";
-                    break;
-            }
-            appsV1Api.patchNamespacedDeploymentScale(name, namespace, patch, TRUE, null, null, null);
-            return waitForDesiredState(apiClient, name, namespace);
+            appsV1Api.patchNamespacedDeploymentScale(name, namespace, prepareScalePatch(scaleOp, value, v1Deployment.getSpec().getReplicas()), TRUE, null, null, null);
+            status = waitForDesiredState(apiClient, name, namespace, activityContext);
         } catch (ApiException e) {
-            logger.error("Error while applying PATCH scale to {}",name);
-            return false;
+            logger.error("Error while applying PATCH scale to {} due to : {} code :{}", name, e.getResponseBody(), e.getCode(), e);
+            HyscaleException ex = new HyscaleException(DeployerErrorCodes.ERROR_WHILE_SCALING, e.getResponseBody());
+            throw ex;
+        } finally {
+            if (status) {
+                WorkflowLogger.endActivity(activityContext, Status.DONE);
+            } else {
+                WorkflowLogger.endActivity(activityContext, Status.FAILED);
+            }
         }
-
+        return status;
     }
 
-    private boolean waitForDesiredState(ApiClient apiClient, String name, String namespace) throws HyscaleException {
+    private boolean waitForDesiredState(ApiClient apiClient, String name, String namespace,ActivityContext activityContext) throws HyscaleException {
         Long startTime = System.currentTimeMillis();
         boolean stable = false;
-        while (System.currentTimeMillis() - startTime < MAX_WAIT_TIME_IN_MILLISECONDS) {
-            V1Deployment updatedDeployment = null;
-            updatedDeployment = get(apiClient, name, namespace);
-            if (status(updatedDeployment) == ResourceStatus.STABLE) {
-                stable = true;
-                break;
+        int rotateThreshold = 5;
+        int sleep = 3;
+        try {
+            int rotations = 0;
+            while (System.currentTimeMillis() - startTime < MAX_WAIT_TIME_IN_MILLISECONDS) {
+                rotations++;
+                V1Deployment updatedDeployment = null;
+                updatedDeployment = get(apiClient, name, namespace);
+                logger.debug("Patched deployment status :{} ", updatedDeployment.getStatus());
+                if (status(updatedDeployment) == ResourceStatus.STABLE) {
+                    stable = true;
+                    break;
+                }
+                if (rotateThreshold == rotations) {
+                    sleep++;
+                    rotations = 0;
+                }
+                WorkflowLogger.continueActivity(activityContext);
+                Thread.currentThread().sleep(sleep * 1000);
             }
+        } catch (InterruptedException e) {
+            logger.error("Sleep Thread interrupted ", e);
         }
         return stable;
     }
+
 }

@@ -418,6 +418,9 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
     @Override
     public ScaleStatus scale(K8sAuthorisation authConfig, String appName, String serviceName, String namespace, ScaleSpec scaleSpec) throws HyscaleException {
         ApiClient apiClient = clientProvider.get(authConfig);
+        if(scaleSpec.getValue()<0){
+            throw new HyscaleException(DeployerErrorCodes.CANNOT_SCALE_NEGATIVE, Integer.toString(scaleSpec.getValue()));
+        }
         return scaleServiceManager.scale(apiClient, appName, serviceName, namespace, scaleSpec);
     }
 

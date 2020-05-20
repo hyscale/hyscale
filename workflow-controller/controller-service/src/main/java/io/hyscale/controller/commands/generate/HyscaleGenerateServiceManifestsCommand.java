@@ -89,7 +89,7 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
     @CommandLine.Option(names = {"-f", "--files"}, required = true, description = "Service specs files.", split = ",")
     private List<File> serviceSpecsFiles;
 
-    @ArgGroup(exclusive = true)
+    @ArgGroup(exclusive = true, heading = "Profile Options", order = 10)
     private ProfileArg profileArg;
 
     @Autowired

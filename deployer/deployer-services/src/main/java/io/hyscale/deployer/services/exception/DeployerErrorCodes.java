@@ -52,8 +52,10 @@ public enum DeployerErrorCodes implements HyscaleErrorCode {
     MISSING_DEFAULT_STORAGE_CLASS("Missing default storage class from the cluster so kindly define storage class in your hspec volumes [{}] , allowed values are : {} "),
     MISSING_UNIQUE_DEFAULT_STORAGE_CLASS("More than 1 default storage class found in cluster, either define single default storage class or specify a storage class in your hspec volumes [{}] , allowed values are : {} "),
     TIMEDOUT_WHILE_WAITING_FOR_SCALING("Timedout while waiting for {} to be scaled"),
-    ERROR_WHILE_SCALING("Error while scaling "),
-    FAILED_TO_RETRIEVE_SERVICE_REPLICAS("Failed to retrieve service replicas");
+    ERROR_WHILE_SCALING("Error while scaling : {}"),
+    FAILED_TO_RETRIEVE_SERVICE_REPLICAS("Failed to retrieve service replicas"),
+    SERVICE_NOT_DEPLOYED("{} is not deployed in namespace {} under app {} "),
+    CANNOT_SCALE_NEGATIVE("Invalid value {} : must be greater than or equal to 0");
 
     private String message;
 

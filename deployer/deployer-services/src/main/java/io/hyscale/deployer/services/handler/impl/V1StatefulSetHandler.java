@@ -15,13 +15,19 @@
  */
 package io.hyscale.deployer.services.handler.impl;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.JsonElement;
+import com.google.gson.reflect.TypeToken;
 import io.hyscale.deployer.services.model.ScaleOperation;
 import io.kubernetes.client.openapi.models.*;
+import io.swagger.annotations.Api;
+import okhttp3.Call;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -312,6 +318,10 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
                 && intendedReplicas == currentReplicas && intendedReplicas == readyReplicas) {
             return ResourceStatus.STABLE;
         }
+
+        if ((intendedReplicas == 0 && readyReplicas == null)) {
+            return ResourceStatus.STABLE;
+        }
         return ResourceStatus.PENDING;
     }
 
@@ -423,9 +433,8 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
     }
 
     /**
-     * @param v1StatefulSet
      * @return It will return replica of pod, if replica is not there then it will
-     *         return default value 1
+     * return default value 1
      */
 
     @Override
@@ -439,41 +448,53 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
             logger.error("Cannot scale 'null' deployment");
             return false;
         }
-        AppsV1Api appsV1Api = new AppsV1Api(apiClient);
         String name = v1StatefulSet.getMetadata().getName();
-        String patch = "";
+        AppsV1Api appsV1Api = new AppsV1Api(apiClient);
+        ActivityContext activityContext = new ActivityContext(DeployerActivity.SCALING_SERVICE);
+        WorkflowLogger.startActivity(activityContext);
+        boolean status = false;
         try {
-            switch (scaleOp) {
-                case SCALE_TO:
-                    patch = " {\"spec\":{\"replicas\":" + value + "}}";
-                    break;
-                case SCALE_UP:
-                    int scaledUpReplicas = v1StatefulSet.getSpec().getReplicas() + 1;
-                    patch = " {\"spec\":{\"replicas\":" + scaledUpReplicas + "}}";
-                    break;
-                case SCALE_DOWN:
-                    int scaledDownReplicas = v1StatefulSet.getSpec().getReplicas() - 1;
-                    patch = " {\"spec\":{\"replicas\":" + scaledDownReplicas + "}}";
-                    break;
-            }
-            appsV1Api.patchNamespacedDeploymentScale(name, namespace, patch, TRUE, null, null, null);
-            return waitForDesiredState(apiClient, name, namespace);
+            appsV1Api.patchNamespacedStatefulSetScale(name, namespace, prepareScalePatch(scaleOp, value, v1StatefulSet.getSpec().getReplicas()), TRUE, null, null, null);
+            status = waitForDesiredState(apiClient, name, namespace, activityContext);
         } catch (ApiException e) {
-            logger.error("Error while applying PATCH scale to {}", name);
-            return false;
+            logger.error("Error while applying PATCH scale to {} due to : {} code :{}", name, e.getResponseBody(), e.getCode(), e);
+            WorkflowLogger.endActivity(Status.FAILED);
+            HyscaleException ex = new HyscaleException(DeployerErrorCodes.ERROR_WHILE_SCALING, e.getResponseBody());
+            throw ex;
+        } finally {
+            if (status) {
+                WorkflowLogger.endActivity(activityContext, Status.DONE);
+            } else {
+                WorkflowLogger.endActivity(activityContext, Status.FAILED);
+            }
         }
+        return status;
     }
 
-    private boolean waitForDesiredState(ApiClient apiClient, String name, String namespace) throws HyscaleException {
+    private boolean waitForDesiredState(ApiClient apiClient, String name, String namespace,ActivityContext activityContext) throws HyscaleException {
         Long startTime = System.currentTimeMillis();
         boolean stable = false;
-        while (System.currentTimeMillis() - startTime < MAX_WAIT_TIME_IN_MILLISECONDS) {
-            V1StatefulSet updatedStatefulset = null;
-            updatedStatefulset = get(apiClient, name, namespace);
-            if (status(updatedStatefulset) == ResourceStatus.STABLE) {
-                stable = true;
-                break;
+        int rotateThreshold = 5;
+        int sleep = 3;
+        try {
+            int rotations = 0;
+            while (System.currentTimeMillis() - startTime < MAX_WAIT_TIME_IN_MILLISECONDS) {
+                V1StatefulSet updatedStatefulset = null;
+                updatedStatefulset = get(apiClient, name, namespace);
+                logger.debug("Patched Statefulset status :{} ", updatedStatefulset.getStatus());
+                if (status(updatedStatefulset) == ResourceStatus.STABLE) {
+                    stable = true;
+                    break;
+                }
+                WorkflowLogger.continueActivity(activityContext);
+                if (rotateThreshold == rotations) {
+                    sleep++;
+                    rotations = 0;
+                }
+                Thread.currentThread().sleep(sleep * 1000);
             }
+        } catch (InterruptedException e) {
+            logger.error("Sleep Thread interrupted ", e);
         }
         return stable;
     }

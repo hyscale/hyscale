@@ -17,8 +17,18 @@ package io.hyscale.deployer.services.model;
 
 public enum ScaleOperation {
 
-    SCALE_UP,
-    SCALE_DOWN,
-    SCALE_TO
+    SCALE_UP("scaled up"),
+    SCALE_DOWN("scaled down"),
+    SCALE_TO("scaled to");
+
+    private String message;
+
+    ScaleOperation(String msg) {
+        this.message = msg;
+    }
+
+    public String getMessage() {
+        return this.message;
+    }
 
 }
