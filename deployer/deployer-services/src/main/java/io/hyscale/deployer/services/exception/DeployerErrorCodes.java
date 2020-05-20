@@ -55,7 +55,8 @@ public enum DeployerErrorCodes implements HyscaleErrorCode {
     ERROR_WHILE_SCALING("Error while scaling : {}"),
     FAILED_TO_RETRIEVE_SERVICE_REPLICAS("Failed to retrieve service replicas"),
     SERVICE_NOT_DEPLOYED("{} is not deployed in namespace {} under app {} "),
-    CANNOT_SCALE_NEGATIVE("Invalid value {} : must be greater than or equal to 0");
+    CANNOT_SCALE_NEGATIVE("Invalid value {} : must be greater than or equal to 0"),
+    TIMEOUT_WHILE_WAITING_FOR_DEPLOYMENT("Timedout while waiting for deployment");
 
     private String message;
 

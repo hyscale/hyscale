@@ -72,7 +72,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
     private static final Logger LOGGER = LoggerFactory.getLogger(V1PodHandler.class);
     private static final long MAX_TIME_TO_CONTAINER_READY = 120 * 1000;
     private static final long POD_RESTART_COUNT = DeployerEnvConfig.getPodRestartCount();
-    private static final Integer POD_ACTIVITY_WAITING_TIME = 100;
+    private static final Integer POD_WATCH_TIMEOUT_IN_SEC = 10;
 
 
     @Override
@@ -405,10 +405,6 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 
     public void watch(ApiClient apiClient, String appName, String serviceName, String namespace)
             throws HyscaleException {
-        OkHttpClient httpClient = getUpdatedHttpClient(apiClient.getHttpClient());
-        apiClient.setHttpClient(httpClient);
-        CoreV1Api api = new CoreV1Api(apiClient);
-
         String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
         PodParent podParent = getPodParent(apiClient, selector, namespace);
         if (podParent == null) {
@@ -422,33 +418,26 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
         PodParentHandler podParentHandler = PodParentFactory.getHandler(podParent.getKind());
         latestPodSelector = podParentHandler.getPodSelector(apiClient, podParent.getParent(), selector);
         replicas = podParentHandler.getReplicas(podParent.getParent());
+        
+        if (replicas == 0) {
+            WorkflowLogger.info(DeployerActivity.SERVICE_WITH_ZERO_REPLICAS);
+            return;
+        }
 
         if (latestPodSelector == null) {
             throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_SERVICE_REPLICAS);
         }
-        Watch<V1Pod> watch = null;
-
+        OkHttpClient previousHttpClient = apiClient.getHttpClient();
+        OkHttpClient newHttpClient = getUpdatedHttpClient(previousHttpClient);
+        apiClient.setHttpClient(newHttpClient);
         try {
-            watch = Watch.createWatch(apiClient,
-                    api.listNamespacedPodCall(namespace, null, false, null, null, latestPodSelector, null, null, replicas * POD_ACTIVITY_WAITING_TIME, Boolean.TRUE, null),
-                    new TypeToken<Watch.Response<V1Pod>>() {
-                    }.getType());
-        } catch (ApiException e) {
-            logger.error("Failed to watch pod events ", e);
-            throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_POD);
-        }
-        try {
-            watchPod(watch, replicas);
+            watchPod(apiClient, namespace, latestPodSelector, replicas);
         } finally {
-            try {
-                watch.close();
-            } catch (IOException e) {
-                LOGGER.error("Error while watcing the service {} in namespace {}, error {}", serviceName, namespace, e);
-            }
+            apiClient.setHttpClient(previousHttpClient);
         }
     }
     
-    private void watchPod(Watch<V1Pod> watch, Integer replicas) throws HyscaleException {
+    private void watchPod(ApiClient apiClient, String namespace, String latestPodSelector, Integer replicas) throws HyscaleException {
         Set<String> readyPods = new HashSet<String>();
         Set<String> initializedPods = new HashSet<String>();
         Set<String> createdPods = new HashSet<String>();
@@ -456,83 +445,117 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
         ActivityContext initializedActivityContext = new ActivityContext(DeployerActivity.POD_INITIALIZED);
         ActivityContext creationActivityContext = new ActivityContext(DeployerActivity.POD_CREATION);
         ActivityContext readyActivityContext = new ActivityContext(DeployerActivity.POD_READINESS);
-        ActivityContext activityContext = null;
+        ActivityContext currentActivityContext = initializedActivityContext;
 
         boolean initializationActivityDone = false, creationActivityStarted = false, creationActivityDone = false,
                 readyActivityStarted = false;
         WorkflowLogger.startActivity(initializedActivityContext);
-        activityContext = initializedActivityContext;
-        for (Watch.Response<V1Pod> item : watch) {
-            WorkflowLogger.continueActivity(activityContext);
-            /*if pod  status is failed then watch will exit*/
-            if (PodPredicates.isPodFailed().test(item.object)) {
-                break;
-            }
+        Long startTime = System.currentTimeMillis();
+        boolean isTimeout = true;
+        while (System.currentTimeMillis() - startTime < replicas * MAX_TIME_TO_CONTAINER_READY) {
+            WorkflowLogger.continueActivity(currentActivityContext);
+            try (Watch<V1Pod> watch = getWatch(apiClient, namespace, latestPodSelector)){
+                for (Watch.Response<V1Pod> item : watch) {
+                    WorkflowLogger.continueActivity(currentActivityContext);
+                    /*if pod  status is failed then watch will exit*/
+                    if (PodPredicates.isPodFailed().test(item.object)) {
+                        isTimeout = false;
+                        break;
+                    }
 
-            /*if pod restart count is reached to specified pod_restart_count then watch will exit*/
-            if (PodPredicates.isPodRestarted().test(item.object, POD_RESTART_COUNT)) {
-                break;
-            }
+                    /*if pod restart count is reached to specified pod_restart_count then watch will exit*/
+                    if (PodPredicates.isPodRestarted().test(item.object, POD_RESTART_COUNT)) {
+                        isTimeout = false;
+                        break;
+                    }
 
-            if (PodPredicates.isPodInitialized().test(item.object)) {
-                initializedPods.add(item.object.getMetadata().getName());
-                /*pod initialization activity completed*/
-                if (initializedPods.size() == replicas && !initializationActivityDone) {
-                    initializationActivityDone = true;
-                    WorkflowLogger.endActivity(initializedActivityContext, Status.DONE);
+                    if (PodPredicates.isPodInitialized().test(item.object)) {
+                        initializedPods.add(item.object.getMetadata().getName());
+                        /*pod initialization activity completed*/
+                        if (initializedPods.size() == replicas && !initializationActivityDone) {
+                            initializationActivityDone = true;
+                            WorkflowLogger.endActivity(initializedActivityContext, Status.DONE);
+                        }
+                    }
+
+                    if (initializationActivityDone && !creationActivityStarted) {
+                        currentActivityContext = creationActivityContext;
+                        WorkflowLogger.startActivity(creationActivityContext);
+                        creationActivityStarted = true;
+                    }
+                    if (PodPredicates.isPodCreated().test(item.object)) {
+                        createdPods.add(item.object.getMetadata().getName());
+                        /*pod creation activity completed*/
+                        if (createdPods.size() == replicas && !creationActivityDone) {
+                            WorkflowLogger.endActivity(creationActivityContext, Status.DONE);
+                            creationActivityDone = true;
+                        }
+                    }
+
+                    if (creationActivityDone && !readyActivityStarted) {
+                        currentActivityContext = readyActivityContext;
+                        WorkflowLogger.startActivity(readyActivityContext);
+                        readyActivityStarted = true;
+                    }
+                    if (PodPredicates.isPodReady().test(item.object)) {
+                        readyPods.add(item.object.getMetadata().getName());
+                        /*pod readiness activity completed*/
+                        if (readyPods.size() == replicas) {
+                            WorkflowLogger.endActivity(readyActivityContext, Status.DONE);
+                            isTimeout = false;
+                            break;
+                        }
+                    }
+
+                    if (readyPods.size() == replicas) {
+                        isTimeout = false;
+                        break;
+                    }
+
                 }
-            }
-
-            if (initializationActivityDone && !creationActivityStarted) {
-                activityContext = creationActivityContext;
-                WorkflowLogger.startActivity(creationActivityContext);
-                creationActivityStarted = true;
-            }
-            if (PodPredicates.isPodCreated().test(item.object)) {
-                createdPods.add(item.object.getMetadata().getName());
-                /*pod creation activity completed*/
-                if (createdPods.size() == replicas && !creationActivityDone) {
-                    WorkflowLogger.endActivity(creationActivityContext, Status.DONE);
-                    creationActivityDone = true;
-                }
-            }
-
-            if (creationActivityDone && !readyActivityStarted) {
-                activityContext = readyActivityContext;
-                WorkflowLogger.startActivity(readyActivityContext);
-                readyActivityStarted = true;
-            }
-            if (PodPredicates.isPodReady().test(item.object)) {
-                readyPods.add(item.object.getMetadata().getName());
-                /*pod readiness activity completed*/
-                if (readyPods.size() == replicas) {
-                    WorkflowLogger.endActivity(readyActivityContext, Status.DONE);
+                if (!isTimeout) {
                     break;
                 }
+            } catch (IOException e) {
+                LOGGER.error("Error while watching pods with selector {} in namespace {}", latestPodSelector, namespace, e);
             }
-
-            if (readyPods.size() == replicas) {
-                break;
-            }
-
         }
-
+        
+        if (isTimeout) {
+            WorkflowLogger.endActivity(currentActivityContext, Status.FAILED);
+            throw new HyscaleException(DeployerErrorCodes.TIMEOUT_WHILE_WAITING_FOR_DEPLOYMENT);
+        }
+        
         if (!initializationActivityDone) {
-            WorkflowLogger.endActivity(initializedActivityContext, Status.FAILED);
+            WorkflowLogger.endActivity(currentActivityContext, Status.FAILED);
             throw new HyscaleException(DeployerErrorCodes.FAILED_TO_INITIALIZE_POD);
         }
         if (!creationActivityDone) {
-            WorkflowLogger.endActivity(creationActivityContext, Status.FAILED);
+            WorkflowLogger.endActivity(currentActivityContext, Status.FAILED);
             throw new HyscaleException(DeployerErrorCodes.FAILED_TO_CREATE_POD);
         }
         if (readyPods.size() != replicas) {
-            WorkflowLogger.endActivity(readyActivityContext, Status.FAILED);
+            WorkflowLogger.endActivity(currentActivityContext, Status.FAILED);
             throw new HyscaleException(DeployerErrorCodes.POD_FAILED_READINESS);
         }
 
     }
-
-
+    
+    private Watch<V1Pod> getWatch(ApiClient apiClient, String namespace, String latestPodSelector)
+            throws HyscaleException {
+        CoreV1Api api = new CoreV1Api(apiClient);
+        try {
+            return Watch.createWatch(
+                    apiClient, api.listNamespacedPodCall(namespace, null, false, null, null, latestPodSelector, null,
+                            null, POD_WATCH_TIMEOUT_IN_SEC, Boolean.TRUE, null),
+                    new TypeToken<Watch.Response<V1Pod>>() {
+                    }.getType());
+        } catch (ApiException e) {
+            logger.error("Failed to watch pod events ", e);
+            throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_POD);
+        }
+    }
+    
     /**
      * It will read object(v1Deployment or v1StatefulSet) from cluster and return along with their resource kind
      *
