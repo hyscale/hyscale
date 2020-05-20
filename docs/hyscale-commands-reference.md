@@ -151,10 +151,10 @@ To get all the deployed applications, use "get apps" command. The command will d
 ```markdown
 Usage:  hyscale get replica status [OPTIONS]
 
-Status of an Application Service.
+Replica Status of an Application Service.
 
 Options:
-  -s --service string         name of service `<serviceName>`. Can be repeated for multiple services.
+  -s --service string         name of service `<serviceName>`.
   -n --namespace string       name of namespace `<namespace>`
   -a --application string     name of application `<applicationName>`   
 ```
@@ -162,6 +162,26 @@ Options:
 ###Description:
 
 To get the replica status of a particular deployed service, use "get replica status" command. The command requires service name, Kubernetes namespace and application name as inputs.
+
+## scale service
+
+```markdown
+Usage:  hyscale scale service [OPTIONS]
+
+Scale a service of an application imperatively.
+
+Options:
+  -s --service string         name of service `<serviceName>`
+  -n --namespace string       name of namespace `<namespace>`
+  -a --application string     name of application `<applicationName>`
+  --up integer                scales service up by specified value
+  --down integer              scales service down by specified value
+  --to integer                scales service to a  specified value    
+```
+
+###Description:
+
+To scale a service of an application
 
 
 ## Tool Options Description:
