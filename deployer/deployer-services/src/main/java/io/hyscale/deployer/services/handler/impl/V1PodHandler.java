@@ -417,7 +417,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 		PodParentHandler podParentHandler = PodParentFactory.getHandler(podParent.getKind());
 		latestPodSelector = podParentHandler.getPodSelector(apiClient, podParent.getParent(), selector);
 		replicas = podParentHandler.getReplicas(podParent.getParent());
-
+		
 		if(latestPodSelector==null) {
 			throw new HyscaleException(DeployerErrorCodes.POD_SELECTOR_NOT_FOUND);
 		}
@@ -562,5 +562,12 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 		return podParent;
 	}
 	
-	
+	public boolean hasPodParent(ApiClient apiClient, String selector, String namespace) {
+	    PodParent podParent = null;
+	    try {
+            podParent = getPodParent(apiClient, selector, namespace);
+        } catch (HyscaleException e) {
+        }
+	    return podParent == null ? false : true;
+	}
 }

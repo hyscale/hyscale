@@ -49,7 +49,7 @@ public class TroubleshootUtil {
             message.append(each.getRecommendedFix());
             message.append(ToolConstants.NEW_LINE);
         });
-        return message.toString();
+        return message.toString().trim();
     }
 
 }
