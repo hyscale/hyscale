@@ -15,19 +15,13 @@
  */
 package io.hyscale.deployer.services.handler.impl;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.gson.JsonElement;
-import com.google.gson.reflect.TypeToken;
 import io.hyscale.deployer.services.model.ScaleOperation;
 import io.kubernetes.client.openapi.models.*;
-import io.swagger.annotations.Api;
-import okhttp3.Call;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +44,6 @@ import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.PodParentHandler;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
-import io.hyscale.deployer.services.mapper.ResourceServiceStatusMapper;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.model.PodCondition;
 import io.hyscale.deployer.services.model.ResourceStatus;
@@ -364,7 +357,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         if (statefulSet == null) {
             return null;
         }
-        return buildStatusFromMetadata(statefulSet.getMetadata(), ResourceServiceStatusMapper.getServiceStatus(status(statefulSet)));
+        return buildStatusFromMetadata(statefulSet.getMetadata(), ResourceStatus.getServiceStatus(status(statefulSet)));
     }
 
     @Override

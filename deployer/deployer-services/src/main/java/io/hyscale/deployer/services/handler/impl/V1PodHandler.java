@@ -431,13 +431,13 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
         OkHttpClient newHttpClient = getUpdatedHttpClient(previousHttpClient);
         apiClient.setHttpClient(newHttpClient);
         try {
-            watchPod(apiClient, namespace, latestPodSelector, replicas);
+            watchPods(apiClient, namespace, latestPodSelector, replicas);
         } finally {
             apiClient.setHttpClient(previousHttpClient);
         }
     }
     
-    private void watchPod(ApiClient apiClient, String namespace, String latestPodSelector, Integer replicas) throws HyscaleException {
+    private void watchPods(ApiClient apiClient, String namespace, String latestPodSelector, Integer replicas) throws HyscaleException {
         Set<String> readyPods = new HashSet<String>();
         Set<String> initializedPods = new HashSet<String>();
         Set<String> createdPods = new HashSet<String>();

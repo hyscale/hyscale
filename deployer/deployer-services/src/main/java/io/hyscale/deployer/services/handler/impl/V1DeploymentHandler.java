@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.google.gson.reflect.TypeToken;
 import io.kubernetes.client.openapi.models.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -43,7 +42,6 @@ import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.PodParentHandler;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
-import io.hyscale.deployer.services.mapper.ResourceServiceStatusMapper;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.model.ResourceStatus;
 import io.hyscale.deployer.services.model.ScaleOperation;
@@ -57,9 +55,6 @@ import io.kubernetes.client.openapi.apis.AppsV1Api;
 public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implements ResourceLifeCycleHandler<V1Deployment> {
     private static final Logger LOGGER = LoggerFactory.getLogger(V1DeploymentHandler.class);
 
-    private static final Long MAX_WAIT_TIME = 120000L;
-
-    @Override
     public V1Deployment create(ApiClient apiClient, V1Deployment resource, String namespace) throws HyscaleException {
         if (resource == null) {
             LOGGER.debug("Cannot create null Deployment");
@@ -341,7 +336,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         if (deployment == null) {
             return null;
         }
-        return buildStatusFromMetadata(deployment.getMetadata(), ResourceServiceStatusMapper.getServiceStatus(status(deployment)));
+        return buildStatusFromMetadata(deployment.getMetadata(), ResourceStatus.getServiceStatus(status(deployment)));
     }
 
     @Override

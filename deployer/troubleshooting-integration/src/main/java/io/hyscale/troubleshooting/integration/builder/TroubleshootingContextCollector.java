@@ -154,7 +154,7 @@ public class TroubleshootingContextCollector {
 
     private Map<String, List<TroubleshootingContext.ResourceInfo>> getResources(@NonNull ServiceInfo serviceInfo, @NonNull ApiClient apiClient, @NonNull String namespace) throws HyscaleException {
         String selector = ResourceSelectorUtil.getSelector(serviceInfo.getAppName(), serviceInfo.getEnvName(), serviceInfo.getServiceName());
-        List<ResourceLifeCycleHandler> handlerList = getTroubleshootResourceHandlers();
+        List<ResourceLifeCycleHandler> handlerList = getResourceHandlers();
         if (handlerList == null || handlerList.isEmpty()) {
             logger.error("Error while fetching resource lifecycle handler ");
             throw new HyscaleException(TroubleshootErrorCodes.ERROR_WHILE_BUILDING_RESOURCES);
@@ -209,7 +209,7 @@ public class TroubleshootingContextCollector {
         return resourceMap;
     }
     
-    private List<ResourceLifeCycleHandler> getTroubleshootResourceHandlers() {
+    private List<ResourceLifeCycleHandler> getResourceHandlers() {
         return ResourceHandlers.getHandlersList().stream()
                 .filter(each -> troubleshootResources.contains(each.getKind())).collect(Collectors.toList());
     }

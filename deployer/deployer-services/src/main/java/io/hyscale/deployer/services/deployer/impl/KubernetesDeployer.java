@@ -26,7 +26,8 @@ import java.util.stream.Collectors;
 
 import io.hyscale.deployer.services.manager.ScaleServiceManager;
 import io.hyscale.deployer.services.model.*;
-import org.apache.commons.lang3.StringUtils;
+import io.hyscale.deployer.services.processor.ServiceStatusProcessor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,16 +49,13 @@ import io.hyscale.deployer.services.builder.PodBuilder;
 import io.hyscale.deployer.services.config.DeployerConfig;
 import io.hyscale.deployer.services.deployer.Deployer;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
-import io.hyscale.deployer.services.factory.PodParentFactory;
 import io.hyscale.deployer.services.handler.AuthenticationHandler;
-import io.hyscale.deployer.services.handler.PodParentHandler;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.handler.impl.V1PersistentVolumeClaimHandler;
 import io.hyscale.deployer.services.handler.impl.V1PodHandler;
 import io.hyscale.deployer.services.handler.impl.V1ServiceHandler;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
-import io.hyscale.deployer.services.util.DeploymentStatusUtil;
 import io.hyscale.deployer.services.util.K8sDeployerUtil;
 import io.hyscale.deployer.services.util.K8sPodUtil;
 import io.hyscale.deployer.services.util.K8sReplicaUtil;
@@ -92,6 +90,9 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
 
     @Autowired
     private ScaleServiceManager scaleServiceManager;
+    
+    @Autowired
+    private ServiceStatusProcessor serviceStatusProcessor;
 
     @Override
     public void deploy(DeploymentContext context) throws HyscaleException {
@@ -248,65 +249,16 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
 
     @Override
     public DeploymentStatus getServiceDeploymentStatus(DeploymentContext context) throws HyscaleException {
-        String serviceName = context.getServiceName();
-        if (StringUtils.isBlank(serviceName)) {
-            throw new HyscaleException(DeployerErrorCodes.SERVICE_REQUIRED);
-        }
-        String selector = ResourceSelectorUtil.getServiceSelector(context.getAppName(), serviceName);
-        V1PodHandler podHandler = (V1PodHandler)ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
-        PodParent podParent = null;
-        try {
-            ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
-            podParent = podHandler.getPodParent(apiClient, selector, context.getNamespace());
-        } catch (HyscaleException e) {
-            logger.error("Error while fetching status {} ", e);
-            throw e;
-        }
-        
-        if (podParent == null) {
-            return DeploymentStatusUtil.getNotDeployedStatus(serviceName);
-        }
-        PodParentHandler podParentHandler = PodParentFactory.getHandler(podParent.getKind());
-        return updateServiceAddress(context, podParentHandler.buildStatus(podParent.getParent()));
+        return serviceStatusProcessor.getServiceDeploymentStatus(context.getAuthConfig(), context.getAppName(),
+                context.getServiceName(), context.getNamespace());
     }
     
     @Override
     public List<DeploymentStatus> getDeploymentStatus(DeploymentContext context) throws HyscaleException {
-        List<PodParent> podParentList = null;
-        String selector = ResourceSelectorUtil.getSelector(context.getAppName());
-        V1PodHandler podHandler = (V1PodHandler)ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
-        try {
-            ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
-            podParentList = podHandler.getPodParentsList(apiClient, selector, context.getNamespace());
-        } catch (HyscaleException e) {
-            logger.error("Error while fetching status {} ", e);
-            throw e;
-
-        }
-        if (podParentList == null || podParentList.isEmpty()) {
-            return null;
-        }
-        List<DeploymentStatus> deploymentStatusList =  podParentList.stream().map(each -> {
-            PodParentHandler podParentHandler = PodParentFactory.getHandler(each.getKind());
-            return podParentHandler.buildStatus(each.getParent());
-          }).collect(Collectors.toList());
-        return deploymentStatusList.stream().map(each -> updateServiceAddress(context, each)).collect(Collectors.toList());
+        return serviceStatusProcessor.getDeploymentStatus(context.getAuthConfig(), context.getAppName(),
+                context.getNamespace());
     }
     
-    private DeploymentStatus updateServiceAddress(DeploymentContext context, DeploymentStatus deploymentStatus) {
-        context.setServiceName(deploymentStatus.getServiceName());
-        try {
-            ServiceAddress serviceAddress = getServiceAddress(context);
-            if (serviceAddress != null) {
-                deploymentStatus.setServiceAddress(serviceAddress.toString());
-            }
-        } catch (HyscaleException e) {
-            logger.debug("Failed to get service address {} ", e.getHyscaleErrorCode());
-            deploymentStatus.setServiceAddress("Failed to get service address, try again");
-        }
-        return deploymentStatus;
-    }
-
     /**
      * Get Replica info for pods
      *
