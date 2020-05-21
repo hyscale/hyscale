@@ -15,44 +15,32 @@
  */
 package io.hyscale.deployer.services.factory;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
+import java.util.*;
 
 import javax.annotation.PostConstruct;
 
 import io.hyscale.deployer.services.handler.PodParentHandler;
 
-/* TODO
-  need to inject the parentHandlers
-  to parenthandler list. Until then , this
-  class is incomplete
+/**
+ * Factory Class to provide PodParentHandlers based on Kind
+ *
  */
 public class PodParentFactory {
 
-    private List<PodParentHandler> parentHandlerList;
-
     private static Map<String, PodParentHandler> kindVsHandlerMap;
 
-    @PostConstruct
-    public void init() {
-        kindVsHandlerMap = new HashMap<>();
-        parentHandlerList.forEach(each -> {
-            kindVsHandlerMap.put(each.getKind(), each);
-        });
+
+    public static void registerHandlers() {
+        if (kindVsHandlerMap == null) {
+            kindVsHandlerMap = new HashMap();
+            for (PodParentHandler handler : ServiceLoader.load(PodParentHandler.class, PodParentFactory.class.getClassLoader())) {
+                kindVsHandlerMap.put(handler.getKind(), handler);
+            }
+        }
     }
-    
-	public static void registerHandlers() {
-		if (kindVsHandlerMap == null) {
-			kindVsHandlerMap = new HashMap();
-			for (PodParentHandler handler : ServiceLoader.load(PodParentHandler.class, PodParentFactory.class.getClassLoader())) {
-				kindVsHandlerMap.put(handler.getKind(), handler);
-			}
-		}
-	}
 
     public static PodParentHandler getHandler(String kind) {
         return kindVsHandlerMap.get(kind);
     }
+
 }

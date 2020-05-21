@@ -32,6 +32,6 @@ public enum TroubleshootErrorCodes implements HyscaleErrorCode {
 
     @Override
     public String getErrorMessage() {
-        return null;
+        return message;
     }
 }

@@ -59,6 +59,9 @@ public class TroubleshootingContextCollector {
 
     @Autowired
     private TroubleshootingConfig troubleshootingConfig;
+    
+    private List<String> troubleshootResources = Arrays.asList(ResourceKind.STATEFUL_SET.getKind(), ResourceKind.DEPLOYMENT.getKind(),
+            ResourceKind.REPLICA_SET.getKind(), ResourceKind.POD.getKind(), ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind());
 
     public TroubleshootingContext build(@NonNull ServiceInfo serviceInfo, @NonNull K8sAuthorisation k8sAuthorisation, @NonNull String namespace) throws HyscaleException {
         TroubleshootingContext context = new TroubleshootingContext();
@@ -70,7 +73,7 @@ public class TroubleshootingContextCollector {
             long start = System.currentTimeMillis();
             context.setResourceInfos(filter(getResources(serviceInfo, apiClient, namespace)));
             if (context.isTrace()) {
-                logger.debug("Time taken to build the context for service  {} is {}", serviceInfo.getServiceName(), System.currentTimeMillis() - start);
+                logger.debug("Time taken to build the context for service {} is {}", serviceInfo.getServiceName(), System.currentTimeMillis() - start);
             }
         } catch (HyscaleException e) {
             logger.error("Error while preparing context to troubleshoot the service {}", serviceInfo.getServiceName());
@@ -135,7 +138,7 @@ public class TroubleshootingContextCollector {
     }
 
     private V1ReplicaSet filterReplicaSetByrevision(List<TroubleshootingContext.ResourceInfo> replicaSetResourceInfos, String deploymentRevision) {
-        if (replicaSetResourceInfos == null && replicaSetResourceInfos.isEmpty()) {
+        if (replicaSetResourceInfos == null || replicaSetResourceInfos.isEmpty()) {
             return null;
         }
         V1ReplicaSet replicaSet = null;
@@ -151,7 +154,7 @@ public class TroubleshootingContextCollector {
 
     private Map<String, List<TroubleshootingContext.ResourceInfo>> getResources(@NonNull ServiceInfo serviceInfo, @NonNull ApiClient apiClient, @NonNull String namespace) throws HyscaleException {
         String selector = ResourceSelectorUtil.getSelector(serviceInfo.getAppName(), serviceInfo.getEnvName(), serviceInfo.getServiceName());
-        List<ResourceLifeCycleHandler> handlerList = ResourceHandlers.getHandlersList();
+        List<ResourceLifeCycleHandler> handlerList = getResourceHandlers();
         if (handlerList == null || handlerList.isEmpty()) {
             logger.error("Error while fetching resource lifecycle handler ");
             throw new HyscaleException(TroubleshootErrorCodes.ERROR_WHILE_BUILDING_RESOURCES);
@@ -204,6 +207,11 @@ public class TroubleshootingContextCollector {
         }
 
         return resourceMap;
+    }
+    
+    private List<ResourceLifeCycleHandler> getResourceHandlers() {
+        return ResourceHandlers.getHandlersList().stream()
+                .filter(each -> troubleshootResources.contains(each.getKind())).collect(Collectors.toList());
     }
 
     private String getFieldSelector(String name, String namespace) {

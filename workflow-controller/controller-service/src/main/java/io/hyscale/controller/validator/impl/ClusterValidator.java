@@ -21,12 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.LoggerTags;
-import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AuthConfig;
-import io.hyscale.commons.models.Status;
 import io.hyscale.commons.validator.Validator;
-import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.deployer.services.deployer.Deployer;
 
@@ -47,8 +43,6 @@ public class ClusterValidator implements Validator<WorkflowContext> {
     @Autowired
     private Deployer deployer;
 
-    private boolean isClusterValid = false;
-
     private Map<AuthConfig, Boolean> clusterValidationMap;
 
     @PostConstruct
@@ -62,7 +56,8 @@ public class ClusterValidator implements Validator<WorkflowContext> {
         if (clusterValidationMap.containsKey(context.getAuthConfig())) {
             return clusterValidationMap.get(context.getAuthConfig());
         }
-
+        long startTime = System.currentTimeMillis();
+        boolean isClusterValid = false;
         logger.debug("Starting K8s cluster validation");
         try {
             isClusterValid = deployer.authenticate(context.getAuthConfig());
@@ -72,6 +67,7 @@ public class ClusterValidator implements Validator<WorkflowContext> {
             clusterValidationMap.put(context.getAuthConfig(), false);
             throw ex;
         }
+        logger.debug("Is K8s cluster valid: {}. Time taken: {}", isClusterValid, System.currentTimeMillis() - startTime);
         return isClusterValid;
     }
 }

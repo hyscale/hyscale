@@ -22,8 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
 
-import javax.tools.Tool;
-
 /**
  * Helper class to provide troubleshoot related utilities
  *

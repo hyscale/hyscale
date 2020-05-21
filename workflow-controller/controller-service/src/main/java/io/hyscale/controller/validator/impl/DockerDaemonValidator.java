@@ -28,7 +28,6 @@ import io.hyscale.commons.logger.LoggerTags;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Status;
 import io.hyscale.commons.validator.Validator;
-import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.servicespec.commons.util.ImageUtil;
 
@@ -66,7 +65,6 @@ public class DockerDaemonValidator implements Validator<WorkflowContext> {
         }
 
         if (!ImageUtil.isImageBuildPushRequired(context.getServiceSpec())) {
-            WorkflowLogger.endActivity(Status.SKIPPING);
             return true;
         }
         String command = commandProvider.dockerVersion();
@@ -74,7 +72,6 @@ public class DockerDaemonValidator implements Validator<WorkflowContext> {
         boolean success = CommandExecutor.execute(command);
         if (!success) {
             WorkflowLogger.persist(ImageBuilderActivity.DOCKER_NOT_INSTALLED, LoggerTags.ERROR);
-            WorkflowLogger.endActivity(Status.FAILED);
             isDockerUnavailable = true;
             return false;
         }

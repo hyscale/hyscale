@@ -36,7 +36,8 @@ public enum ControllerErrorCodes implements HyscaleErrorCode {
     ERROR_WHILE_PROCESSING_PROFILE("Error while looking for profile. {}"),
     INPUT_VALIDATION_FAILED("Input validation failed. Error messages {}"),
     PROFILE_VALIDATION_FAILED("Profile validation failed"),
-    PROFILE_NAMES_MISMATCHED_WITH_FILES("Profile name mismatched with environment in {}");
+    PROFILE_NAMES_MISMATCHED_WITH_FILES("Profile name mismatched with environment in {}"),
+    FAILED_TO_SCALE_SERVICE("Failed to scale {} of application {} in {} namespace");
 
     private String message;
 

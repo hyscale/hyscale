@@ -15,21 +15,20 @@
  */
 package io.hyscale.deployer.services.model;
 
-public class PodParent {
-    private String kind;
-    private Object parent;
+public enum ScaleOperation {
 
-    public PodParent(String kind, Object parent) {
-        this.kind = kind;
-        this.parent = parent;
+    SCALE_UP("scaled up"),
+    SCALE_DOWN("scaled down"),
+    SCALE_TO("scaled to");
+
+    private String message;
+
+    ScaleOperation(String msg) {
+        this.message = msg;
     }
 
-    public String getKind() {
-        return kind;
-    }
-
-    public Object getParent() {
-        return parent;
+    public String getMessage() {
+        return this.message;
     }
 
 }
