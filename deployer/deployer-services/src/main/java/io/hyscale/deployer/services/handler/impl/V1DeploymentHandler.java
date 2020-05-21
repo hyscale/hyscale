@@ -152,6 +152,28 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         }
         return v1Deployments;
     }
+    
+    @Override
+    public List<V1Deployment> getForAllNamespaces(ApiClient apiClient, String selector, boolean label)
+            throws HyscaleException {
+        AppsV1Api appsV1Api = new AppsV1Api(apiClient);
+        List<V1Deployment> v1Deployments = null;
+        try {
+            String labelSelector = label ? selector : null;
+            String fieldSelector = label ? null : selector;
+
+            V1DeploymentList v1DeploymentList = appsV1Api.listDeploymentForAllNamespaces(null, null, fieldSelector,
+                    labelSelector, null, TRUE, null, null, null);
+
+            v1Deployments = v1DeploymentList != null ? v1DeploymentList.getItems() : null;
+        } catch (ApiException e) {
+            HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_ALL);
+            LOGGER.error("Error while listing Deployments in all namespaces, with selectors {}, error {} ", selector,
+                    ex.toString());
+            throw ex;
+        }
+        return v1Deployments;
+    }
 
     @Override
     public boolean patch(ApiClient apiClient, String name, String namespace, V1Deployment target) throws HyscaleException {

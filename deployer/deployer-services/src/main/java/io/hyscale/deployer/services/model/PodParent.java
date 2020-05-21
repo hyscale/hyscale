@@ -18,20 +18,18 @@ package io.hyscale.deployer.services.model;
 public class PodParent {
 	private String kind;
 	private Object parent;
+	
+	public PodParent(String kind, Object parent) {
+	    this.kind = kind;
+	    this.parent = parent;
+    }
 
 	public String getKind() {
 		return kind;
-	}
-
-	public void setKind(String kind) {
-		this.kind = kind;
 	}
 
 	public Object getParent() {
 		return parent;
 	}
 
-	public void setParent(Object pod) {
-		this.parent = pod;
-	}
 }
