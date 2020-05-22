@@ -47,7 +47,7 @@ public class ReplicasHandler implements ManifestHandler {
             return null;
         }
         // If user does not specify replicas field in hspec, by default we consider a single replica
-        int replicaCount = replicas.getMin() > 0 ? replicas.getMin() : 1;
+        int replicaCount = replicas.getMin() >= 0 ? replicas.getMin() : 1;
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         ManifestSnippet replicaSnippet = new ManifestSnippet();
         replicaSnippet.setSnippet(String.valueOf(replicaCount));

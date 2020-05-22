@@ -22,11 +22,9 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.models.K8sConfigFileAuth;
 import io.hyscale.commons.utils.WindowsUtil;
-import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.config.ControllerConfig;
 import io.hyscale.controller.exception.ControllerErrorCodes;
 

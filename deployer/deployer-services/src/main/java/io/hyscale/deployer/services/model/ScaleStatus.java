@@ -15,21 +15,15 @@
  */
 package io.hyscale.deployer.services.model;
 
-public class PodParent {
-    private String kind;
-    private Object parent;
+public class ScaleStatus {
 
-    public PodParent(String kind, Object parent) {
-        this.kind = kind;
-        this.parent = parent;
+    private boolean success;
+
+    public boolean isSuccess() {
+        return success;
     }
 
-    public String getKind() {
-        return kind;
+    public void setSuccess(boolean success) {
+        this.success = success;
     }
-
-    public Object getParent() {
-        return parent;
-    }
-
 }

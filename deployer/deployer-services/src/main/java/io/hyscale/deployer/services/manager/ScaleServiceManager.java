@@ -13,23 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.deployer.services.model;
+package io.hyscale.deployer.services.manager;
 
-public class PodParent {
-    private String kind;
-    private Object parent;
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.deployer.services.model.ScaleOperation;
+import io.hyscale.deployer.services.model.ScaleSpec;
+import io.hyscale.deployer.services.model.ScaleStatus;
+import io.kubernetes.client.openapi.ApiClient;
 
-    public PodParent(String kind, Object parent) {
-        this.kind = kind;
-        this.parent = parent;
-    }
+public interface ScaleServiceManager {
 
-    public String getKind() {
-        return kind;
-    }
-
-    public Object getParent() {
-        return parent;
-    }
-
+    public ScaleStatus scale(ApiClient apiClient, String appName, String service, String namespace, ScaleSpec scaleSpec) throws HyscaleException;
 }

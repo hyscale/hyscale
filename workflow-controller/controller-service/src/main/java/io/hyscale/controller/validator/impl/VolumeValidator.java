@@ -37,7 +37,6 @@ import io.hyscale.commons.logger.LoggerTags;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.K8sAuthorisation;
-import io.hyscale.commons.models.Status;
 import io.hyscale.commons.models.StorageClassAnnotation;
 import io.hyscale.commons.utils.HyscaleStringUtil;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
@@ -89,6 +88,7 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 		if (serviceSpec == null) {
 			return false;
 		}
+		long startTime = System.currentTimeMillis();
 		TypeReference<List<Volume>> volTypeRef = new TypeReference<List<Volume>>() {
 		};
 		List<Volume> volumeList = serviceSpec.get(HyscaleSpecFields.volumes, volTypeRef);
@@ -100,7 +100,7 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 		
 		try {
 		    if (!initStorageClass(apiClient)) {
-		        return printMsg(true);
+		        return printMsg(true, startTime);
 		    }
 		} catch (HyscaleException ex) {
 		    throw ex;
@@ -108,20 +108,21 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 		
 		// Validate Storage class
 		if (!validateStorageClass(volumeList)) {
-		    return printMsg(true);
+		    return printMsg(true, startTime);
 		}
 
 		logger.debug("Storage class provided are valid");
 
 		// Validate volume edit
 		if (!validateVolumeEdit(apiClient, context, volumeList)) {
-            return printMsg(true);
+            return printMsg(true, startTime);
         }
 		
-		return printMsg(false);
+		return printMsg(false, startTime);
 	}
 	
-	private boolean printMsg(boolean isFailed) {
+	private boolean printMsg(boolean isFailed, long startTime) {
+	    logger.debug("Time taken: {}", System.currentTimeMillis() - startTime);
 	    if (isFailed) {
             return false;
 	    }
@@ -220,36 +221,35 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 				}));
 
 		StringBuilder warnMsgBuilder = new StringBuilder();
-		for (Volume volume : volumeList) {
+		volumeList.stream().forEach( volume -> {
+		    V1PersistentVolumeClaim pvc = volumeVsPVC.get(volume.getName());
 
-			V1PersistentVolumeClaim pvc = volumeVsPVC.get(volume.getName());
-
-			if (pvc == null) {
-				// new volume does not exist on cluster
-				continue;
-			}
-			String storageClass = pvc.getSpec().getStorageClassName();
-			if (StringUtils.isBlank(storageClass)) {
-				logger.debug("Storage class not found in spec, getting from annotation");
-				storageClass = pvc.getMetadata().getAnnotations().get(AnnotationKey.K8S_STORAGE_CLASS.getAnnotation());
-			}
-			Quantity existingSize = pvc.getStatus().getCapacity() != null ? pvc.getStatus().getCapacity().get(STORAGE)
-					: null;
-			if (existingSize == null) {
-				logger.debug("Size not found in status, getting from spec");
-				V1ResourceRequirements resources = pvc.getSpec().getResources();
-				existingSize = resources != null
-						? (resources.getRequests() != null ? resources.getRequests().get(STORAGE) : null)
-						: null;
-			}
-			Quantity newSize = Quantity.fromString(StringUtils.isNotBlank(volume.getSize()) ? volume.getSize()
-					: K8SRuntimeConstants.DEFAULT_VOLUME_SIZE);
-			boolean isStorageClassSame = matchStorageClass(storageClass, volume.getStorageClass());
-			boolean isSizeSame = newSize.equals(existingSize);
-			if (!isStorageClassSame || !isSizeSame) {
-				warnMsgBuilder.append(volume.getName()).append(ToolConstants.COMMA).append(ToolConstants.SPACE);
-			}
-		}
+            if (pvc == null) {
+                // new volume does not exist on cluster
+                return;
+            }
+            String storageClass = pvc.getSpec().getStorageClassName();
+            if (StringUtils.isBlank(storageClass)) {
+                logger.debug("Storage class not found in spec, getting from annotation");
+                storageClass = pvc.getMetadata().getAnnotations().get(AnnotationKey.K8S_STORAGE_CLASS.getAnnotation());
+            }
+            Quantity existingSize = pvc.getStatus().getCapacity() != null ? pvc.getStatus().getCapacity().get(STORAGE)
+                    : null;
+            if (existingSize == null) {
+                logger.debug("Size not found in status, getting from spec");
+                V1ResourceRequirements resources = pvc.getSpec().getResources();
+                existingSize = resources != null
+                        ? (resources.getRequests() != null ? resources.getRequests().get(STORAGE) : null)
+                        : null;
+            }
+            Quantity newSize = Quantity.fromString(StringUtils.isNotBlank(volume.getSize()) ? volume.getSize()
+                    : K8SRuntimeConstants.DEFAULT_VOLUME_SIZE);
+            boolean isStorageClassSame = matchStorageClass(storageClass, volume.getStorageClass());
+            boolean isSizeSame = newSize.equals(existingSize);
+            if (!isStorageClassSame || !isSizeSame) {
+                warnMsgBuilder.append(volume.getName()).append(ToolConstants.COMMA).append(ToolConstants.SPACE);
+            }
+		});
 		String warnMsg = warnMsgBuilder.toString();
 		if (StringUtils.isNotBlank(warnMsg)) {
 			warnMsg = HyscaleStringUtil.removeSuffixStr(warnMsg, ToolConstants.COMMA + ToolConstants.SPACE);

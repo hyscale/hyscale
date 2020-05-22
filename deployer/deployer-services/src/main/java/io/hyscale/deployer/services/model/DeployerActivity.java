@@ -48,7 +48,8 @@ public enum DeployerActivity implements Activity {
 	STALE_VOLUME_REUSE(
 			"These volumes {} are no longer in use. They are retained in your namespace {} as pvc {} for review and manual deletion. To reattach them to service {}, use the same volume name."),
 	IGNORING_VOLUME_MODIFICATION("Detected change in \"{}\" hspec for volumes \"{}\". Changes to storage class or size is currently not supported"),
-	SERVICE_WITH_ZERO_REPLICAS("Service has zero replicas");
+	SERVICE_WITH_ZERO_REPLICAS("Service has zero replicas"),
+	SCALING_SERVICE("Scaling service");
 
 	private String message;
 

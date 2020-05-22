@@ -20,6 +20,7 @@ import java.util.concurrent.Callable;
 import io.hyscale.controller.commands.deploy.HyscaleDeployCommand;
 import io.hyscale.controller.commands.generate.HyscaleGenerateCommand;
 import io.hyscale.controller.commands.get.HyscaleGetCommand;
+import io.hyscale.controller.commands.scale.HyscaleScaleCommand;
 import io.hyscale.controller.commands.undeploy.HyscaleUndeployCommand;
 import org.springframework.stereotype.Component;
 
@@ -30,15 +31,15 @@ import picocli.CommandLine.Command;
 /**
  * This class is the first level command for hyscale tool.
  * This class executes 'hyscale' command
- *
+ * <p>
  * Every command/sub-command has to implement the {@link Callable} so that
  * whenever the command is executed the {@link #call()}
  * method will be invoked
  * <p>
- *
+ * <p>
  * Command annotation overrides the version provider that picoli provides
  * by default, with {@link HyscaleVersionProvider} as implementation
- *
+ * <p>
  * Also check the sub-commands at @Command annotation
  * </p>
  *
@@ -46,7 +47,7 @@ import picocli.CommandLine.Command;
  */
 @Command(name = "hyscale", versionProvider = HyscaleVersionProvider.class, mixinStandardHelpOptions = true, subcommands = {
         HyscaleGetCommand.class, HyscaleDeployCommand.class, HyscaleUndeployCommand.class,
-        HyscaleGenerateCommand.class})
+        HyscaleGenerateCommand.class, HyscaleScaleCommand.class})
 @Component
 public class HyscaleCommand implements Callable<Integer> {
 
