@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import io.hyscale.deployer.services.manager.ScaleServiceManager;
 import io.hyscale.deployer.services.model.*;
+import io.hyscale.deployer.services.processor.PodParentProvider;
 import io.hyscale.deployer.services.processor.ServiceStatusProcessor;
 
 import org.slf4j.Logger;
@@ -93,6 +94,9 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
     
     @Autowired
     private ServiceStatusProcessor serviceStatusProcessor;
+    
+    @Autowired
+    private PodParentProvider podParentProvider;
 
     @Override
     public void deploy(DeploymentContext context) throws HyscaleException {
@@ -284,8 +288,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
     @Override
     public List<AppMetadata> getAppsMetadata(K8sAuthorisation authConfig) throws HyscaleException {
         ApiClient apiClient = clientProvider.get(authConfig);
-        V1PodHandler v1PodHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
-        return appMetadataBuilder.build(v1PodHandler.getParentsForAllNamespaces(apiClient, null, true));
+        return appMetadataBuilder.build(podParentProvider.getParentsForAllNamespaces(apiClient, null, true));
     }
 
     @Override

@@ -158,7 +158,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
     }
     
     @Override
-    public List<V1StatefulSet> getForAllNamespaces(ApiClient apiClient, String selector, boolean label)
+    public List<V1StatefulSet> listForAllNamespaces(ApiClient apiClient, String selector, boolean label)
             throws HyscaleException {
         AppsV1Api appsV1Api = new AppsV1Api(apiClient);
         String labelSelector = label ? selector : null;

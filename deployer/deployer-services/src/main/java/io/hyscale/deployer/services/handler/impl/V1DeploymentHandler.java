@@ -150,7 +150,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
     }
     
     @Override
-    public List<V1Deployment> getForAllNamespaces(ApiClient apiClient, String selector, boolean label)
+    public List<V1Deployment> listForAllNamespaces(ApiClient apiClient, String selector, boolean label)
             throws HyscaleException {
         AppsV1Api appsV1Api = new AppsV1Api(apiClient);
         List<V1Deployment> v1Deployments = null;

@@ -17,20 +17,18 @@ package io.hyscale.deployer.services.manager.impl;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
-import io.hyscale.deployer.core.model.ResourceKind;
-import io.hyscale.deployer.services.deployer.Deployer;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.factory.PodParentFactory;
 import io.hyscale.deployer.services.handler.PodParentHandler;
-import io.hyscale.deployer.services.handler.ResourceHandlers;
-import io.hyscale.deployer.services.handler.impl.V1PodHandler;
 import io.hyscale.deployer.services.manager.ScaleServiceManager;
 import io.hyscale.deployer.services.model.PodParent;
 import io.hyscale.deployer.services.model.ScaleSpec;
 import io.hyscale.deployer.services.model.ScaleStatus;
+import io.hyscale.deployer.services.processor.PodParentProvider;
 import io.kubernetes.client.openapi.ApiClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -38,11 +36,13 @@ public class ScaleServiceManagerImpl implements ScaleServiceManager {
 
     private static final Logger logger = LoggerFactory.getLogger(ScaleServiceManagerImpl.class);
 
+    @Autowired
+    private PodParentProvider podParentProvider;
+    
     @Override
     public ScaleStatus scale(ApiClient apiClient, String appName, String service, String namespace, ScaleSpec scaleSpec) throws HyscaleException {
-        V1PodHandler podHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
         String selector = ResourceSelectorUtil.getServiceSelector(appName, service);
-        PodParent podParent = podHandler.getPodParent(apiClient, selector, namespace);
+        PodParent podParent = podParentProvider.getPodParent(apiClient, selector, true, namespace);
         if (podParent == null) {
             logger.error("Error while fetching pod parent of service {} in namespace {} ", service, namespace);
             throw new HyscaleException(DeployerErrorCodes.SERVICE_NOT_DEPLOYED, service, namespace, appName);

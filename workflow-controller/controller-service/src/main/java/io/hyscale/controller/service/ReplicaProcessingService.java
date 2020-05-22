@@ -24,11 +24,9 @@ import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.util.StatusUtil;
-import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.deployer.Deployer;
-import io.hyscale.deployer.services.handler.ResourceHandlers;
-import io.hyscale.deployer.services.handler.impl.V1PodHandler;
 import io.hyscale.deployer.services.model.ReplicaInfo;
+import io.hyscale.deployer.services.processor.PodParentProvider;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.kubernetes.client.openapi.ApiClient;
 
@@ -53,6 +51,9 @@ public class ReplicaProcessingService {
     
     @Autowired
     private K8sClientProvider clientProvider;
+    
+    @Autowired
+    private PodParentProvider podParentProvider;
 
     public List<ReplicaInfo> getReplicas(String appName, String serviceName, String namespace, boolean latest) throws HyscaleException {
         AuthConfig authConfig = configBuilder.getAuthConfig();
@@ -67,9 +68,8 @@ public class ReplicaProcessingService {
         authConfig = authConfig == null ? configBuilder.getAuthConfig() : authConfig;
         String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
         ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
-        V1PodHandler podHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
         
-        return podHandler.hasPodParent(apiClient, selector, namespace);
+        return podParentProvider.podParentExists(apiClient, selector, true, namespace);
     }
 
     public boolean doesReplicaExist(String replica, List<ReplicaInfo> replicaInfos) {

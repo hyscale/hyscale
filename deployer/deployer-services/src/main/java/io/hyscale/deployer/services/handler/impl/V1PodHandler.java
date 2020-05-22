@@ -17,7 +17,6 @@ package io.hyscale.deployer.services.handler.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +35,7 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.ResourceLabelKey;
 import io.hyscale.commons.models.Status;
+import io.hyscale.commons.utils.HyscaleContextUtil;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
@@ -43,11 +43,11 @@ import io.hyscale.deployer.services.config.DeployerEnvConfig;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.factory.PodParentFactory;
 import io.hyscale.deployer.services.handler.PodParentHandler;
-import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.model.PodParent;
 import io.hyscale.deployer.services.predicates.PodPredicates;
+import io.hyscale.deployer.services.processor.PodParentProvider;
 import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
 import io.kubernetes.client.PodLogs;
@@ -57,10 +57,8 @@ import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.apis.CoreV1Api;
 import io.kubernetes.client.openapi.models.V1ContainerStatus;
 import io.kubernetes.client.openapi.models.V1DeleteOptions;
-import io.kubernetes.client.openapi.models.V1Deployment;
 import io.kubernetes.client.openapi.models.V1Pod;
 import io.kubernetes.client.openapi.models.V1PodList;
-import io.kubernetes.client.openapi.models.V1StatefulSet;
 import io.kubernetes.client.util.Watch;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
@@ -164,7 +162,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
     }
     
     @Override
-    public List<V1Pod> getForAllNamespaces(ApiClient apiClient, String selector, boolean label)
+    public List<V1Pod> listForAllNamespaces(ApiClient apiClient, String selector, boolean label)
             throws HyscaleException {
         CoreV1Api coreV1Api = new CoreV1Api(apiClient);
         String labelSelector = label ? selector : null;
@@ -403,7 +401,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
     public void watch(ApiClient apiClient, String appName, String serviceName, String namespace)
             throws HyscaleException {
         String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
-        PodParent podParent = getPodParent(apiClient, selector, namespace);
+        PodParent podParent = HyscaleContextUtil.getSpringBean(PodParentProvider.class).getPodParent(apiClient, selector, true, namespace);
         if (podParent == null) {
             logger.error("Error while fetching pod parent of service {}", serviceName);
             throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_SERVICE_REPLICAS);
@@ -551,129 +549,6 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
             logger.error("Failed to watch pod events ", e);
             throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_POD);
         }
-    }
-    
-    /**
-     * It will read object(v1Deployment or v1StatefulSet) from cluster and return along with their resource kind
-     *
-     * @param apiClient
-     * @param selector
-     * @param namespace
-     * @return podParent
-     */
-    public PodParent getPodParent(ApiClient apiClient, String selector, String namespace) throws HyscaleException {
-        try {
-            V1StatefulSetHandler v1StatefulSetHandler = (V1StatefulSetHandler) ResourceHandlers
-                    .getHandlerOf(ResourceKind.STATEFUL_SET.getKind());
-            List<V1StatefulSet> statefulSets = v1StatefulSetHandler.getBySelector(apiClient, selector, true, namespace);
-            // First found service
-            if (statefulSets != null && !statefulSets.isEmpty()) {
-                return new PodParent(ResourceKind.STATEFUL_SET.getKind(), statefulSets.get(0));
-            }
-        } catch (HyscaleException e) {
-            if (!e.getHyscaleErrorCode().equals(DeployerErrorCodes.RESOURCE_NOT_FOUND)) {
-                throw e;
-            }
-        }
-        try {
-            V1DeploymentHandler v1DeploymentHandler = (V1DeploymentHandler) ResourceHandlers
-                    .getHandlerOf(ResourceKind.DEPLOYMENT.getKind());
-            List<V1Deployment> v1Deployments = v1DeploymentHandler.getBySelector(apiClient, selector, true, namespace);
-            if (v1Deployments != null && !v1Deployments.isEmpty()) {
-                return new PodParent(ResourceKind.DEPLOYMENT.getKind(), v1Deployments.get(0));
-            }
-        } catch (HyscaleException e) {
-            if (!e.getHyscaleErrorCode().equals(DeployerErrorCodes.RESOURCE_NOT_FOUND)) {
-                throw e;
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * Fetch Deployment and StatefulSet based on selector and return list of PodParent
-     * To be used when user expects multiple PodParents
-     * Incase user expects single PodParent use {@link #getPodParent(ApiClient, String, String)}
-     * 
-     * @param apiClient
-     * @param selector
-     * @param namespace
-     * @return List of PodParent
-     * @throws HyscaleException
-     */
-    public List<PodParent> getPodParentsList(ApiClient apiClient, String selector, String namespace)
-            throws HyscaleException {
-        List<PodParent> podParents = new ArrayList<PodParent>();
-
-        // Fetch STS
-        V1StatefulSetHandler stsHandler = (V1StatefulSetHandler) ResourceHandlers
-                .getHandlerOf(ResourceKind.STATEFUL_SET.getKind());
-        List<V1StatefulSet> stsList = stsHandler.getBySelector(apiClient, selector, true, namespace);
-        if (stsList != null) {
-            stsList.stream().forEach(each -> {
-                PodParent podParent = new PodParent(ResourceKind.STATEFUL_SET.getKind(), each);
-                podParents.add(podParent);
-            });
-        }
-        
-        // Fetch Deployments
-        V1DeploymentHandler deploymentHandler = (V1DeploymentHandler) ResourceHandlers
-                .getHandlerOf(ResourceKind.DEPLOYMENT.getKind());
-        List<V1Deployment> deploymentList = deploymentHandler.getBySelector(apiClient, selector, true, namespace);
-        if (deploymentList != null) {
-            deploymentList.stream().forEach(each -> {
-                PodParent podParent = new PodParent(ResourceKind.DEPLOYMENT.getKind(), each);
-                podParents.add(podParent);
-            });
-        }
-        
-        return podParents;
-    }
-    
-    /**
-     * Fetch Deployment and StatefulSet based on selector across namespaces
-     * and return list of PodParent
-     * 
-     * @param apiClient
-     * @param selector
-     * @return List of PodParent
-     * @throws HyscaleException
-     */
-    public List<PodParent> getParentsForAllNamespaces(ApiClient apiClient, String selector, boolean label) throws HyscaleException {
-        List<PodParent> podParents = new ArrayList<PodParent>();
-
-        // Fetch STS
-        V1StatefulSetHandler stsHandler = (V1StatefulSetHandler) ResourceHandlers
-                .getHandlerOf(ResourceKind.STATEFUL_SET.getKind());
-        List<V1StatefulSet> stsList = stsHandler.getForAllNamespaces(apiClient, selector, label);
-        if (stsList != null) {
-            stsList.stream().forEach(each -> {
-                PodParent podParent = new PodParent(ResourceKind.STATEFUL_SET.getKind(), each);
-                podParents.add(podParent);
-            });
-        }
-
-        // Fetch Deployments
-        V1DeploymentHandler deploymentHandler = (V1DeploymentHandler) ResourceHandlers
-                .getHandlerOf(ResourceKind.DEPLOYMENT.getKind());
-        List<V1Deployment> deploymentList = deploymentHandler.getForAllNamespaces(apiClient, selector, label);
-        if (deploymentList != null) {
-            deploymentList.stream().forEach(each -> {
-                PodParent podParent = new PodParent(ResourceKind.DEPLOYMENT.getKind(), each);
-                podParents.add(podParent);
-            });
-        }
-
-        return podParents;
-    }
-    
-    public boolean hasPodParent(ApiClient apiClient, String selector, String namespace) {
-        PodParent podParent = null;
-        try {
-            podParent = getPodParent(apiClient, selector, namespace);
-        } catch (HyscaleException e) {
-        }
-        return podParent == null ? false : true;
     }
     
 }

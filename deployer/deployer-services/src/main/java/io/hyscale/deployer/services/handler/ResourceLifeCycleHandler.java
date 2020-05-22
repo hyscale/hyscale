@@ -104,7 +104,7 @@ public interface ResourceLifeCycleHandler<T> {
      * @return List of resource
      * @throws HyscaleException
      */
-    default List<T> getForAllNamespaces(ApiClient apiClient, String selector, boolean label)
+    default List<T> listForAllNamespaces(ApiClient apiClient, String selector, boolean label)
             throws HyscaleException {
         throw new HyscaleException(DeployerErrorCodes.OPERATION_NOT_SUPPORTED,
                 ResourceOperation.GET_ALL.getOperation(), getKind());
