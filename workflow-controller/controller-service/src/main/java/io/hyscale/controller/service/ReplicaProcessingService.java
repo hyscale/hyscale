@@ -66,10 +66,9 @@ public class ReplicaProcessingService {
     
     public boolean hasService(AuthConfig authConfig, String appName, String serviceName, String namespace) throws HyscaleException {
         authConfig = authConfig == null ? configBuilder.getAuthConfig() : authConfig;
-        String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
         ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
         
-        return podParentProvider.podParentExists(apiClient, selector, true, namespace);
+        return podParentProvider.hasPodParent(apiClient, appName, serviceName, namespace);
     }
 
     public boolean doesReplicaExist(String replica, List<ReplicaInfo> replicaInfos) {

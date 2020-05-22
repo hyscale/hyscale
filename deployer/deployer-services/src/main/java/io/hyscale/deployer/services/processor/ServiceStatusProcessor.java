@@ -28,7 +28,6 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.K8sAuthorisation;
-import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.services.deployer.Deployer;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
@@ -58,11 +57,10 @@ public class ServiceStatusProcessor {
         if (StringUtils.isBlank(serviceName)) {
             throw new HyscaleException(DeployerErrorCodes.SERVICE_REQUIRED);
         }
-        String selector = ResourceSelectorUtil.getServiceSelector(appname, serviceName);
         PodParent podParent = null;
         try {
             ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
-            podParent = podParentProvider.getPodParent(apiClient, selector, true, namespace);
+            podParent = podParentProvider.getPodParent(apiClient, appname, serviceName, namespace);
         } catch (HyscaleException e) {
             logger.error("Error while fetching status {} ", e);
             throw e;
@@ -79,10 +77,9 @@ public class ServiceStatusProcessor {
     public List<DeploymentStatus> getDeploymentStatus(AuthConfig authConfig, String appname, String namespace)
             throws HyscaleException {
         List<PodParent> podParentList = null;
-        String selector = ResourceSelectorUtil.getSelector(appname);
         try {
             ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
-            podParentList = podParentProvider.getPodParentsList(apiClient, selector, true, namespace);
+            podParentList = podParentProvider.getPodParents(apiClient, appname, namespace);
         } catch (HyscaleException e) {
             logger.error("Error while fetching status {} ", e);
             throw e;

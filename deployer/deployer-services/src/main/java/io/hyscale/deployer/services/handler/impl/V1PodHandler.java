@@ -401,7 +401,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
     public void watch(ApiClient apiClient, String appName, String serviceName, String namespace)
             throws HyscaleException {
         String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
-        PodParent podParent = HyscaleContextUtil.getSpringBean(PodParentProvider.class).getPodParent(apiClient, selector, true, namespace);
+        PodParent podParent = HyscaleContextUtil.getSpringBean(PodParentProvider.class).getPodParent(apiClient, appName, serviceName, namespace);
         if (podParent == null) {
             logger.error("Error while fetching pod parent of service {}", serviceName);
             throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_SERVICE_REPLICAS);

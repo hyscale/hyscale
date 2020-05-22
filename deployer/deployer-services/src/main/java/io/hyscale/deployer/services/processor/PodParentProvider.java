@@ -21,6 +21,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.services.factory.PodParentFactory;
 import io.hyscale.deployer.services.handler.PodParentHandler;
 import io.hyscale.deployer.services.model.PodParent;
@@ -30,48 +31,48 @@ import io.kubernetes.client.openapi.ApiClient;
 public class PodParentProvider {
 
     /**
-     * For all available {@link PodParentHandler} 
-     * Returns the first available pod parent
      * 
      * @param apiClient
-     * @param selector
-     * @param label
+     * @param appName
+     * @param serviceName
      * @param namespace
-     * @return {@link PodParent}
+     * @return {@link PodParent} for the app and service in the given namespace
      * @throws HyscaleException
      */
-    public PodParent getPodParent(ApiClient apiClient, String selector, boolean label, String namespace)
+    public PodParent getPodParent(ApiClient apiClient, String appName, String serviceName, String namespace)
             throws HyscaleException {
         List<PodParentHandler> podParentHandlerList = PodParentFactory.getAllHandlers();
-
+        String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
         for (PodParentHandler podParentHandler : podParentHandlerList) {
-            PodParent podParent = podParentHandler.getPodParent(apiClient, selector, label, namespace);
-            if (podParent != null) {
-                return podParent;
+            List podParentResource = podParentHandler.getBySelector(apiClient, selector, true, namespace);
+            if (podParentResource != null && !podParentResource.isEmpty()) {
+                return new PodParent(podParentHandler.getKind(), podParentResource.get(0));
             }
         }
         return null;
     }
 
     /**
-     * For all available {@link PodParentHandler} 
-     * Combine the available {@link PodParent} in the given namespace
+     * Provides a list of {@link PodParent} for the app in given namespace
      * 
      * @param apiClient
-     * @param selector
-     * @param label
+     * @param appName
      * @param namespace
      * @return list of {@link PodParent}
      * @throws HyscaleException
      */
-    public List<PodParent> getPodParentsList(ApiClient apiClient, String selector, boolean label,
-            String namespace) throws HyscaleException {
-        List<PodParentHandler> podParentHandlerList = PodParentFactory.getAllHandlers();
+    public List<PodParent> getPodParents(ApiClient apiClient, String appName, String namespace)
+            throws HyscaleException {
         List<PodParent> podParentList = new ArrayList<PodParent>();
+        List<PodParentHandler> podParentHandlerList = PodParentFactory.getAllHandlers();
+        String selector = ResourceSelectorUtil.getSelector(appName);
         for (PodParentHandler podParentHandler : podParentHandlerList) {
-            List<PodParent> podParents = podParentHandler.getPodParentsList(apiClient, selector, label, namespace);
-            if (podParents != null && !podParents.isEmpty()) {
-                podParentList.addAll(podParents);
+            List podParentResource = podParentHandler.getBySelector(apiClient, selector, true, namespace);
+            if (podParentResource != null) {
+                podParentResource.stream().forEach(each -> {
+                    PodParent podParent = new PodParent(podParentHandler.getKind(), each);
+                    podParentList.add(podParent);
+                });
             }
         }
         return podParentList;
@@ -80,42 +81,34 @@ public class PodParentProvider {
     /**
      * 
      * @param apiClient
-     * @param selector
-     * @param label
+     * @param appName
+     * @param serviceName
      * @param namespace
-     * @return true if any pod parent resource exists
+     * @return true if {@link PodParent} exists for the app and service
      * @throws HyscaleException
      */
-    public boolean podParentExists(ApiClient apiClient, String selector, boolean label, String namespace)
+    public boolean hasPodParent(ApiClient apiClient, String appName, String serviceName, String namespace)
             throws HyscaleException {
-        List<PodParentHandler> podParentHandlerList = PodParentFactory.getAllHandlers();
-        for (PodParentHandler podParentHandler : podParentHandlerList) {
-            PodParent podParent = podParentHandler.getPodParent(apiClient, selector, label, namespace);
-            if (podParent != null) {
-                return true;
-            }
-        }
-        return false;
+        return getPodParent(apiClient, appName, serviceName, namespace) != null ? true : false;
     }
 
     /**
-     * For all available {@link PodParentHandler} 
-     * Combine the available {@link PodParent} across namespaces
+     * Provides list of all {@link PodParent} available in the cluster
      * 
      * @param apiClient
-     * @param selector
-     * @param label
      * @return list of {@link PodParent}
      * @throws HyscaleException
      */
-    public List<PodParent> getParentsForAllNamespaces(ApiClient apiClient, String selector, boolean label)
-            throws HyscaleException {
-        List<PodParentHandler> podParentHandlerList = PodParentFactory.getAllHandlers();
+    public List<PodParent> getAllPodParents(ApiClient apiClient) throws HyscaleException {
         List<PodParent> podParentList = new ArrayList<PodParent>();
+        List<PodParentHandler> podParentHandlerList = PodParentFactory.getAllHandlers();
         for (PodParentHandler podParentHandler : podParentHandlerList) {
-            List<PodParent> podParents = podParentHandler.getParentsForAllNamespaces(apiClient, selector, label);
-            if (podParents != null && !podParents.isEmpty()) {
-                podParentList.addAll(podParents);
+            List podParentResource = podParentHandler.listForAllNamespaces(apiClient, null, true);
+            if (podParentResource != null) {
+                podParentResource.stream().forEach(each -> {
+                    PodParent podParent = new PodParent(podParentHandler.getKind(), each);
+                    podParentList.add(podParent);
+                });
             }
         }
         return podParentList;

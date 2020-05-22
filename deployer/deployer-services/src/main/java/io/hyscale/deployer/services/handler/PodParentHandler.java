@@ -15,14 +15,11 @@
  */
 package io.hyscale.deployer.services.handler;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.ResourceLabelUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
-import io.hyscale.deployer.services.exception.DeployerErrorCodes;
-import io.hyscale.deployer.services.model.PodParent;
 import io.hyscale.deployer.services.model.ScaleOperation;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
 import io.kubernetes.client.openapi.ApiClient;
@@ -119,55 +116,6 @@ public abstract class PodParentHandler<T> {
                 .withSpec(new V1ScaleSpec().replicas(desiredReplicas))
                 .build();
         return K8sResourcePatchUtil.getJsonPatch(exisiting, scale, V1Scale.class);
-    }
-    
-    public PodParent getPodParent(ApiClient apiClient, String selector, boolean label, String namespace) throws HyscaleException {
-        List<PodParent> podParentList = getPodParentsList(apiClient, selector, label, namespace);
-        if (podParentList != null && !podParentList.isEmpty()) {
-            return podParentList.get(0);
-        }
-        return null;
-    }
-    
-    public List<PodParent> getPodParentsList(ApiClient apiClient, String selector, boolean label, String namespace)
-            throws HyscaleException {
-        List<PodParent> podParents = new ArrayList<PodParent>();
-
-        List podParentResource = null;
-        try {
-            podParentResource = getBySelector(apiClient, selector, label, namespace);
-        } catch (HyscaleException e) {
-            if (!e.getHyscaleErrorCode().equals(DeployerErrorCodes.RESOURCE_NOT_FOUND)) {
-                throw e;
-            }
-        }
-        if (podParentResource != null) {
-            podParentResource.stream().forEach(each -> {
-                PodParent podParent = new PodParent(getKind(), each);
-                podParents.add(podParent);
-            });
-        }
-        return podParents;
-    }
-    
-    public List<PodParent> getParentsForAllNamespaces(ApiClient apiClient, String selector, boolean label) throws HyscaleException {
-        List<PodParent> podParents = new ArrayList<PodParent>();
-
-        List podParentResource = null;
-        try {
-            podParentResource = listForAllNamespaces(apiClient, selector, label);
-        } catch (HyscaleException e) {
-            if (!e.getHyscaleErrorCode().equals(DeployerErrorCodes.RESOURCE_NOT_FOUND)) {
-                throw e;
-            }
-        }
-        if (podParentResource != null) {
-            podParentResource.stream().forEach(each -> {
-                PodParent podParent = new PodParent(getKind(), each);
-                podParents.add(podParent);
-            });
-        }
-        return podParents;
     }
     
 }

@@ -288,7 +288,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
     @Override
     public List<AppMetadata> getAppsMetadata(K8sAuthorisation authConfig) throws HyscaleException {
         ApiClient apiClient = clientProvider.get(authConfig);
-        return appMetadataBuilder.build(podParentProvider.getParentsForAllNamespaces(apiClient, null, true));
+        return appMetadataBuilder.build(podParentProvider.getAllPodParents(apiClient));
     }
 
     @Override

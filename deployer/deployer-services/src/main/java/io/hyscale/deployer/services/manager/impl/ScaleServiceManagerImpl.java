@@ -16,7 +16,6 @@
 package io.hyscale.deployer.services.manager.impl;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.factory.PodParentFactory;
 import io.hyscale.deployer.services.handler.PodParentHandler;
@@ -41,8 +40,7 @@ public class ScaleServiceManagerImpl implements ScaleServiceManager {
     
     @Override
     public ScaleStatus scale(ApiClient apiClient, String appName, String service, String namespace, ScaleSpec scaleSpec) throws HyscaleException {
-        String selector = ResourceSelectorUtil.getServiceSelector(appName, service);
-        PodParent podParent = podParentProvider.getPodParent(apiClient, selector, true, namespace);
+        PodParent podParent = podParentProvider.getPodParent(apiClient, appName, service, namespace);
         if (podParent == null) {
             logger.error("Error while fetching pod parent of service {} in namespace {} ", service, namespace);
             throw new HyscaleException(DeployerErrorCodes.SERVICE_NOT_DEPLOYED, service, namespace, appName);
