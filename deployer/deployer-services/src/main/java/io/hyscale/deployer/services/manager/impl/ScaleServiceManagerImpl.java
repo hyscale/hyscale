@@ -16,7 +16,6 @@
 package io.hyscale.deployer.services.manager.impl;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
@@ -35,7 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class ScaleServiceManagerImpl implements ScaleServiceManager {
@@ -44,7 +42,13 @@ public class ScaleServiceManagerImpl implements ScaleServiceManager {
 
     @Autowired
     private PodParentProvider podParentProvider;
-
+    
+    @Autowired
+    private PodParentFactory podParentFactory;
+    
+    @Autowired
+    private ResourceHandlers resourceHandlers;
+    
     @Override
     public ScaleStatus scale(ApiClient apiClient, String appName, String service, String namespace, ScaleSpec scaleSpec) throws HyscaleException {
         PodParent podParent = podParentProvider.getPodParent(apiClient, appName, service, namespace);
@@ -53,14 +57,15 @@ public class ScaleServiceManagerImpl implements ScaleServiceManager {
             throw new HyscaleException(DeployerErrorCodes.SERVICE_NOT_DEPLOYED, service, namespace, appName);
         }
 
-        PodParentHandler podParentHandler = PodParentFactory.getHandler(podParent.getKind());
+        PodParentHandler podParentHandler = podParentFactory.getHandlerOf(podParent.getKind());
         boolean status = false;
         ScaleStatus scaleStatus = new ScaleStatus();
 
         int replicas = podParentHandler.getReplicas(podParent.getParent());
         int desiredReplicas = podParentHandler.getDesiredReplicas(scaleSpec.getScaleOp(), scaleSpec.getValue(), replicas);
 
-        V1HorizontalPodAutoScalerHandler autoScalerHandler = (V1HorizontalPodAutoScalerHandler) ResourceHandlers.getHandlerOf(ResourceKind.HORIZONTAL_POD_AUTOSCALER.getKind());
+        V1HorizontalPodAutoScalerHandler autoScalerHandler = resourceHandlers
+                .getHandlerOf(ResourceKind.HORIZONTAL_POD_AUTOSCALER.getKind(), V1HorizontalPodAutoScalerHandler.class);
         List<V1HorizontalPodAutoscaler> podAutoscalers = autoScalerHandler.getBySelector(apiClient, ResourceSelectorUtil.getServiceSelector(appName, service), true, namespace);
         if (podAutoscalers != null && !podAutoscalers.isEmpty()) {
             validate(podAutoscalers.get(0),desiredReplicas);

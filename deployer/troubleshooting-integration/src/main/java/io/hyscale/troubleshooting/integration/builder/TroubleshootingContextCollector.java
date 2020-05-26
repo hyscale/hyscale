@@ -60,6 +60,9 @@ public class TroubleshootingContextCollector {
     @Autowired
     private TroubleshootingConfig troubleshootingConfig;
     
+    @Autowired
+    private ResourceHandlers resourceHandlers;
+    
     private List<String> troubleshootResources = Arrays.asList(ResourceKind.STATEFUL_SET.getKind(), ResourceKind.DEPLOYMENT.getKind(),
             ResourceKind.REPLICA_SET.getKind(), ResourceKind.POD.getKind(), ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind());
 
@@ -160,7 +163,7 @@ public class TroubleshootingContextCollector {
             throw new HyscaleException(TroubleshootErrorCodes.ERROR_WHILE_BUILDING_RESOURCES);
         }
 
-        V1EventHandler eventHandler = (V1EventHandler) ResourceHandlers.getHandlerOf(ResourceKind.EVENT.getKind());
+        V1EventHandler eventHandler = resourceHandlers.getHandlerOf(ResourceKind.EVENT.getKind(), V1EventHandler.class);
         Map<String, List<TroubleshootingContext.ResourceInfo>> resourceMap = new HashMap<>();
         handlerList.stream().forEach(each -> {
             List resourceList = null;
@@ -192,7 +195,8 @@ public class TroubleshootingContextCollector {
         });
 
         // Adding storage class to the context
-        V1StorageClassHandler storageClassHandler = (V1StorageClassHandler) ResourceHandlers.getHandlerOf(ResourceKind.STORAGE_CLASS.getKind());
+        V1StorageClassHandler storageClassHandler = resourceHandlers.getHandlerOf(ResourceKind.STORAGE_CLASS.getKind(),
+                V1StorageClassHandler.class);
         List<V1StorageClass> storageClasses = storageClassHandler.getAll(apiClient);
         if (storageClasses != null && !storageClasses.isEmpty()) {
             List<TroubleshootingContext.ResourceInfo> storageClassResourceInfoList =
@@ -210,7 +214,7 @@ public class TroubleshootingContextCollector {
     }
     
     private List<ResourceLifeCycleHandler> getResourceHandlers() {
-        return ResourceHandlers.getAllHandlers().stream()
+        return resourceHandlers.getAllHandlers().stream()
                 .filter(each -> troubleshootResources.contains(each.getKind())).collect(Collectors.toList());
     }
 

@@ -22,6 +22,7 @@ import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.util.ExceptionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.deployer.core.model.ResourceKind;
@@ -32,6 +33,7 @@ import io.kubernetes.client.openapi.apis.StorageV1Api;
 import io.kubernetes.client.openapi.models.V1StorageClass;
 import io.kubernetes.client.openapi.models.V1StorageClassList;
 
+@Component
 public class V1StorageClassHandler implements ResourceLifeCycleHandler<V1StorageClass> {
 
 	private static final Logger logger = LoggerFactory.getLogger(V1StorageClassHandler.class);

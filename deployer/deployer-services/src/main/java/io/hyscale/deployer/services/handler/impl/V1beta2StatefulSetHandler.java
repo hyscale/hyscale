@@ -31,6 +31,8 @@ import io.hyscale.deployer.services.util.K8sPodUtil;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonSyntaxException;
@@ -59,9 +61,13 @@ import io.kubernetes.client.custom.V1Patch;
  * @author tushart
  *
  */
+@Component
 public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1beta2StatefulSet> {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(V1beta2StatefulSetHandler.class);
+	
+	@Autowired
+	private ResourceHandlers resourceHandlers;
 
 	@Override
 	public V1beta2StatefulSet create(ApiClient apiClient, V1beta2StatefulSet resource, String namespace)
@@ -208,7 +214,7 @@ public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1bet
 			throw ex;
 		} finally {
 			if (deleteRequired) {
-				V1PodHandler podHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
+				V1PodHandler podHandler = resourceHandlers.getHandlerOf(ResourceKind.POD.getKind(), V1PodHandler.class);
 				podHandler.deleteBySelector(apiClient, getPodSelector(serviceName), true, namespace, false);
 			}
 		}
@@ -225,7 +231,7 @@ public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1bet
 	 * @throws HyscaleException
 	 */
 	private boolean isDeletePodRequired(ApiClient apiClient, String name, String namespace) throws HyscaleException {
-		V1PodHandler podHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
+		V1PodHandler podHandler = resourceHandlers.getHandlerOf(ResourceKind.POD.getKind(), V1PodHandler.class);
 		List<V1Pod> v1PodList = podHandler.getBySelector(apiClient, getPodSelector(name), true, namespace);
 		boolean isPodInErrorState = false;
 		if (v1PodList != null && !v1PodList.isEmpty()) {

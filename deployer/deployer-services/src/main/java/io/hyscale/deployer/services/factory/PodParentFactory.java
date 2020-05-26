@@ -19,8 +19,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import io.hyscale.deployer.services.handler.PodParentHandler;
 
@@ -28,21 +32,25 @@ import io.hyscale.deployer.services.handler.PodParentHandler;
  * Factory Class to provide PodParentHandlers based on Kind
  *
  */
+@Component
 public class PodParentFactory {
 
-    private static Map<String, PodParentHandler> kindVsHandlerMap;
+    private Map<String, PodParentHandler> kindVsHandlerMap;
 
+    @Autowired
+    private List<PodParentHandler> podParentHandlerList;
 
-    public static void registerHandlers() {
+    @PostConstruct
+    public void registerHandlers() {
         if (kindVsHandlerMap == null) {
             kindVsHandlerMap = new HashMap();
-            for (PodParentHandler handler : ServiceLoader.load(PodParentHandler.class, PodParentFactory.class.getClassLoader())) {
+            for (PodParentHandler handler : podParentHandlerList) {
                 kindVsHandlerMap.put(handler.getKind(), handler);
             }
         }
     }
 
-    public static PodParentHandler getHandler(String kind) {
+    public PodParentHandler getHandlerOf(String kind) {
         return kindVsHandlerMap.get(kind);
     }
     
@@ -50,7 +58,7 @@ public class PodParentFactory {
      * 
      * @return Unmodifiable list of all available PodParentHandlers
      */
-    public static List<PodParentHandler> getAllHandlers(){
+    public List<PodParentHandler> getAllHandlers(){
         if (kindVsHandlerMap == null) {
         return null;
         }

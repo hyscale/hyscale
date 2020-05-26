@@ -23,12 +23,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.ResourceLabelUtil;
-import io.hyscale.deployer.core.model.ResourceKind;
-import io.hyscale.deployer.services.handler.ResourceHandlers;
-import io.hyscale.deployer.services.handler.impl.V1PodHandler;
-import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimVolumeSource;
 import io.kubernetes.client.openapi.models.V1Pod;
@@ -104,16 +99,6 @@ public class KubernetesVolumeUtil {
 		}
 		
 		return pvcName;
-	}
-
-	public static Set<String> getPodVolumes(ApiClient apiClient, String selector, String namespace)
-			throws HyscaleException {
-		V1PodHandler podHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
-
-		List<V1Pod> podsList = podHandler.getBySelector(apiClient, selector, true, namespace);
-
-		return getPodsVolumes(podsList);
-
 	}
 
 	public static Set<String> getPodsVolumes(List<V1Pod> podsList) {

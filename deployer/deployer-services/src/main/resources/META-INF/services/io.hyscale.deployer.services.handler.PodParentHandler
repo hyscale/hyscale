@@ -1,2 +1,0 @@
-io.hyscale.deployer.services.handler.impl.V1StatefulSetHandler
-io.hyscale.deployer.services.handler.impl.V1DeploymentHandler

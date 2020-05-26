@@ -97,11 +97,18 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
     
     @Autowired
     private PodParentProvider podParentProvider;
+    
+    @Autowired
+    private ResourceHandlers resourceHandlers;
+    
+    @Autowired
+    private K8sDeployerUtil k8sDeployerUtil;
 
     @Override
     public void deploy(DeploymentContext context) throws HyscaleException {
 
-        K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(clientProvider.get((K8sAuthorisation) context.getAuthConfig()));
+        K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(
+                clientProvider.get((K8sAuthorisation) context.getAuthConfig()), resourceHandlers);
         try {
             resourceDispatcher.waitForReadiness(context.isWaitForReadiness());
             resourceDispatcher.withNamespace(context.getNamespace()).apply(context.getManifests());
@@ -119,7 +126,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
     @Override
     public void waitForDeployment(DeploymentContext context) throws HyscaleException {
         ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
-        V1PodHandler podHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
+        V1PodHandler podHandler = resourceHandlers.getHandlerOf(ResourceKind.POD.getKind(), V1PodHandler.class);
         String serviceName = context.getServiceName();
         String namespace = context.getNamespace();
         String appName = context.getAppName();
@@ -142,7 +149,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
         try {
             KubernetesResource resource = KubernetesResourceUtil.getKubernetesResource(yamlManifest, namespace);
             String kind = resource.getKind();
-            ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(kind);
+            ResourceLifeCycleHandler lifeCycleHandler = resourceHandlers.getHandlerOf(kind);
             String resourceName = resource.getV1ObjectMeta().getName();
 
             return lifeCycleHandler.status(lifeCycleHandler.get(apiClient, resourceName, namespace));
@@ -158,7 +165,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
         List<V1Pod> v1PodList = null;
         try {
             ApiClient apiClient = clientProvider.get(k8sAuthorisation);
-            V1PodHandler v1PodHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
+            V1PodHandler v1PodHandler = resourceHandlers.getHandlerOf(ResourceKind.POD.getKind(), V1PodHandler.class);
 
             String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
 
@@ -197,7 +204,8 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
 
     @Override
     public void unDeploy(DeploymentContext context) throws HyscaleException {
-        K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(clientProvider.get((K8sAuthorisation) context.getAuthConfig()));
+        K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(
+                clientProvider.get((K8sAuthorisation) context.getAuthConfig()), resourceHandlers);
         try {
             resourceDispatcher.withNamespace(context.getNamespace()).undeploy(context.getAppName(),
                     context.getServiceName());
@@ -219,7 +227,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
                             String containerName, Integer readLines, boolean tail) throws HyscaleException {
         try {
             ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
-            V1PodHandler podHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
+            V1PodHandler podHandler = resourceHandlers.getHandlerOf(ResourceKind.POD.getKind(), V1PodHandler.class);
             if (readLines == null) {
                 readLines = deployerConfig.getDefaultTailLines();
             }
@@ -239,8 +247,8 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
         ServiceAddress serviceAddress = null;
         try {
             ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
-            V1ServiceHandler v1ServiceHandler = (V1ServiceHandler) ResourceHandlers
-                    .getHandlerOf(ResourceKind.SERVICE.getKind());
+            V1ServiceHandler v1ServiceHandler = resourceHandlers.getHandlerOf(ResourceKind.SERVICE.getKind(),
+                    V1ServiceHandler.class);
             serviceAddress = v1ServiceHandler.getServiceAddress(apiClient, context.getServiceName(),
                     context.getNamespace(), context.isWaitForReadiness());
         } catch (HyscaleException e) {
@@ -294,14 +302,14 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
     @Override
     public List<ReplicaInfo> getLatestReplicas(K8sAuthorisation authConfig, String appName, String serviceName, String namespace) throws HyscaleException {
         ApiClient client = clientProvider.get(authConfig);
-        List<V1Pod> latestPods = K8sDeployerUtil.getLatestPods(client, appName, serviceName, namespace);
+        List<V1Pod> latestPods = k8sDeployerUtil.getLatestPods(client, appName, serviceName, namespace);
         return K8sReplicaUtil.getReplicaInfo(latestPods);
     }
 
     private List<ReplicaInfo> getReplicasBySelector(K8sAuthorisation authorisation, String namespace, String selector) throws HyscaleException {
         List<V1Pod> v1PodList = null;
         ApiClient apiClient = clientProvider.get(authorisation);
-        V1PodHandler v1PodHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
+        V1PodHandler v1PodHandler = resourceHandlers.getHandlerOf(ResourceKind.POD.getKind(), V1PodHandler.class);
 
         v1PodList = v1PodHandler.getBySelector(apiClient, selector, true, namespace);
         if (v1PodList == null || v1PodList.isEmpty()) {
@@ -345,8 +353,8 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
         if (claimName == null) {
             return null;
         }
-        V1PersistentVolumeClaimHandler v1PersistentVolumeClaimHandler = (V1PersistentVolumeClaimHandler) ResourceHandlers
-                .getHandlerOf(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind());
+        V1PersistentVolumeClaimHandler v1PersistentVolumeClaimHandler = resourceHandlers
+                .getHandlerOf(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind(), V1PersistentVolumeClaimHandler.class);
         Volume volume = new Volume();
         volume.setName(v1Volume.getName());
         volume.setClaimName(claimName);

@@ -23,6 +23,7 @@ import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.util.ExceptionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonSyntaxException;
@@ -43,6 +44,7 @@ import io.kubernetes.client.openapi.models.V1Namespace;
  * V1Namespace resource operations
  *
  */
+@Component
 public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NamespaceHandler.class);

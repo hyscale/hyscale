@@ -22,7 +22,6 @@ import io.hyscale.commons.utils.ResourceLabelUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.model.ScaleOperation;
-import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;

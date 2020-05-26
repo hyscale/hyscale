@@ -20,6 +20,7 @@ import java.util.List;
 import io.hyscale.deployer.services.config.DeployerEnvConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonSyntaxException;
@@ -46,7 +47,7 @@ import io.kubernetes.client.openapi.models.V1LoadBalancerIngress;
 import io.kubernetes.client.openapi.models.V1Service;
 import io.kubernetes.client.openapi.models.V1ServiceList;
 import io.kubernetes.client.custom.V1Patch;
-
+@Component
 public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(V1ServiceHandler.class);

@@ -29,13 +29,14 @@ import io.kubernetes.client.openapi.models.V1Event;
 import io.kubernetes.client.openapi.models.V1EventList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
  * Kubernetes events life cycle handler
  */
-
+@Component
 public class V1EventHandler implements ResourceLifeCycleHandler<V1Event> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(V1EventHandler.class);

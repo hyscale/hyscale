@@ -22,9 +22,7 @@ import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.commons.models.Activity;
 import io.hyscale.commons.validator.Validator;
-import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.validator.InputSpecValidator;
 
 /**

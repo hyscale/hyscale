@@ -51,6 +51,9 @@ public class ServiceStatusProcessor {
     
     @Autowired
     private PodParentProvider podParentProvider;
+    
+    @Autowired
+    private PodParentFactory podParentFactory;
 
     public DeploymentStatus getServiceDeploymentStatus(AuthConfig authConfig, String appname, String serviceName,
             String namespace) throws HyscaleException {
@@ -69,7 +72,7 @@ public class ServiceStatusProcessor {
         if (podParent == null) {
             return DeploymentStatusUtil.getNotDeployedStatus(serviceName);
         }
-        PodParentHandler podParentHandler = PodParentFactory.getHandler(podParent.getKind());
+        PodParentHandler podParentHandler = podParentFactory.getHandlerOf(podParent.getKind());
         return updateServiceAddress(podParentHandler.buildStatus(podParent.getParent()), authConfig, appname,
                 namespace);
     }
@@ -89,7 +92,7 @@ public class ServiceStatusProcessor {
             return null;
         }
         List<DeploymentStatus> deploymentStatusList = podParentList.stream().map(each -> {
-            PodParentHandler podParentHandler = PodParentFactory.getHandler(each.getKind());
+            PodParentHandler podParentHandler = podParentFactory.getHandlerOf(each.getKind());
             return podParentHandler.buildStatus(each.getParent());
         }).collect(Collectors.toList());
         return deploymentStatusList.stream().map(each -> updateServiceAddress(each, authConfig, appname, namespace))
@@ -110,8 +113,10 @@ public class ServiceStatusProcessor {
                 deploymentStatus.setServiceAddress(serviceAddress.toString());
             }
         } catch (HyscaleException e) {
-            logger.debug("Failed to get service address {} ", e.getHyscaleErrorCode());
-            deploymentStatus.setServiceAddress("Failed to get service address, try again");
+            if (DeployerErrorCodes.RESOURCE_NOT_FOUND != e.getHyscaleErrorCode()) {
+                logger.debug("Failed to get service address {} ", e.getHyscaleErrorCode());
+                deploymentStatus.setServiceAddress("Failed to get service address, try again");
+            }
         }
         return deploymentStatus;
     }

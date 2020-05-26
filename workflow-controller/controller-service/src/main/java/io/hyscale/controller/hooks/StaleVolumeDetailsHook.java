@@ -52,6 +52,9 @@ public class StaleVolumeDetailsHook implements InvokerHook<WorkflowContext> {
 
 	@Autowired
 	private K8sClientProvider clientProvider;
+	
+	@Autowired
+	private ResourceHandlers resourceHandlers;
 
 	@Override
 	public void preHook(WorkflowContext context) throws HyscaleException {
@@ -71,8 +74,8 @@ public class StaleVolumeDetailsHook implements InvokerHook<WorkflowContext> {
 
 		ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
 
-		V1PersistentVolumeClaimHandler pvcHandler = (V1PersistentVolumeClaimHandler) ResourceHandlers
-				.getHandlerOf(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind());
+		V1PersistentVolumeClaimHandler pvcHandler = resourceHandlers
+		        .getHandlerOf(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind(), V1PersistentVolumeClaimHandler.class);
 
 		String selector = ResourceSelectorUtil.getSelector(appName, envName, serviceName);
 

@@ -58,6 +58,9 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 
 	@Autowired
 	private K8sClientProvider clientProvider;
+	
+	@Autowired
+	private ResourceHandlers resourceHandlers;
 
 	/**
 	 * Clean up old resources
@@ -86,7 +89,7 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 
 			Map<ResourceKind, List<String>> newResourcesMap = getResourcesMap(manifestList);
 			boolean isMsgPrinted = false;
-			List<ResourceLifeCycleHandler> handlersList = ResourceHandlers.getAllHandlers();
+			List<ResourceLifeCycleHandler> handlersList = resourceHandlers.getAllHandlers();
 			if (handlersList == null) {
 				return;
 			}

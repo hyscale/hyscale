@@ -23,6 +23,8 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.constants.K8SRuntimeConstants;
 import io.hyscale.commons.exception.HyscaleException;
@@ -40,22 +42,26 @@ import io.kubernetes.client.openapi.models.V1Deployment;
 import io.kubernetes.client.openapi.models.V1Pod;
 import io.kubernetes.client.openapi.models.V1ReplicaSet;
 
+@Component
 public class K8sDeployerUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(K8sDeployerUtil.class);
+    
+    @Autowired
+    private ResourceHandlers resourceHandlers;
 
-    public static List<V1Pod> getExistingPods(ApiClient apiClient, String appName, String serviceName, String namespace)
+    public List<V1Pod> getExistingPods(ApiClient apiClient, String appName, String serviceName, String namespace)
             throws HyscaleException {
 
-        V1PodHandler v1PodHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
+        V1PodHandler v1PodHandler = resourceHandlers.getHandlerOf(ResourceKind.POD.getKind(), V1PodHandler.class);
         String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
         return v1PodHandler.getBySelector(apiClient, selector, true, namespace);
     }
 
-    public static List<V1Pod> getLatestPods(ApiClient apiClient, String appName, String serviceName,
+    public List<V1Pod> getLatestPods(ApiClient apiClient, String appName, String serviceName,
                                             String namespace) {
         List<V1Pod> podList = null;
-        V1PodHandler v1PodHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
+        V1PodHandler v1PodHandler = resourceHandlers.getHandlerOf(ResourceKind.POD.getKind(), V1PodHandler.class);
         try {
             String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
             podList = v1PodHandler.getBySelector(apiClient, selector, true, namespace);
@@ -105,10 +111,10 @@ public class K8sDeployerUtil {
      * @param podList
      * @return pods from pod list which refer to deployment for the app and service in namespace
      */
-    public static List<V1Pod> filterPodsByDeployment(ApiClient apiClient, String appName, String serviceName, String namespace, List<V1Pod> podList) {
+    public List<V1Pod> filterPodsByDeployment(ApiClient apiClient, String appName, String serviceName, String namespace, List<V1Pod> podList) {
         String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
-        V1DeploymentHandler v1DeploymentHandler = (V1DeploymentHandler) ResourceHandlers
-                .getHandlerOf(ResourceKind.DEPLOYMENT.getKind());
+        V1DeploymentHandler v1DeploymentHandler = resourceHandlers.getHandlerOf(ResourceKind.DEPLOYMENT.getKind(),
+                V1DeploymentHandler.class);
         List<V1Deployment> deploymentList = null;
         try {
             deploymentList = v1DeploymentHandler.getBySelector(apiClient, selector, true, namespace);
@@ -126,8 +132,8 @@ public class K8sDeployerUtil {
         if (StringUtils.isBlank(revision)) {
             return podList;
         }
-        V1ReplicaSetHandler v1ReplicaSetHandler = (V1ReplicaSetHandler) ResourceHandlers
-                .getHandlerOf(ResourceKind.REPLICA_SET.getKind());
+        V1ReplicaSetHandler v1ReplicaSetHandler = resourceHandlers.getHandlerOf(ResourceKind.REPLICA_SET.getKind(),
+                V1ReplicaSetHandler.class);
 
         V1ReplicaSet replicaSet = null;
 

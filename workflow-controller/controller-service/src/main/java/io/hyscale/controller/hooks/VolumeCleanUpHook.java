@@ -38,12 +38,14 @@ import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.handler.impl.V1PersistentVolumeClaimHandler;
+import io.hyscale.deployer.services.handler.impl.V1PodHandler;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.hyscale.deployer.services.util.KubernetesResourceUtil;
 import io.hyscale.deployer.services.util.KubernetesVolumeUtil;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.openapi.models.V1Pod;
 
 /**
  * Hook to clean up stale volumes on the cluster
@@ -57,6 +59,9 @@ public class VolumeCleanUpHook implements InvokerHook<WorkflowContext> {
 
 	@Autowired
 	private K8sClientProvider clientProvider;
+	
+	@Autowired
+	private ResourceHandlers resourceHandlers;
 
 	@Override
 	public void preHook(WorkflowContext context) throws HyscaleException {
@@ -80,7 +85,7 @@ public class VolumeCleanUpHook implements InvokerHook<WorkflowContext> {
 		for (Manifest manifest : mainfestList) {
 			try {
 				KubernetesResource k8sResource = KubernetesResourceUtil.getKubernetesResource(manifest, namespace);
-				ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(k8sResource.getKind());
+				ResourceLifeCycleHandler lifeCycleHandler = resourceHandlers.getHandlerOf(k8sResource.getKind());
 				if (lifeCycleHandler != null) {
 					if (ResourceKind.STATEFUL_SET.getKind().equalsIgnoreCase(lifeCycleHandler.getKind())) {
 						cleanUpOldVolumes(false, apiClient, selector, namespace);
@@ -116,10 +121,9 @@ public class VolumeCleanUpHook implements InvokerHook<WorkflowContext> {
 	 */
 	private void cleanUpOldVolumes(boolean deleteAll, ApiClient apiClient, String selector, String namespace) {
 		try {
-			V1PersistentVolumeClaimHandler pvcHandler = (V1PersistentVolumeClaimHandler) ResourceHandlers
-					.getHandlerOf(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind());
-
-			List<V1PersistentVolumeClaim> pvcItemsList = pvcHandler.getBySelector(apiClient, selector, true, namespace);
+		    V1PersistentVolumeClaimHandler pvcHandler = resourceHandlers
+                    .getHandlerOf(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind(), V1PersistentVolumeClaimHandler.class);
+		    List<V1PersistentVolumeClaim> pvcItemsList = pvcHandler.getBySelector(apiClient, selector, true, namespace);
 			if (pvcItemsList == null || pvcItemsList.isEmpty()) {
 				return;
 			}
@@ -128,7 +132,11 @@ public class VolumeCleanUpHook implements InvokerHook<WorkflowContext> {
 				deleteAllPVC(pvcHandler, apiClient, namespace, pvcItemsList);
 				return;
 			}
-			Set<String> podsVolumes = KubernetesVolumeUtil.getPodVolumes(apiClient, selector, namespace);
+			V1PodHandler podHandler = resourceHandlers.getHandlerOf(ResourceKind.POD.getKind(), V1PodHandler.class);
+
+			List<V1Pod> podsList = podHandler.getBySelector(apiClient, selector, true, namespace);
+	        
+			Set<String> podsVolumes = KubernetesVolumeUtil.getPodsVolumes(podsList);
 
 			if (podsVolumes == null || podsVolumes.isEmpty()) {
 				printCleaningMsg();

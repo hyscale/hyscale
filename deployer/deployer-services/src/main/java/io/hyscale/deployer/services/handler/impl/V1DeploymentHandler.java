@@ -24,6 +24,8 @@ import io.kubernetes.client.openapi.models.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonSyntaxException;
@@ -44,7 +46,6 @@ import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.model.ResourceStatus;
-import io.hyscale.deployer.services.model.ScaleOperation;
 import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
 import io.kubernetes.client.custom.V1Patch;
@@ -52,9 +53,14 @@ import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.apis.AppsV1Api;
 
+@Component
 public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implements ResourceLifeCycleHandler<V1Deployment> {
+    
     private static final Logger LOGGER = LoggerFactory.getLogger(V1DeploymentHandler.class);
-
+    
+    @Autowired
+    private ResourceHandlers resourceHandlers;
+    
     public V1Deployment create(ApiClient apiClient, V1Deployment resource, String namespace) throws HyscaleException {
         if (resource == null) {
             LOGGER.debug("Cannot create null Deployment");
@@ -397,8 +403,8 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
     }
 
     private String getPodTemplateHash(ApiClient apiClient, String namespace, String selector, String revision) {
-        V1ReplicaSetHandler v1ReplicaSetHandler = (V1ReplicaSetHandler) ResourceHandlers
-                .getHandlerOf(ResourceKind.REPLICA_SET.getKind());
+        V1ReplicaSetHandler v1ReplicaSetHandler = resourceHandlers.getHandlerOf(ResourceKind.REPLICA_SET.getKind(),
+                V1ReplicaSetHandler.class);
         V1ReplicaSet replicaSet = null;
         try {
             replicaSet = v1ReplicaSetHandler.getReplicaSetByRevision(apiClient, namespace, selector, true, revision);

@@ -15,37 +15,76 @@
  */
 package io.hyscale.deployer.services.handler;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public final class ResourceHandlers {
+import javax.annotation.PostConstruct;
 
-	private static Map<String, ResourceLifeCycleHandler> kindVsHandler;
+import org.apache.commons.collections4.map.MultiKeyMap;
+import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-	public static void registerHandlers() {
+import io.hyscale.commons.constants.ToolConstants;
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.deployer.services.exception.DeployerErrorCodes;
+
+@Component
+public class ResourceHandlers {
+
+	private Map<String, ResourceLifeCycleHandler> kindVsHandler;
+	
+	@Autowired
+	private List<ResourceLifeCycleHandler> resourceLifeCycleHandlerBeans;
+	
+	private static final String RESOURCE_HANDLERS_LIST = "config/resourceHandlers.txt";
+
+	@PostConstruct
+	public void registerHandlers() throws HyscaleException {
 		if (kindVsHandler == null) {
 			kindVsHandler = new HashMap();
-			for (ResourceLifeCycleHandler handler : ServiceLoader.load(ResourceLifeCycleHandler.class,
-					ResourceHandlers.class.getClassLoader())) {
-				kindVsHandler.put(handler.getKind(), handler);
-			}
+			InputStream is = ResourceHandlers.class.getClassLoader().getResourceAsStream(RESOURCE_HANDLERS_LIST);
+            try {
+                List<String> resourceHandlersList = IOUtils.readLines(is, ToolConstants.CHARACTER_ENCODING);
+
+                Map<String, ResourceLifeCycleHandler> classVsHandlerMap = resourceLifeCycleHandlerBeans.stream()
+                        .collect(Collectors.toMap(key -> key.getClass().getName(), value -> value));
+
+                resourceHandlersList.stream().forEach(each -> {
+                    ResourceLifeCycleHandler resourceHandler = classVsHandlerMap.get(each);
+                    kindVsHandler.put(resourceHandler.getKind(), resourceHandler);
+                });
+
+            } catch (IOException e) {
+                HyscaleException ex = new HyscaleException(DeployerErrorCodes.FAILED_TO_CONFIGURE_HANDLERS);
+                throw ex;
+            }
 		}
 	}
-
+	
 	/**
 	 * 
 	 * @param kind
 	 * @return ResourceLifeCycleHandler for the kind, null if not found
 	 */
-	public static ResourceLifeCycleHandler getHandlerOf(String kind) {
+	public ResourceLifeCycleHandler getHandlerOf(String kind) {
 		return kindVsHandler.get(kind);
 	}
+	
+	public <T extends ResourceLifeCycleHandler> T getHandlerOf(String kind, Class<T> klazz) {
+	    if (kindVsHandler.containsKey(kind)) {
+	        return (T) kindVsHandler.get(kind);
+	    }
+	    return null;
+    }
 	
 	/**
 	 * 
 	 * @return Unmodifiable list of all available ResourceLifeCycleHandler
 	 */
-	public static List<ResourceLifeCycleHandler> getAllHandlers(){
+	public List<ResourceLifeCycleHandler> getAllHandlers(){
 	    if (kindVsHandler == null) {
 		return null;
 	    }

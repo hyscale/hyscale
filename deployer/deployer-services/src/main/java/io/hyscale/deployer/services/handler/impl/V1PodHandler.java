@@ -24,6 +24,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonSyntaxException;
@@ -35,7 +37,6 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.ResourceLabelKey;
 import io.hyscale.commons.models.Status;
-import io.hyscale.commons.utils.HyscaleContextUtil;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
@@ -65,13 +66,19 @@ import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
 import okhttp3.Response;
 
+@Component
 public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(V1PodHandler.class);
     private static final long MAX_TIME_TO_CONTAINER_READY = 120 * 1000;
     private static final long POD_RESTART_COUNT = DeployerEnvConfig.getPodRestartCount();
     private static final Integer POD_WATCH_TIMEOUT_IN_SEC = 10;
+    
+    @Autowired
+    private PodParentProvider podParentProvider;
 
+    @Autowired
+    private PodParentFactory podParentFactory;
 
     @Override
     public V1Pod create(ApiClient apiClient, V1Pod resource, String namespace) throws HyscaleException {
@@ -401,7 +408,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
     public void watch(ApiClient apiClient, String appName, String serviceName, String namespace)
             throws HyscaleException {
         String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
-        PodParent podParent = HyscaleContextUtil.getSpringBean(PodParentProvider.class).getPodParent(apiClient, appName, serviceName, namespace);
+        PodParent podParent = podParentProvider.getPodParent(apiClient, appName, serviceName, namespace);
         if (podParent == null) {
             logger.error("Error while fetching pod parent of service {}", serviceName);
             throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_SERVICE_REPLICAS);
@@ -410,7 +417,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
         Integer replicas = null;
         String latestPodSelector = null;
 
-        PodParentHandler podParentHandler = PodParentFactory.getHandler(podParent.getKind());
+        PodParentHandler podParentHandler = podParentFactory.getHandlerOf(podParent.getKind());
         latestPodSelector = podParentHandler.getPodSelector(apiClient, podParent.getParent(), selector);
         replicas = podParentHandler.getReplicas(podParent.getParent());
         
@@ -550,5 +557,5 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
             throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_POD);
         }
     }
-    
+
 }

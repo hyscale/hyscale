@@ -72,12 +72,16 @@ import io.kubernetes.client.openapi.models.V1StorageClass;
  */
 @Component
 public class VolumeValidator implements Validator<WorkflowContext>{
+    
 	private static final Logger logger = LoggerFactory.getLogger(VolumeValidator.class);
 	
 	private static final String STORAGE = "storage";
 
 	@Autowired
 	private K8sClientProvider clientProvider;
+	
+	@Autowired
+	private ResourceHandlers resourceHandlers;
 
 	private List<V1StorageClass> storageClassList = new ArrayList<>();
 
@@ -197,8 +201,8 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 	 */
 	private boolean validateVolumeEdit(ApiClient apiClient, WorkflowContext context, List<Volume> volumeList) {
 
-	    V1PersistentVolumeClaimHandler pvcHandler = (V1PersistentVolumeClaimHandler) ResourceHandlers
-				.getHandlerOf(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind());
+	    V1PersistentVolumeClaimHandler pvcHandler = resourceHandlers
+                .getHandlerOf(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind(), V1PersistentVolumeClaimHandler.class);
 		String appName = context.getAppName();
 		String envName = context.getEnvName();
 		String serviceName = context.getServiceName();
@@ -284,8 +288,8 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 	    if (storageClassList != null && !storageClassList.isEmpty()) {
 	        return true;
 	    }
-        V1StorageClassHandler storageClassHandler = (V1StorageClassHandler) ResourceHandlers
-                .getHandlerOf(ResourceKind.STORAGE_CLASS.getKind());
+        V1StorageClassHandler storageClassHandler = resourceHandlers.getHandlerOf(ResourceKind.STORAGE_CLASS.getKind(),
+                V1StorageClassHandler.class);
 
 		// Storage class are cluster based no need of selector and namespace
 		try {

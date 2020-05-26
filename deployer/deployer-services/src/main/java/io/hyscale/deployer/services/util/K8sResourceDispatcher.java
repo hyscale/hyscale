@@ -54,12 +54,14 @@ public class K8sResourceDispatcher {
     private ApiClient apiClient;
     private String namespace;
     private boolean waitForReadiness;
+    private ResourceHandlers resourceHandlers;
 
-    public K8sResourceDispatcher(ApiClient apiClient) {
+    public K8sResourceDispatcher(ApiClient apiClient, ResourceHandlers resourceHandlers) {
         this.apiClient = apiClient;
         this.namespace = K8SRuntimeConstants.DEFAULT_NAMESPACE;
         this.waitForReadiness = true;
         this.resourceBroker = new K8sResourceBroker(apiClient);
+        this.resourceHandlers = resourceHandlers;
     }
 
     public K8sResourceDispatcher withNamespace(String namespace) {
@@ -98,7 +100,7 @@ public class K8sResourceDispatcher {
                 KubernetesResource k8sResource = KubernetesResourceUtil.getKubernetesResource(manifest, namespace);
                 AnnotationsUpdateManager.update(k8sResource, AnnotationKey.LAST_UPDATED_AT,
                         DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
-                ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(k8sResource.getKind());
+                ResourceLifeCycleHandler lifeCycleHandler = resourceHandlers.getHandlerOf(k8sResource.getKind());
                 if (lifeCycleHandler != null && k8sResource != null && k8sResource.getResource() != null && k8sResource.getV1ObjectMeta() != null) {
                     try {
                         String name = k8sResource.getV1ObjectMeta().getName();
@@ -125,11 +127,7 @@ public class K8sResourceDispatcher {
      * @throws HyscaleException
      */
     private void createNamespaceIfNotExists() throws HyscaleException {
-        ResourceLifeCycleHandler resourceHandler = ResourceHandlers.getHandlerOf(ResourceKind.NAMESPACE.getKind());
-        if (resourceHandler == null) {
-            return;
-        }
-        NamespaceHandler namespaceHandler = (NamespaceHandler) resourceHandler;
+        NamespaceHandler namespaceHandler = resourceHandlers.getHandlerOf(ResourceKind.NAMESPACE.getKind(), NamespaceHandler.class);
         V1Namespace v1Namespace = null;
         try {
             v1Namespace = namespaceHandler.get(apiClient, namespace, null);
@@ -159,7 +157,7 @@ public class K8sResourceDispatcher {
         List<String> failedResources = new ArrayList<String>();
 
         String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
-        List<ResourceLifeCycleHandler> handlersList = ResourceHandlers.getAllHandlers();
+        List<ResourceLifeCycleHandler> handlersList = resourceHandlers.getAllHandlers();
         if (handlersList == null) {
             return;
         }

@@ -57,6 +57,9 @@ public class ParentStatusCondition implements Node<TroubleshootingContext> {
     
     @Autowired
     private TryAfterSometimeAction tryAfterSometimeAction;
+    
+    @Autowired
+    private PodParentFactory podParentFactory;
 
     @Override
     public Node<TroubleshootingContext> next(TroubleshootingContext context) throws HyscaleException {
@@ -102,7 +105,7 @@ public class ParentStatusCondition implements Node<TroubleshootingContext> {
     }
     
     private boolean hasZeroReplicas(ResourceInfo parentInfo, ResourceKind podParent) {
-        PodParentHandler podParentHandler = PodParentFactory.getHandler(podParent.getKind());
+        PodParentHandler podParentHandler = podParentFactory.getHandlerOf(podParent.getKind());
         
         Integer replicas = podParentHandler.getReplicas(parentInfo.getResource());
         

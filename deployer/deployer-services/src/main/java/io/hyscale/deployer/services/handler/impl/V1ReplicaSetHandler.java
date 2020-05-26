@@ -20,6 +20,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.AnnotationKey;
@@ -34,6 +35,7 @@ import io.kubernetes.client.openapi.apis.AppsV1Api;
 import io.kubernetes.client.openapi.models.V1ReplicaSet;
 import io.kubernetes.client.openapi.models.V1ReplicaSetList;
 
+@Component
 public class V1ReplicaSetHandler implements ResourceLifeCycleHandler<V1ReplicaSet> {
 
 	private static final Logger logger = LoggerFactory.getLogger(V1ReplicaSetHandler.class);

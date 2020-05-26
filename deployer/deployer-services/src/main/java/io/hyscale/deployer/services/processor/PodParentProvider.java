@@ -18,6 +18,7 @@ package io.hyscale.deployer.services.processor;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
@@ -29,6 +30,9 @@ import io.kubernetes.client.openapi.ApiClient;
 
 @Component
 public class PodParentProvider {
+    
+    @Autowired
+    private PodParentFactory podParentFactory;
 
     /**
      * 
@@ -41,7 +45,7 @@ public class PodParentProvider {
      */
     public PodParent getPodParent(ApiClient apiClient, String appName, String serviceName, String namespace)
             throws HyscaleException {
-        List<PodParentHandler> podParentHandlerList = PodParentFactory.getAllHandlers();
+        List<PodParentHandler> podParentHandlerList = podParentFactory.getAllHandlers();
         String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
         for (PodParentHandler podParentHandler : podParentHandlerList) {
             List podParentResource = podParentHandler.getBySelector(apiClient, selector, true, namespace);
@@ -64,7 +68,7 @@ public class PodParentProvider {
     public List<PodParent> getPodParents(ApiClient apiClient, String appName, String namespace)
             throws HyscaleException {
         List<PodParent> podParentList = new ArrayList<PodParent>();
-        List<PodParentHandler> podParentHandlerList = PodParentFactory.getAllHandlers();
+        List<PodParentHandler> podParentHandlerList = podParentFactory.getAllHandlers();
         String selector = ResourceSelectorUtil.getSelector(appName);
         for (PodParentHandler podParentHandler : podParentHandlerList) {
             List podParentResource = podParentHandler.getBySelector(apiClient, selector, true, namespace);
@@ -101,7 +105,7 @@ public class PodParentProvider {
      */
     public List<PodParent> getAllPodParents(ApiClient apiClient) throws HyscaleException {
         List<PodParent> podParentList = new ArrayList<PodParent>();
-        List<PodParentHandler> podParentHandlerList = PodParentFactory.getAllHandlers();
+        List<PodParentHandler> podParentHandlerList = podParentFactory.getAllHandlers();
         for (PodParentHandler podParentHandler : podParentHandlerList) {
             List podParentResource = podParentHandler.listForAllNamespaces(apiClient, null, true);
             if (podParentResource != null) {

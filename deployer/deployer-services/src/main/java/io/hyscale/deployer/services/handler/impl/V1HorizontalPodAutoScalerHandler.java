@@ -35,6 +35,8 @@ import io.kubernetes.client.openapi.apis.AutoscalingV1Api;
 import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
 import io.kubernetes.client.custom.V1Patch;
 
 import java.util.List;
@@ -45,7 +47,7 @@ import java.util.List;
  * apiVersion: autoscaling/v1
  * kind: HorizontalPodAutoScaler
  */
-
+@Component
 public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandler<V1HorizontalPodAutoscaler> {
 
     private static final Logger logger = LoggerFactory.getLogger(V1HorizontalPodAutoScalerHandler.class);

@@ -25,6 +25,7 @@ import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonSyntaxException;
@@ -44,6 +45,7 @@ import io.kubernetes.client.openapi.models.V1ConfigMapList;
 import io.kubernetes.client.openapi.models.V1DeleteOptions;
 import io.kubernetes.client.custom.V1Patch;
 
+@Component
 public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(V1ConfigMapHandler.class);
