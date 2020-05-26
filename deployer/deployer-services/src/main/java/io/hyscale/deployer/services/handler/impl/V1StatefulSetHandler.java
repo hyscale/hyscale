@@ -156,6 +156,26 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         }
         return statefulSets;
     }
+    
+    @Override
+    public List<V1StatefulSet> listForAllNamespaces(ApiClient apiClient, String selector, boolean label)
+            throws HyscaleException {
+        AppsV1Api appsV1Api = new AppsV1Api(apiClient);
+        String labelSelector = label ? selector : null;
+        String fieldSelector = label ? null : selector;
+        List<V1StatefulSet> statefulSets = null;
+        try {
+            V1StatefulSetList statefulSetList = appsV1Api.listStatefulSetForAllNamespaces(null, null, fieldSelector,
+                    labelSelector, null, TRUE, null, null, null);
+            statefulSets = statefulSetList != null ? statefulSetList.getItems() : null;
+        } catch (ApiException e) {
+            HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_ALL);
+            LOGGER.error("Error while listing StatefulSets all namespaces, with selectors {} , error {}", selector,
+                    ex.toString());
+            throw ex;
+        }
+        return statefulSets;
+    }
 
     @Override
     public boolean patch(ApiClient apiClient, String name, String namespace, V1StatefulSet target) throws HyscaleException {

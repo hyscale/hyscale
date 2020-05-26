@@ -100,6 +100,7 @@ public class HyscaleGetAppsCommand implements Callable<Integer> {
 
         if (appInfoList == null || appInfoList.isEmpty()) {
             WorkflowLogger.info(ControllerActivity.NO_DEPLOYMENTS);
+            WorkflowLogger.footer();
             return ToolConstants.HYSCALE_SUCCESS_CODE;
         }
 
@@ -113,6 +114,7 @@ public class HyscaleGetAppsCommand implements Callable<Integer> {
 
         if (appInfoList.isEmpty()) {
             WorkflowLogger.info(ControllerActivity.NO_DEPLOYMENTS);
+            WorkflowLogger.footer();
             return ToolConstants.HYSCALE_SUCCESS_CODE;
         }
 
@@ -134,7 +136,7 @@ public class HyscaleGetAppsCommand implements Callable<Integer> {
             table.addRow(row);
         });
         WorkflowLogger.logTable(table);
-
+        WorkflowLogger.footer();
         return ToolConstants.HYSCALE_SUCCESS_CODE;
     }
 

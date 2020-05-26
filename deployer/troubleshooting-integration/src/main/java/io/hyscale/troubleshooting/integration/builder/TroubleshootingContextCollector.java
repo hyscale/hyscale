@@ -210,7 +210,7 @@ public class TroubleshootingContextCollector {
     }
     
     private List<ResourceLifeCycleHandler> getResourceHandlers() {
-        return ResourceHandlers.getHandlersList().stream()
+        return ResourceHandlers.getAllHandlers().stream()
                 .filter(each -> troubleshootResources.contains(each.getKind())).collect(Collectors.toList());
     }
 

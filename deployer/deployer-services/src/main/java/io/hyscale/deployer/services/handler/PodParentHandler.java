@@ -15,19 +15,14 @@
  */
 package io.hyscale.deployer.services.handler;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.ServiceLoader;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.ResourceLabelUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
-import io.hyscale.deployer.services.model.ResourceStatus;
 import io.hyscale.deployer.services.model.ScaleOperation;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
 import io.kubernetes.client.openapi.ApiClient;
-import io.kubernetes.client.openapi.ApiException;
-import io.kubernetes.client.openapi.apis.AppsV1Api;
 import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +36,20 @@ public abstract class PodParentHandler<T> {
     public abstract DeploymentStatus buildStatus(T t);
 
     public abstract List<DeploymentStatus> buildStatus(List<T> t);
+    
+    public abstract List<T> getBySelector(ApiClient apiClient, String selector, boolean label, String namespace)
+            throws HyscaleException;
+
+    /**
+     * Get all resources irrespective of namespace
+     * @param apiClient
+     * @param selector
+     * @param label
+     * @return List of resource
+     * @throws HyscaleException
+     */
+    public abstract List<T> listForAllNamespaces(ApiClient apiClient, String selector, boolean label)
+            throws HyscaleException;
 
     protected abstract String getPodRevision(ApiClient apiClient, T t);
 
@@ -108,5 +117,6 @@ public abstract class PodParentHandler<T> {
                 .build();
         return K8sResourcePatchUtil.getJsonPatch(exisiting, scale, V1Scale.class);
     }
+    
 }
 
