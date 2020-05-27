@@ -30,7 +30,8 @@ public enum ResourceKind {
     STORAGE_CLASS("StorageClass"),
     HORIZONTAL_POD_AUTOSCALER("HorizontalPodAutoscaler", 0),
     PERSISTENT_VOLUME_CLAIM("PersistentVolumeClaim", 2),
-    EVENT("Event");
+    EVENT("Event"),
+    VERSION("VersionInfo");
 
     private String kind;
 

@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import io.hyscale.deployer.services.manager.ScaleServiceManager;
 import io.hyscale.deployer.services.model.*;
+import io.hyscale.deployer.services.processor.ClusterVersionProvider;
 import io.hyscale.deployer.services.processor.PodParentProvider;
 import io.hyscale.deployer.services.processor.ServiceStatusProcessor;
 
@@ -36,6 +37,7 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.ClusterVersionInfo;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.KubernetesResource;
@@ -97,7 +99,10 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
     
     @Autowired
     private PodParentProvider podParentProvider;
-
+    
+    @Autowired
+    private ClusterVersionProvider clusterVersionProvider;
+    
     @Override
     public void deploy(DeploymentContext context) throws HyscaleException {
 
@@ -377,6 +382,12 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
             throw new HyscaleException(DeployerErrorCodes.CANNOT_SCALE_NEGATIVE, Integer.toString(scaleSpec.getValue()));
         }
         return scaleServiceManager.scale(apiClient, appName, serviceName, namespace, scaleSpec);
+    }
+
+    @Override
+    public ClusterVersionInfo getVersion(K8sAuthorisation authConfig) throws HyscaleException {
+        ApiClient apiClient = clientProvider.get(authConfig);
+        return clusterVersionProvider.getVersion(apiClient);
     }
 
 }
