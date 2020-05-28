@@ -464,6 +464,8 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
             }
         } catch (InterruptedException e) {
             logger.error("Sleep Thread interrupted ", e);
+        }catch (HyscaleException ex){
+            logger.error("Error while fetching deployment {}", ex.getHyscaleErrorCode(), ex);
         }
         return stable;
     }

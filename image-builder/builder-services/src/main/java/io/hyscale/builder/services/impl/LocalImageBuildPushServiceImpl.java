@@ -15,6 +15,7 @@
  */
 package io.hyscale.builder.services.impl;
 
+import io.hyscale.builder.services.service.ImagePushService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +48,7 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
     private ImageCleanupProcessorFactory imageCleanupProcessorFactory;
 
     @Autowired
-    private LocalImagePushServiceImpl pushService;
+    private ImagePushService pushService;
     
     @Autowired
     private ImageBuilderConfig imageBuilderConfig;

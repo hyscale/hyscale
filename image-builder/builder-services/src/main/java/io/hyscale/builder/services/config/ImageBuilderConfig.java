@@ -15,6 +15,8 @@
  */
 package io.hyscale.builder.services.config;
 
+import io.hyscale.commons.utils.WindowsUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -27,14 +29,17 @@ import io.hyscale.commons.config.SetupConfig;
 public class ImageBuilderConfig {
 
     public static final String IMAGE_BUILDER_PROP = "hyscale.image.builder";
+    public static final String DOCKER_HOST = "DOCKER_HOST";
     private static final String PUSH_LOG = "push.log";
     private static final String BUILD_LOG = "build.log";
     private static final String IMAGE_CLEAN_UP_POLICY_PROPERTY = "IMAGE_CLEANUP_POLICY";
+    private static final String UNIX_DOCKER_SOCK = "unix:///var/run/docker.sock";
+
     
     @Autowired
     private SetupConfig setupConfig;
 
-    @Value("${preserve_n_recently_used:3}")
+    @Value("${HYS.PRESERVE_N_RECENTLY_USED:3}")
     private Integer noOfPreservedImages;
 
     public String getImageCleanUpPolicy() {
@@ -55,6 +60,14 @@ public class ImageBuilderConfig {
         StringBuilder sb = new StringBuilder(setupConfig.getLogsDir(appName, serviceName));
         sb.append(PUSH_LOG);
         return sb.toString();
+    }
+
+    public String getDockerHost(){
+        String host = System.getenv(DOCKER_HOST);
+        if(!StringUtils.isBlank(host)){
+            return host;
+        }
+        return WindowsUtil.isHostWindows() ? WindowsUtil.dockerHost() : UNIX_DOCKER_SOCK;
     }
 
 }

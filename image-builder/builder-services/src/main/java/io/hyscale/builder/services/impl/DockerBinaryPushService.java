@@ -17,13 +17,14 @@ package io.hyscale.builder.services.impl;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
+import io.hyscale.builder.services.spring.DockerBinaryCondition;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -31,7 +32,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.hyscale.builder.core.models.BuildContext;
-import io.hyscale.builder.core.models.DockerImage;
 import io.hyscale.builder.core.models.ImageBuilderActivity;
 import io.hyscale.builder.services.config.ImageBuilderConfig;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
@@ -44,18 +44,16 @@ import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.CommandResult;
-import io.hyscale.commons.models.FileMeta;
-import io.hyscale.commons.models.ImageRegistry;
 import io.hyscale.commons.models.Status;
 import io.hyscale.commons.utils.ObjectMapperFactory;
-import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.hyscale.servicespec.commons.util.ImageUtil;
 
+@Conditional(DockerBinaryCondition.class)
 @Component
-public class LocalImagePushServiceImpl implements ImagePushService {
+public class DockerBinaryPushService implements ImagePushService {
 
-    private static final Logger logger = LoggerFactory.getLogger(LocalImagePushServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(DockerBinaryPushService.class);
 
     @Autowired
     private DockerImageUtil dockerImageUtil;
@@ -76,7 +74,7 @@ public class LocalImagePushServiceImpl implements ImagePushService {
      * @throws HyscaleException
      */
     @Override
-    public void pushImage(ServiceSpec serviceSpec, BuildContext buildContext) throws HyscaleException {
+    public void _push(ServiceSpec serviceSpec, BuildContext buildContext) throws HyscaleException {
 
         validate(serviceSpec, buildContext);
 
@@ -146,28 +144,6 @@ public class LocalImagePushServiceImpl implements ImagePushService {
 
     }
 
-    private void validate(ServiceSpec serviceSpec, BuildContext buildContext) throws HyscaleException {
-        ArrayList<String> missingFields = new ArrayList<String>();
-
-        if (serviceSpec == null) {
-            missingFields.add("ServiceSpec");
-        }
-        if (buildContext == null) {
-            missingFields.add("BuildContext");
-        }
-
-        if (!missingFields.isEmpty()) {
-            String[] missingFieldsArr = new String[missingFields.size()];
-            missingFieldsArr = missingFields.toArray(missingFieldsArr);
-            throw new HyscaleException(ImageBuilderErrorCodes.FIELDS_MISSING, missingFieldsArr);
-        }
-
-        String registryUrl = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.registry), String.class);
-        if (buildContext.getImageRegistry() == null && registryUrl != null) {
-            throw new HyscaleException(ImageBuilderErrorCodes.MISSING_DOCKER_REGISTRY_CREDENTIALS, registryUrl, registryUrl);
-        }
-    }
-
     private void tagImage(String sourceImage, String targetImage) throws HyscaleException {
         WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_TAG);
 
@@ -189,18 +165,7 @@ public class LocalImagePushServiceImpl implements ImagePushService {
     /*
      * If only stack image return stackImageName else return dockerImage name
      */
-    private String getSourceImageName(ServiceSpec serviceSpec, BuildContext buildContext) throws HyscaleException {
 
-        if (buildContext.isStackAsServiceImage()) {
-            return serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.buildSpec,
-                    HyscaleSpecFields.stackImage), String.class);
-        }
-        DockerImage dockerImage = buildContext.getDockerImage();
-
-        return StringUtils.isNotBlank(dockerImage.getTag())
-                ? dockerImage.getName() + ToolConstants.COLON + dockerImage.getTag()
-                : dockerImage.getName();
-    }
 
     /**
      * Gets latest digest from inspect image command result.

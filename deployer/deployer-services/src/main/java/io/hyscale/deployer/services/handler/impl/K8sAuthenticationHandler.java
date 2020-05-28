@@ -60,7 +60,7 @@ public class K8sAuthenticationHandler implements AuthenticationHandler<K8sAuthor
 			V1APIResourceList result = apiInstance.getAPIResources();
 			return result != null ? true : false;
 		} catch (ApiException e) {
-		    logger.error("Exception when calling " + KUBERNETES_AUTHENTICATION, e);
+			logger.error("Exception when calling k8s authentication {} {} ", e.getCode(), e.getResponseBody(), e);
 		    if (UNAUTHORISED_ERROR_CODE == e.getCode()) {
 		        return false;
 		    }

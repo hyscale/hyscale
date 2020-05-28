@@ -488,6 +488,8 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
             }
         } catch (InterruptedException e) {
             logger.error("Sleep Thread interrupted ", e);
+        }catch (HyscaleException ex){
+            logger.error("Error while fetching statefulset {}", ex.getHyscaleErrorCode(), ex);
         }
         return stable;
     }

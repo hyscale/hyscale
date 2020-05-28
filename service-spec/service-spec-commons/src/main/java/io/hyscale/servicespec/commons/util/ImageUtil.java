@@ -73,7 +73,7 @@ public class ImageUtil {
     }
 
 
-    private static String getImageWithoutTag(Image image) {
+    public static String getImageWithoutTag(Image image) {
         String registryUrl = image.getRegistry();
         StringBuilder sb = new StringBuilder();
         if (StringUtils.isNotBlank(registryUrl)) {

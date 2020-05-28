@@ -80,7 +80,7 @@ public class HyscaleInitializer implements CommandLineRunner {
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(HyscaleInitializer.class);
-        app.setLazyInitialization(IS_LAZY_INITIALIZATION);
+        //app.setLazyInitialization(IS_LAZY_INITIALIZATION);
         app.run(args);
     }
 

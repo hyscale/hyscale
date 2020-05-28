@@ -20,10 +20,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +60,8 @@ public class LocalRegistryManagerImpl implements RegistryManager {
 
     private LocalDockerConfigBuilder dockerConfigBuilder;
 
+    private DockerConfig externalRegistryConf;
+
     @Autowired
     private ControllerConfig controllerConfig;
 
@@ -76,7 +78,12 @@ public class LocalRegistryManagerImpl implements RegistryManager {
      */
     @Override
     public ImageRegistry getImageRegistry(String registry) throws HyscaleException {
-        return getImageRegistry(dockerConfigBuilder.getDockerConfig(), registry);
+        if (!SetupConfig.hasExternalRegistryConf()) {
+            return getImageRegistry(dockerConfigBuilder.getDockerConfig(), registry);
+        }
+        logger.debug("Found External registry Conf");
+        buildExternalRegistryConf();
+        return getImageRegistry(externalRegistryConf, registry);
     }
 
     public ImageRegistry getImageRegistry(DockerConfig dockerConfig, String registry) {
@@ -84,14 +91,14 @@ public class LocalRegistryManagerImpl implements RegistryManager {
         if (dockerConfig == null) {
             return null;
         }
-        
-		List<String> dockerRegistryAliases = null;
-		if (registry != null) {
-			dockerRegistryAliases = DockerHubAliases.getDockerRegistryAliases(registry);
-		} else {
-			dockerRegistryAliases = DockerHubAliases.getDefaultDockerRegistryAlias();
-		}
-        
+
+        List<String> dockerRegistryAliases = null;
+        if (registry != null) {
+            dockerRegistryAliases = DockerHubAliases.getDockerRegistryAliases(registry);
+        } else {
+            dockerRegistryAliases = DockerHubAliases.getDefaultDockerRegistryAlias();
+        }
+
         List<String> registryPatterns = new ArrayList<>();
         for (String registryAlias : dockerRegistryAliases) {
             registryPatterns.addAll(getRegistryPatterns(registryAlias));
@@ -191,5 +198,30 @@ public class LocalRegistryManagerImpl implements RegistryManager {
         }
     }
 
-
+    /*
+     *   Builds docker config from Standard Input of the process
+     */
+    private void buildExternalRegistryConf() throws HyscaleException {
+        if (externalRegistryConf == null) {
+            logger.debug("Reading the external registry conf input");
+            Scanner scanner = new Scanner(System.in);
+            if (scanner.hasNextLine()) {
+                String json = scanner.nextLine();
+                ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
+                try {
+                    TypeReference<DockerConfig> dockerConfigTypeReference = new TypeReference<DockerConfig>() {
+                    };
+                    this.externalRegistryConf = mapper.readValue(json,
+                            dockerConfigTypeReference);
+                    logger.debug("Initialized the external registry conf input");
+                } catch (IOException e) {
+                    logger.error("Error while building external registry config", e);
+                    String dockerConfPath = SetupConfig.getMountOfDockerConf(controllerConfig.getDefaultRegistryConf());
+                    WorkflowLogger.error(ControllerActivity.ERROR_WHILE_READING, dockerConfPath, e.getMessage());
+                    HyscaleException ex = new HyscaleException(e, ControllerErrorCodes.DOCKER_CONFIG_NOT_FOUND, dockerConfPath);
+                    throw ex;
+                }
+            }
+        }
+    }
 }
