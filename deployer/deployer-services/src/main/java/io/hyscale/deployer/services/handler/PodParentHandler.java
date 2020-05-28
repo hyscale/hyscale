@@ -58,7 +58,7 @@ public abstract class PodParentHandler<T> {
 
     protected abstract String getPodRevision(ApiClient apiClient, String selector, boolean label, String namespace);
 
-    public abstract boolean scale(ApiClient apiClient, T t, String namespace, ScaleOperation scaleOp, int value) throws HyscaleException;
+    public abstract boolean scale(ApiClient apiClient, T t, String namespace,  int value) throws HyscaleException;
 
     public DeploymentStatus buildStatusFromMetadata(V1ObjectMeta metadata, DeploymentStatus.ServiceStatus serviceStatus) {
         if (metadata == null) {
@@ -93,7 +93,7 @@ public abstract class PodParentHandler<T> {
         return revision != null ? selector.concat("," + revision) : selector;
     }
 
-    protected Object prepareScalePatch(ScaleOperation scaleOp, int scaleValue, int currentReplicas) throws HyscaleException {
+    public int getDesiredReplicas(ScaleOperation scaleOp, int scaleValue, int currentReplicas) throws HyscaleException {
         V1Scale exisiting = new V1ScaleBuilder()
                 .withSpec(new V1ScaleSpec().replicas(currentReplicas))
                 .build();
@@ -116,10 +116,8 @@ public abstract class PodParentHandler<T> {
         }
         desiredReplicas = desiredReplicas < 0 ? 0 : desiredReplicas;
         logger.debug("Preparing the scale patch , desirec replicas {} ", desiredReplicas);
-        V1Scale scale = new V1ScaleBuilder()
-                .withSpec(new V1ScaleSpec().replicas(desiredReplicas))
-                .build();
-        return K8sResourcePatchUtil.getJsonPatch(exisiting, scale, V1Scale.class);
+
+        return desiredReplicas;
     }
     
 }
