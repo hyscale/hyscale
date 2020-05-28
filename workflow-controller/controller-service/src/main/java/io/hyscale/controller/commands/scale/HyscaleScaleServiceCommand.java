@@ -106,8 +106,8 @@ public class HyscaleScaleServiceCommand implements Callable<Integer> {
             HyscaleException ex = new HyscaleException(ControllerErrorCodes.FAILED_TO_SCALE_SERVICE, serviceName, appName, namespace);
             WorkflowLogger.error(ControllerActivity.ERROR, ex.getMessage());
             throw ex;
-
         }
+        WorkflowLogger.logPersistedActivities();
         return ToolConstants.HYSCALE_SUCCESS_CODE;
     }
 }
