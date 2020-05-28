@@ -57,7 +57,8 @@ public enum DeployerErrorCodes implements HyscaleErrorCode {
     SERVICE_NOT_DEPLOYED("{} is not deployed in namespace {} under app {} "),
     CANNOT_SCALE_NEGATIVE("INVALID VALUE {} : must be greater than or equal to 0"),
     CANNOT_SCALE_DOWN_ZERO("INVALID VALUE {} : scale down by value must be greater than 0"),
-    TIMEOUT_WHILE_WAITING_FOR_DEPLOYMENT("Timedout while waiting for deployment");
+    TIMEOUT_WHILE_WAITING_FOR_DEPLOYMENT("Timedout while waiting for deployment"),
+    CANNOT_SCALE_OUT_RANGE_HPA("Operation involves scaling out of the autoscaling range [{}-{}] configured");
 
     private String message;
 
