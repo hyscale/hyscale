@@ -69,7 +69,7 @@ public class HyscaleScaleServiceCommand implements Callable<Integer> {
     @CommandLine.Option(names = {"-s", "--service"}, required = true, description = "Service name")
     private String serviceName;
 
-    @CommandLine.ArgGroup(exclusive = true, heading = "Scaling Options", order = 10)
+    @CommandLine.ArgGroup(exclusive = true, heading = "Scaling Options", order = 10,multiplicity = "1")
     private ScaleArg scaleArg;
 
     @Autowired
