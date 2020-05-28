@@ -20,6 +20,7 @@ import java.util.List;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.ResourceLabelUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
+import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.model.ScaleOperation;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
 import io.kubernetes.client.openapi.ApiClient;
@@ -105,6 +106,9 @@ public abstract class PodParentHandler<T> {
                 desiredReplicas = currentReplicas + scaleValue;
                 break;
             case SCALE_DOWN:
+                if (scaleValue == 0) {
+                    throw new HyscaleException(DeployerErrorCodes.CANNOT_SCALE_DOWN_ZERO, String.valueOf(scaleValue));
+                }
                 if (currentReplicas > 0) {
                     desiredReplicas = currentReplicas - scaleValue;
                 }

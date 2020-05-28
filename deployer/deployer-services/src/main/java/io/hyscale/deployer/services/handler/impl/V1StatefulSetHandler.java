@@ -476,6 +476,12 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
             throw ex;
         } finally {
             if (status) {
+                if (scaleOp != ScaleOperation.SCALE_UP) {
+                    WorkflowLogger.persist(DeployerActivity.SCALE_DOWN_VOLUME,
+                            v1StatefulSet.getSpec().getVolumeClaimTemplates().stream().map(each -> {
+                                return each.getMetadata().getName();
+                            }).collect(Collectors.joining(",")), namespace);
+                }
                 WorkflowLogger.endActivity(activityContext, Status.DONE);
             } else {
                 WorkflowLogger.endActivity(activityContext, Status.FAILED);
