@@ -54,7 +54,6 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
 
     @Override
     public void buildAndPush(ServiceSpec serviceSpec, BuildContext context) throws HyscaleException {
-
         if (validate(serviceSpec) && isImageBuildPushRequired(serviceSpec, context)) {
             context = buildService.build(serviceSpec, context);
             pushService.pushImage(serviceSpec, context);

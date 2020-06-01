@@ -18,6 +18,10 @@ package io.hyscale.deployer.services.constants;
 public class DeployerConstants {
 
     public static final String LB_READY_TIMEOUT = "HYS_LB_READY_TIMEOUT";
+    
+    public static final String POD_RESTART_COUNT="HYS_POD_RESTART_COUNT";
 
     public static final long DEFAULT_LB_READY_TIMEOUT = 90000;
+    
+    public static final long DEFAULT_POD_RESTART_COUNT = 3;
 }

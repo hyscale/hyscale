@@ -15,13 +15,29 @@
  */
 package io.hyscale.deployer.services.model;
 
+import io.hyscale.deployer.core.model.DeploymentStatus;
+
 /**
  * Status of resource on cluster
  *
  */
 public enum ResourceStatus {
-	PENDING,	// Resource not yet deployed
-	STABLE,		// Resource deployed successfully
-	PAUSED,		// Resource not yet deployed
-	FAILED		// Resource failed
+    PENDING(DeploymentStatus.ServiceStatus.NOT_RUNNING),    // Resource not yet deployed
+    STABLE(DeploymentStatus.ServiceStatus.RUNNING),         // Resource deployed successfully
+    PAUSED(DeploymentStatus.ServiceStatus.NOT_RUNNING),     // Resource not yet deployed
+    FAILED(DeploymentStatus.ServiceStatus.FAILED);          // Resource failed
+
+    private DeploymentStatus.ServiceStatus serviceStatus;
+
+    private ResourceStatus(DeploymentStatus.ServiceStatus serviceStatus) {
+        this.serviceStatus = serviceStatus;
+    }
+
+    public DeploymentStatus.ServiceStatus getServiceStatus() {
+        return serviceStatus;
+    }
+
+    public static DeploymentStatus.ServiceStatus getServiceStatus(ResourceStatus resourceStatus) {
+        return resourceStatus == null ? DeploymentStatus.ServiceStatus.NOT_DEPLOYED : resourceStatus.getServiceStatus();
+    }
 }

@@ -15,12 +15,9 @@
  */
 package io.hyscale.deployer.services.util;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import io.hyscale.deployer.services.model.PodStatus;
 import io.hyscale.deployer.services.model.ReplicaInfo;
 import io.kubernetes.client.openapi.models.V1Pod;
 

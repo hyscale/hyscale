@@ -63,7 +63,7 @@ public class PortsHandler implements ManifestHandler {
             Set<V1ContainerPort> v1ContainerPorts = Sets.newHashSet();
             Set<V1ServicePort> v1ServicePorts = Sets.newHashSet();
 
-            Streams.stream(portList).filter(port -> {
+            portList.stream().filter(port -> {
                 return port != null && StringUtils.isNotBlank(port.getPort());
             }).forEach(each -> {
                 /**

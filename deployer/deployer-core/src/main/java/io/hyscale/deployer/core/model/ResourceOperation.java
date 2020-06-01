@@ -18,7 +18,7 @@ package io.hyscale.deployer.core.model;
 public enum ResourceOperation {
 
 	GET("Get"), CREATE("Create"), UPDATE("Update"), DELETE("Delete"), PATCH("Patch"),
-	GET_BY_SELECTOR("Get by Selector"), DELETE_BY_SELECTOR("Delete by Selector");
+	GET_BY_SELECTOR("Get by Selector"), GET_ALL("Get from all namespaces"), DELETE_BY_SELECTOR("Delete by Selector");
 
 	private String operation;
 

@@ -86,7 +86,7 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 
 			Map<ResourceKind, List<String>> newResourcesMap = getResourcesMap(manifestList);
 			boolean isMsgPrinted = false;
-			List<ResourceLifeCycleHandler> handlersList = ResourceHandlers.getHandlersList();
+			List<ResourceLifeCycleHandler> handlersList = ResourceHandlers.getAllHandlers();
 			if (handlersList == null) {
 				return;
 			}

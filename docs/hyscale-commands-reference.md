@@ -15,14 +15,14 @@ Options:
   -n, --namespace string     name of namespace `<namespace>`
   -a, --application string   name of application `<applicationName>`
   -v  --verbose              `Optional` verbose mode
-  -P                         'Optional' profile name 
+  -P  string                 `Optional` profile name 
 ```
 
 #### Description
 
 To deploy an application service which is defined in the hspec file, use the "deploy" command. The command requires hspec file, Kubernetes namespace and application name as inputs, additionally profile can also be provided for a service.  Multiple hspec files (-f `<serviceName1>`.hspec -f `<serviceName2>`.hspec -f `<serviceNameN>`.hspec or comma separated -f `<serviceName1>`.hspec,`<serviceName2>`.hspec) can be provided to deploy multiple services. Similarly profiles files (-p `<profileName1>-<serviceName1>`.hprof -p `<profileName2>-<serviceName2>`.hprof -p `<profileNameN>-<serviceNameN>`.hprof or comma separated -p `<profileName1>-<serviceName1>`.hprof,`<profileName2>-<serviceName2>`.hprof) can also be provided for services. At max one profile is allowed per service.
 
--P profilename option lookups for the profile files in the format `<profilename>-<servicename>`.hprof in the directory of hspec ,say dir(hspec) or in the dir(hspec)/profiles
+-P profilename option lookups for the profile files in the format `<profilename>-<servicename>`.hprof in the directory of hspec ,say dir(hspec) or in the dir(hspec)/profiles. In this case profile is compulsory for all the service spec(s) provided.
 
 Images that are built part of hyscale deploy are handled based on the IMAGE_CLEANUP_POLICY environment variable. Possible values of the policy are 
 * PRESERVE_N_RECENTLY_USED (default) , preserves the last 3 recently used images
@@ -126,10 +126,13 @@ Options:
   -f, --file string          service spec file `<serviceName>.hspec`. Can be repeated for multiple service specifications.
   -p, --profile string       `Optional` service profile file `<profileName>-<serviceName>.hprof`. Can be repeated for different services.
   -a --application string     name of application `<applicationName>`
+  -P  string                 `Optional` profile name
 ```
 #### Description
 
 HyScale abstracts the generation of Kubernetes manifests for deployments, however a user can generate the Kubernetes manifests without deployment using the "generate service manifests" command. The command requires service name, the application name as inputs, additionally profile can also be provided for a service. Multiple service names (-f `<serviceName1>`.hspec -f `<serviceName2>`.hspec `<serviceNameN>`.hspec or comma separated -f `<serviceName1>`.hspec,`<serviceName2>`.hspec) can be provided to generate Kubernetes manifests for multiple services. Additionally profiles files (-p `<profileName1>-<serviceName1>`.hprof -p `<profileName2>-<serviceName2>`.hprof -p `<profileNameN>-<serviceNameN>`.hprof or comma separated -p `<profileName1>-<serviceName1>`.hprof,`<profileName2>-<serviceName2>`.hprof) can also be provided for services. At max one profile is allowed per service.
+
+-P profilename option lookups for the profile files in the format `<profilename>-<servicename>`.hprof in the directory of hspec, say dir(hspec) or in the dir(hspec)/profiles. In this case profile is compulsory for all the service spec(s) provided.
 
 ## get apps
 
@@ -148,10 +151,10 @@ To get all the deployed applications, use "get apps" command. The command will d
 ```markdown
 Usage:  hyscale get replica status [OPTIONS]
 
-Status of an Application Service.
+Replica Status of an Application Service.
 
 Options:
-  -s --service string         name of service `<serviceName>`. Can be repeated for multiple services.
+  -s --service string         name of service `<serviceName>`.
   -n --namespace string       name of namespace `<namespace>`
   -a --application string     name of application `<applicationName>`   
 ```
@@ -159,6 +162,26 @@ Options:
 ###Description:
 
 To get the replica status of a particular deployed service, use "get replica status" command. The command requires service name, Kubernetes namespace and application name as inputs.
+
+## scale service
+
+```markdown
+Usage:  hyscale scale service [OPTIONS]
+
+Scale a service of an application imperatively.
+
+Options:
+  -s --service string         name of service `<serviceName>`
+  -n --namespace string       name of namespace `<namespace>`
+  -a --application string     name of application `<applicationName>`
+  --up integer                scales service up by specified value
+  --down integer              scales service down by specified value
+  --to integer                scales service to a  specified value    
+```
+
+###Description:
+
+To scale a service of an application
 
 
 ## Tool Options Description:

@@ -14,6 +14,9 @@ on:
     branches: 
     - master
     - release/HyScale*
+  create:
+    branch:
+    - release/HyScale*
 
 jobs:
   build:
@@ -36,9 +39,11 @@ jobs:
         DOCKER_REPO: 'hyscaledev'
 
     - name: Build Images and Hyscale Binary for Release
-      if: github.ref != 'refs/heads/master'
       run: |
-          ./scripts/publish_artifacts.sh
+          if [[ "x`echo ${GITHUB_REF}`" == *"release/HyScale"* ]]
+          then
+            ./scripts/publish_artifacts.sh
+          fi
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.HYS_STABLE_AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.HYS_STABLE_AWS_SECRET_ACCESS_KEY }}
@@ -50,10 +55,12 @@ jobs:
 
     #If branch is release, the upload the hyscale binary to DEV latest
     - name: Release Pointing to the Latest of DEV
-      if: github.ref != 'refs/heads/master'
       run: |
-          aws s3 cp scripts/hyscale s3://$AWS_S3_BUCKET/hyscale/release/latest/hyscale
-          aws s3api put-object-tagging --bucket $AWS_S3_BUCKET  --key hyscale/release/latest/hyscale --tagging 'TagSet=[{Key=hyscalepubliccontent,Value=true}]' 
+          if [[ "x`echo ${GITHUB_REF}`" == *"release/HyScale"* ]]
+          then
+            aws s3 cp scripts/hyscale s3://$AWS_S3_BUCKET/hyscale/release/latest/hyscale
+            aws s3api put-object-tagging --bucket $AWS_S3_BUCKET  --key hyscale/release/latest/hyscale --tagging 'TagSet=[{Key=hyscalepubliccontent,Value=true}]' 
+          fi
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.HYS_DEV_AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.HYS_DEV_AWS_SECRET_ACCESS_KEY }}
@@ -66,8 +73,11 @@ jobs:
           then
             echo -en "CHANGE LOG: \n$(git log -1 --pretty=format:"%s") \n-------------------------------------------------------- \n" >> hyscale_version.txt
             echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \ncurl -sSL ${{ secrets.HYS_DEV_BINARY_URL }} | HYS_VERSION=$IMAGE_VERSION  bash" >> hyscale_version.txt
-          else
+          elif [[ "x`echo ${GITHUB_REF}`" == *"release/HyScale"* ]]
+          then
             echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \ncurl -sSL ${{ secrets.HYS_STABLE_BINARY_URL }} | HYS_VERSION=$IMAGE_VERSION  bash" >> hyscale_version.txt
+          else
+            echo -en "Hyscale tool Build triggered but nothing is built or published as the branch is $(echo ${GITHUB_REF##*/})" >> hyscale_version.txt
           fi
 
     - name: SendGrid

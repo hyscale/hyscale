@@ -4,10 +4,8 @@ name: Upload Release Asset
 
 on:
   push:
-    branches:
-    - release/HyScale*
-    paths:
-      - 'scripts/release_version.txt'
+    tags:
+    - "v*"
 
 jobs:
   build:
@@ -21,13 +19,14 @@ jobs:
     - name: release_info
       id: release_info
       run: |
-         IMAGE_VERSION=`cat scripts/release_version.txt`
+         . .github/workflows/release_info.sh
+         echo ::set-output name=CHANGELOG::$(echo -e "${CHANGELOG}")
+         wget https://s3-$AWS_REGION.amazonaws.com/$AWS_DEV_S3_BUCKET/hyscale/release/latest/hyscale -O /var/tmp/hyscale
+         IMAGE_VERSION=`cat /var/tmp/hyscale | grep HYSCALE_BUILD_VERSION= | awk -F "=" '{print $2}'`
          pom_version=`cat pom.xml | grep "<version>.*</version>" | head -1 |awk -F'[><]' '{print $3}'`
-         echo ::set-output name=PREVIOUS_TAG::$(curl --silent "https://api.github.com/repos/Srujankumar5140/test_pub/releases/latest" | grep 'tag_name' | sed -E 's/.*"([^"]+)".*/\1/')
          echo ::set-output name=RELEASE_VERSION::$(echo $pom_version)
          echo ::set-output name=RELEASE_NAME::$(cat pom.xml | grep "<release.name>.*</release.name>" | head -1 |awk -F'[><]' '{print $3}')
          docker run -v $(pwd):/var/tmp --entrypoint /bin/cp  hyscale/hyscale:$IMAGE_VERSION /usr/local/bin/hyscale.jar /var/tmp
-         wget https://s3-$AWS_REGION.amazonaws.com/$AWS_S3_BUCKET/hyscale/release/$IMAGE_VERSION/hyscale -O /var/tmp/hyscale
          aws s3 cp /var/tmp/hyscale s3://$AWS_S3_BUCKET/hyscale/release/latest/hyscale
          aws s3api put-object-tagging --bucket $AWS_S3_BUCKET  --key hyscale/release/latest/hyscale --tagging 'TagSet=[{Key=hyscalepubliccontent,Value=true}]'
       env:
@@ -35,11 +34,7 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.HYS_STABLE_AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: 'us-west-2'
         AWS_S3_BUCKET: ${{ secrets.HYS_STABLE_AWS_S3_BUCKET }}
-
-    - name: Create and Push Tag
-      run: |
-        git tag v${{ steps.release_info.outputs.RELEASE_VERSION }}
-        git push origin --tags
+        AWS_DEV_S3_BUCKET: ${{ secrets.HYS_DEV_AWS_S3_BUCKET }}
 
     - name: Create Release
       id: create_release
@@ -47,7 +42,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: v${{ steps.release_info.outputs.RELEASE_VERSION }}
+        tag_name: ${{ github.ref }}
         release_name: ${{ steps.release_info.outputs.RELEASE_NAME }}
         body: |
           v${{ steps.release_info.outputs.RELEASE_VERSION }} Release
@@ -67,12 +62,8 @@ jobs:
 
     - name: URL to Download Hyscale Artifact
       run: |
-          . .github/workflows/release_info.sh
-          echo -e ${CHANGELOG}
-          echo -en "CHANGE LOG: \n${CHANGELOG} \n-------------------------------------------------------- \n" >> hyscale_version.txt
-          echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \ncurl -sSL ${{ secrets.HYS_DEV_BINARY_URL }} | bash\nJar can be Downloaded using\nwget https://github.com/hyscale/hyscale/releases/download/v${{ steps.release_info.outputs.RELEASE_VERSION }}/hyscale.jar" >> hyscale_version.txt
-      env:
-         PREVIOUS_TAG: ${{ steps.release_info.outputs.PREVIOUS_TAG }}
+          echo -en "CHANGE LOG: \n${{ steps.release_info.outputs.CHANGELOG }} \n-------------------------------------------------------- \n" >> hyscale_version.txt
+          echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \ncurl -sSL ${{ secrets.HYS_STABLE_BINARY_URL }} | bash\nJar can be Downloaded using\nwget https://github.com/hyscale/hyscale/releases/download/v${{ steps.release_info.outputs.RELEASE_VERSION }}/hyscale.jar" >> hyscale_version.txt
 
     - name: SendGrid
       uses: peter-evans/sendgrid-action@v1

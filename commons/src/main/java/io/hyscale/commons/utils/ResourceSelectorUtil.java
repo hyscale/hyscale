@@ -18,7 +18,8 @@ package io.hyscale.commons.utils;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import io.hyscale.commons.models.ResourceFieldSelectorKey;
+import io.hyscale.commons.constants.ToolConstants;
+import io.hyscale.commons.models.MetadataFieldSelector;
 import io.hyscale.commons.models.ResourceLabelKey;
 
 public class ResourceSelectorUtil {
@@ -46,5 +47,15 @@ public class ResourceSelectorUtil {
     public static String getSelector(String appName) {
         return getSelectorFromLabelMap(ResourceLabelBuilder.build(appName));
     }
+    
+    
 
+    /**
+	 *it will return namespace field selector
+	 */
+    public static String getNamespaceSelector(String namespace) {
+    	StringBuilder fieldSelector = new StringBuilder();
+		fieldSelector.append(MetadataFieldSelector.METADATA_NAMESPACE.getFieldName()).append(ToolConstants.EQUALS).append(namespace);
+		return fieldSelector.toString();
+    }
 }

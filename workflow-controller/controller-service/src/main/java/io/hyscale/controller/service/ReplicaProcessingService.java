@@ -20,10 +20,16 @@ import io.hyscale.commons.logger.TableFields;
 import io.hyscale.commons.logger.TableFormatter;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AuthConfig;
+import io.hyscale.commons.models.K8sAuthorisation;
+import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.util.StatusUtil;
 import io.hyscale.deployer.services.deployer.Deployer;
 import io.hyscale.deployer.services.model.ReplicaInfo;
+import io.hyscale.deployer.services.processor.PodParentProvider;
+import io.hyscale.deployer.services.provider.K8sClientProvider;
+import io.kubernetes.client.openapi.ApiClient;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +48,12 @@ public class ReplicaProcessingService {
 
     @Autowired
     private K8sAuthConfigBuilder configBuilder;
+    
+    @Autowired
+    private K8sClientProvider clientProvider;
+    
+    @Autowired
+    private PodParentProvider podParentProvider;
 
     public List<ReplicaInfo> getReplicas(String appName, String serviceName, String namespace, boolean latest) throws HyscaleException {
         AuthConfig authConfig = configBuilder.getAuthConfig();
@@ -50,6 +62,13 @@ public class ReplicaProcessingService {
         } else {
             return deployer.getReplicas(authConfig, appName, serviceName, namespace, true);
         }
+    }
+    
+    public boolean hasService(AuthConfig authConfig, String appName, String serviceName, String namespace) throws HyscaleException {
+        authConfig = authConfig == null ? configBuilder.getAuthConfig() : authConfig;
+        ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
+        
+        return podParentProvider.hasPodParent(apiClient, appName, serviceName, namespace);
     }
 
     public boolean doesReplicaExist(String replica, List<ReplicaInfo> replicaInfos) {
@@ -67,8 +86,11 @@ public class ReplicaProcessingService {
     }
 
     public Optional<Map<Integer, ReplicaInfo>> logReplicas(List<ReplicaInfo> replicaInfoList, boolean indexed) {
-        TableFormatter.Builder builder = new TableFormatter.Builder();
         Optional<Map<Integer, ReplicaInfo>> optionalMap = Optional.empty();
+        if (replicaInfoList == null || replicaInfoList.isEmpty()) {
+            return optionalMap;
+        }
+        TableFormatter.Builder builder = new TableFormatter.Builder();
         if (indexed) {
             builder.addField(TableFields.INDEX.getFieldName(), TableFields.INDEX.getLength());
         }

@@ -276,11 +276,15 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
                 Thread.sleep(MAX_LB_WAIT_TIME);
             }
         } catch (InterruptedException e) {
-            LOGGER.debug("Error while loadbalancer ready state condition");
+            LOGGER.error("Error while loadbalancer ready state condition", e);
+        } catch (HyscaleException e) {
+            LOGGER.error("Error while loadbalancer ready state condition", e);
+            WorkflowLogger.endActivity(serviceIPContext, Status.FAILED);
+            throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_SERVICE_ADDRESS, name, namespace);
         }
         if (loadBalancerIngress == null) {
             WorkflowLogger.endActivity(serviceIPContext, Status.FAILED);
-            throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_SERVICE_ADDRESS, getKind(), name, namespace);
+            throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_SERVICE_ADDRESS, name, namespace);
         }
         WorkflowLogger.endActivity(serviceIPContext, Status.DONE);
 

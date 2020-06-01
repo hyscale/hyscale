@@ -26,11 +26,16 @@ import io.hyscale.controller.service.ReplicaProcessingService;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.validator.impl.ClusterValidator;
 import io.hyscale.deployer.core.model.DeploymentStatus;
+import io.hyscale.deployer.services.model.DeployerActivity;
+import io.hyscale.deployer.services.model.ReplicaInfo;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 
 import javax.validation.constraints.Pattern;
+
+import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -96,7 +101,17 @@ public class HyscaleReplicaStatusCommand implements Callable<Integer> {
 
         WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
 
-        replicaProcessingService.logReplicas(replicaProcessingService.getReplicas(appName, serviceName, namespace, true), false);
+        List<ReplicaInfo> replicas = replicaProcessingService.getReplicas(appName, serviceName, namespace, true);
+        if (replicas != null && !replicas.isEmpty()) {
+            replicaProcessingService.logReplicas(replicas, false);
+        } else if (replicaProcessingService.hasService(context.getAuthConfig(), appName, serviceName, namespace)){
+            WorkflowLogger.error(DeployerActivity.SERVICE_WITH_ZERO_REPLICAS);
+            WorkflowLogger.footer();
+        } else {
+            WorkflowLogger.error(ControllerActivity.SERVICE_NOT_CREATED);
+            WorkflowLogger.error(ControllerActivity.CHECK_SERVICE_STATUS);
+            WorkflowLogger.footer();
+        }
 
         return ToolConstants.HYSCALE_SUCCESS_CODE;
     }

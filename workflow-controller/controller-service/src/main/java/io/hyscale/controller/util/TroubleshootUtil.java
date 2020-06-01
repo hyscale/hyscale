@@ -22,8 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
 
-import javax.tools.Tool;
-
 /**
  * Helper class to provide troubleshoot related utilities
  *
@@ -49,7 +47,7 @@ public class TroubleshootUtil {
             message.append(each.getRecommendedFix());
             message.append(ToolConstants.NEW_LINE);
         });
-        return message.toString();
+        return message.toString().trim();
     }
 
 }
