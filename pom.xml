@@ -8,7 +8,7 @@
 	<groupId>io.hyscale</groupId>
 	<artifactId>hyscale</artifactId>
 	<packaging>pom</packaging>
-	<version>0.9.5.0</version>
+	<version>0.9.6.0</version>
 
 	<modules>
 		<module>image-builder</module>
@@ -47,7 +47,7 @@
 		<commons-codec.version>1.12</commons-codec.version>
 		<joda.time.version>2.9.3</joda.time.version>
 		<flipkart.zjsonpatch.version>0.4.5</flipkart.zjsonpatch.version>
-		<spullara.mustache.compiler.version>0.9.6</spullara.mustache.compiler.version>
+		<spullara.mustache.compiler.version>0.9.6.0</spullara.mustache.compiler.version>
 		<picocli.spring-boot.version>4.2.0</picocli.spring-boot.version>
 		<spring-boot.version>2.2.6.RELEASE</spring-boot.version>
 		<spring-boot-maven-plugin.version>2.2.6.RELEASE</spring-boot-maven-plugin.version>
