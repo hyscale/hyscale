@@ -1,3 +1,16 @@
+# v0.9.6 Release
+
+### Features:
+
+* Support for imperative scaling 
+* Deployment wait time tuning proportional to replicas  
+
+### Fixes
+
+* Reduced API calls to improve performance for service and app status commands
+* Fix for handling zero replicas for logs and status commands
+* Performance improvements with lazy loading   
+
 # v0.9.5 Release
 
  ### Features:
