@@ -1,8 +1,8 @@
-$HYS_VERSION="@@HYS_BUILD_VERSION@@"
+$HYS_VERSION="@@HYSCALE_BUILD_VERSION@@"
 $HYS_JAR_BIN="hyscale-${HYS_VERSION}.jar"
 $dir= "$home\.hyscale"
 $fileToCheck = "$dir\$HYS_JAR_BIN"
-$HYS_DOWNLOAD_URL = "@@HYS_URL@@"
+$HYS_DOWNLOAD_URL = "@@HYSCALE_URL@@"
 
 Function check_java_version
 {
