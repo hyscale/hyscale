@@ -17,7 +17,6 @@ aws_cp_upload()
 {
   for script in $2
   do 
-    cat scripts/$script
     aws s3 cp scripts/$script s3://$AWS_S3_BUCKET/hyscale/release/$1/$script
     aws s3api put-object-tagging --bucket $AWS_S3_BUCKET  --key hyscale/release/$1/$script --tagging 'TagSet=[{Key=hyscalepubliccontent,Value=true}]'
   done
