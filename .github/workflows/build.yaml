@@ -58,8 +58,11 @@ jobs:
       run: |
           if [[ "x`echo ${GITHUB_REF}`" == *"release/HyScale"* ]]
           then
-            aws s3 cp scripts/hyscale s3://$AWS_S3_BUCKET/hyscale/release/latest/hyscale
-            aws s3api put-object-tagging --bucket $AWS_S3_BUCKET  --key hyscale/release/latest/hyscale --tagging 'TagSet=[{Key=hyscalepubliccontent,Value=true}]' 
+            for script in hyscale_osx hyscale.ps1 hyscale hyscale.jar
+            do
+              aws s3 cp scripts/$script s3://$AWS_S3_BUCKET/hyscale/release/$1/$script
+              aws s3api put-object-tagging --bucket $AWS_S3_BUCKET  --key hyscale/release/$1/$script --tagging 'TagSet=[{Key=hyscalepubliccontent,Value=true}]'
+              done
           fi
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.HYS_DEV_AWS_ACCESS_KEY_ID }}
