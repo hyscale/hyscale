@@ -241,8 +241,9 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
             ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
             V1ServiceHandler v1ServiceHandler = (V1ServiceHandler) ResourceHandlers
                     .getHandlerOf(ResourceKind.SERVICE.getKind());
-            serviceAddress = v1ServiceHandler.getServiceAddress(apiClient, context.getServiceName(),
-                    context.getNamespace(), context.isWaitForReadiness());
+            String selector = ResourceSelectorUtil.getServiceSelector(context.getAppName(), context.getServiceName());
+            serviceAddress = v1ServiceHandler.getServiceAddress(apiClient, selector, context.getNamespace(),
+                    context.isWaitForReadiness());
         } catch (HyscaleException e) {
             logger.error("Error while preparing client, error {} ", e.toString());
             throw e;
