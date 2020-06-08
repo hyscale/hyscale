@@ -15,10 +15,15 @@ docker_build_push()
 
 aws_cp_upload()
 {
-  for script in $2
+  dir=$1
+  scripts=$2
+  upload_to=$3
+  set -- $upload_to
+  for script in $scripts
   do 
-    aws s3 cp scripts/$script s3://$AWS_S3_BUCKET/hyscale/release/$1/$script
-    aws s3api put-object-tagging --bucket $AWS_S3_BUCKET  --key hyscale/release/$1/$script --tagging 'TagSet=[{Key=hyscalepubliccontent,Value=true}]'
+    aws s3 cp scripts/$script s3://$AWS_S3_BUCKET/hyscale/release/$dir/$1
+    aws s3api put-object-tagging --bucket $AWS_S3_BUCKET  --key hyscale/release/$dir/$1 --tagging 'TagSet=[{Key=hyscalepubliccontent,Value=true}]'
+    shift
   done
 }
 
@@ -29,10 +34,10 @@ then
   grep -RiIl '@@HYSCALE_BUILD_VERSION@@' |grep -v publish_artifacts.sh| xargs sed -i "s|@@HYSCALE_BUILD_VERSION@@|$artifactory_version|g"
   grep -RiIl '@@HYSCALE_URL@@' |grep -v publis_artifacts.sh| xargs sed -i "s|@@HYSCALE_URL@@|https://s3-$AWS_REGION.amazonaws.com/$AWS_S3_BUCKET/hyscale/release/$artifactory_version/hyscale.jar|g"
   docker_build_push
-  aws_cp_upload $artifactory_version "hyscale hyscale_osx hyscale.ps1 hyscale.jar"
+  aws_cp_upload $artifactory_version "hyscale hyscale_osx hyscale.ps1 hyscale.jar" "hyscale mac/hyscale win/hyscale.ps1 hyscale.jar"
 elif [ $GITHUB_WORKFLOW == "Release"  ]
 then
   grep -RiIl '@@HYSCALE_URL@@' |grep -v publis_artifacts.sh| xargs sed -i "s|@@HYSCALE_URL@@|https://github.com/hyscale/hyscale/releases/download/v$project_version/hyscale.jar|g"
   grep -RiIl '@@HYSCALE_BUILD_VERSION@@' |grep -v publish_artifacts.sh| xargs sed -i "s|@@HYSCALE_BUILD_VERSION@@|$project_version|g"
-  aws_cp_upload latest "hyscale.ps1 hyscale_osx"
+  aws_cp_upload latest "hyscale.ps1 hyscale_osx" "win/hyscale.ps1 mac/hyscale"
 fi
