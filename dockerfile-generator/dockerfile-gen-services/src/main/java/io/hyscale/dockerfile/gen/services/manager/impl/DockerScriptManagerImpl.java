@@ -25,6 +25,7 @@ import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.dockerfile.gen.services.manager.DockerfileEntityManager;
 import io.hyscale.dockerfile.gen.services.constants.DockerfileGenConstants;
+import io.hyscale.dockerfile.gen.services.exception.DockerfileErrorCodes;
 import io.hyscale.dockerfile.gen.services.templates.CommandsTemplateProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.servicespec.commons.model.service.BuildSpec;
 import io.hyscale.commons.models.ConfigTemplate;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
@@ -39,6 +41,7 @@ import io.hyscale.dockerfile.gen.services.model.DockerfileGenContext;
 import io.hyscale.dockerfile.gen.services.model.CommandType;
 import io.hyscale.commons.models.FileSpec;
 import io.hyscale.commons.models.SupportingFile;
+import io.hyscale.dockerfile.gen.core.models.DockerfileActivity;
 import io.hyscale.dockerfile.gen.services.config.DockerfileGenConfig;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
@@ -88,45 +91,49 @@ public class DockerScriptManagerImpl implements DockerfileEntityManager {
 		return supportingFiles;
 	}
 
-	private SupportingFile getCommandSupportFile(String commands, String script, CommandType commandType)
-			throws HyscaleException {
+    private SupportingFile getCommandSupportFile(String commands, String script, CommandType commandType)
+            throws HyscaleException {
 
-		FileSpec fileSpec = new FileSpec();
+        FileSpec fileSpec = new FileSpec();
 
-		SupportingFile supportingFile = new SupportingFile();
-		switch (commandType) {
-		case CONFIGURE:
-			if (StringUtils.isNotBlank(script)) {
-				supportingFile.setFile(new File(SetupConfig.getAbsolutePath(script)));
+        SupportingFile supportingFile = new SupportingFile();
 
-				return supportingFile;
-			} else {
-				fileSpec.setContent(getScript(commandType,commands));
-				fileSpec.setName(DockerfileGenConfig.CONFIGURE_SCRIPT);
-			}
-			break;
-		case RUN:
-			if (StringUtils.isNotBlank(script)) {
-				supportingFile.setFile(new File(SetupConfig.getAbsolutePath(script)));
-				return supportingFile;
-			} else {
-				fileSpec.setContent(getScript(commandType,commands));
-				fileSpec.setName(DockerfileGenConfig.RUN_SCRIPT);
-			}
-			break;
-		default:
-			break;
+        if (StringUtils.isNotBlank(script) && StringUtils.isNotBlank(commands)) {
+            // Command and script both found ignoring script file
+            WorkflowLogger.persist(DockerfileActivity.COMMANDS_AND_SCRIPT_FOUND, commandType.toString());
+        }
+        if (StringUtils.isNotBlank(commands)) {
+            fileSpec.setContent(getScript(commandType, commands));
+            fileSpec.setName(getFileName(commandType));
+        } else if (StringUtils.isNotBlank(script)) {
+            File scriptFile = new File(SetupConfig.getAbsolutePath(script));
+            if (!scriptFile.exists() || !scriptFile.isFile()) {
+                throw new HyscaleException(DockerfileErrorCodes.SCRIPT_FILE_NOT_FOUND, script);
+            }
+            supportingFile.setFile(scriptFile);
+            return supportingFile;
+        }
+        if (StringUtils.isBlank(fileSpec.getContent())) {
+            return null;
+        }
+        supportingFile.setFileSpec(fileSpec);
 
-		}
-		if (StringUtils.isBlank(fileSpec.getContent())) {
-			return null;
-		}
-		supportingFile.setFileSpec(fileSpec);
+        return supportingFile;
+    }
 
-		return supportingFile;
-	}
+	private String getFileName(CommandType commandType) {
+	    switch (commandType) {
+        case CONFIGURE:
+            return DockerfileGenConfig.CONFIGURE_SCRIPT;
+        case RUN:
+            return DockerfileGenConfig.RUN_SCRIPT;
+        default:
+            break;
+        }
+	    return null;
+    }
 
-	public String getScript(CommandType commandType, String commands) throws HyscaleException {
+    public String getScript(CommandType commandType, String commands) throws HyscaleException {
 		if (StringUtils.isBlank(commands)) {
 			return null;
 		}

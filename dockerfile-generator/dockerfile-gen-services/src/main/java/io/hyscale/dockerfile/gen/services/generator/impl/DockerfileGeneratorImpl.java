@@ -23,6 +23,8 @@ import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.dockerfile.gen.services.generator.DockerfileContentGenerator;
 import io.hyscale.dockerfile.gen.services.generator.DockerfileGenerator;
 import io.hyscale.dockerfile.gen.services.predicates.DockerfileGenPredicates;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,9 +124,8 @@ public class DockerfileGeneratorImpl implements DockerfileGenerator {
             // Use updated artifacts from context
             DockerfileContent dockerfileContent = dockerfileContentGenerator.generate(serviceSpec, context);
             String appName = context.getAppName();
-            String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
 
-            File dockerfile = new File(dockerfileGenConfig.getDockerFileDir(appName, serviceName));
+            File dockerfile = new File(dockerfileGenConfig.getDockerFileDir(appName, context.getServiceName()));
             dockerFileEntity.setDockerfile(dockerfile);
 
             // Get Supporting Files
@@ -153,6 +154,21 @@ public class DockerfileGeneratorImpl implements DockerfileGenerator {
         if (context == null) {
             throw new HyscaleException(DockerfileErrorCodes.FAILED_TO_PROCESS_DOCKERFILE_GENERATION);
         }
+        
+        Dockerfile userDockerfile = serviceSpec.get(
+                HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.dockerfile), Dockerfile.class);
+        BuildSpec buildSpec = serviceSpec
+                .get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.buildSpec), BuildSpec.class);
+
+        if (userDockerfile != null && buildSpec != null) {
+            throw new HyscaleException(DockerfileErrorCodes.DOCKERFILE_OR_BUILDSPEC_REQUIRED);
+        }
+        
+        if (buildSpec != null && StringUtils.isBlank(buildSpec.getStackImage())) {
+            WorkflowLogger.startActivity(DockerfileActivity.DOCKERFILE_GENERATION);
+            WorkflowLogger.endActivity(Status.FAILED);
+            throw new HyscaleException(DockerfileErrorCodes.INVALID_STACK_IMAGE);
+        }
     }
 
     /**
@@ -169,19 +185,11 @@ public class DockerfileGeneratorImpl implements DockerfileGenerator {
      * @throws HyscaleException
      */
     private boolean skipDockerfileGen(ServiceSpec serviceSpec, DockerfileGenContext context) throws HyscaleException {
-        Dockerfile userDockerfile = serviceSpec.get(
-                HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.dockerfile), Dockerfile.class);
-        BuildSpec buildSpec = serviceSpec
-                .get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.buildSpec), BuildSpec.class);
-
-        if (userDockerfile != null && buildSpec != null) {
-            throw new HyscaleException(DockerfileErrorCodes.DOCKERFILE_OR_BUILDSPEC_REQUIRED);
-        }
 
         if (DockerfileGenPredicates.skipDockerfileGen().test(serviceSpec)) {
             WorkflowLogger.startActivity(DockerfileActivity.DOCKERFILE_GENERATION);
             WorkflowLogger.endActivity(Status.SKIPPING);
-            if (DockerfileGenPredicates.stackAsServiceImage().test(buildSpec)) {
+            if (DockerfileGenPredicates.stackAsServiceImage().test(serviceSpec)) {
                 context.setStackAsServiceImage(true);
             }
             return false;

@@ -41,13 +41,12 @@ public class DockerfileGenPredicates {
                 userDockerfile = serviceSpec.get(
                         HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.dockerfile),
                         Dockerfile.class);
-                buildSpec = serviceSpec.get(
-                        HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.buildSpec),
+                buildSpec = serviceSpec.get(    
+                        HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.buildSpec),    
                         BuildSpec.class);
             } catch (HyscaleException e) {
                 logger.error("Error while fetching dockerfile from  image {}", e);
             }
-
             if (userDockerfile == null && buildSpec == null) {
                 return true;
             }
@@ -56,7 +55,7 @@ public class DockerfileGenPredicates {
                 return true;
             }
 
-            if (stackAsServiceImage().test(buildSpec)) {
+            if (stackAsServiceImage().test(serviceSpec)) {
                 return true;
             }
 
@@ -64,17 +63,20 @@ public class DockerfileGenPredicates {
         };
     }
 
-    public static Predicate<Dockerfile> haveDockerfile() {
-        return userDockerfile -> {
-            if (userDockerfile == null) {
+    public static Predicate<ServiceSpec> stackAsServiceImage() {
+        return serviceSpec -> {
+            if (serviceSpec == null) {
                 return false;
             }
-            return true;
-        };
-    }
+            BuildSpec buildSpec = null;
+            try {
+                buildSpec = serviceSpec.get(
+                        HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.buildSpec),
+                        BuildSpec.class);
+            } catch (HyscaleException e) {
+                logger.error("Error while fetching dockerfile from  image {}", e);
+            }
 
-    public static Predicate<BuildSpec> stackAsServiceImage() {
-        return buildSpec -> {
             if (buildSpec == null) {
                 return false;
             }
@@ -105,7 +107,7 @@ public class DockerfileGenPredicates {
             if (buildSpec == null) {
                 return false;
             }
-            return !StringUtils.isBlank(buildSpec.getConfigCommands());
+            return StringUtils.isNotBlank(buildSpec.getConfigCommands());
         };
     }
 
@@ -114,7 +116,7 @@ public class DockerfileGenPredicates {
             if (buildSpec == null) {
                 return false;
             }
-            return !StringUtils.isBlank(buildSpec.getRunCommands());
+            return StringUtils.isNotBlank(buildSpec.getRunCommands());
         };
     }
 
@@ -123,7 +125,7 @@ public class DockerfileGenPredicates {
             if (buildSpec == null) {
                 return false;
             }
-            return !StringUtils.isBlank(buildSpec.getConfigCommandsScript());
+            return StringUtils.isNotBlank(buildSpec.getConfigCommandsScript());
         };
     }
 
@@ -132,7 +134,7 @@ public class DockerfileGenPredicates {
             if (buildSpec == null) {
                 return false;
             }
-            return !StringUtils.isBlank(buildSpec.getRunCommandsScript());
+            return StringUtils.isNotBlank(buildSpec.getRunCommandsScript());
         };
     }
 }

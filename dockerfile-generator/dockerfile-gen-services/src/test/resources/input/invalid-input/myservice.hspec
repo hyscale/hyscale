@@ -1,0 +1,14 @@
+name: myservice
+image:
+  registry: x.y.z
+  name: myServiceImage
+  tag: 1.2.3
+  dockerfile:
+    path: abc\tmp
+    dockerfilePath: \Dockerfile
+    args:
+       key1: value1
+  buildSpec:
+    stackImage: abc/pqr:1.0
+    runCommands: |-
+      echo "Hello, I'm run commands"

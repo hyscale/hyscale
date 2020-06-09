@@ -35,6 +35,7 @@ import io.hyscale.commons.models.DecoratedArrayList;
 import io.hyscale.dockerfile.gen.services.model.DockerfileGenContext;
 import io.hyscale.commons.models.SupportingFile;
 import io.hyscale.dockerfile.gen.services.config.DockerfileGenConfig;
+import io.hyscale.dockerfile.gen.services.exception.DockerfileErrorCodes;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
@@ -61,12 +62,13 @@ public class ArtifactManagerImpl implements DockerfileEntityManager {
             throw e;
         }
 
-        if (artifactsList == null) {
+        if (artifactsList == null || artifactsList.isEmpty()) {
             return supportingFiles;
         }
         /*
          * Artifacts -> Supporting file, Source -> File, Name -> relativePathDir
          */
+        validate(artifactsList);
         artifactsList.stream().forEach(each -> {
             SupportingFile supportingFile = new SupportingFile();
             File artifactFile = new File(SetupConfig.getAbsolutePath(each.getSource()));
@@ -76,6 +78,24 @@ public class ArtifactManagerImpl implements DockerfileEntityManager {
             supportingFiles.add(supportingFile);
         });
         return supportingFiles;
+    }
+
+    private void validate(List<Artifact> artifactsList) throws HyscaleException {
+        if (artifactsList == null || artifactsList.isEmpty()) {
+            return;
+        }
+        // Artifacts should exist
+        List<String> artifactsNotFound = new ArrayList<String>();
+        artifactsList.stream().forEach(artifact -> {
+            String artifactPath = SetupConfig.getAbsolutePath(artifact.getSource());
+            File artifactFile = new File(artifactPath);
+            if (!artifactFile.exists() || !artifactFile.isFile()) {
+                artifactsNotFound.add(artifactPath);
+            }
+        });
+        if (!artifactsNotFound.isEmpty()) {
+            throw new HyscaleException(DockerfileErrorCodes.ARTIFACTS_NOT_FOUND, artifactsNotFound.toString());
+        }
     }
 
     // Update source for dockerfile
