@@ -15,7 +15,7 @@
  */
 package io.hyscale.builder.services.impl;
 
-import io.hyscale.builder.services.service.ImagePushService;
+import io.hyscale.builder.services.service.ImageBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,22 +42,18 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
     private static final Logger logger = LoggerFactory.getLogger(LocalImageBuildPushServiceImpl.class);
 
     @Autowired
-    private LocalImageBuildServiceImpl buildService;
+    private ImageBuilder buildService;
 
     @Autowired
     private ImageCleanupProcessorFactory imageCleanupProcessorFactory;
 
-    @Autowired
-    private ImagePushService pushService;
-    
     @Autowired
     private ImageBuilderConfig imageBuilderConfig;
 
     @Override
     public void buildAndPush(ServiceSpec serviceSpec, BuildContext context) throws HyscaleException {
         if (validate(serviceSpec) && isImageBuildPushRequired(serviceSpec, context)) {
-            context = buildService.build(serviceSpec, context);
-            pushService.pushImage(serviceSpec, context);
+            buildService.build(serviceSpec, context);
             String imageCleanUpPolicy = imageBuilderConfig.getImageCleanUpPolicy();
             ImageCleanupProcessor imageCleanupProcessor = imageCleanupProcessorFactory.getImageCleanupProcessor(imageCleanUpPolicy);
             logger.debug("Image clean up processor used {}", imageCleanupProcessor.getClass());

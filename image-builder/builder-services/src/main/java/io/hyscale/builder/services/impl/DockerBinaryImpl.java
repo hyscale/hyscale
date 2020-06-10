@@ -19,7 +19,20 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import io.hyscale.builder.services.spring.DockerBinaryCondition;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.hyscale.commons.commands.provider.ImageCommandProvider;
+import io.hyscale.builder.services.config.LocalImageBuildCondition;
+import io.hyscale.builder.services.util.DockerImageUtil;
+import io.hyscale.builder.services.util.ImageLogUtil;
+import io.hyscale.builder.services.service.ImageBuilder;
+import io.hyscale.commons.config.SetupConfig;
+import io.hyscale.commons.constants.ToolConstants;
+import io.hyscale.commons.models.CommandResult;
+import io.hyscale.commons.utils.ObjectMapperFactory;
+import io.hyscale.servicespec.commons.model.service.Image;
+import io.hyscale.servicespec.commons.util.ImageUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,45 +40,94 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.hyscale.builder.core.models.BuildContext;
-import io.hyscale.builder.core.models.ImageBuilderActivity;
 import io.hyscale.builder.services.config.ImageBuilderConfig;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
-import io.hyscale.builder.services.service.ImagePushService;
-import io.hyscale.builder.services.util.DockerImageUtil;
-import io.hyscale.builder.services.util.ImageLogUtil;
+import io.hyscale.builder.core.models.BuildContext;
+import io.hyscale.builder.core.models.DockerImage;
+import io.hyscale.builder.core.models.ImageBuilderActivity;
 import io.hyscale.commons.commands.CommandExecutor;
-import io.hyscale.commons.commands.provider.ImageCommandProvider;
-import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.CommandResult;
+import io.hyscale.servicespec.commons.model.service.Dockerfile;
 import io.hyscale.commons.models.Status;
-import io.hyscale.commons.utils.ObjectMapperFactory;
-import io.hyscale.servicespec.commons.model.service.ServiceSpec;
-import io.hyscale.servicespec.commons.util.ImageUtil;
 
-@Conditional(DockerBinaryCondition.class)
 @Component
-public class DockerBinaryPushService implements ImagePushService {
+@Conditional(LocalImageBuildCondition.class)
+public class DockerBinaryImpl implements ImageBuilder {
 
-    private static final Logger logger = LoggerFactory.getLogger(DockerBinaryPushService.class);
+    private static final Logger logger = LoggerFactory.getLogger(DockerBinaryImpl.class);
+
+    @Autowired
+    private ImageCommandProvider imageCommandProvider;
 
     @Autowired
     private DockerImageUtil dockerImageUtil;
-
-    @Autowired
-    private ImageCommandProvider commandGenerator;
 
     @Autowired
     private ImageLogUtil imageLogUtil;
 
     @Autowired
     private ImageBuilderConfig imageBuilderConfig;
+
+    @Autowired
+    private ImageCommandProvider commandGenerator;
+
+
+    @Override
+    public boolean isDockerRunning() {
+        String command = commandGenerator.dockerImages();
+        logger.debug("Docker Daemon running check command: {}", command);
+        return CommandExecutor.execute(command);
+    }
+
+    @Override
+    public boolean checkForDocker() {
+        String command = commandGenerator.dockerVersion();
+        logger.debug("Docker Installed check command: {}", command);
+        return CommandExecutor.execute(command);
+    }
+
+    @Override
+    public DockerImage _build(Dockerfile dockerfile, String tag, BuildContext context) throws HyscaleException {
+
+        String appName = context.getAppName();
+        String serviceName = context.getServiceName();
+        boolean verbose = context.isVerbose();
+
+        String dockerBuildCommand = imageCommandProvider.dockerBuildCommand(appName, serviceName, tag, dockerfile.getDockerfilePath(),
+                dockerfile.getTarget(),
+                dockerfile.getArgs());
+
+        logger.debug("Docker build command {}", dockerBuildCommand);
+
+        String logFilePath = imageBuilderConfig.getDockerBuildlog(appName, serviceName);
+        File logFile = new File(logFilePath);
+        context.setBuildLogs(logFilePath);
+
+        // TODO keep continuation activity for user
+        boolean status = CommandExecutor.executeInDir(dockerBuildCommand, logFile,
+                dockerfile.getPath() != null ? SetupConfig.getAbsolutePath(dockerfile.getPath()) : null);
+        if (!status) {
+            WorkflowLogger.endActivity(Status.FAILED);
+            logger.error("Failed to build docker image");
+        } else {
+            WorkflowLogger.endActivity(Status.DONE);
+        }
+
+        if (verbose) {
+            imageLogUtil.readBuildLogs(appName, serviceName);
+        }
+
+        if (!status) {
+            throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_BUILD_IMAGE);
+        }
+
+        DockerImage dockerImage = new DockerImage();
+        dockerImage.setName(imageCommandProvider.getBuildImageName(appName, serviceName));
+        dockerImage.setTag(tag);
+
+        return dockerImage;
+    }
 
     /**
      * Check docker exists, If stack image as service image pull, tag
@@ -74,32 +136,12 @@ public class DockerBinaryPushService implements ImagePushService {
      * @throws HyscaleException
      */
     @Override
-    public void _push(ServiceSpec serviceSpec, BuildContext buildContext) throws HyscaleException {
-
-        validate(serviceSpec, buildContext);
-
-        try {
-            dockerImageUtil.isDockerRunning();
-        } catch (HyscaleException e) {
-            logger.error(e.toString());
-            throw e;
-        }
-        String imageFullPath = ImageUtil.getImage(serviceSpec);
-        String sourceImage = getSourceImageName(serviceSpec, buildContext);
-
-        if (buildContext.isStackAsServiceImage()) {
-            pullImage(sourceImage);
-        }
-        tagImage(sourceImage, imageFullPath);
-		if (buildContext.getImageRegistry() == null) {
-			WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_PUSH);
-			WorkflowLogger.endActivity(Status.SKIPPING);
-			return;
-		}
+    public void _push(Image image, BuildContext buildContext) throws HyscaleException {
         WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_PUSH);
         String appName = buildContext.getAppName();
         String serviceName = buildContext.getServiceName();
         boolean verbose = buildContext.isVerbose();
+        String imageFullPath = ImageUtil.getImage(image);
         String pushImageCommand = commandGenerator.dockerPush(imageFullPath);
         String logFilePath = imageBuilderConfig.getDockerPushLogDir(appName, serviceName);
         File logFile = new File(logFilePath);
@@ -110,7 +152,7 @@ public class DockerBinaryPushService implements ImagePushService {
             WorkflowLogger.endActivity(Status.FAILED);
             logger.error("Failed to push docker image");
         } else {
-            String inspectCommand = commandGenerator.dockerInspect(ImageUtil.getImage(serviceSpec));
+            String inspectCommand = commandGenerator.dockerInspect(imageFullPath);
             CommandResult result = CommandExecutor.executeAndGetResults(inspectCommand);
             buildContext.setImageShaSum(getImageDigest(result));
             WorkflowLogger.endActivity(Status.DONE);
@@ -123,57 +165,51 @@ public class DockerBinaryPushService implements ImagePushService {
         if (!status) {
             throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_PUSH_IMAGE);
         }
-
     }
 
-    private void pullImage(String imageName) throws HyscaleException {
+    @Override
+    public void _pull(String image, BuildContext context) throws HyscaleException {
         WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_PULL);
 
-        if (StringUtils.isBlank(imageName)) {
+        if (StringUtils.isBlank(image)) {
             WorkflowLogger.endActivity(Status.SKIPPING);
             return;
         }
         try {
-            dockerImageUtil.pullImage(imageName);
+            dockerImageUtil.pullImage(image);
         } catch (HyscaleException e) {
             WorkflowLogger.endActivity(Status.FAILED);
             logger.error(e.toString());
             throw e;
         }
         WorkflowLogger.endActivity(Status.DONE);
-
     }
 
-    private void tagImage(String sourceImage, String targetImage) throws HyscaleException {
+    @Override
+    public void _tag(String source, Image dest) throws HyscaleException {
         WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_TAG);
 
-        if (StringUtils.isBlank(sourceImage)) {
+        if (StringUtils.isBlank(source)) {
             WorkflowLogger.endActivity(Status.SKIPPING);
             return;
         }
         try {
-            dockerImageUtil.tagImage(sourceImage, targetImage);
+            dockerImageUtil.tagImage(source, ImageUtil.getImage(dest));
         } catch (HyscaleException e) {
             WorkflowLogger.endActivity(Status.FAILED);
             logger.error(e.toString());
             throw e;
         }
         WorkflowLogger.endActivity(Status.DONE);
-
     }
-
-    /*
-     * If only stack image return stackImageName else return dockerImage name
-     */
-
 
     /**
      * Gets latest digest from inspect image command result.
      *
      * @param result CommandResult obtained after executing docker inspect command.
-     *  1.result is null  - null
-     *  2.result not null - null if no digests
-     *                    - last digest if digests exist
+     *               1.result is null  - null
+     *               2.result not null - null if no digests
+     *               - last digest if digests exist
      * @return digest latest digest from image command result.
      */
     private String getImageDigest(CommandResult result) {
@@ -194,15 +230,14 @@ public class DockerBinaryPushService implements ImagePushService {
             }
             List<String> digestList = mapper.convertValue(digestNode, new TypeReference<List<String>>() {
             });
-            String latestRepoDigest =  digestList.get(digestList.size() - 1);
+            String latestRepoDigest = digestList.get(digestList.size() - 1);
             if (StringUtils.isNotBlank(latestRepoDigest) && latestRepoDigest.contains(ToolConstants.AT_SIGN)) {
-                 return latestRepoDigest.split(ToolConstants.AT_SIGN)[1];
+                return latestRepoDigest.split(ToolConstants.AT_SIGN)[1];
             }
         } catch (IOException e) {
             logger.debug("Error while processing image inspect results ", e);
         }
         return null;
     }
-
 
 }
