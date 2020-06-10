@@ -16,10 +16,11 @@
 package io.hyscale.generator.services.exception;
 
 import io.hyscale.commons.exception.HyscaleErrorCode;
+import io.hyscale.commons.exception.HyscaleErrorGroup;
 
 public enum ManifestErrorCodes implements HyscaleErrorCode {
-    ERROR_WHILE_CREATING_MANIFEST("Error while creating manifests "),
-    ERROR_WHILE_WRITING_MANIFEST_TO_FILE("Error while writing manifest data to file"),
+    ERROR_WHILE_CREATING_MANIFEST("Error while creating manifests ",HyscaleErrorGroup.MANIFEST_GENERATION),
+    ERROR_WHILE_WRITING_MANIFEST_TO_FILE("Error while writing manifest data to file",HyscaleErrorGroup.MANIFEST_GENERATION),
     ERROR_WHILE_INJECTING_MANIFEST_SNIPPET("Error while injecting manifest snippets to manifest"),
     MISSING_STORAGE_CLASS_FOR_VOLUMES("Missing storage class for volumes {}"),
     INVALID_SIZE_FORMAT("Invalid size format {} "),
@@ -27,14 +28,25 @@ public enum ManifestErrorCodes implements HyscaleErrorCode {
     INVALID_FORMAT_CPUTHRESHOLD("Invalid format for cpuThreshold , use : <number>% ");
 
     private String message;
+    private int code;
 
     ManifestErrorCodes(String message) {
         this.message = message;
     }
 
+    ManifestErrorCodes(String message, HyscaleErrorGroup errorGroup){
+        this.message=message;
+        this.code=errorGroup.getGroupCode();
+    }
+
     @Override
     public String getErrorMessage() {
         return this.message;
+    }
+
+    @Override
+    public int getErrorCode() {
+        return this.code;
     }
 
 }

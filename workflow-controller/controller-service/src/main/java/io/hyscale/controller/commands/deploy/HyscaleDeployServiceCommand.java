@@ -233,7 +233,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
         return isCommandFailed ? ToolConstants.HYSCALE_ERROR_CODE : 0;
     }
 
-    private boolean executeInvoker(ComponentInvoker<WorkflowContext> invoker, WorkflowContext context) {
+    private boolean executeInvoker(ComponentInvoker<WorkflowContext> invoker, WorkflowContext context) throws HyscaleException {
         if (context.isFailed()) {
             return false;
         }
@@ -243,6 +243,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
             logger.error("Error while executing component invoker: {}, for app: {}, service: {}",
                     invoker.getClass(), appName, context.getServiceName(), e);
             context.setFailed(true);
+            throw e;
         }
         return context.isFailed() ? false : true;
     }
@@ -254,8 +255,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
 
         long startTime = (long) workflowContext.getAttribute(WorkflowConstants.DEPLOY_START_TIME);
         CommandUtil.logMetaInfo(String.valueOf((System.currentTimeMillis() - startTime) / 1000) + "s", ControllerActivity.TOTAL_TIME);
-        CommandUtil.logMetaInfo(SetupConfig.getMountPathOf((String) workflowContext.getAttribute(WorkflowConstants.DOCKERFILE_INPUT)),
-                ControllerActivity.DOCKERFILE_PATH);
+        CommandUtil.logMetaInfo(SetupConfig.getMountPathOf((String) workflowContext.getAttribute(WorkflowConstants.DOCKERFILE_INPUT)), ControllerActivity.DOCKERFILE_PATH);
         CommandUtil.logMetaInfo(SetupConfig.getMountPathOf((String) workflowContext.getAttribute(WorkflowConstants.BUILD_LOGS)),
                 ControllerActivity.BUILD_LOGS);
         CommandUtil.logMetaInfo(SetupConfig.getMountPathOf((String) workflowContext.getAttribute(WorkflowConstants.PUSH_LOGS)),

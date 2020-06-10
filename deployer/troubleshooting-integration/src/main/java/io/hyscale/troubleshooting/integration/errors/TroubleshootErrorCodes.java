@@ -25,13 +25,23 @@ public enum TroubleshootErrorCodes implements HyscaleErrorCode {
     CANNOT_DETERMINE_CAUSE_OF_THE_ERROR("Cannot determine the cause of the problem");
 
     private String message;
-
+    private int code;
     TroubleshootErrorCodes(String message) {
         this.message = message;
+    }
+
+    TroubleshootErrorCodes(String message,Integer code){
+        this.message=message;
+        this.code=code;
     }
 
     @Override
     public String getErrorMessage() {
         return message;
+    }
+
+    @Override
+    public int getErrorCode() {
+        return this.code;
     }
 }

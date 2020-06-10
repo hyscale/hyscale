@@ -40,14 +40,25 @@ public enum ControllerErrorCodes implements HyscaleErrorCode {
     FAILED_TO_SCALE_SERVICE("Failed to scale {} of application {} in {} namespace");
 
     private String message;
+    private int code;
 
     ControllerErrorCodes(String message) {
         this.message = message;
     }
 
+    ControllerErrorCodes(String message,Integer code){
+        this.message=message;
+        this.code=code;
+    }
+
     @Override
     public String getErrorMessage() {
         return this.message;
+    }
+
+    @Override
+    public int getErrorCode() {
+        return this.code;
     }
 
 }

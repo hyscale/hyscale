@@ -83,6 +83,6 @@ public class HyscaleException extends Exception {
     }
 
     public int getCode() {
-        return code;
+        return (hyscaleErrorCode.getErrorCode() > 0) ? hyscaleErrorCode.getErrorCode() : code;
     }
 }

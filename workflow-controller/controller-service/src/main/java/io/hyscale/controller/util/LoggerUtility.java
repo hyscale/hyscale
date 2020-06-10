@@ -111,6 +111,7 @@ public class LoggerUtility {
                 WorkflowLogger.error(ControllerActivity.FAILED_TO_STREAM_SERVICE_LOGS, ex.getMessage());
             }
             WorkflowLogger.error(ControllerActivity.CHECK_SERVICE_STATUS);
+            throw ex;
         } finally {
             WorkflowLogger.footer();
         }

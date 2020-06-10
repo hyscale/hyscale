@@ -15,9 +15,27 @@
  */
 package io.hyscale.commons.exception;
 
-public interface HyscaleErrorCode {
+public enum HyscaleErrorGroup{
+    SERVICE_SPEC_PROCESSING(12),
+    SERVICE_PROFILE_PROCESSING(13),
+    CLUSTER_VALIDATION (14),
+    DOCKER_FILE_GENERATION (15),
+    IMAGE_BUILD (16),
+    IMAGE_PUSH (17),
+    MANIFEST_GENERATION (18),
+    DEPLOYER_APPLY (19),
+    WAIT_FOR_DEPLOYMENT (20),
+    GET_SERVICE_IP (21),
+    GET_API_CLIENT(22),
+    GET_LOGS(23);
 
-	String getErrorMessage();
-    int getErrorCode();
+    Integer groupCode;
 
+    HyscaleErrorGroup(Integer groupCode) {
+        this.groupCode=groupCode;
+    }
+
+    public Integer getGroupCode() {
+        return groupCode;
+    }
 }

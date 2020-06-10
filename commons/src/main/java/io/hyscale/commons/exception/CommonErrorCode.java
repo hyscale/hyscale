@@ -46,17 +46,27 @@ public enum CommonErrorCode implements HyscaleErrorCode {
     UNABLE_READ_SCHEMA("Cannot process empty schema {}"),
     ERROR_OCCURED_WHILE_SCHEMA_VALIDATION("Schema validation failed due to \"{}\""),
     INVALID_JSON_FORMAT("Json format is invalid"),
-    FAILED_TO_CONNECT_TO_CLUSTER("Failed to connect to cluster");
+    FAILED_TO_CONNECT_TO_CLUSTER("Failed to connect to cluster",HyscaleErrorGroup.CLUSTER_VALIDATION);
 
     private String message;
+    private int code;
 
     CommonErrorCode(String message) {
         this.message = message;
     }
 
+    CommonErrorCode(String message,HyscaleErrorGroup errorGroup){
+        this.message=message;
+        this.code=errorGroup.getGroupCode();
+    }
     @Override
     public String getErrorMessage() {
         return this.message;
+    }
+
+    @Override
+    public int getErrorCode() {
+        return this.code;
     }
 
 }

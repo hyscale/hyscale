@@ -170,7 +170,7 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
                 manifestGeneratorComponentInvoker.execute(workflowContext);
             } catch (HyscaleException e) {
                 logger.error("Error while generating manifest for app: {}, service: {}", appName, serviceName, e);
-                isFailed = true;
+                throw e;
             }
             if (workflowContext.isFailed()) {
                 isFailed = true;
