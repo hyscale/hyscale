@@ -15,7 +15,7 @@
  */
 package io.hyscale.commons.exception;
 
-public enum CommonErrorCode implements HyscaleErrorCode {
+public enum CommonErrorCode implements HyscaleError {
     FAILED_TO_GET_VALID_INPUT("Could not get valid input"),
     INVALID_INPUT_PROVIDED("Input \"{}\" is invalid"),
     FAILED_TO_EXECUTE_COMMAND("Failed to execute command {}"),
@@ -60,12 +60,12 @@ public enum CommonErrorCode implements HyscaleErrorCode {
         this.code=errorGroup.getGroupCode();
     }
     @Override
-    public String getErrorMessage() {
+    public String getMessage() {
         return this.message;
     }
 
     @Override
-    public int getErrorCode() {
+    public int getCode() {
         return this.code;
     }
 

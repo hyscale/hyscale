@@ -97,9 +97,9 @@ public class HyscaleInitializer implements CommandLineRunner {
             args = ProfileArgsManipulator.updateArgs(args);
             exitCode = commandLine.execute(args);
         } catch (ParameterException e) {
-            logger.error("Error while processing command, error {}", ControllerErrorCodes.INVALID_COMMAND.getErrorMessage(), e);
+            logger.error("Error while processing command, error {}", ControllerErrorCodes.INVALID_COMMAND.getMessage(), e);
         } catch (Throwable e) {
-            logger.error("Unexpected error in processing command, error {}", ControllerErrorCodes.UNEXPECTED_ERROR.getErrorMessage(), e);
+            logger.error("Unexpected error in processing command, error {}", ControllerErrorCodes.UNEXPECTED_ERROR.getMessage(), e);
         } finally {
             logger.debug("HyscaleInitializer::exit code: {}", exitCode);
             ResourceCleanUpUtil.performCleanUp();

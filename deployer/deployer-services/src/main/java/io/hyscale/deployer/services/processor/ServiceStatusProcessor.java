@@ -110,7 +110,7 @@ public class ServiceStatusProcessor {
                 deploymentStatus.setServiceAddress(serviceAddress.toString());
             }
         } catch (HyscaleException e) {
-            logger.debug("Failed to get service address {} ", e.getHyscaleErrorCode());
+            logger.debug("Failed to get service address {} ", e.getHyscaleError());
             deploymentStatus.setServiceAddress("Failed to get service address, try again");
         }
         return deploymentStatus;

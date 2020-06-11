@@ -97,7 +97,7 @@ public class DockerfileGeneratorComponentInvoker extends ComponentInvoker<Workfl
     protected void onError(WorkflowContext context, HyscaleException he) throws HyscaleException {
         WorkflowLogger.header(ControllerActivity.ERROR);
         WorkflowLogger.error(ControllerActivity.CAUSE, he != null ?
-                he.getMessage() : DockerfileErrorCodes.FAILED_TO_GENERATE_DOCKERFILE.getErrorMessage());
+                he.getMessage() : DockerfileErrorCodes.FAILED_TO_GENERATE_DOCKERFILE.getMessage());
         context.setFailed(true);
         if (he != null) {
             throw he;

@@ -104,7 +104,7 @@ public class LoggerUtility {
         } catch (HyscaleException ex) {
             logger.error("Error while getting deployment logs for service: {}, in namespace: {}", serviceName,
                     namespace, ex);
-            if (ex.getHyscaleErrorCode() == DeployerErrorCodes.FAILED_TO_RETRIEVE_POD) {
+            if (ex.getHyscaleError() == DeployerErrorCodes.FAILED_TO_RETRIEVE_POD) {
                 WorkflowLogger.error(ControllerActivity.SERVICE_NOT_CREATED);
             } else {
                 context.setFailed(true);

@@ -15,10 +15,10 @@
  */
 package io.hyscale.dockerfile.gen.services.exception;
 
-import io.hyscale.commons.exception.HyscaleErrorCode;
+import io.hyscale.commons.exception.HyscaleError;
 import io.hyscale.commons.exception.HyscaleErrorGroup;
 
-public enum DockerfileErrorCodes implements HyscaleErrorCode {
+public enum DockerfileErrorCodes implements HyscaleError {
     FAILED_TO_GENERATE_DOCKERFILE("Failed to generate Dockerfile",HyscaleErrorGroup.DOCKER_FILE_GENERATION),
     FAILED_TO_COPY_ARTIFACT("Failed to copy artifacts"),
     FAILED_TO_CREATE_SCRIPT("Failed to create script"),
@@ -42,12 +42,12 @@ public enum DockerfileErrorCodes implements HyscaleErrorCode {
     }
 
     @Override
-    public String getErrorMessage() {
+    public String getMessage() {
         return this.message;
     }
 
     @Override
-    public int getErrorCode() {
+    public int getCode() {
         return this.code;
     }
 

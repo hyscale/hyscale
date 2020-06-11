@@ -15,14 +15,14 @@
  */
 package io.hyscale.deployer.services.exception;
 
-import io.hyscale.commons.exception.HyscaleErrorCode;
+import io.hyscale.commons.exception.HyscaleError;
 import io.hyscale.commons.exception.HyscaleErrorGroup;
 
 /**
  * Error Codes for Deployer Service
  *
  */
-public enum DeployerErrorCodes implements HyscaleErrorCode {
+public enum DeployerErrorCodes implements HyscaleError {
     ERROR_WHILE_CREATING_PATCH("Error while creating patch "),
     KUBE_CONFIG_NOT_FOUND("Cannot find kubeconfig at {}",HyscaleErrorGroup.GET_API_CLIENT),
     INVALID_KUBE_CONFIG("Kubeconfig {} seems to be invalid ",HyscaleErrorGroup.GET_API_CLIENT),
@@ -36,7 +36,7 @@ public enum DeployerErrorCodes implements HyscaleErrorCode {
     FAILED_TO_DELETE_RESOURCE("Failed to delete resource {}"),
     FAILED_TO_UPDATE_RESOURCE("Failed to update resource {}"),
     FAILED_TO_PATCH_RESOURCE("Failed to patch resource {}"),
-    FAILED_TO_GET_SERVICE_ADDRESS("Failed to get service address of service \"{}\" in namespace \"{}\"",HyscaleErrorGroup.GET_SERVICE_IP),
+    FAILED_TO_GET_SERVICE_ADDRESS("Failed to get service address",HyscaleErrorGroup.GET_SERVICE_IP),
     MANIFEST_REQUIRED("Manifest required",HyscaleErrorGroup.DEPLOYER_APPLY),
     FAILED_TO_APPLY_MANIFEST("Failed to apply manifests",HyscaleErrorGroup.DEPLOYER_APPLY),
     FAILED_TO_READ_MANIFEST("Failed to read manifests"),
@@ -74,12 +74,12 @@ public enum DeployerErrorCodes implements HyscaleErrorCode {
     }
 
     @Override
-    public String getErrorMessage() {
+    public String getMessage() {
         return this.message;
     }
 
     @Override
-    public int getErrorCode() {
+    public int getCode() {
         return this.code;
     }
 

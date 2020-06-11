@@ -15,10 +15,10 @@
  */
 package io.hyscale.builder.services.exception;
 
-import io.hyscale.commons.exception.HyscaleErrorCode;
+import io.hyscale.commons.exception.HyscaleError;
 import io.hyscale.commons.exception.HyscaleErrorGroup;
 
-public enum ImageBuilderErrorCodes implements HyscaleErrorCode {
+public enum ImageBuilderErrorCodes implements HyscaleError {
     DOCKER_NOT_INSTALLED("Docker is not installed",HyscaleErrorGroup.IMAGE_BUILD),
     FAILED_TO_TAG_IMAGE("Failed to tag image ",HyscaleErrorGroup.IMAGE_BUILD),
     FAILED_TO_BUILD_IMAGE("Failed to build image",HyscaleErrorGroup.IMAGE_BUILD),
@@ -44,12 +44,12 @@ public enum ImageBuilderErrorCodes implements HyscaleErrorCode {
     }
 
     @Override
-    public String getErrorMessage() {
+    public String getMessage() {
         return this.message;
     }
 
     @Override
-    public int getErrorCode() {
+    public int getCode() {
         return this.code;
     }
 

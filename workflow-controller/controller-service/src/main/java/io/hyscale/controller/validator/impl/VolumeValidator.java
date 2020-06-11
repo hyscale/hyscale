@@ -293,7 +293,7 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 		} catch (HyscaleException ex) {
 			logger.error("Error while getting storage class list, error {}", ex.getMessage());
 			WorkflowLogger.persist(ValidatorActivity.VOLUME_VALIDATION_FAILED, LoggerTags.ERROR,
-			        DeployerErrorCodes.NO_STORAGE_CLASS_IN_K8S.getErrorMessage());
+			        DeployerErrorCodes.NO_STORAGE_CLASS_IN_K8S.getMessage());
 			throw new HyscaleException(DeployerErrorCodes.NO_STORAGE_CLASS_IN_K8S);
 		}
 

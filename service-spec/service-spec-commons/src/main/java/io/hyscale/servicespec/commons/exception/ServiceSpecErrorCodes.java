@@ -15,14 +15,14 @@
  */
 package io.hyscale.servicespec.commons.exception;
 
-import io.hyscale.commons.exception.HyscaleErrorCode;
+import io.hyscale.commons.exception.HyscaleError;
 import io.hyscale.commons.exception.HyscaleErrorGroup;
 
 /**
  * Error codes for Service Spec related operations
  *
  */
-public enum ServiceSpecErrorCodes implements HyscaleErrorCode {
+public enum ServiceSpecErrorCodes implements HyscaleError {
 
     SERVICE_SPEC_REQUIRED("Service spec required",HyscaleErrorGroup.SERVICE_SPEC_PROCESSING),
     SERVICE_SPEC_PARSE_ERROR("Failed to parse service spec",HyscaleErrorGroup.SERVICE_SPEC_PROCESSING),
@@ -50,11 +50,11 @@ public enum ServiceSpecErrorCodes implements HyscaleErrorCode {
     }
 
     @Override
-    public String getErrorMessage() {
+    public String getMessage() {
         return this.message;
     }
     @Override
-    public int getErrorCode() {
+    public int getCode() {
         return this.code;
     }
 

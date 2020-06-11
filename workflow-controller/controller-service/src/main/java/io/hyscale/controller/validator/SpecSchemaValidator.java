@@ -62,21 +62,21 @@ public abstract class SpecSchemaValidator implements Validator<File> {
             jsonData = DataFormatConverter.yamlToJson(specFile);
         } catch (HyscaleException e) {
             WorkflowLogger.persist(getActivity(), LoggerTags.ERROR, fileName, ERROR_MESSAGE);
-            throw new HyscaleException(e.getHyscaleErrorCode(), ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE);
+            throw new HyscaleException(e.getHyscaleError(), ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE);
         }
         try {
             processingReport = schemaValidator.validateSpec(jsonData,
                     getReferenceSchemaType());
         } catch (HyscaleException e) {
             WorkflowLogger.persist(getActivity(), LoggerTags.ERROR, fileName, e.getMessage());
-            throw new HyscaleException(e.getHyscaleErrorCode(), ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE);
+            throw new HyscaleException(e.getHyscaleError(), ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE);
         }
         if (processingReport.isSuccess()) {
             try {
                 return validateData(specFile);
             } catch (HyscaleException e) {
                 WorkflowLogger.persist(getActivity(), LoggerTags.ERROR, fileName, e.getMessage());
-                throw new HyscaleException(e.getHyscaleErrorCode(), ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE);
+                throw new HyscaleException(e.getHyscaleError(), ToolConstants.SCHEMA_VALIDATION_FAILURE_ERROR_CODE);
             }
         }
         String errorMessage = getErrorMessage(processingReport);

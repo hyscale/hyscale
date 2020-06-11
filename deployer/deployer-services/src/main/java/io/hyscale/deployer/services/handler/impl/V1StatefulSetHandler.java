@@ -276,7 +276,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
                 delete(apiClient, statefulSet.getMetadata().getName(), namespace, wait);
             }
         } catch (HyscaleException e) {
-            if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleErrorCode())) {
+            if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleError())) {
                 return false;
             }
             throw e;

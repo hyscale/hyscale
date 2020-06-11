@@ -78,7 +78,7 @@ public class ProfileSpecProcessorTest {
             HyscaleInputSpec hyscaleInputSpec = profileSpecProcessor.process(withName("test"), serviceSpecList);
             assertFalse(hyscaleInputSpec != null);
         } catch (HyscaleException e) {
-            assertTrue(ControllerErrorCodes.PROFILE_NOT_PROVIDED_FOR_SERVICES.equals(e.getHyscaleErrorCode()));
+            assertTrue(ControllerErrorCodes.PROFILE_NOT_PROVIDED_FOR_SERVICES.equals(e.getHyscaleError()));
         } catch (IllegalAccessException | NoSuchFieldException e) {
             fail();
         }
@@ -107,7 +107,7 @@ public class ProfileSpecProcessorTest {
             HyscaleInputSpec hyscaleInputSpec = profileSpecProcessor.process(withProfileFiles(profileList), serviceSpecList);
             assertFalse(hyscaleInputSpec != null);
         } catch (HyscaleException e) {
-            assertTrue(ControllerErrorCodes.UNIQUE_PROFILE_REQUIRED.equals(e.getHyscaleErrorCode()));
+            assertTrue(ControllerErrorCodes.UNIQUE_PROFILE_REQUIRED.equals(e.getHyscaleError()));
         } catch (IllegalAccessException | NoSuchFieldException e) {
             fail();
         }
@@ -116,7 +116,7 @@ public class ProfileSpecProcessorTest {
             HyscaleInputSpec hyscaleInputSpec = profileSpecProcessor.process(withName("multiple"), serviceSpecList);
             assertFalse(hyscaleInputSpec != null);
         } catch (HyscaleException e) {
-            assertTrue(ControllerErrorCodes.UNIQUE_PROFILE_REQUIRED.equals(e.getHyscaleErrorCode()));
+            assertTrue(ControllerErrorCodes.UNIQUE_PROFILE_REQUIRED.equals(e.getHyscaleError()));
         } catch (IllegalAccessException | NoSuchFieldException e) {
             fail();
         }
@@ -134,7 +134,7 @@ public class ProfileSpecProcessorTest {
             HyscaleInputSpec hyscaleInputSpec = profileSpecProcessor.process(withProfileFiles(profileList), serviceSpecList);
             assertFalse(hyscaleInputSpec != null);
         } catch (HyscaleException e) {
-            assertTrue(ControllerErrorCodes.INPUT_VALIDATION_FAILED.equals(e.getHyscaleErrorCode()));
+            assertTrue(ControllerErrorCodes.INPUT_VALIDATION_FAILED.equals(e.getHyscaleError()));
         } catch (IllegalAccessException | NoSuchFieldException e) {
             fail();
         }

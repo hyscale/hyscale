@@ -15,9 +15,9 @@
  */
 package io.hyscale.troubleshooting.integration.errors;
 
-import io.hyscale.commons.exception.HyscaleErrorCode;
+import io.hyscale.commons.exception.HyscaleError;
 
-public enum TroubleshootErrorCodes implements HyscaleErrorCode {
+public enum TroubleshootErrorCodes implements HyscaleError {
 
     ERROR_WHILE_BUILDING_RESOURCES("Error while building resources for troubleshooting service {}"),
     INVALID_ACTION("Action is not applicable for this resource"),
@@ -36,12 +36,12 @@ public enum TroubleshootErrorCodes implements HyscaleErrorCode {
     }
 
     @Override
-    public String getErrorMessage() {
+    public String getMessage() {
         return message;
     }
 
     @Override
-    public int getErrorCode() {
+    public int getCode() {
         return this.code;
     }
 }

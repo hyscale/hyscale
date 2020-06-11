@@ -15,9 +15,9 @@
  */
 package io.hyscale.commons.exception;
 
-public interface HyscaleErrorCode {
+public interface HyscaleError {
 
-	String getErrorMessage();
-    int getErrorCode();
+	String getMessage();
+    int getCode();
 
 }

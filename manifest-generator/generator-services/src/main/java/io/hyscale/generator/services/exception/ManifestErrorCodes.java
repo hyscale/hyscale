@@ -15,10 +15,10 @@
  */
 package io.hyscale.generator.services.exception;
 
-import io.hyscale.commons.exception.HyscaleErrorCode;
+import io.hyscale.commons.exception.HyscaleError;
 import io.hyscale.commons.exception.HyscaleErrorGroup;
 
-public enum ManifestErrorCodes implements HyscaleErrorCode {
+public enum ManifestErrorCodes implements HyscaleError {
     ERROR_WHILE_CREATING_MANIFEST("Error while creating manifests ",HyscaleErrorGroup.MANIFEST_GENERATION),
     ERROR_WHILE_WRITING_MANIFEST_TO_FILE("Error while writing manifest data to file",HyscaleErrorGroup.MANIFEST_GENERATION),
     ERROR_WHILE_INJECTING_MANIFEST_SNIPPET("Error while injecting manifest snippets to manifest"),
@@ -40,12 +40,12 @@ public enum ManifestErrorCodes implements HyscaleErrorCode {
     }
 
     @Override
-    public String getErrorMessage() {
+    public String getMessage() {
         return this.message;
     }
 
     @Override
-    public int getErrorCode() {
+    public int getCode() {
         return this.code;
     }
 

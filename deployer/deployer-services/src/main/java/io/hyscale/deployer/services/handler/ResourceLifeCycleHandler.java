@@ -204,7 +204,7 @@ public interface ResourceLifeCycleHandler<T> {
                     get(apiClient, pendingResource, namespace);
                     logger.debug("Resource {} found to be existing, waiting for resource deletion", pendingResource);
                 } catch (HyscaleException e) {
-                    if (e.getHyscaleErrorCode() == DeployerErrorCodes.RESOURCE_NOT_FOUND) {
+                    if (e.getHyscaleError() == DeployerErrorCodes.RESOURCE_NOT_FOUND) {
                         deletePendingResourceIterator.remove();
                     }
                 }

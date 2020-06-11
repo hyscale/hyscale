@@ -19,45 +19,45 @@ import io.hyscale.commons.constants.ToolConstants;
 
 public class HyscaleException extends Exception {
 
-    private HyscaleErrorCode hyscaleErrorCode;
+    private HyscaleError hyscaleError;
     private String[] args;
     private Integer code = ToolConstants.HYSCALE_ERROR_CODE;
 
-    public HyscaleException(HyscaleErrorCode hyscaleErrorCode, String... args) {
-        super(hyscaleErrorCode.getErrorMessage());
-        this.hyscaleErrorCode = hyscaleErrorCode;
+    public HyscaleException(HyscaleError hyscaleError, String... args) {
+        super(hyscaleError.getMessage());
+        this.hyscaleError = hyscaleError;
         this.args = args;
     }
 
-    public HyscaleException(HyscaleErrorCode hyscaleErrorCode) {
-        super(hyscaleErrorCode.getErrorMessage());
-        this.hyscaleErrorCode = hyscaleErrorCode;
+    public HyscaleException(HyscaleError hyscaleError) {
+        super(hyscaleError.getMessage());
+        this.hyscaleError = hyscaleError;
     }
 
-    public HyscaleException(Throwable throwable, HyscaleErrorCode hyscaleErrorCode) {
-        super(hyscaleErrorCode.getErrorMessage(), throwable);
-        this.hyscaleErrorCode = hyscaleErrorCode;
+    public HyscaleException(Throwable throwable, HyscaleError hyscaleError) {
+        super(hyscaleError.getMessage(), throwable);
+        this.hyscaleError = hyscaleError;
     }
 
-    public HyscaleException(Throwable throwable, HyscaleErrorCode hyscaleErrorCode, String... args) {
-        super(hyscaleErrorCode.getErrorMessage(), throwable);
-        this.hyscaleErrorCode = hyscaleErrorCode;
+    public HyscaleException(Throwable throwable, HyscaleError hyscaleError, String... args) {
+        super(hyscaleError.getMessage(), throwable);
+        this.hyscaleError = hyscaleError;
         this.args = args;
     }
 
-    public HyscaleException(HyscaleErrorCode hyscaleErrorCode, Integer code) {
-        this.hyscaleErrorCode = hyscaleErrorCode;
+    public HyscaleException(HyscaleError hyscaleError, Integer code) {
+        this.hyscaleError = hyscaleError;
         this.code = code;
     }
 
-    public HyscaleException(HyscaleErrorCode hyscaleErrorCode, Integer code, String... args) {
-        this.hyscaleErrorCode = hyscaleErrorCode;
+    public HyscaleException(HyscaleError hyscaleError, Integer code, String... args) {
+        this.hyscaleError = hyscaleError;
         this.code = code;
         this.args = args;
     }
 
-    public HyscaleErrorCode getHyscaleErrorCode() {
-        return hyscaleErrorCode;
+    public HyscaleError getHyscaleError() {
+        return hyscaleError;
     }
 
     public String[] getArgs() {
@@ -68,9 +68,9 @@ public class HyscaleException extends Exception {
     public String toString() {
         StringBuilder sb = new StringBuilder("[");
         if (args != null && args.length != 0 ) {
-            sb.append(String.format(hyscaleErrorCode.getErrorMessage().replaceAll("\\{\\}", "%s"), args));
+            sb.append(String.format(hyscaleError.getMessage().replaceAll("\\{\\}", "%s"), args));
         } else {
-            sb.append(hyscaleErrorCode.getErrorMessage());
+            sb.append(hyscaleError.getMessage());
         }
         sb.append("]");
         return sb.toString();
@@ -83,6 +83,6 @@ public class HyscaleException extends Exception {
     }
 
     public int getCode() {
-        return (hyscaleErrorCode.getErrorCode() > 0) ? hyscaleErrorCode.getErrorCode() : code;
+        return (hyscaleError.getCode() > 0) ? hyscaleError.getCode() : code;
     }
 }
