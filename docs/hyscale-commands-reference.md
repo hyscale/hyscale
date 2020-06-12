@@ -159,7 +159,7 @@ Options:
   -a --application string     name of application `<applicationName>`   
 ```
 
-###Description:
+#### Description:
 
 To get the replica status of a particular deployed service, use "get replica status" command. The command requires service name, Kubernetes namespace and application name as inputs.
 
@@ -179,7 +179,7 @@ Options:
   --to integer                scales service to a  specified value    
 ```
 
-###Description:
+#### Description:
 
 To scale a service of an application
 
