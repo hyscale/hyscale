@@ -243,7 +243,6 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
             logger.error("Error while executing component invoker: {}, for app: {}, service: {}",
                     invoker.getClass(), appName, context.getServiceName(), e);
             context.setFailed(true);
-            throw e;
         }
         return context.isFailed() ? false : true;
     }
