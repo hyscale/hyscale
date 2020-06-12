@@ -13,24 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.generator.services.constants;
+package io.hyscale.commons.models;
 
-public class ManifestGenConstants {
+import io.hyscale.commons.constants.ToolConstants;
 
-	public static final String NAME_DELIMITER = "-";
+public class ClusterVersionInfo {
 
-	public static final String POD_SPEC_OWNER = "pod-spec-owner";
+    private String major;
+    private String minor;
 
-	public static final String YAML_EXTENSION = ".yaml";
+    public String getMajor() {
+        return major;
+    }
 
-	public static final String IMAGE_SHA_SUM = "IMAGE_SHA_SUM";
+    public void setMajor(String majorVersion) {
+        this.major = majorVersion;
+    }
 
-	public static final String DEFAULT_CONFIG_PROPS_FILE = "config.props";
+    public String getMinor() {
+        return minor;
+    }
 
-	public static final String DEFAULT_SECRETS_FILE = "secret.props";
+    public void setMinor(String minorVersion) {
+        this.minor = minorVersion;
+    }
 
-	public static final String DEFAULT_IMAGE_PULL_POLICY = "Always";
-
-	public static final String IMAGE_PULL_SECRET_NAME = "ImagePullSecretName";
-	
+    public String getVersion() {
+        return major + ToolConstants.DOT + minor;
+    }
 }

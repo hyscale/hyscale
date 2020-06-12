@@ -20,6 +20,7 @@ import java.util.List;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.AuthConfig;
+import io.hyscale.commons.models.ClusterVersionInfo;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.deployer.core.model.AppMetadata;
@@ -176,4 +177,6 @@ public interface Deployer<T extends AuthConfig> {
      */
 
     public ScaleStatus scale(T authConfig, String appName, String serviceName, String namespace, ScaleSpec scaleSpec) throws HyscaleException;
+    
+    public ClusterVersionInfo getVersion(T authConfig) throws HyscaleException;
 }

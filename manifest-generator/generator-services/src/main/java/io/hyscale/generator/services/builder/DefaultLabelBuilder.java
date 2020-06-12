@@ -28,36 +28,27 @@ public class DefaultLabelBuilder {
     public static Map<String, String> build(ServiceMetadata serviceMetadata) {
         Map<ResourceLabelKey, String> resourceLabelMap = ResourceLabelBuilder.build(serviceMetadata.getAppName(), serviceMetadata.getEnvName(),
                 serviceMetadata.getServiceName());
-        if (resourceLabelMap != null && !resourceLabelMap.isEmpty()) {
-            Map<String, String> defaultLabels = resourceLabelMap.entrySet().stream().filter(each -> {
-                return each != null;
-            }).collect(Collectors.toMap(k -> k.getKey().getLabel(), v -> v.getValue()));
-            return defaultLabels;
-        }
-        return null;
+        return build(resourceLabelMap);
     }
 
     public static Map<String, String> build(String appName, String envName, String serviceName) {
         Map<ResourceLabelKey, String> resourceLabelMap = ResourceLabelBuilder.build(appName, envName,
                 serviceName);
-        if (resourceLabelMap != null && !resourceLabelMap.isEmpty()) {
-            Map<String, String> defaultLabels = resourceLabelMap.entrySet().stream().filter(each -> {
-                return each != null;
-            }).collect(Collectors.toMap(k -> k.getKey().getLabel(), v -> v.getValue()));
-            return defaultLabels;
-        }
-        return null;
+        return build(resourceLabelMap);
     }
 
     public static Map<String, String> build(String appName, String envName) {
         Map<ResourceLabelKey, String> resourceLabelMap = ResourceLabelBuilder.build(appName, envName);
-        if (resourceLabelMap != null && !resourceLabelMap.isEmpty()) {
-            Map<String, String> defaultLabels = resourceLabelMap.entrySet().stream().filter(each -> {
-                return each != null;
-            }).collect(Collectors.toMap(k -> k.getKey().getLabel(), v -> v.getValue()));
-            return defaultLabels;
+        return build(resourceLabelMap);
+    }
+    
+    public static Map<String, String> build(Map<ResourceLabelKey, String> resourceLabelMap){
+        if (resourceLabelMap == null || resourceLabelMap.isEmpty()) {
+            return null;
         }
-        return null;
+        return resourceLabelMap.entrySet().stream().filter(each -> {
+            return each != null;
+        }).collect(Collectors.toMap(k -> k.getKey().getLabel(), v -> v.getValue()));
     }
 
 }
