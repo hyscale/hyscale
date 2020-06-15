@@ -64,7 +64,7 @@ public class ImageBuilderConfig {
 
     public String getDockerHost(){
         String host = System.getenv(DOCKER_HOST);
-        if(!StringUtils.isBlank(host)){
+        if(StringUtils.isNotBlank(host)){
             return host;
         }
         return WindowsUtil.isHostWindows() ? WindowsUtil.dockerHost() : UNIX_DOCKER_SOCK;

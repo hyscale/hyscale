@@ -20,7 +20,6 @@ import javax.annotation.PostConstruct;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.constants.WorkflowConstants;
-import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.manager.RegistryManager;
 import io.hyscale.controller.model.WorkflowContext;
 
@@ -47,6 +46,8 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
  */
 @Component
 public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext> {
+    
+    private static final Logger logger = LoggerFactory.getLogger(ImageBuildComponentInvoker.class);
 
     @Autowired
     private ImageBuildPushService imageBuildService;
@@ -61,8 +62,6 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
     public void init() {
         super.addHook(imageCleanUpHook);
     }
-
-    private static final Logger logger = LoggerFactory.getLogger(ImageBuildComponentInvoker.class);
 
     @Override
     protected void doExecute(WorkflowContext context) throws HyscaleException {

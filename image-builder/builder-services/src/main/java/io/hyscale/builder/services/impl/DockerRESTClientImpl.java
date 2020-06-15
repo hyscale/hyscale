@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Pramati Prism, Inc.
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,12 +15,12 @@
  */
 package io.hyscale.builder.services.impl;
 
-import com.fasterxml.jackson.databind.ser.std.CollectionSerializer;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.*;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.AuthConfig;
+import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.api.model.PushResponseItem;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.command.BuildImageResultCallback;
@@ -30,17 +30,18 @@ import io.hyscale.builder.core.models.BuildContext;
 import io.hyscale.builder.core.models.DockerImage;
 import io.hyscale.builder.core.models.ImageBuilderActivity;
 import io.hyscale.builder.services.config.ImageBuilderConfig;
+import io.hyscale.builder.services.constants.DockerImageConstants;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
 import io.hyscale.builder.services.service.ImageBuilder;
 import io.hyscale.builder.services.spring.DockerClientCondition;
+import io.hyscale.commons.commands.provider.ImageCommandProvider;
+import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.io.HyscaleFilesUtil;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Status;
-import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Dockerfile;
 import io.hyscale.servicespec.commons.model.service.Image;
-import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.hyscale.servicespec.commons.util.ImageUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -62,17 +63,21 @@ import java.util.*;
  * the default host based on the operating system.
  */
 
-@Conditional(DockerClientCondition.class)
 @Component
+@Conditional(DockerClientCondition.class)
 public class DockerRESTClientImpl implements ImageBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(DockerRESTClientImpl.class);
-
+    
+    private static final String SHA256 = "sha256";
+    
     @Autowired
     private ImageBuilderConfig imageBuilderConfig;
+    
+    @Autowired
+    private ImageCommandProvider imageCommandProvider;
 
     private DefaultDockerClientConfig clientConfig;
-
 
     @PostConstruct
     public void init() {
@@ -106,35 +111,86 @@ public class DockerRESTClientImpl implements ImageBuilder {
     }
 
     @Override
-    public DockerImage _build(Dockerfile dockerfile, String tag, BuildContext context) throws HyscaleException {
+    public DockerImage _build(Dockerfile dockerfile, String tag, BuildContext buildContext) throws HyscaleException {
         // validate dockerfile
+        String appName = buildContext.getAppName();
+        String serviceName = buildContext.getServiceName();
+        
+        String buildImageName = imageCommandProvider.getBuildImageNameWithTag(appName, serviceName, tag);
+        BuildImageCmd buildImageCmd = getBuildCommand(dockerfile, buildImageName);
+        
+        String logFilePath = imageBuilderConfig.getDockerBuildlog(appName, serviceName);
+        buildContext.setBuildLogs(logFilePath);
+        WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_BUILD_STARTED);
+        if (buildContext.isVerbose()) {
+            WorkflowLogger.header(ImageBuilderActivity.BUILD_LOGS);
+        }
+        BuildImageResultCallback callback = new BuildImageResultCallback() {
+            @Override
+            public void onNext(BuildResponseItem item) {
+                try {
+                    String stream = item.getStream();
+                    if (stream != null) {
+                        HyscaleFilesUtil.updateFile(logFilePath, stream.concat("\n"));
+                        if (buildContext.isVerbose()) {
+                            WorkflowLogger.write(stream);
+                        }
+                    }
+                } catch (HyscaleException e) {
+                    logger.error("Error while writing build progress to build logs", e);
+                }
+                super.onNext(item);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                WorkflowLogger.endActivity(Status.FAILED);
+                super.onError(throwable);
+            }
+        };
+        try {
+            buildImageCmd.exec(callback).awaitCompletion();
+        } catch (DockerClientException | InterruptedException e) {
+            logger.error("Failed to build image", e);
+            throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_PUSH_IMAGE);
+        }
+        WorkflowLogger.endActivity(Status.DONE);
+        if (buildContext.isVerbose()) {
+            WorkflowLogger.footer();
+        }
+        DockerImage dockerImage = new DockerImage();
+        dockerImage.setName(imageCommandProvider.getBuildImageName(appName, serviceName));
+        dockerImage.setTag(tag);
+        return dockerImage;
+    }
+    
+    private BuildImageCmd getBuildCommand(Dockerfile dockerfile, String tag) {
         Set<String> tags = new HashSet<>();
         tags.add(tag);
         Map<String,String> labels = new HashMap<>();
         labels.put("imageowner","hyscale");
 
         DockerClient dockerClient = DockerClientBuilder.getInstance(clientConfig).build();
-        BuildImageCmd buildImageCmd=dockerClient.buildImageCmd()
-                .withDockerfile(new File(dockerfile.getDockerfilePath()))
-                .withDockerfilePath(dockerfile.getPath())
+        BuildImageCmd buildImageCmd = dockerClient.buildImageCmd()
+                .withDockerfile(getDockerFile(dockerfile.getDockerfilePath()))
                 .withPull(true)
                 .withNoCache(true)
                 .withLabels(labels)
                 .withTags(tags)
                 .withTarget(dockerfile.getTarget());
-        if(dockerfile.getArgs()!=null && !dockerfile.getArgs().isEmpty()){
-            dockerfile.getArgs().entrySet().stream().forEach(each->{
-                buildImageCmd.withBuildArg(each.getKey(),each.getValue());
+        if (dockerfile.getPath() != null) {
+            buildImageCmd.withDockerfilePath(dockerfile.getPath());
+        }
+        if (dockerfile.getArgs() != null && !dockerfile.getArgs().isEmpty()) {
+            dockerfile.getArgs().entrySet().stream().forEach(each -> {
+                buildImageCmd.withBuildArg(each.getKey(), each.getValue());
             });
         }
-
-        String imageid= buildImageCmd.exec(new BuildImageResultCallback()).awaitImageId();
-        DockerImage dockerImage = new DockerImage();
-        dockerImage.setName(imageCommandProvider.getBuildImageName(appName, serviceName));
-        dockerImage.setTag(tag);
-
-
-        return null;
+        return buildImageCmd;
+    }
+    
+    private File getDockerFile(String dockerFilePath) {
+        return new File(dockerFilePath + ToolConstants.LINUX_FILE_SEPARATOR + DockerImageConstants.DOCKERFILE_NAME);
     }
 
     @Override
@@ -150,8 +206,8 @@ public class DockerRESTClientImpl implements ImageBuilder {
         try {
             PullImageCmd pullImageCmd = dockerClient.pullImageCmd(image);
             pullImageCmd.exec(new PullImageResultCallback() {
-            }).awaitSuccess();
-        } catch (DockerException e) {
+            }).awaitCompletion();
+        } catch (DockerException | InterruptedException e) {
             logger.error("Error while pulling the image {}", image);
             WorkflowLogger.endActivity(Status.FAILED);
             throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_PULL_IMAGE, image);
@@ -200,17 +256,24 @@ public class DockerRESTClientImpl implements ImageBuilder {
         buildContext.setPushLogs(logFilePath);
         PushImageCmd pushImageCmd = dockerClient.pushImageCmd(ImageUtil.getImageWithoutTag(image)).withTag(image.getTag())
                 .withAuthConfig(authConfig);
+        WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_PUSH);
         if (buildContext.isVerbose()) {
             WorkflowLogger.header(ImageBuilderActivity.IMAGE_PUSH_LOG);
         }
-        WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_PUSH);
         PushImageResultCallback callback = new PushImageResultCallback() {
             @Override
             public void onNext(PushResponseItem item) {
                 try {
-                    HyscaleFilesUtil.updateFile(logFilePath, item.getStatus());
-                    if (buildContext.isVerbose()) {
-                        WorkflowLogger.write(item.getStatus());
+                    String status = item.getStatus();
+                    if (status != null) {
+                        HyscaleFilesUtil.updateFile(logFilePath, status.concat("\n"));
+                        if (buildContext.isVerbose()) {
+                            WorkflowLogger.write(status);
+                        }
+                        // From the push item we should be able to get SHAID?
+                        if (status.contains(SHA256)) {
+                            buildContext.setImageShaSum(getImageDigest(status));
+                        }
                     }
                 } catch (HyscaleException e) {
                     logger.error("Error while writing push progress to push logs", e);
@@ -227,8 +290,8 @@ public class DockerRESTClientImpl implements ImageBuilder {
         };
 
         try {
-            pushImageCmd.exec(callback).awaitSuccess();
-        } catch (DockerClientException e) {
+            pushImageCmd.exec(callback).awaitCompletion();
+        } catch (DockerClientException | InterruptedException e) {
             logger.error("Failed to push image {}", image.getName(), e);
             throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_PUSH_IMAGE);
         }
@@ -236,5 +299,14 @@ public class DockerRESTClientImpl implements ImageBuilder {
         if (buildContext.isVerbose()) {
             WorkflowLogger.footer();
         }
+    }
+    
+    private String getImageDigest(String status) {
+        Optional<String> digest = Arrays.asList(status.split(" ")).stream().filter(each -> each.contains(SHA256))
+                .findFirst();
+        if (digest.isPresent()) {
+            return digest.get().trim();
+        }
+        return null;
     }
 }

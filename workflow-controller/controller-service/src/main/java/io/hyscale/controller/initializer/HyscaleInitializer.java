@@ -72,7 +72,7 @@ public class HyscaleInitializer implements CommandLineRunner {
     private static final boolean IS_LAZY_INITIALIZATION = true;
 
     static {
-        System.setProperty(ImageBuilderConfig.IMAGE_BUILDER_PROP, ImageBuilder.LOCAL.name());
+        System.setProperty(ImageBuilderConfig.IMAGE_BUILDER_PROP, ImageBuilder.REMOTE.name());
         System.setProperty(ToolConstants.HYSCALECTL_LOGS_DIR_PROPERTY, SetupConfig.getToolLogDir());
         System.setProperty(ToolConstants.NASHORNS_ARGS, ToolConstants.NASHORNS_DEPRECATION_WARNING_FLAG);
         System.setProperty(ToolConstants.JDK_TLS_CLIENT_PROTOCOLS_ARGS, ToolConstants.JDK_TLS_CLIENT_VERSION);

@@ -18,5 +18,7 @@ package io.hyscale.builder.services.constants;
 public class DockerImageConstants {
 
 	public static final long TAIL_LOG_MAX_WAIT_TIME = 10000l;
+	
+	public static final String DOCKERFILE_NAME = "Dockerfile";
 
 }

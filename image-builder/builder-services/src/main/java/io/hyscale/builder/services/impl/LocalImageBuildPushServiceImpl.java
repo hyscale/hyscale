@@ -52,18 +52,29 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
 
     @Override
     public void buildAndPush(ServiceSpec serviceSpec, BuildContext context) throws HyscaleException {
-        if (validate(serviceSpec) && isImageBuildPushRequired(serviceSpec, context)) {
-            buildService.build(serviceSpec, context);
-            String imageCleanUpPolicy = imageBuilderConfig.getImageCleanUpPolicy();
-            ImageCleanupProcessor imageCleanupProcessor = imageCleanupProcessorFactory.getImageCleanupProcessor(imageCleanUpPolicy);
-            logger.debug("Image clean up processor used {}", imageCleanupProcessor.getClass());
-            if (imageCleanupProcessor != null) {
-                imageCleanupProcessor.clean(serviceSpec);
-            }
-
-        } else {
+        validate(serviceSpec);
+        if (!isImageBuildPushRequired(serviceSpec, context)) {
             WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_BUILD_PUSH);
             WorkflowLogger.endActivity(Status.SKIPPING);
+            return;
+        }
+        
+        // Check if docker is installed or not
+        if (!buildService.checkForDocker()) {
+            throw new HyscaleException(ImageBuilderErrorCodes.DOCKER_NOT_INSTALLED);
+        }
+        
+        //TEST without error message
+        if (!buildService.isDockerRunning()) {
+            //WorkflowLogger.error(ImageBuilderActivity.DOCKER_DAEMON_NOT_RUNNING);
+            throw new HyscaleException(ImageBuilderErrorCodes.DOCKER_DAEMON_NOT_RUNNING);
+        }
+        buildService.build(serviceSpec, context);
+        String imageCleanUpPolicy = imageBuilderConfig.getImageCleanUpPolicy();
+        ImageCleanupProcessor imageCleanupProcessor = imageCleanupProcessorFactory.getImageCleanupProcessor(imageCleanUpPolicy);
+        logger.debug("Image clean up processor used {}", imageCleanupProcessor.getClass());
+        if (imageCleanupProcessor != null) {
+            imageCleanupProcessor.clean(serviceSpec);
         }
     }
 

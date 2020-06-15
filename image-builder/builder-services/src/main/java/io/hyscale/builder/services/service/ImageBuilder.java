@@ -27,10 +27,8 @@ import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Dockerfile;
 import io.hyscale.servicespec.commons.model.service.Image;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
-import io.hyscale.servicespec.commons.util.ImageUtil;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
 import java.util.ArrayList;
 
 public interface ImageBuilder {
@@ -59,41 +57,27 @@ public interface ImageBuilder {
             throw new HyscaleException(ImageBuilderErrorCodes.FIELDS_MISSING, "Build Context");
         }
 
-        WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_BUILD_STARTED);
         Dockerfile userDockerfile = serviceSpec.get(
                 HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.dockerfile), Dockerfile.class);
-        //Skip Image Build if either of dockerfile from buildSpec or dockerfile is present
+        //Skip Image Build if neither dockerfile from buildSpec nor user dockerfile is available
         if (skipBuild(userDockerfile, context)) {
+            WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_BUILD_STARTED);
             WorkflowLogger.endActivity(Status.SKIPPING);
+        } else {
+            DockerImage dockerImage = null;
+            String tag = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.tag),
+                    String.class);
+            //Prepare Dockerfile for Image build
+            Dockerfile dockerfile = new Dockerfile();
+            dockerfile.setDockerfilePath(getDockerfilePath(userDockerfile, context));
+            dockerfile.setArgs(userDockerfile != null ? userDockerfile.getArgs() : null);
+            dockerfile.setTarget(userDockerfile != null ? userDockerfile.getTarget() : null);
+            dockerfile.setPath(userDockerfile != null ? userDockerfile.getPath() : null);
+            dockerImage = _build(dockerfile, tag, context);
+            context.setDockerImage(dockerImage);
         }
-
-        // Check if docker is installed or not
-        if (!checkForDocker()) {
-            throw new HyscaleException(ImageBuilderErrorCodes.DOCKER_NOT_INSTALLED);
-        }
-
-        //TEST without error message
-        if (!isDockerRunning()) {
-            //WorkflowLogger.error(ImageBuilderActivity.DOCKER_DAEMON_NOT_RUNNING);
-            throw new HyscaleException(ImageBuilderErrorCodes.DOCKER_DAEMON_NOT_RUNNING);
-        }
-
-        String tag = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.tag),
-                String.class);
-
-        //Prepare Dockerfile for Image build
-        Dockerfile dockerfile = new Dockerfile();
-        dockerfile.setDockerfilePath(getDockerfilePath(userDockerfile, context));
-        dockerfile.setArgs(userDockerfile != null ? userDockerfile.getArgs() : null);
-        dockerfile.setTarget(userDockerfile != null ? userDockerfile.getTarget() : null);
-        dockerfile.setPath(userDockerfile != null ? userDockerfile.getPath() : null);
-
-        DockerImage dockerImage = _build(dockerfile, tag, context);
-        context.setDockerImage(dockerImage);
-
         // validate Push
         validate(serviceSpec, context);
-        String imageFullPath = ImageUtil.getImage(serviceSpec);
         String sourceImage = getSourceImageName(serviceSpec, context);
 
         if (context.isStackAsServiceImage()) {
@@ -107,15 +91,14 @@ public interface ImageBuilder {
             WorkflowLogger.endActivity(Status.SKIPPING);
             return;
         }
-
         _push(image, context);
     }
 
 
     /**
      * Get docker file path either:
-     * User docker file based on dockerfile spec or
-     * Tool generated docker file
+     * User docker file based on dockerfile in spec or
+     * Tool generated dockerfile
      *
      * @param userDockerfile
      * @param context
@@ -164,6 +147,14 @@ public interface ImageBuilder {
         }
     }
 
+    /**
+     * Source image is either the stack image being used as service image or
+     * Local image build through dockerfile
+     * @param serviceSpec
+     * @param buildContext
+     * @return source image name
+     * @throws HyscaleException
+     */
     default String getSourceImageName(ServiceSpec serviceSpec, BuildContext buildContext) throws HyscaleException {
 
         if (buildContext.isStackAsServiceImage()) {
