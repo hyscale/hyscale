@@ -17,6 +17,7 @@ package io.hyscale.builder.services.impl;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.*;
+import com.github.dockerjava.api.exception.ConflictException;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.AuthConfig;
@@ -85,10 +86,14 @@ public class DockerRESTClientImpl implements ImageBuilder {
                 = DefaultDockerClientConfig.createDefaultConfigBuilder()
                 .withDockerHost(imageBuilderConfig.getDockerHost()).build();
     }
+    
+    public DockerClient getDockerClient() {
+        return DockerClientBuilder.getInstance(clientConfig).build();
+    }
 
     @Override
     public boolean isDockerRunning() {
-        DockerClient dockerClient = DockerClientBuilder.getInstance(clientConfig).build();
+        DockerClient dockerClient = getDockerClient();
         ListImagesCmd listImagesCmd = dockerClient.listImagesCmd();
         try {
             listImagesCmd.exec();
@@ -100,7 +105,7 @@ public class DockerRESTClientImpl implements ImageBuilder {
 
     @Override
     public boolean checkForDocker() {
-        DockerClient dockerClient = DockerClientBuilder.getInstance(clientConfig).build();
+        DockerClient dockerClient = getDockerClient();
         VersionCmd versionCmd = dockerClient.versionCmd();
         try {
             versionCmd.exec();
@@ -108,6 +113,22 @@ public class DockerRESTClientImpl implements ImageBuilder {
             return false;
         }
         return true;
+    }
+    
+    @Override
+    public void deleteImages(List<String> imageIds, boolean force) {
+        if (imageIds == null || imageIds.isEmpty()) {
+            return;
+        }
+        DockerClient dockerClient = getDockerClient();
+        for (String imageId : imageIds) {
+            RemoveImageCmd removeCmd = dockerClient.removeImageCmd(imageId).withForce(force);
+            try {
+                removeCmd.exec();
+            } catch (ConflictException e) {
+                logger.error("Error while deleting image: {}, ignoring", imageId, e);
+            }
+        }
     }
 
     @Override
@@ -131,7 +152,7 @@ public class DockerRESTClientImpl implements ImageBuilder {
                 try {
                     String stream = item.getStream();
                     if (stream != null) {
-                        HyscaleFilesUtil.updateFile(logFilePath, stream.concat("\n"));
+                        HyscaleFilesUtil.updateFile(logFilePath, stream.concat(ToolConstants.NEW_LINE));
                         if (buildContext.isVerbose()) {
                             WorkflowLogger.write(stream);
                         }
@@ -170,7 +191,7 @@ public class DockerRESTClientImpl implements ImageBuilder {
         Map<String,String> labels = new HashMap<>();
         labels.put("imageowner","hyscale");
 
-        DockerClient dockerClient = DockerClientBuilder.getInstance(clientConfig).build();
+        DockerClient dockerClient = getDockerClient();
         BuildImageCmd buildImageCmd = dockerClient.buildImageCmd()
                 .withDockerfile(getDockerFile(dockerfile.getDockerfilePath()))
                 .withPull(true)
@@ -202,7 +223,7 @@ public class DockerRESTClientImpl implements ImageBuilder {
         }
 
         //TODO pull with authConfig, read the pull registry credentials from build context/ imagemanager
-        DockerClient dockerClient = DockerClientBuilder.getInstance(clientConfig).build();
+        DockerClient dockerClient = getDockerClient();
         try {
             PullImageCmd pullImageCmd = dockerClient.pullImageCmd(image);
             pullImageCmd.exec(new PullImageResultCallback() {
@@ -222,7 +243,7 @@ public class DockerRESTClientImpl implements ImageBuilder {
             WorkflowLogger.endActivity(Status.SKIPPING);
             return;
         }
-        DockerClient dockerClient = DockerClientBuilder.getInstance(clientConfig).build();
+        DockerClient dockerClient = getDockerClient();
         try {
             TagImageCmd tagImageCmd = dockerClient.tagImageCmd(source, ImageUtil.getImageWithoutTag(dest), dest.getTag());
             tagImageCmd.exec();
@@ -249,7 +270,7 @@ public class DockerRESTClientImpl implements ImageBuilder {
         }
         //authConfig.withAuth(buildContext.getImageRegistry().getToken());
 
-        DockerClient dockerClient = DockerClientBuilder.getInstance(clientConfig).build();
+        DockerClient dockerClient = getDockerClient();
 
         // Push image
         String logFilePath = imageBuilderConfig.getDockerPushLogDir(buildContext.getAppName(), buildContext.getServiceName());
@@ -266,7 +287,7 @@ public class DockerRESTClientImpl implements ImageBuilder {
                 try {
                     String status = item.getStatus();
                     if (status != null) {
-                        HyscaleFilesUtil.updateFile(logFilePath, status.concat("\n"));
+                        HyscaleFilesUtil.updateFile(logFilePath, status.concat(ToolConstants.NEW_LINE));
                         if (buildContext.isVerbose()) {
                             WorkflowLogger.write(status);
                         }
@@ -309,4 +330,5 @@ public class DockerRESTClientImpl implements ImageBuilder {
         }
         return null;
     }
+
 }

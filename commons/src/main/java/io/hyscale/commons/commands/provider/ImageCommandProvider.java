@@ -15,6 +15,9 @@
  */
 package io.hyscale.commons.commands.provider;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -162,31 +165,29 @@ public class ImageCommandProvider {
         return input;
     }
 
-
+    
     // docker rmi <id1> <id2> <id3>
-    public String removeDockerImages(Set<String> imageIds) {
+    public String removeDockerImages(Set<String> imageIds, boolean force) {
         if (imageIds == null || imageIds.isEmpty()) {
             return null;
         }
         StringBuilder removeDockerImages = new StringBuilder(docker());
-        removeDockerImages.append(REMOVE_IMAGE).append(SPACE).append(HYPHEN).append(FORCE_FLAG);
-        for (String imageId : imageIds) {
-            removeDockerImages.append(SPACE).append(imageId);
+        removeDockerImages.append(REMOVE_IMAGE);
+        if (force) {
+            removeDockerImages.append(SPACE).append(HYPHEN).append(FORCE_FLAG);
         }
+        imageIds.stream().forEach( imageId -> {
+            removeDockerImages.append(SPACE).append(imageId);
+        });
         return removeDockerImages.toString();
     }
 
     // docker rmi <id1> <id2> <id3>
-    public String removeDockerImages(String[] imageIds) {
+    public String removeDockerImages(String[] imageIds, boolean force) {
         if (imageIds == null || imageIds.length == 0) {
             return null;
         }
-        StringBuilder removeDockerImages = new StringBuilder(docker());
-        removeDockerImages.append(REMOVE_IMAGE).append(SPACE).append(HYPHEN).append(FORCE_FLAG);
-        for (String imageId : imageIds) {
-            removeDockerImages.append(SPACE).append(imageId);
-        }
-        return removeDockerImages.toString();
+        return removeDockerImages(new HashSet<>(Arrays.asList(imageIds)), force);
     }
 
     // docker images --filter label=imageowner=hyscale -q
@@ -199,6 +200,12 @@ public class ImageCommandProvider {
     public String dockerImageByNameFilterByImageOwner(String imageName) {
         StringBuilder sb = new StringBuilder(dockerImages());
         return sb.append(SPACE).append(imageName).append(filter(IMAGE_OWNER, HYSCALE)).append(quiet()).toString();
+    }
+    
+    public Map<String, String> getImageLabelMap(){
+        Map<String, String> labels = new HashMap<>();
+        labels.put(IMAGE_OWNER, HYSCALE);
+        return labels;
     }
 
     // --filter label=key=value

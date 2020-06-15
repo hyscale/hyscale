@@ -204,22 +204,23 @@ public class LocalRegistryManagerImpl implements RegistryManager {
     private void buildExternalRegistryConf() throws HyscaleException {
         if (externalRegistryConf == null) {
             logger.debug("Reading the external registry conf input");
-            Scanner scanner = new Scanner(System.in);
-            if (scanner.hasNextLine()) {
-                String json = scanner.nextLine();
-                ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
-                try {
-                    TypeReference<DockerConfig> dockerConfigTypeReference = new TypeReference<DockerConfig>() {
-                    };
-                    this.externalRegistryConf = mapper.readValue(json,
-                            dockerConfigTypeReference);
-                    logger.debug("Initialized the external registry conf input");
-                } catch (IOException e) {
-                    logger.error("Error while building external registry config", e);
-                    String dockerConfPath = SetupConfig.getMountOfDockerConf(controllerConfig.getDefaultRegistryConf());
-                    WorkflowLogger.error(ControllerActivity.ERROR_WHILE_READING, dockerConfPath, e.getMessage());
-                    HyscaleException ex = new HyscaleException(e, ControllerErrorCodes.DOCKER_CONFIG_NOT_FOUND, dockerConfPath);
-                    throw ex;
+            try (Scanner scanner = new Scanner(System.in)){
+                if (scanner.hasNextLine()) {
+                    String json = scanner.nextLine();
+                    ObjectMapper mapper = ObjectMapperFactory.jsonMapper();
+                    try {
+                        TypeReference<DockerConfig> dockerConfigTypeReference = new TypeReference<DockerConfig>() {
+                        };
+                        this.externalRegistryConf = mapper.readValue(json,
+                                dockerConfigTypeReference);
+                        logger.debug("Initialized the external registry conf input");
+                    } catch (IOException e) {
+                        logger.error("Error while building external registry config", e);
+                        String dockerConfPath = SetupConfig.getMountOfDockerConf(controllerConfig.getDefaultRegistryConf());
+                        WorkflowLogger.error(ControllerActivity.ERROR_WHILE_READING, dockerConfPath, e.getMessage());
+                        HyscaleException ex = new HyscaleException(e, ControllerErrorCodes.DOCKER_CONFIG_NOT_FOUND, dockerConfPath);
+                        throw ex;
+                    }
                 }
             }
         }

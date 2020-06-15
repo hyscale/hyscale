@@ -20,11 +20,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.hyscale.builder.services.service.ImageBuilder;
 import io.hyscale.commons.commands.provider.ImageCommandProvider;
 import io.hyscale.commons.component.InvokerHook;
-import io.hyscale.commons.commands.CommandExecutor;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.models.Status;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -37,39 +36,41 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 @Component
 public class ImageCleanUpHook implements InvokerHook<WorkflowContext> {
 
-	private static final Logger logger = LoggerFactory.getLogger(ImageCleanUpHook.class);
+    private static final Logger logger = LoggerFactory.getLogger(ImageCleanUpHook.class);
 
-	@Autowired
-	private ImageCommandProvider imageCommandProvider;
+    @Autowired
+    private ImageBuilder imageBuilder;
 
-	@Override
-	public void preHook(WorkflowContext context) {
+    @Autowired
+    private ImageCommandProvider imageCommandProvider;
 
-	}
+    @Override
+    public void preHook(WorkflowContext context) {
 
-	@Override
-	public void postHook(WorkflowContext context) throws HyscaleException {
-		ServiceSpec serviceSpec = context.getServiceSpec();
-		if (serviceSpec == null) {
-			logger.error(" Cannot clean up image without service specs ");
-			throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_REQUIRED);
-		}
+    }
 
-		String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
+    @Override
+    public void postHook(WorkflowContext context) throws HyscaleException {
+        ServiceSpec serviceSpec = context.getServiceSpec();
+        if (serviceSpec == null) {
+            logger.error(" Cannot clean up image without service specs ");
+            throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_REQUIRED);
+        }
 
-		String tag = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.tag),
-				String.class);
-		String cleanUpCommand = imageCommandProvider.getImageCleanUpCommand(context.getAppName(), serviceName, tag);
-		logger.debug("Starting image cleanup, command {}", cleanUpCommand);
-		boolean success = CommandExecutor.execute(cleanUpCommand);
+        String serviceName = context.getServiceName() != null ? context.getServiceName()
+                : serviceSpec.get(HyscaleSpecFields.name, String.class);
 
-		logger.debug("Image clean up {}", success ? Status.DONE.getMessage() : Status.FAILED.getMessage());
+        String tag = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.tag),
+                String.class);
 
-	}
+        // Clean up temp image
+        String imageName = imageCommandProvider.getBuildImageNameWithTag(context.getAppName(), serviceName, tag);
+        imageBuilder.deleteImage(imageName, false);
+    }
 
-	@Override
-	public void onError(WorkflowContext context, Throwable th) {
-		context.setFailed(true);
-	}
+    @Override
+    public void onError(WorkflowContext context, Throwable th) {
+        context.setFailed(true);
+    }
 
 }

@@ -13,42 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.builder.services.util;
+package io.hyscale.builder.cleanup.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.builder.cleanup.services.ImageCleanupProcessor;
-import io.hyscale.builder.cleanup.services.impl.DeleteAfterBuild;
-import io.hyscale.builder.cleanup.services.impl.DeleteAllImages;
-import io.hyscale.builder.cleanup.services.impl.PreserveAll;
-import io.hyscale.builder.cleanup.services.impl.PreserveLastNUsed;
 import io.hyscale.builder.core.models.ImageCleanUpPolicy;
 
 @Component
 public class ImageCleanupProcessorFactory {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(ImageCleanupProcessorFactory.class);
 
     @Autowired
     private DeleteAllImages deleteAllImages;
-    
+
     @Autowired
     private DeleteAfterBuild deleteAfterBuild;
-    
+
     @Autowired
     private PreserveLastNUsed preserveLastNUsed;
-    
+
     @Autowired
     private PreserveAll preserveAll;
 
     public ImageCleanupProcessor getImageCleanupProcessor(String imageCleanUpPolicy) {
         ImageCleanUpPolicy cleanUpPolicy = ImageCleanUpPolicy.fromString(imageCleanUpPolicy);
-        
+
         logger.debug("Image cleanup Policy {}", cleanUpPolicy);
-        
+
         if (cleanUpPolicy == null) {
             cleanUpPolicy = ImageCleanUpPolicy.PRESERVE_N_RECENTLY_USED;
         }
@@ -59,20 +54,20 @@ public class ImageCleanupProcessorFactory {
 
         switch (policy) {
 
-            case DELETE_AFTER_BUILD:
-                return deleteAfterBuild;
+        case DELETE_AFTER_BUILD:
+            return deleteAfterBuild;
 
-            case PRESERVE_N_RECENTLY_USED:
-                return preserveLastNUsed;
+        case PRESERVE_N_RECENTLY_USED:
+            return preserveLastNUsed;
 
-            case PRESERVE_ALL:
-                return preserveAll;
+        case PRESERVE_ALL:
+            return preserveAll;
 
-            case DELETE_ALL:
-                return deleteAllImages;
+        case DELETE_ALL:
+            return deleteAllImages;
 
-            default:
-                return deleteAfterBuild;
+        default:
+            return deleteAfterBuild;
         }
     }
 }

@@ -26,7 +26,6 @@ public class DockerClientCondition implements Condition {
     @Override
     public boolean matches(ConditionContext conditionContext, AnnotatedTypeMetadata annotatedTypeMetadata) {
         String dockerhost = System.getenv(ImageBuilderConfig.DOCKER_HOST);
-        System.out.println(StringUtils.isNotEmpty(dockerhost));
         return StringUtils.isNotEmpty(dockerhost);
     }
 }

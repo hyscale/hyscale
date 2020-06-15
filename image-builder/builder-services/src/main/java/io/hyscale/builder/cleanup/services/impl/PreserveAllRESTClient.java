@@ -17,22 +17,21 @@ package io.hyscale.builder.cleanup.services.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.builder.cleanup.services.ImageCleanupProcessor;
+import io.hyscale.builder.cleanup.services.PreserveAll;
+import io.hyscale.builder.services.spring.DockerClientCondition;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 /**
- * This class preserves all service images built by hyscale, where
- * (n = {@link io.hyscale.builder.services.config.ImageBuilderConfig#getNoOfPreservedImages() }).
- * Hyscale adds a label to the image as imageowner = hyscale. No images are deleted with this
- * property enabled.
- * <p>
+ * Class provides a docker REST API based implementation of {@link PreserveAll}
  */
 @Component
-public class PreserveAll implements ImageCleanupProcessor {
+@Conditional(DockerClientCondition.class)
+public class PreserveAllRESTClient extends PreserveAll {
 
-    private static final Logger logger = LoggerFactory.getLogger(PreserveAll.class);
+    private static final Logger logger = LoggerFactory.getLogger(PreserveAllRESTClient.class);
 
     @Override
     public void clean(ServiceSpec serviceSpec) {

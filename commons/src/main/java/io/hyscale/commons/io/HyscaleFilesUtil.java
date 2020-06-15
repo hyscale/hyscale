@@ -112,7 +112,7 @@ public class HyscaleFilesUtil {
 	 * @throws HyscaleException
 	 */
 	public static File updateFile(String filename, String fileData) throws HyscaleException {
-		if (StringUtils.isBlank(filename) || StringUtils.isBlank(fileData)) {
+		if (StringUtils.isBlank(filename) || fileData == null) {
 			throw new HyscaleException(CommonErrorCode.FAILED_TO_WRITE_FILE_DATA);
 		}
 		File file = new File(filename);

@@ -18,6 +18,7 @@ package io.hyscale.builder.services.impl;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -85,6 +86,17 @@ public class DockerBinaryImpl implements ImageBuilder {
         String command = commandGenerator.dockerVersion();
         logger.debug("Docker Installed check command: {}", command);
         return CommandExecutor.execute(command);
+    }
+    
+    @Override
+    public void deleteImages(List<String> imageIds, boolean force) {
+        if (imageIds == null || imageIds.isEmpty()) {
+            return;
+        }
+        boolean isSuccess = CommandExecutor
+                .execute(imageCommandProvider.removeDockerImages(imageIds.stream().collect(Collectors.toSet()), force));
+
+        logger.debug("Image clean up {}", isSuccess ? Status.DONE.getMessage() : Status.FAILED.getMessage());
     }
 
     @Override

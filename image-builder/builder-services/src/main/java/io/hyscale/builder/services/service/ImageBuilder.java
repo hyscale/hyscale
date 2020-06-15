@@ -30,12 +30,23 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public interface ImageBuilder {
 
     boolean isDockerRunning();
 
     boolean checkForDocker();
+    
+    void deleteImages(List<String> imageIds, boolean force);
+    
+    default void deleteImage(String imageId, boolean force) {
+        if (StringUtils.isBlank(imageId)) {
+            return;
+        }
+        deleteImages(Arrays.asList(imageId), force);
+    }
 
     DockerImage _build(Dockerfile dockerfile, String tag, BuildContext context) throws HyscaleException;
 

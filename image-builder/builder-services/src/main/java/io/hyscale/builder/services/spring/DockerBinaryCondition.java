@@ -26,7 +26,6 @@ public class DockerBinaryCondition implements Condition {
     @Override
     public boolean matches(ConditionContext conditionContext, AnnotatedTypeMetadata annotatedTypeMetadata) {
         String dockerhost = System.getenv(ImageBuilderConfig.DOCKER_HOST);
-        System.out.println(StringUtils.isEmpty(dockerhost));
         return StringUtils.isEmpty(dockerhost);
     }
 }

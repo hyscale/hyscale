@@ -15,13 +15,19 @@
  */
 package io.hyscale.builder.cleanup.services.impl;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.builder.cleanup.services.ImageCleanupProcessor;
+import io.hyscale.builder.cleanup.services.DeleteAfterBuild;
+import io.hyscale.builder.services.impl.DockerBinaryImpl;
+import io.hyscale.builder.services.spring.DockerBinaryCondition;
 import io.hyscale.commons.commands.CommandExecutor;
 import io.hyscale.commons.commands.provider.ImageCommandProvider;
 import io.hyscale.commons.exception.HyscaleException;
@@ -29,21 +35,22 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.hyscale.servicespec.commons.util.ImageUtil;
 
 /**
- * This class removes the service images from the host machine
- * which are built by hyscale. Hyscale adds a label to the
- * image as imageowner = hyscale. This clean up happends on all
- * those images which are tagged with the label imageowner=hyscale
- * <p>
+ * Class provides a docker binary based implementation of {@link DeleteAfterBuild}
+ * 
  * docker rmi $(docker images <serviceimage> --filter label=imageowner=hyscale -q)
  */
 
 @Component
-public class DeleteAfterBuild implements ImageCleanupProcessor {
+@Conditional(DockerBinaryCondition.class)
+public class DeleteAfterBuildBinary extends DeleteAfterBuild {
 
-    private static final Logger logger = LoggerFactory.getLogger(DeleteAfterBuild.class);
+    private static final Logger logger = LoggerFactory.getLogger(DeleteAfterBuildBinary.class);
 
     @Autowired
     private ImageCommandProvider imageCommandProvider;
+
+    @Autowired
+    private DockerBinaryImpl dockerBinaryImpl;
 
     @Override
     public void clean(ServiceSpec serviceSpec) {
@@ -52,19 +59,22 @@ public class DeleteAfterBuild implements ImageCleanupProcessor {
         try {
             image = ImageUtil.getImage(serviceSpec);
         } catch (HyscaleException e) {
-            logger.error("Errow while fetching docker images to clean ", e);
+            logger.error("Error while fetching docker images to clean ", e);
         }
-        if (StringUtils.isNotBlank(image)) {
-            // Fetch the image id's to be deleted of the service image which are labelled by imageowner=hyscale
-            String existingImageIds = CommandExecutor.executeAndGetResults(imageCommandProvider.dockerImageByNameFilterByImageOwner(image))
-                    .getCommandOutput();
-            String[] imageIds = StringUtils.isNotBlank(existingImageIds)? existingImageIds.split("\\s+") : null;
-            if (imageIds == null || imageIds.length == 0) {
-                logger.debug("No images found to clean from the host machine");
-                return;
-            }
-            // Remove the image id's using 'docker rmi' command
-            CommandExecutor.execute(imageCommandProvider.removeDockerImages(imageIds));
+        if (StringUtils.isBlank(image)) {
+            return;
         }
+        // Fetch the image id's to be deleted of the service image which are labelled by imageowner=hyscale
+        String existingImageIds = CommandExecutor
+                .executeAndGetResults(imageCommandProvider.dockerImageByNameFilterByImageOwner(image))
+                .getCommandOutput();
+        String[] imageIds = StringUtils.isNotBlank(existingImageIds) ? existingImageIds.split("\\s+") : null;
+        if (imageIds == null || imageIds.length == 0) {
+            logger.debug("No images found to clean from the host machine");
+            return;
+        }
+        List<String> imageIdList = Arrays.asList(imageIds);
+        logger.debug("Removing images: {}", imageIdList);
+        dockerBinaryImpl.deleteImages(imageIdList, false);
     }
 }
