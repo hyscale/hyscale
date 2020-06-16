@@ -18,7 +18,9 @@ package io.hyscale.builder.services.service;
 import io.hyscale.builder.core.models.BuildContext;
 import io.hyscale.builder.core.models.DockerImage;
 import io.hyscale.builder.core.models.ImageBuilderActivity;
+import io.hyscale.builder.services.constants.DockerImageConstants;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
+import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
@@ -29,6 +31,7 @@ import io.hyscale.servicespec.commons.model.service.Image;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -72,7 +75,7 @@ public interface ImageBuilder {
                 HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.dockerfile), Dockerfile.class);
         //Skip Image Build if neither dockerfile from buildSpec nor user dockerfile is available
         if (skipBuild(userDockerfile, context)) {
-            WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_BUILD_STARTED);
+            WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_BUILD);
             WorkflowLogger.endActivity(Status.SKIPPING);
         } else {
             DockerImage dockerImage = null;
@@ -80,7 +83,9 @@ public interface ImageBuilder {
                     String.class);
             //Prepare Dockerfile for Image build
             Dockerfile dockerfile = new Dockerfile();
-            dockerfile.setDockerfilePath(getDockerfilePath(userDockerfile, context));
+            String dockerfilePath = getDockerfilePath(userDockerfile, context);
+            validate(dockerfilePath);
+            dockerfile.setDockerfilePath(dockerfilePath);
             dockerfile.setArgs(userDockerfile != null ? userDockerfile.getArgs() : null);
             dockerfile.setTarget(userDockerfile != null ? userDockerfile.getTarget() : null);
             dockerfile.setPath(userDockerfile != null ? userDockerfile.getPath() : null);
@@ -104,7 +109,15 @@ public interface ImageBuilder {
         }
         _push(image, context);
     }
-
+    
+    private void validate(String dockerfilePath) throws HyscaleException {
+        File dockerfile = new File(dockerfilePath + ToolConstants.LINUX_FILE_SEPARATOR + DockerImageConstants.DOCKERFILE_NAME);
+        if (dockerfile == null || !dockerfile.exists() || dockerfile.isDirectory()) {
+            WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_BUILD);
+            WorkflowLogger.endActivity(Status.FAILED);
+            throw new HyscaleException(ImageBuilderErrorCodes.DOCKERFILE_NOT_FOUND, dockerfile.getAbsolutePath());
+        }
+    }
 
     /**
      * Get docker file path either:
@@ -128,6 +141,7 @@ public interface ImageBuilder {
                 sb.append(dockerfileDir);
             }
             dockerfilePath = sb.toString();
+            dockerfilePath = StringUtils.isNotBlank(dockerfilePath) ? dockerfilePath : SetupConfig.getAbsolutePath(".");
         } else {
             dockerfilePath = context.getDockerfileEntity().getDockerfile().getParent();
         }

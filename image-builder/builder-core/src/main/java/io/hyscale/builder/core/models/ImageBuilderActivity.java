@@ -20,8 +20,8 @@ import io.hyscale.commons.models.Activity;
 public enum ImageBuilderActivity implements Activity {
 
 	IMAGE_BUILD_PUSH("Image build and push "),
-	IMAGE_BUILD_STARTED("Building image "),
-	BUILD_LOGS("Build Logs "),
+	IMAGE_BUILD("Building image "),
+	BUILD_LOGS("Build logs "),
 	IMAGE_TAG("Tagging image "),
 	IMAGE_PULL("Pulling image "),
 	IMAGE_PUSH("Pushing image "),

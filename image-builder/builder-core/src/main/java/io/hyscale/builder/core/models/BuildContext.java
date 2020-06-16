@@ -25,6 +25,7 @@ public class BuildContext {
 	private DockerfileEntity dockerfileEntity;
 	private DockerImage dockerImage;
 	private ImageRegistry imageRegistry;
+	private ImageRegistry pullImageRegistry;
 	private String serviceName;
 	private String appName;
 	private String version;
@@ -84,8 +85,16 @@ public class BuildContext {
 		this.imageRegistry = imageRegistry;
 	}
 
+	public ImageRegistry getPullImageRegistry() {
+	    return pullImageRegistry;
+	}
+
+	public void setPullImageRegistry(ImageRegistry pullImageRegistry) {
+	    this.pullImageRegistry = pullImageRegistry;
+	}
+
 	public Map<String, String> getBuildArgs() {
-		return buildArgs;
+	    return buildArgs;
 	}
 
 	public void setBuildArgs(Map<String, String> buildArgs) {

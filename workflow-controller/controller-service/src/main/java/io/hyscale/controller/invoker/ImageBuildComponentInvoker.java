@@ -23,6 +23,7 @@ import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.manager.RegistryManager;
 import io.hyscale.controller.model.WorkflowContext;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,7 @@ import io.hyscale.controller.hooks.ImageCleanUpHook;
 import io.hyscale.builder.services.service.ImageBuildPushService;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.service.BuildSpec;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 /**
@@ -76,7 +78,8 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
         }
         String serviceName;
         try {
-            serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
+            serviceName = context.getServiceName() != null ? context.getServiceName()
+                    : serviceSpec.get(HyscaleSpecFields.name, String.class);
         } catch (HyscaleException e) {
             logger.error("Failed to get service name, error {}", e.toString());
             throw e;
@@ -89,12 +92,16 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
         BuildContext buildContext = new BuildContext();
         buildContext.setAppName(appName);
         buildContext.setServiceName(serviceName);
-        Boolean stackAsServiceImage = (Boolean) context.getAttribute(WorkflowConstants.STACK_AS_SERVICE_IMAGE);
-        buildContext.setStackAsServiceImage(stackAsServiceImage == null ? false : stackAsServiceImage);
+        buildContext.setStackAsServiceImage(isStackImage(context));
         buildContext.setVerbose((Boolean) context.getAttribute(WorkflowConstants.VERBOSE));
         buildContext.setImageRegistry(registryManager.getImageRegistry(serviceSpec
                 .get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.registry), String.class)));
-
+        if (isStackImage(context)) {
+            String pullImageRegistryName = getPullImageRegistry(context);
+            if (StringUtils.isNotBlank(pullImageRegistryName)) {
+                buildContext.setPullImageRegistry(registryManager.getImageRegistry(pullImageRegistryName));
+            }
+        }
         DockerfileEntity dockerfileEntity = (DockerfileEntity) context
                 .getAttribute(WorkflowConstants.DOCKERFILE_ENTITY);
         buildContext.setDockerfileEntity(dockerfileEntity);
@@ -113,6 +120,26 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
             context.addAttribute(WorkflowConstants.PUSH_LOGS,
                     buildContext.getPushLogs());
         }
+    }
+
+    private String getPullImageRegistry(WorkflowContext context) {
+        ServiceSpec serviceSpec = context.getServiceSpec();
+        String stackImage = null;
+        try {
+            BuildSpec buildSpec = serviceSpec.get(
+                    HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.buildSpec), BuildSpec.class);
+            if (buildSpec != null) {
+                stackImage = buildSpec.getStackImage();
+            }
+        } catch (HyscaleException e) {
+            logger.error("Error while getting build spec for stack image");
+        }
+        return stackImage != null ? stackImage.split("/")[0] : stackImage;
+    }
+    
+    private boolean isStackImage(WorkflowContext context) {
+        Boolean stackAsServiceImage = (Boolean) context.getAttribute(WorkflowConstants.STACK_AS_SERVICE_IMAGE);
+        return stackAsServiceImage == null ? false : stackAsServiceImage;
     }
 
     @Override

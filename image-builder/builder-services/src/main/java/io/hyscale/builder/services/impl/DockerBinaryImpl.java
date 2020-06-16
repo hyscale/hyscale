@@ -24,10 +24,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.hyscale.commons.commands.provider.ImageCommandProvider;
-import io.hyscale.builder.services.config.LocalImageBuildCondition;
 import io.hyscale.builder.services.util.DockerImageUtil;
 import io.hyscale.builder.services.util.ImageLogUtil;
 import io.hyscale.builder.services.service.ImageBuilder;
+import io.hyscale.builder.services.spring.DockerBinaryCondition;
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.models.CommandResult;
@@ -53,7 +53,7 @@ import io.hyscale.servicespec.commons.model.service.Dockerfile;
 import io.hyscale.commons.models.Status;
 
 @Component
-@Conditional(LocalImageBuildCondition.class)
+@Conditional(DockerBinaryCondition.class)
 public class DockerBinaryImpl implements ImageBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(DockerBinaryImpl.class);
@@ -70,20 +70,16 @@ public class DockerBinaryImpl implements ImageBuilder {
     @Autowired
     private ImageBuilderConfig imageBuilderConfig;
 
-    @Autowired
-    private ImageCommandProvider commandGenerator;
-
-
     @Override
     public boolean isDockerRunning() {
-        String command = commandGenerator.dockerImages();
+        String command = imageCommandProvider.dockerImages();
         logger.debug("Docker Daemon running check command: {}", command);
         return CommandExecutor.execute(command);
     }
 
     @Override
     public boolean checkForDocker() {
-        String command = commandGenerator.dockerVersion();
+        String command = imageCommandProvider.dockerVersion();
         logger.debug("Docker Installed check command: {}", command);
         return CommandExecutor.execute(command);
     }
@@ -101,7 +97,7 @@ public class DockerBinaryImpl implements ImageBuilder {
 
     @Override
     public DockerImage _build(Dockerfile dockerfile, String tag, BuildContext context) throws HyscaleException {
-
+        WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_BUILD);
         String appName = context.getAppName();
         String serviceName = context.getServiceName();
         boolean verbose = context.isVerbose();
@@ -154,7 +150,7 @@ public class DockerBinaryImpl implements ImageBuilder {
         String serviceName = buildContext.getServiceName();
         boolean verbose = buildContext.isVerbose();
         String imageFullPath = ImageUtil.getImage(image);
-        String pushImageCommand = commandGenerator.dockerPush(imageFullPath);
+        String pushImageCommand = imageCommandProvider.dockerPush(imageFullPath);
         String logFilePath = imageBuilderConfig.getDockerPushLogDir(appName, serviceName);
         File logFile = new File(logFilePath);
         buildContext.setPushLogs(logFilePath);
@@ -164,7 +160,7 @@ public class DockerBinaryImpl implements ImageBuilder {
             WorkflowLogger.endActivity(Status.FAILED);
             logger.error("Failed to push docker image");
         } else {
-            String inspectCommand = commandGenerator.dockerInspect(imageFullPath);
+            String inspectCommand = imageCommandProvider.dockerInspect(imageFullPath);
             CommandResult result = CommandExecutor.executeAndGetResults(inspectCommand);
             buildContext.setImageShaSum(getImageDigest(result));
             WorkflowLogger.endActivity(Status.DONE);

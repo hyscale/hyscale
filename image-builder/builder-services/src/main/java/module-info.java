@@ -35,4 +35,5 @@ module builderservices {
 	requires com.fasterxml.jackson.core;
     requires docker.java;
     requires org.apache.commons.io;
+    requires java.ws.rs;
 }

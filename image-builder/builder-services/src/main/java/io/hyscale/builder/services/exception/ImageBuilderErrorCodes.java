@@ -28,6 +28,8 @@ public enum ImageBuilderErrorCodes implements HyscaleErrorCode {
     DOCKER_DAEMON_NOT_RUNNING("Docker daemon is not running"),
     CANNOT_RESOLVE_IMAGE_NAME("Cannot resolve image name"),
     FAILED_TO_BUILD_AND_PUSH_IMAGE("Failed to build & push image"),
+    DOCKERFILE_REQUIRED("Dockerfile required"),
+    DOCKERFILE_NOT_FOUND("Dockerfile not found at {}"),
     MISSING_DOCKER_REGISTRY_CREDENTIALS("Cannot find {} credentials . Do 'docker login {}' to continue with the deployment");
 
     private String message;
