@@ -27,22 +27,26 @@ public class HyscaleException extends Exception {
         super(hyscaleError.getMessage());
         this.hyscaleError = hyscaleError;
         this.args = args;
+        this.code = (hyscaleError.getCode() > 0) ? hyscaleError.getCode() : code;
     }
 
     public HyscaleException(HyscaleError hyscaleError) {
         super(hyscaleError.getMessage());
         this.hyscaleError = hyscaleError;
+        this.code = (hyscaleError.getCode() > 0) ? hyscaleError.getCode() : code;
     }
 
     public HyscaleException(Throwable throwable, HyscaleError hyscaleError) {
         super(hyscaleError.getMessage(), throwable);
         this.hyscaleError = hyscaleError;
+        this.code = (hyscaleError.getCode() > 0) ? hyscaleError.getCode() : code;
     }
 
     public HyscaleException(Throwable throwable, HyscaleError hyscaleError, String... args) {
         super(hyscaleError.getMessage(), throwable);
         this.hyscaleError = hyscaleError;
         this.args = args;
+        this.code = (hyscaleError.getCode() > 0) ? hyscaleError.getCode() : code;
     }
 
     public HyscaleException(HyscaleError hyscaleError, Integer code) {
@@ -83,6 +87,6 @@ public class HyscaleException extends Exception {
     }
 
     public int getCode() {
-        return (hyscaleError.getCode() > 0) ? hyscaleError.getCode() : code;
+        return code;
     }
 }
