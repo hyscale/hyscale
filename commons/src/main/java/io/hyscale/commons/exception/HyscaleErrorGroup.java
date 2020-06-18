@@ -25,9 +25,9 @@ public enum HyscaleErrorGroup{
     MANIFEST_GENERATION (105),
     DEPLOYER_APPLY (120),
     WAIT_FOR_DEPLOYMENT (135),
-    GET_SERVICE_IP (150),
-    GET_API_CLIENT(165),
-    GET_LOGS(180);
+    GET_SERVICE_IP (201),
+    GET_API_CLIENT(202),
+    GET_LOGS(203);
 
     Integer groupCode;
 

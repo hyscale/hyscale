@@ -26,8 +26,8 @@ public enum ServiceSpecErrorCodes implements HyscaleError {
 
     SERVICE_SPEC_REQUIRED("Service spec required",HyscaleErrorGroup.SERVICE_SPEC_PROCESSING),
     SERVICE_SPEC_PARSE_ERROR("Failed to parse service spec",HyscaleErrorGroup.SERVICE_SPEC_PROCESSING),
-    SERVICE_PROFILE_REQUIRED("Service profile required",HyscaleErrorGroup.SERVICE_SPEC_PROCESSING),
-    SERVICE_PROFILE_PARSE_ERROR("Failed to parser service profile",HyscaleErrorGroup.SERVICE_SPEC_PROCESSING),
+    SERVICE_PROFILE_REQUIRED("Service profile required",HyscaleErrorGroup.SERVICE_PROFILE_PROCESSING),
+    SERVICE_PROFILE_PARSE_ERROR("Failed to parser service profile",HyscaleErrorGroup.SERVICE_PROFILE_PROCESSING),
     FAILED_TO_PARSE_JSON_TREE("Failed to parse json tree",HyscaleErrorGroup.SERVICE_SPEC_PROCESSING),
     ERROR_WHILE_FETCH_SERVICE_SPEC_FIELD("Failed to fetch service spec field {}"),
     INVALID_FILE_EXTENSION("Invalid file extension:{} given."),
