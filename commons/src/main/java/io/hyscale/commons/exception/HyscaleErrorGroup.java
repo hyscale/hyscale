@@ -18,7 +18,7 @@ package io.hyscale.commons.exception;
 public enum HyscaleErrorGroup{
     SERVICE_SPEC_PROCESSING(15),
     SERVICE_PROFILE_PROCESSING(30),
-    CLUSTER_VALIDATION (45),
+    UPFRONT_VALIDATION (45),
     DOCKER_FILE_GENERATION (60),
     IMAGE_BUILD (75),
     IMAGE_PUSH (90),
