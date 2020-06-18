@@ -25,7 +25,27 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Build Images and Hyscale Binary for DEV
+    - name: Build Images for dev
+      if: github.ref == 'refs/heads/master'
+      run: |
+          ./scripts/build_image.sh
+      env:
+        DOCKER_REPO: 'hyscaledev'
+
+    - name: Build Images for release
+      run: |
+          if [[ "x`echo ${GITHUB_REF}`" == *"release/HyScale"* ]]
+          then
+            ./scripts/build_image.sh
+          fi
+      env:
+        DOCKER_REPO: 'hyscale'
+
+    - uses: azure/container-scan@v0
+      with:
+        image-name: hyscale:latest
+
+    - name: Publish Images and Hyscale Binary for DEV
       if: github.ref == 'refs/heads/master'
       run: |
           ./scripts/publish_artifacts.sh
@@ -38,7 +58,7 @@ jobs:
         DOCKER_PASSWORD: ${{ secrets.HYS_DEV_DOCKER_PASSWORD }}
         DOCKER_REPO: 'hyscaledev'
 
-    - name: Build Images and Hyscale Binary for Release
+    - name: Publish Images and Hyscale Binary for Release
       run: |
           if [[ "x`echo ${GITHUB_REF}`" == *"release/HyScale"* ]]
           then
@@ -79,10 +99,10 @@ jobs:
           if [ $(echo ${GITHUB_REF##*/}) == "master" ]
           then
             echo -en "CHANGE LOG: \n$(git log -1 --pretty=format:"%s") \n-------------------------------------------------------- \n" >> hyscale_version.txt
-            echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \ncurl -sSL ${{ secrets.HYS_DEV_BINARY_URL }} | HYS_VERSION=$IMAGE_VERSION  bash \nJAR can be downloaded using wget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_DEV_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/hyscale.jar \nWindows Binary can be downloaded using wget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_DEV_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/win/hyscale.ps1 \nMAC Binary can be downloaded using wget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_DEV_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/mac/hyscale" >> hyscale_version.txt
+            echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \ncurl -sSL ${{ secrets.HYS_DEV_BINARY_URL }} | HYS_VERSION=$IMAGE_VERSION  bash \n\nJAR can be downloaded using \nwget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_DEV_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/hyscale.jar \n\nWindows Binary can be downloaded using \nwget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_DEV_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/win/hyscale.ps1 \n\nMAC Binary can be downloaded using \nwget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_DEV_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/mac/hyscale" >> hyscale_version.txt
           elif [[ "x`echo ${GITHUB_REF}`" == *"release/HyScale"* ]]
           then
-            echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \ncurl -sSL ${{ secrets.HYS_STABLE_BINARY_URL }} | HYS_VERSION=$IMAGE_VERSION  bash\nJAR can be downloaded using wget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_STABLE_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/hyscale.jar \nWindows Binary can be downloaded using wget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_STABLE_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/win/hyscale.ps1 \nMAC Binary can be downloaded using wget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_STABLE_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/mac/hyscale" >> hyscale_version.txt
+            echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \ncurl -sSL ${{ secrets.HYS_STABLE_BINARY_URL }} | HYS_VERSION=$IMAGE_VERSION  bash\n\nJAR can be downloaded using \nwget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_STABLE_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/hyscale.jar \n\nWindows Binary can be downloaded using \nwget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_STABLE_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/win/hyscale.ps1 \n\nMAC Binary can be downloaded using \nwget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_STABLE_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/mac/hyscale" >> hyscale_version.txt
           else
             echo -en "Hyscale tool Build triggered but nothing is built or published as the branch is $(echo ${GITHUB_REF##*/})" >> hyscale_version.txt
           fi
