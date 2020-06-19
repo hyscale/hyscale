@@ -5,6 +5,7 @@ general:
     - CVE-2020-10878
     #Issue in the base image(openjdk-11.0.7)
     - CVE-2020-14155
+    - CVE-2019-20838
   bestPracticeViolations:
     - CIS-DI-0001
     - DKL-DI-0006
