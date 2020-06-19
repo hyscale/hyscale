@@ -94,12 +94,12 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
         buildContext.setServiceName(serviceName);
         buildContext.setStackAsServiceImage(isStackImage(context));
         buildContext.setVerbose((Boolean) context.getAttribute(WorkflowConstants.VERBOSE));
-        buildContext.setImageRegistry(registryManager.getImageRegistry(serviceSpec
+        buildContext.setPushRegistry(registryManager.getImageRegistry(serviceSpec
                 .get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.registry), String.class)));
         if (isStackImage(context)) {
             String pullImageRegistryName = getPullImageRegistry(context);
             if (StringUtils.isNotBlank(pullImageRegistryName)) {
-                buildContext.setPullImageRegistry(registryManager.getImageRegistry(pullImageRegistryName));
+                buildContext.setPullRegistry(registryManager.getImageRegistry(pullImageRegistryName));
             }
         }
         DockerfileEntity dockerfileEntity = (DockerfileEntity) context

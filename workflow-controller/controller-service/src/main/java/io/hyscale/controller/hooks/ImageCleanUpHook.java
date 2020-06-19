@@ -20,17 +20,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.builder.services.service.ImageBuilder;
-import io.hyscale.commons.commands.provider.ImageCommandProvider;
+import io.hyscale.builder.services.docker.HyscaleDockerClient;
 import io.hyscale.commons.component.InvokerHook;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.utils.ImageMetadataUtil;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 /**
- * Hook to clean up local images which are no longer in use
+ * Hook to clean up local images created during build time
  *
  */
 @Component
@@ -39,11 +39,11 @@ public class ImageCleanUpHook implements InvokerHook<WorkflowContext> {
     private static final Logger logger = LoggerFactory.getLogger(ImageCleanUpHook.class);
 
     @Autowired
-    private ImageBuilder imageBuilder;
+    private HyscaleDockerClient hyscaleDockerClient;
 
     @Autowired
-    private ImageCommandProvider imageCommandProvider;
-
+    private ImageMetadataUtil imageMetadataUtil;
+    
     @Override
     public void preHook(WorkflowContext context) {
 
@@ -51,6 +51,7 @@ public class ImageCleanUpHook implements InvokerHook<WorkflowContext> {
 
     @Override
     public void postHook(WorkflowContext context) throws HyscaleException {
+        logger.debug("Cleaning up temp built image");
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
             logger.error(" Cannot clean up image without service specs ");
@@ -64,8 +65,8 @@ public class ImageCleanUpHook implements InvokerHook<WorkflowContext> {
                 String.class);
 
         // Clean up temp image
-        String imageName = imageCommandProvider.getBuildImageNameWithTag(context.getAppName(), serviceName, tag);
-        imageBuilder.deleteImage(imageName, false);
+        String imageName = imageMetadataUtil.getBuildImageNameWithTag(context.getAppName(), serviceName, tag);
+        hyscaleDockerClient.deleteImage(imageName, false);
     }
 
     @Override

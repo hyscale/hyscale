@@ -13,24 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.builder.services.impl;
+package io.hyscale.builder.services.docker.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.hyscale.commons.commands.provider.ImageCommandProvider;
 import io.hyscale.builder.services.util.DockerImageUtil;
 import io.hyscale.builder.services.util.ImageLogUtil;
-import io.hyscale.builder.services.service.ImageBuilder;
 import io.hyscale.builder.services.spring.DockerBinaryCondition;
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.models.CommandResult;
+import io.hyscale.commons.utils.ImageMetadataUtil;
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.servicespec.commons.model.service.Image;
 import io.hyscale.servicespec.commons.util.ImageUtil;
@@ -42,6 +46,7 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.builder.services.config.ImageBuilderConfig;
+import io.hyscale.builder.services.docker.HyscaleDockerClient;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
 import io.hyscale.builder.core.models.BuildContext;
 import io.hyscale.builder.core.models.DockerImage;
@@ -54,12 +59,15 @@ import io.hyscale.commons.models.Status;
 
 @Component
 @Conditional(DockerBinaryCondition.class)
-public class DockerBinaryImpl implements ImageBuilder {
+public class DockerBinaryClient implements HyscaleDockerClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(DockerBinaryImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(DockerBinaryClient.class);
 
     @Autowired
     private ImageCommandProvider imageCommandProvider;
+    
+    @Autowired
+    private ImageMetadataUtil imageMetadataUtil;
 
     @Autowired
     private DockerImageUtil dockerImageUtil;
@@ -94,9 +102,17 @@ public class DockerBinaryImpl implements ImageBuilder {
 
         logger.debug("Image clean up {}", isSuccess ? Status.DONE.getMessage() : Status.FAILED.getMessage());
     }
+    
+    @Override
+    public void deleteImage(String imageId, boolean force) {
+        if (StringUtils.isBlank(imageId)) {
+            return;
+        }
+        deleteImages(Arrays.asList(imageId), force);
+    }
 
     @Override
-    public DockerImage _build(Dockerfile dockerfile, String tag, BuildContext context) throws HyscaleException {
+    public DockerImage build(Dockerfile dockerfile, String tag, BuildContext context) throws HyscaleException {
         WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_BUILD);
         String appName = context.getAppName();
         String serviceName = context.getServiceName();
@@ -131,7 +147,7 @@ public class DockerBinaryImpl implements ImageBuilder {
         }
 
         DockerImage dockerImage = new DockerImage();
-        dockerImage.setName(imageCommandProvider.getBuildImageName(appName, serviceName));
+        dockerImage.setName(imageMetadataUtil.getBuildImageName(appName, serviceName));
         dockerImage.setTag(tag);
 
         return dockerImage;
@@ -144,7 +160,7 @@ public class DockerBinaryImpl implements ImageBuilder {
      * @throws HyscaleException
      */
     @Override
-    public void _push(Image image, BuildContext buildContext) throws HyscaleException {
+    public void push(Image image, BuildContext buildContext) throws HyscaleException {
         WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_PUSH);
         String appName = buildContext.getAppName();
         String serviceName = buildContext.getServiceName();
@@ -176,7 +192,7 @@ public class DockerBinaryImpl implements ImageBuilder {
     }
 
     @Override
-    public void _pull(String image, BuildContext context) throws HyscaleException {
+    public void pull(String image, BuildContext context) throws HyscaleException {
         WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_PULL);
 
         if (StringUtils.isBlank(image)) {
@@ -194,7 +210,7 @@ public class DockerBinaryImpl implements ImageBuilder {
     }
 
     @Override
-    public void _tag(String source, Image dest) throws HyscaleException {
+    public void tag(String source, Image dest) throws HyscaleException {
         WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_TAG);
 
         if (StringUtils.isBlank(source)) {
@@ -248,4 +264,17 @@ public class DockerBinaryImpl implements ImageBuilder {
         return null;
     }
 
+    @Override
+    public List<String> getImageIds(String imageName, Map<String, String> labels) throws HyscaleException {
+        String imageIdsAsString = CommandExecutor
+                .executeAndGetResults(imageCommandProvider.dockerImageIds(imageName, labels))
+                .getCommandOutput();
+        String[] imageIds = StringUtils.isNotBlank(imageIdsAsString) ? imageIdsAsString.split("\\s+") : null;
+        if (imageIds == null || imageIds.length == 0) {
+            logger.debug("No images found to clean from the host machine");
+            return null;
+        }
+        // Need to preserve the order of output, hence a LinkedHashset
+        return new LinkedList<>(Arrays.asList(imageIds));
+    }
 }

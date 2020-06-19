@@ -24,8 +24,15 @@ public class BuildContext {
 
 	private DockerfileEntity dockerfileEntity;
 	private DockerImage dockerImage;
-	private ImageRegistry imageRegistry;
-	private ImageRegistry pullImageRegistry;
+	/**
+	 * Push registry refer to one where hyscale will push the final image
+	 */
+	private ImageRegistry pushRegistry;
+	/**
+	 * Pull registry is required to pull intermediate image
+	 * Ex: In case stack image refers to image in private registry
+	 */
+	private ImageRegistry pullRegistry;
 	private String serviceName;
 	private String appName;
 	private String version;
@@ -77,20 +84,20 @@ public class BuildContext {
 		this.dockerImage = dockerImage;
 	}
 
-	public ImageRegistry getImageRegistry() {
-		return imageRegistry;
+	public ImageRegistry getPushRegistry() {
+		return pushRegistry;
 	}
 
-	public void setImageRegistry(ImageRegistry imageRegistry) {
-		this.imageRegistry = imageRegistry;
+	public void setPushRegistry(ImageRegistry pushRegistry) {
+		this.pushRegistry = pushRegistry;
 	}
 
-	public ImageRegistry getPullImageRegistry() {
-	    return pullImageRegistry;
+	public ImageRegistry getPullRegistry() {
+	    return pullRegistry;
 	}
 
-	public void setPullImageRegistry(ImageRegistry pullImageRegistry) {
-	    this.pullImageRegistry = pullImageRegistry;
+	public void setPullRegistry(ImageRegistry pullRegistry) {
+	    this.pullRegistry = pullRegistry;
 	}
 
 	public Map<String, String> getBuildArgs() {
