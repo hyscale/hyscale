@@ -107,7 +107,14 @@ jobs:
             echo -en "Hyscale tool Build triggered but nothing is built or published as the branch is $(echo ${GITHUB_REF##*/})" >> hyscale_version.txt
           fi
 
-    - name: SendGrid
+    - name: SendGrid Action for Build Failure
+      if: ${{ failure() }}
+      uses: peter-evans/sendgrid-action@v1
+      env:
+        SENDGRID_API_KEY: ${{ secrets.HYS_SENDGRID_API_KEY }}
+        SCRIPT_FILEPATH: .github/failure_sendgrid.js
+
+    - name: SendGrid Action for Successful Build
       uses: peter-evans/sendgrid-action@v1
       env:
         SENDGRID_API_KEY: ${{ secrets.HYS_SENDGRID_API_KEY }}
