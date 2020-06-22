@@ -41,5 +41,12 @@ public class ResourceLabelUtil {
 		}
 		return labels.get(ResourceLabelKey.ENV_NAME.getLabel());
 	}
+	
+	public static String getVolumeName(Map<String, String> labels) {
+        if (labels == null) {
+            return null;
+        }
+        return labels.get(ResourceLabelKey.VOLUME_NAME.getLabel());
+    }
 
 }

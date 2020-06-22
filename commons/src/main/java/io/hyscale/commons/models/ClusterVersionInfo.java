@@ -13,20 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.deployer.core.model;
+package io.hyscale.commons.models;
 
-public enum ResourceOperation {
+import io.hyscale.commons.constants.ToolConstants;
 
-	GET("Get"), CREATE("Create"), UPDATE("Update"), DELETE("Delete"), PATCH("Patch"),
-	GET_BY_SELECTOR("Get by Selector"), GET_ALL("Get from all namespaces"), DELETE_BY_SELECTOR("Delete by Selector");
+public class ClusterVersionInfo {
 
-	private String operation;
+    private String major;
+    private String minor;
 
-	ResourceOperation(String operation) {
-		this.operation = operation;
-	}
+    public String getMajor() {
+        return major;
+    }
 
-	public String getOperation() {
-		return this.operation;
-	}
+    public void setMajor(String majorVersion) {
+        this.major = majorVersion;
+    }
+
+    public String getMinor() {
+        return minor;
+    }
+
+    public void setMinor(String minorVersion) {
+        this.minor = minorVersion;
+    }
+
+    public String getVersion() {
+        return major + ToolConstants.DOT + minor;
+    }
 }

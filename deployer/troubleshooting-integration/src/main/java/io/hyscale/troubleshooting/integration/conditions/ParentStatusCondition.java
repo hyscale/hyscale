@@ -24,14 +24,18 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.deployer.core.model.ResourceKind;
+import io.hyscale.deployer.services.factory.PodParentFactory;
+import io.hyscale.deployer.services.handler.PodParentHandler;
 import io.hyscale.troubleshooting.integration.actions.ParentFailureAction;
 import io.hyscale.troubleshooting.integration.actions.ServiceNotDeployedAction;
+import io.hyscale.troubleshooting.integration.actions.ServiceWithZeroReplicasAction;
 import io.hyscale.troubleshooting.integration.actions.TryAfterSometimeAction;
 import io.hyscale.troubleshooting.integration.models.AbstractedErrorMessage;
 import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
 import io.hyscale.troubleshooting.integration.models.FailedResourceKey;
 import io.hyscale.troubleshooting.integration.models.Node;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
+import io.hyscale.troubleshooting.integration.models.TroubleshootingContext.ResourceInfo;
 import io.hyscale.troubleshooting.integration.util.ConditionUtil;
 import io.kubernetes.client.openapi.models.V1Event;
 
@@ -44,6 +48,9 @@ public class ParentStatusCondition implements Node<TroubleshootingContext> {
     
     @Autowired
     private ServiceNotDeployedAction serviceNotDeployedAction;
+    
+    @Autowired
+    private ServiceWithZeroReplicasAction serviceWithZeroReplicasAction;
     
     @Autowired
     private ParentFailureAction parentFailureAction;
@@ -70,9 +77,11 @@ public class ParentStatusCondition implements Node<TroubleshootingContext> {
             logger.debug("Pod owner {} not found in context", podParent);
             return serviceNotDeployedAction;
         }
-
         // Only one resource of parent should exist
         TroubleshootingContext.ResourceInfo parentInfo = resourceInfos.get(0);
+        if (hasZeroReplicas(parentInfo, podParent)) {
+            return serviceWithZeroReplicasAction;
+        }
         DiagnosisReport report = new DiagnosisReport();
         List<V1Event> events = parentInfo.getEvents();
         if (events == null || events.isEmpty()) {
@@ -92,6 +101,14 @@ public class ParentStatusCondition implements Node<TroubleshootingContext> {
         return parentFailureAction;
     }
     
+    private boolean hasZeroReplicas(ResourceInfo parentInfo, ResourceKind podParent) {
+        PodParentHandler podParentHandler = PodParentFactory.getHandler(podParent.getKind());
+        
+        Integer replicas = podParentHandler.getReplicas(parentInfo.getResource());
+        
+        return replicas != null && replicas == 0 ? true : false;
+    }
+
     // TODO filter events wrt latest deployment
     private V1Event getFilteredEvent(List<V1Event> events) {
         V1Event filteredEvent = null;

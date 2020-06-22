@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 
 import io.hyscale.deployer.services.manager.ScaleServiceManager;
 import io.hyscale.deployer.services.model.*;
+import io.hyscale.deployer.services.processor.ClusterVersionProvider;
+import io.hyscale.deployer.services.processor.PodParentProvider;
 import io.hyscale.deployer.services.processor.ServiceStatusProcessor;
 
 import org.slf4j.Logger;
@@ -35,6 +37,7 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.ClusterVersionInfo;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.KubernetesResource;
@@ -93,7 +96,13 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
     
     @Autowired
     private ServiceStatusProcessor serviceStatusProcessor;
-
+    
+    @Autowired
+    private PodParentProvider podParentProvider;
+    
+    @Autowired
+    private ClusterVersionProvider clusterVersionProvider;
+    
     @Override
     public void deploy(DeploymentContext context) throws HyscaleException {
 
@@ -237,8 +246,9 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
             ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
             V1ServiceHandler v1ServiceHandler = (V1ServiceHandler) ResourceHandlers
                     .getHandlerOf(ResourceKind.SERVICE.getKind());
-            serviceAddress = v1ServiceHandler.getServiceAddress(apiClient, context.getServiceName(),
-                    context.getNamespace(), context.isWaitForReadiness());
+            String selector = ResourceSelectorUtil.getServiceSelector(context.getAppName(), context.getServiceName());
+            serviceAddress = v1ServiceHandler.getServiceAddress(apiClient, selector, context.getNamespace(),
+                    context.isWaitForReadiness());
         } catch (HyscaleException e) {
             logger.error("Error while preparing client, error {} ", e.toString());
             throw e;
@@ -284,8 +294,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
     @Override
     public List<AppMetadata> getAppsMetadata(K8sAuthorisation authConfig) throws HyscaleException {
         ApiClient apiClient = clientProvider.get(authConfig);
-        V1PodHandler v1PodHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
-        return appMetadataBuilder.build(v1PodHandler.getPodsForAllNamespaces(apiClient));
+        return appMetadataBuilder.build(podParentProvider.getAllPodParents(apiClient));
     }
 
     @Override
@@ -374,6 +383,12 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
             throw new HyscaleException(DeployerErrorCodes.CANNOT_SCALE_NEGATIVE, Integer.toString(scaleSpec.getValue()));
         }
         return scaleServiceManager.scale(apiClient, appName, serviceName, namespace, scaleSpec);
+    }
+
+    @Override
+    public ClusterVersionInfo getVersion(K8sAuthorisation authConfig) throws HyscaleException {
+        ApiClient apiClient = clientProvider.get(authConfig);
+        return clusterVersionProvider.getVersion(apiClient);
     }
 
 }

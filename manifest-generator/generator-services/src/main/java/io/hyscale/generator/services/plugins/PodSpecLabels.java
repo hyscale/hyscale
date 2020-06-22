@@ -34,6 +34,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @ManifestPlugin(name = "PodSpecLabels")
@@ -53,17 +54,23 @@ public class PodSpecLabels implements ManifestHandler {
             ManifestSnippet metaDataSnippet = new ManifestSnippet();
             metaDataSnippet.setPath("spec.template.metadata");
             metaDataSnippet.setKind(podSpecOwner);
-            metaDataSnippet.setSnippet(JsonSnippetConvertor.serialize(getTemplateMetaData(serviceMetadata, podSpecOwner)));
+            metaDataSnippet.setSnippet(JsonSnippetConvertor.serialize(getTemplateMetaData(serviceMetadata, podSpecOwner, manifestContext)));
             snippetList.add(metaDataSnippet);
 
         } catch (JsonProcessingException e) {
             logger.error("Error while serializing Pod spec labels snippet ", e);
         }
-        return snippetList;    }
+        return snippetList;    
+        }
 
-    private V1ObjectMeta getTemplateMetaData(ServiceMetadata serviceMetadata, String podSpecOwner) {
+    private V1ObjectMeta getTemplateMetaData(ServiceMetadata serviceMetadata, String podSpecOwner, ManifestContext manifestContext) {
         V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
-        v1ObjectMeta.setLabels(DefaultLabelBuilder.build(serviceMetadata));
+        Map<String, String> labels = DefaultLabelBuilder.build(serviceMetadata);
+        Map<String, String> addOnLabels = manifestContext.getCustomLabels();
+        if (addOnLabels != null && !addOnLabels.isEmpty()) {
+            labels.putAll(addOnLabels);
+        }
+        v1ObjectMeta.setLabels(labels);
         //TODO Add release-version ??
         return v1ObjectMeta;
     }

@@ -15,6 +15,8 @@
  */
 package io.hyscale.controller.builder;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,7 +34,7 @@ public class ManifestContextBuilder {
 
     @Autowired
     private RegistryManager registryManager;
-
+    
     public ManifestContext build(WorkflowContext workflowContext) throws HyscaleException {
 
         if (workflowContext == null) {
@@ -52,7 +54,15 @@ public class ManifestContextBuilder {
         manifestContext.setImageRegistry(registryManager.getImageRegistry(registryUrl));
         manifestContext.addGenerationAttribute(ManifestGenConstants.IMAGE_SHA_SUM,
                 workflowContext.getAttribute(WorkflowConstants.IMAGE_SHA_SUM));
-
+        Map<String, String> label = getLabel(workflowContext);
+        if (label != null && !label.isEmpty()) {
+            manifestContext.putCustomLabel(label);
+        }
         return manifestContext;
+    }
+    
+    private Map<String, String> getLabel(WorkflowContext context) throws HyscaleException {
+        // TODO Generate add on labels, ensure only K8s allowed values
+        return null;
     }
 }

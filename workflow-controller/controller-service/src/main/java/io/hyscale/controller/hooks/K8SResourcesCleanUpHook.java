@@ -86,7 +86,7 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 
 			Map<ResourceKind, List<String>> newResourcesMap = getResourcesMap(manifestList);
 			boolean isMsgPrinted = false;
-			List<ResourceLifeCycleHandler> handlersList = ResourceHandlers.getHandlersList();
+			List<ResourceLifeCycleHandler> handlersList = ResourceHandlers.getAllHandlers();
 			if (handlersList == null) {
 				return;
 			}
@@ -133,6 +133,9 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 					}
 				}
 
+			}
+			if (isMsgPrinted) {
+			    WorkflowLogger.footer();
 			}
 		} catch (Exception e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_READ_MANIFEST);

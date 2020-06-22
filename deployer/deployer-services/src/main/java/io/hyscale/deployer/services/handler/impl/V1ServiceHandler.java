@@ -253,11 +253,11 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
         return ResourceKind.SERVICE.getWeight();
     }
 
-    public ServiceAddress getServiceAddress(ApiClient apiClient, String name, String namespace, boolean wait)
+    public ServiceAddress getServiceAddress(ApiClient apiClient, String selector, String namespace, boolean wait)
             throws HyscaleException {
 
         if (!wait) {
-            return getServiceAddress(apiClient, name, namespace);
+            return getServiceAddress(apiClient, selector, namespace);
         }
         long startTime = System.currentTimeMillis();
         V1Service v1Service = null;
@@ -267,7 +267,9 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
         try {
             while (System.currentTimeMillis() - startTime < LB_READY_STATE_TIME) {
                 WorkflowLogger.continueActivity(serviceIPContext);
-                v1Service = get(apiClient, name, namespace);
+                List<V1Service> v1ServiceList = getBySelector(apiClient, selector, true, namespace);
+                
+                v1Service = v1ServiceList != null && !v1ServiceList.isEmpty() ? v1ServiceList.get(0) : null;
                 loadBalancerIngress = K8sServiceUtil.getLoadBalancer(v1Service);
 
                 if (loadBalancerIngress != null) {
@@ -280,22 +282,27 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
         } catch (HyscaleException e) {
             LOGGER.error("Error while loadbalancer ready state condition", e);
             WorkflowLogger.endActivity(serviceIPContext, Status.FAILED);
-            throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_SERVICE_ADDRESS, name, namespace);
+            throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_SERVICE_ADDRESS);
         }
         if (loadBalancerIngress == null) {
             WorkflowLogger.endActivity(serviceIPContext, Status.FAILED);
-            throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_SERVICE_ADDRESS, name, namespace);
+            throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_SERVICE_ADDRESS);
         }
         WorkflowLogger.endActivity(serviceIPContext, Status.DONE);
 
         return K8sServiceUtil.getServiceAddress(v1Service);
     }
 
-    private ServiceAddress getServiceAddress(ApiClient apiClient, String name, String namespace)
+    private ServiceAddress getServiceAddress(ApiClient apiClient, String selector, String namespace)
             throws HyscaleException {
+        
+        List<V1Service> v1ServiceList = getBySelector(apiClient, selector, true, namespace);
+        
+        V1Service service = v1ServiceList != null && !v1ServiceList.isEmpty() ? v1ServiceList.get(0) : null;
 
-        V1Service service = get(apiClient, name, namespace);
-
+        if (service == null) {
+            throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_SERVICE_ADDRESS);
+        }
         return K8sServiceUtil.getServiceAddress(service);
 
     }

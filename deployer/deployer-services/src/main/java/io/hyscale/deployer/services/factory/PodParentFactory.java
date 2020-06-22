@@ -15,9 +15,12 @@
  */
 package io.hyscale.deployer.services.factory;
 
-import java.util.*;
-
-import javax.annotation.PostConstruct;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.stream.Collectors;
 
 import io.hyscale.deployer.services.handler.PodParentHandler;
 
@@ -41,6 +44,17 @@ public class PodParentFactory {
 
     public static PodParentHandler getHandler(String kind) {
         return kindVsHandlerMap.get(kind);
+    }
+    
+    /**
+     * 
+     * @return Unmodifiable list of all available PodParentHandlers
+     */
+    public static List<PodParentHandler> getAllHandlers(){
+        if (kindVsHandlerMap == null) {
+        return null;
+        }
+        return Collections.unmodifiableList(kindVsHandlerMap.values().stream().collect(Collectors.toList()));
     }
 
 }

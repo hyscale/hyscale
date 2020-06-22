@@ -159,7 +159,7 @@ public class K8sResourceDispatcher {
         List<String> failedResources = new ArrayList<String>();
 
         String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
-        List<ResourceLifeCycleHandler> handlersList = ResourceHandlers.getHandlersList();
+        List<ResourceLifeCycleHandler> handlersList = ResourceHandlers.getAllHandlers();
         if (handlersList == null) {
             return;
         }

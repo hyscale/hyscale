@@ -24,10 +24,12 @@ public class ManifestContext {
 	private String envName;
 	private String namespace;
 	private ImageRegistry imageRegistry;
+	private Map<String, String> customLabels;
 	private Map<String, Object> generationAttributes;
 
 	public ManifestContext() {
 		this.generationAttributes = new HashMap<>();
+		this.customLabels = new HashMap<String, String>();
 	}
 
 	public String getAppName() {
@@ -60,6 +62,24 @@ public class ManifestContext {
 
 	public void setEnvName(String envName) {
 		this.envName = envName;
+	}
+	
+	public Map<String, String> getCustomLabels() {
+        return customLabels;
+    }
+	
+	public String getCustomLabel(String key) {
+        return customLabels.get(key);
+	}
+	
+	public void putCustomLabel(Map<String, String> customLabels) {
+	    if (customLabels != null) {
+	        this.customLabels = customLabels;
+	    }
+	}
+
+	public void addCustomLabel(String key, String value) {
+	    customLabels.put(key, value);
 	}
 
 	public Object getGenerationAttribute(String key) {

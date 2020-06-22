@@ -32,5 +32,5 @@ public class ManifestGenConstants {
 	public static final String DEFAULT_IMAGE_PULL_POLICY = "Always";
 
 	public static final String IMAGE_PULL_SECRET_NAME = "ImagePullSecretName";
-
+	
 }

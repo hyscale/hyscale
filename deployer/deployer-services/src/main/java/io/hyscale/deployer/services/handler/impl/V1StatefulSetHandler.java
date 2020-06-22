@@ -156,6 +156,26 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         }
         return statefulSets;
     }
+    
+    @Override
+    public List<V1StatefulSet> listForAllNamespaces(ApiClient apiClient, String selector, boolean label)
+            throws HyscaleException {
+        AppsV1Api appsV1Api = new AppsV1Api(apiClient);
+        String labelSelector = label ? selector : null;
+        String fieldSelector = label ? null : selector;
+        List<V1StatefulSet> statefulSets = null;
+        try {
+            V1StatefulSetList statefulSetList = appsV1Api.listStatefulSetForAllNamespaces(null, null, fieldSelector,
+                    labelSelector, null, TRUE, null, null, null);
+            statefulSets = statefulSetList != null ? statefulSetList.getItems() : null;
+        } catch (ApiException e) {
+            HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_ALL);
+            LOGGER.error("Error while listing StatefulSets all namespaces, with selectors {} , error {}", selector,
+                    ex.toString());
+            throw ex;
+        }
+        return statefulSets;
+    }
 
     @Override
     public boolean patch(ApiClient apiClient, String name, String namespace, V1StatefulSet target) throws HyscaleException {
@@ -436,18 +456,32 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
     }
 
     @Override
-    public boolean scale(ApiClient apiClient, V1StatefulSet v1StatefulSet, String namespace, ScaleOperation scaleOp, int value) throws HyscaleException {
+    public boolean scale(ApiClient apiClient, V1StatefulSet v1StatefulSet, String namespace, int value) throws HyscaleException {
         if (v1StatefulSet == null) {
             logger.error("Cannot scale 'null' deployment");
             return false;
         }
         String name = v1StatefulSet.getMetadata().getName();
+        int currentReplicas = v1StatefulSet.getSpec().getReplicas();
+        // No need of scaling
+        if (currentReplicas == value) {
+            WorkflowLogger.persist(DeployerActivity.DESIRED_STATE, String.valueOf(value));
+            return true;
+        }
+        V1Scale exisiting = new V1ScaleBuilder()
+                .withSpec(new V1ScaleSpec().replicas(currentReplicas))
+                .build();
         AppsV1Api appsV1Api = new AppsV1Api(apiClient);
         ActivityContext activityContext = new ActivityContext(DeployerActivity.SCALING_SERVICE);
         WorkflowLogger.startActivity(activityContext);
         boolean status = false;
         try {
-            appsV1Api.patchNamespacedStatefulSetScale(name, namespace, prepareScalePatch(scaleOp, value, v1StatefulSet.getSpec().getReplicas()), TRUE, null, null, null);
+            V1Scale scale = new V1ScaleBuilder()
+                    .withSpec(new V1ScaleSpec().replicas(value))
+                    .build();
+            Object jsonPatch = K8sResourcePatchUtil.getJsonPatch(exisiting, scale, V1Scale.class);
+            V1Patch patch = new V1Patch(jsonPatch.toString());
+            appsV1Api.patchNamespacedStatefulSetScale(name, namespace, patch, TRUE, null, null, null);
             status = waitForDesiredState(apiClient, name, namespace, activityContext);
         } catch (ApiException e) {
             logger.error("Error while applying PATCH scale to {} due to : {} code :{}", name, e.getResponseBody(), e.getCode(), e);
@@ -456,6 +490,12 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
             throw ex;
         } finally {
             if (status) {
+                if (value < currentReplicas) {
+                    WorkflowLogger.persist(DeployerActivity.SCALE_DOWN_VOLUME,
+                            v1StatefulSet.getSpec().getVolumeClaimTemplates().stream().map(each -> {
+                                return each.getMetadata().getName();
+                            }).collect(Collectors.joining(",")), namespace);
+                }
                 WorkflowLogger.endActivity(activityContext, Status.DONE);
             } else {
                 WorkflowLogger.endActivity(activityContext, Status.FAILED);

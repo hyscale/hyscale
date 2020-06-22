@@ -71,7 +71,7 @@ public class HyscaleScaleServiceCommand implements Callable<Integer> {
     @CommandLine.Option(names = {"-s", "--service"}, required = true, description = "Service name")
     private String serviceName;
 
-    @CommandLine.ArgGroup(exclusive = true, heading = "Scaling Options", order = 10)
+    @CommandLine.ArgGroup(exclusive = true, heading = "Scaling Options", order = 10,multiplicity = "1")
     private ScaleArg scaleArg;
 
     @Autowired
@@ -108,8 +108,10 @@ public class HyscaleScaleServiceCommand implements Callable<Integer> {
             HyscaleException ex = new HyscaleException(ControllerErrorCodes.FAILED_TO_SCALE_SERVICE, serviceName, appName, namespace);
             WorkflowLogger.error(ControllerActivity.ERROR, ex.getMessage());
             throw ex;
-
         }
+        WorkflowLogger.logPersistedActivities();
+        
+        WorkflowLogger.footer();
         return ToolConstants.HYSCALE_SUCCESS_CODE;
     }
 }

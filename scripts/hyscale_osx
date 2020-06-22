@@ -1,9 +1,9 @@
 #!/bin/bash
 set -euo pipefail
-HYS_VERSION="@@HYS_BUILD_VERSION@@"
+HYS_VERSION="@@HYSCALE_BUILD_VERSION@@"
 HYS_JAR_BIN="hyscale-${HYS_VERSION}.jar"
 HYS_CONF_DIR="$HOME/.hyscale"
-HYS_DOWNLOAD_URL="@@HYS_URL@@"
+HYS_DOWNLOAD_URL="@@HYSCALE_URL@@"
 
 check_java_version(){
   set +e

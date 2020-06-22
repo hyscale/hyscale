@@ -45,7 +45,7 @@ public final class ResourceHandlers {
 	 * 
 	 * @return Unmodifiable list of all available ResourceLifeCycleHandler
 	 */
-	public static List<ResourceLifeCycleHandler> getHandlersList(){
+	public static List<ResourceLifeCycleHandler> getAllHandlers(){
 	    if (kindVsHandler == null) {
 		return null;
 	    }

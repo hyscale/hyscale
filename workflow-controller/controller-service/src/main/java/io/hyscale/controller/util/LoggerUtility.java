@@ -36,6 +36,7 @@ import io.hyscale.commons.utils.HyscaleStringUtil;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.model.ReplicaInfo;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.util.DeployerLogUtil;
@@ -140,8 +141,12 @@ public class LoggerUtility {
         // if replica is provides by the user, validation happens only on the latest replicas of the service
         List<ReplicaInfo> replicaInfoList = replicaProcessingService.getReplicas(appName, serviceName, namespace, replicaName != null ? false : true);
         if (replicaInfoList == null || replicaInfoList.isEmpty()) {
-            WorkflowLogger.error(ControllerActivity.SERVICE_NOT_CREATED);
-            WorkflowLogger.error(ControllerActivity.CHECK_SERVICE_STATUS);
+            if (replicaProcessingService.hasService(authConfig, appName, serviceName, namespace)) {
+                WorkflowLogger.error(DeployerActivity.SERVICE_WITH_ZERO_REPLICAS);
+            } else {
+                WorkflowLogger.error(ControllerActivity.SERVICE_NOT_CREATED);
+                WorkflowLogger.error(ControllerActivity.CHECK_SERVICE_STATUS);
+            }
             WorkflowLogger.footer();
             return null;
         }

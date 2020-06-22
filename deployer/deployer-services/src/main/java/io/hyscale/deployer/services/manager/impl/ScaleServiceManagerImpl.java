@@ -16,33 +16,38 @@
 package io.hyscale.deployer.services.manager.impl;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
-import io.hyscale.deployer.services.deployer.Deployer;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.factory.PodParentFactory;
 import io.hyscale.deployer.services.handler.PodParentHandler;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
-import io.hyscale.deployer.services.handler.impl.V1PodHandler;
+import io.hyscale.deployer.services.handler.impl.V1HorizontalPodAutoScalerHandler;
 import io.hyscale.deployer.services.manager.ScaleServiceManager;
-import io.hyscale.deployer.services.model.PodParent;
-import io.hyscale.deployer.services.model.ScaleSpec;
-import io.hyscale.deployer.services.model.ScaleStatus;
+import io.hyscale.deployer.services.model.*;
+import io.hyscale.deployer.services.processor.PodParentProvider;
 import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.models.V1HorizontalPodAutoscaler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class ScaleServiceManagerImpl implements ScaleServiceManager {
 
     private static final Logger logger = LoggerFactory.getLogger(ScaleServiceManagerImpl.class);
 
+    @Autowired
+    private PodParentProvider podParentProvider;
+
     @Override
     public ScaleStatus scale(ApiClient apiClient, String appName, String service, String namespace, ScaleSpec scaleSpec) throws HyscaleException {
-        V1PodHandler podHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
-        String selector = ResourceSelectorUtil.getServiceSelector(appName, service);
-        PodParent podParent = podHandler.getPodParent(apiClient, selector, namespace);
+        PodParent podParent = podParentProvider.getPodParent(apiClient, appName, service, namespace);
         if (podParent == null) {
             logger.error("Error while fetching pod parent of service {} in namespace {} ", service, namespace);
             throw new HyscaleException(DeployerErrorCodes.SERVICE_NOT_DEPLOYED, service, namespace, appName);
@@ -51,11 +56,33 @@ public class ScaleServiceManagerImpl implements ScaleServiceManager {
         PodParentHandler podParentHandler = PodParentFactory.getHandler(podParent.getKind());
         boolean status = false;
         ScaleStatus scaleStatus = new ScaleStatus();
-        status = podParentHandler.scale(apiClient, podParent.getParent(), namespace, scaleSpec.getScaleOp(), scaleSpec.getValue());
+
+        int replicas = podParentHandler.getReplicas(podParent.getParent());
+        int desiredReplicas = podParentHandler.getDesiredReplicas(scaleSpec.getScaleOp(), scaleSpec.getValue(), replicas);
+
+        V1HorizontalPodAutoScalerHandler autoScalerHandler = (V1HorizontalPodAutoScalerHandler) ResourceHandlers.getHandlerOf(ResourceKind.HORIZONTAL_POD_AUTOSCALER.getKind());
+        List<V1HorizontalPodAutoscaler> podAutoscalers = autoScalerHandler.getBySelector(apiClient, ResourceSelectorUtil.getServiceSelector(appName, service), true, namespace);
+        if (podAutoscalers != null && !podAutoscalers.isEmpty()) {
+            validate(podAutoscalers.get(0),desiredReplicas);
+        }
+
+        status = podParentHandler.scale(apiClient, podParent.getParent(), namespace, desiredReplicas);
         if (!status) {
             throw new HyscaleException(DeployerErrorCodes.TIMEDOUT_WHILE_WAITING_FOR_SCALING, service);
         }
         scaleStatus.setSuccess(status);
         return scaleStatus;
+    }
+
+    private void validate(V1HorizontalPodAutoscaler v1HorizontalPodAutoscaler, int desiredReplicas) throws HyscaleException {
+        if (v1HorizontalPodAutoscaler == null) {
+            return;
+        }
+
+        if (desiredReplicas < v1HorizontalPodAutoscaler.getSpec().getMinReplicas() || desiredReplicas > v1HorizontalPodAutoscaler.getSpec().getMaxReplicas()) {
+            throw new HyscaleException(DeployerErrorCodes.CANNOT_SCALE_OUT_RANGE_HPA, String.valueOf(v1HorizontalPodAutoscaler.getSpec().getMinReplicas()),
+                    String.valueOf(v1HorizontalPodAutoscaler.getSpec().getMaxReplicas()));
+        }
+        return;
     }
 }

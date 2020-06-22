@@ -1,8 +1,8 @@
-$HYS_VERSION="@@HYS_BUILD_VERSION@@"
+$HYS_VERSION="@@HYSCALE_BUILD_VERSION@@"
 $HYS_JAR_BIN="hyscale-${HYS_VERSION}.jar"
 $dir= "$home\.hyscale"
 $fileToCheck = "$dir\$HYS_JAR_BIN"
-$HYS_DOWNLOAD_URL = "@@HYS_URL@@"
+$HYS_DOWNLOAD_URL = "@@HYSCALE_URL@@"
 
 Function check_java_version
 {
@@ -12,7 +12,7 @@ Function check_java_version
      exit 1
 
     }
-  $JAVA_VERSION=(Get-Command java | Select-Object -ExpandProperty Version).tostring() | %{ $_.Split('.')[0]; }
+  $JAVA_VERSION=java --version | %{ $_.Split('.')[0]; } |select-object -first 1 |  %{ $_.Split(' ')[1]; }
   if ($JAVA_VERSION -as [int] -lt 11){
      'JDK version 11 and above is required but found lesser version'
       exit 1

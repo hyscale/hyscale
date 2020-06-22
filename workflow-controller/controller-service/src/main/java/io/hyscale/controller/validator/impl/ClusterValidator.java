@@ -21,8 +21,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.LoggerTags;
+import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.validator.Validator;
+import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.deployer.services.deployer.Deployer;
 
@@ -66,6 +69,10 @@ public class ClusterValidator implements Validator<WorkflowContext> {
             logger.error("Error while validating cluster", ex);
             clusterValidationMap.put(context.getAuthConfig(), false);
             throw ex;
+        } finally {
+            if (!isClusterValid) {
+                WorkflowLogger.persist(ValidatorActivity.CLUSTER_AUTHENTICATION_FAILED, LoggerTags.ERROR);
+            }
         }
         logger.debug("Is K8s cluster valid: {}. Time taken: {}", isClusterValid, System.currentTimeMillis() - startTime);
         return isClusterValid;

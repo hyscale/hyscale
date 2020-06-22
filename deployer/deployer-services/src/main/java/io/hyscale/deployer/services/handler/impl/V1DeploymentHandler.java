@@ -148,6 +148,28 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         }
         return v1Deployments;
     }
+    
+    @Override
+    public List<V1Deployment> listForAllNamespaces(ApiClient apiClient, String selector, boolean label)
+            throws HyscaleException {
+        AppsV1Api appsV1Api = new AppsV1Api(apiClient);
+        List<V1Deployment> v1Deployments = null;
+        try {
+            String labelSelector = label ? selector : null;
+            String fieldSelector = label ? null : selector;
+
+            V1DeploymentList v1DeploymentList = appsV1Api.listDeploymentForAllNamespaces(null, null, fieldSelector,
+                    labelSelector, null, TRUE, null, null, null);
+
+            v1Deployments = v1DeploymentList != null ? v1DeploymentList.getItems() : null;
+        } catch (ApiException e) {
+            HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_ALL);
+            LOGGER.error("Error while listing Deployments in all namespaces, with selectors {}, error {} ", selector,
+                    ex.toString());
+            throw ex;
+        }
+        return v1Deployments;
+    }
 
     @Override
     public boolean patch(ApiClient apiClient, String name, String namespace, V1Deployment target) throws HyscaleException {
@@ -412,18 +434,31 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
     }
 
     @Override
-    public boolean scale(ApiClient apiClient, V1Deployment v1Deployment, String namespace, ScaleOperation scaleOp, int value) throws HyscaleException {
+    public boolean scale(ApiClient apiClient, V1Deployment v1Deployment, String namespace, int value) throws HyscaleException {
         if (v1Deployment == null) {
             logger.error("Cannot scale 'null' deployment");
             return false;
         }
         String name = v1Deployment.getMetadata().getName();
+        int currentReplicas = v1Deployment.getSpec().getReplicas();
+        if (currentReplicas == value) {
+            WorkflowLogger.persist(DeployerActivity.DESIRED_STATE, String.valueOf(value));
+            return true;
+        }
+        V1Scale exisiting = new V1ScaleBuilder()
+                .withSpec(new V1ScaleSpec().replicas(currentReplicas))
+                .build();
         AppsV1Api appsV1Api = new AppsV1Api(apiClient);
         ActivityContext activityContext = new ActivityContext(DeployerActivity.SCALING_SERVICE);
         WorkflowLogger.startActivity(activityContext);
-        boolean status =false;
+        boolean status = false;
         try {
-            appsV1Api.patchNamespacedDeploymentScale(name, namespace, prepareScalePatch(scaleOp, value, v1Deployment.getSpec().getReplicas()), TRUE, null, null, null);
+            V1Scale scale = new V1ScaleBuilder()
+                    .withSpec(new V1ScaleSpec().replicas(value))
+                    .build();
+            Object jsonPatch = K8sResourcePatchUtil.getJsonPatch(exisiting, scale, V1Scale.class);
+            V1Patch patch = new V1Patch(jsonPatch.toString());
+            appsV1Api.patchNamespacedDeploymentScale(name, namespace, patch, TRUE, null, null, null);
             status = waitForDesiredState(apiClient, name, namespace, activityContext);
         } catch (ApiException e) {
             logger.error("Error while applying PATCH scale to {} due to : {} code :{}", name, e.getResponseBody(), e.getCode(), e);
