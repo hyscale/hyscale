@@ -99,8 +99,6 @@ public class HyscaleUndeploySeviceCommand implements Callable<Integer> {
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        boolean isFailed = false;
-
         List<WorkflowContext> workflowContextList = new ArrayList<>();
 
         for (String each : serviceList) {
@@ -119,13 +117,13 @@ public class HyscaleUndeploySeviceCommand implements Callable<Integer> {
             } catch (HyscaleException e) {
                 logger.error("Error while undeploying app: {}, service: {}, in namespace: {}", appName,
                         workflowContext.getServiceName(), namespace, e);
-                isFailed = true;
+                throw e;
             } finally {
                 UndeployCommandUtil.logUndeployInfo();
             }
         }
 
-        return isFailed ? ToolConstants.HYSCALE_ERROR_CODE : ToolConstants.HYSCALE_SUCCESS_CODE;
+        return ToolConstants.HYSCALE_SUCCESS_CODE;
     }
 
 }

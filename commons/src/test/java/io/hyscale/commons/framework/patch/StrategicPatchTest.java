@@ -38,7 +38,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import io.hyscale.commons.exception.CommonErrorCode;
-import io.hyscale.commons.exception.HyscaleErrorCode;
+import io.hyscale.commons.exception.HyscaleError;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.io.HyscaleFilesUtil;
 
@@ -87,12 +87,12 @@ public class StrategicPatchTest {
     @ParameterizedTest
     @MethodSource(value = "getApplyExceptionInput")
     public void testException(String source, String patch, TestFieldDataProvider fieldDataProvider,
-            HyscaleErrorCode errorCode) {
+            HyscaleError errorCode) {
         try {
             StrategicPatch.apply(source, patch, fieldDataProvider);
             fail();
         } catch (HyscaleException e) {
-            assertEquals(errorCode, e.getHyscaleErrorCode());
+            assertEquals(errorCode, e.getHyscaleError());
         }
 
     }

@@ -229,7 +229,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 				delete(apiClient, V1Secret.getMetadata().getName(), namespace, wait);
 			}
 		} catch (HyscaleException e) {
-			if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleErrorCode())) {
+			if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleError())) {
 				LOGGER.error("Error while deleting Secrets for selector {} in namespace {}, error {}", selector,
 						namespace, e.toString());
 				return false;

@@ -94,7 +94,7 @@ public class UndeployComponentInvoker extends ComponentInvoker<WorkflowContext> 
     protected void onError(WorkflowContext context, HyscaleException he) throws HyscaleException {
         WorkflowLogger.header(ControllerActivity.ERROR);
         WorkflowLogger.error(ControllerActivity.CAUSE, he != null ?
-                he.getMessage() : ControllerErrorCodes.UNDEPLOYMENT_FAILED.getErrorMessage());
+                he.getMessage() : ControllerErrorCodes.UNDEPLOYMENT_FAILED.getMessage());
         context.setFailed(true);
         if (he != null) {
             throw he;

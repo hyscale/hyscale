@@ -203,7 +203,7 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
         WorkflowLogger.header(ControllerActivity.ERROR);
         Object troubleshootMsgObj = context.getAttribute(WorkflowConstants.TROUBLESHOOT_MESSAGE);
         StringBuilder errorMessage = new StringBuilder();
-        errorMessage.append(he != null ? he.getMessage() : DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST.getErrorMessage());
+        errorMessage.append(he != null ? he.getMessage() : DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST.getMessage());
         if (troubleshootMsgObj != null) {
             String troubleshootMessage = (String) troubleshootMsgObj;
             logger.error("Troubleshoot message: {}", troubleshootMessage);

@@ -261,7 +261,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
                 delete(apiClient, deployment.getMetadata().getName(), namespace, wait);
             }
         } catch (HyscaleException e) {
-            if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleErrorCode())) {
+            if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleError())) {
                 LOGGER.error("Error while deleting deployment for selector {} in namespace {}, error {}", selector,
                         namespace, e.toString());
                 return false;
