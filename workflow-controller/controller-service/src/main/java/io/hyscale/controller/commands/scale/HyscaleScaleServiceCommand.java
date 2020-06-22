@@ -108,6 +108,8 @@ public class HyscaleScaleServiceCommand implements Callable<Integer> {
             throw ex;
         }
         WorkflowLogger.logPersistedActivities();
+        
+        WorkflowLogger.footer();
         return ToolConstants.HYSCALE_SUCCESS_CODE;
     }
 }

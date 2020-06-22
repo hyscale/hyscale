@@ -134,6 +134,9 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 				}
 
 			}
+			if (isMsgPrinted) {
+			    WorkflowLogger.footer();
+			}
 		} catch (Exception e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_READ_MANIFEST);
 			logger.error("Error while cleaning stale kubernetes resources, error: {}", ex.getMessage());

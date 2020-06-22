@@ -479,7 +479,9 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
             V1Scale scale = new V1ScaleBuilder()
                     .withSpec(new V1ScaleSpec().replicas(value))
                     .build();
-            appsV1Api.patchNamespacedStatefulSetScale(name, namespace, K8sResourcePatchUtil.getJsonPatch(exisiting, scale, V1Scale.class), TRUE, null, null, null);
+            Object jsonPatch = K8sResourcePatchUtil.getJsonPatch(exisiting, scale, V1Scale.class);
+            V1Patch patch = new V1Patch(jsonPatch.toString());
+            appsV1Api.patchNamespacedStatefulSetScale(name, namespace, patch, TRUE, null, null, null);
             status = waitForDesiredState(apiClient, name, namespace, activityContext);
         } catch (ApiException e) {
             logger.error("Error while applying PATCH scale to {} due to : {} code :{}", name, e.getResponseBody(), e.getCode(), e);

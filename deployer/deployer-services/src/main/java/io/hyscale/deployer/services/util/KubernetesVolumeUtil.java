@@ -90,6 +90,10 @@ public class KubernetesVolumeUtil {
 		}
 		String pvcName = pvc.getMetadata().getName();
 		Map<String, String> labels = pvc.getMetadata().getLabels();
+		String volName = ResourceLabelUtil.getVolumeName(labels);
+		if (StringUtils.isNotBlank(volName)) {
+		    return volName;
+		}
 		String appName = ResourceLabelUtil.getAppName(labels);
 		String serviceName = ResourceLabelUtil.getServiceName(labels);
 
