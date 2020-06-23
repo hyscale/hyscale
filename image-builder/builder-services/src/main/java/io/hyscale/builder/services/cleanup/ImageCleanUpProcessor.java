@@ -29,7 +29,7 @@ import io.hyscale.builder.core.models.ImageCleanUpPolicy;
 import io.hyscale.builder.services.config.ImageBuilderConfig;
 import io.hyscale.builder.services.docker.HyscaleDockerClient;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.utils.ImageMetadataUtil;
+import io.hyscale.commons.utils.ImageMetadataProvider;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Image;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
@@ -55,7 +55,7 @@ public class ImageCleanUpProcessor {
     private ImageBuilderConfig imageBuilderConfig;
     
     @Autowired
-    private ImageMetadataUtil imageMetadataUtil;
+    private ImageMetadataProvider imageMetadataProvider;
 
     public void cleanUp(ServiceSpec serviceSpec, BuildContext context) throws HyscaleException {
         String imageCleanUpPolicy = imageBuilderConfig.getImageCleanUpPolicy();
@@ -74,7 +74,7 @@ public class ImageCleanUpProcessor {
         }
 
         List<String> imageIds = null;
-        Map<String, String> labels = imageMetadataUtil.getImageOwnerLabel();
+        Map<String, String> labels = imageMetadataProvider.getImageOwnerLabel();
         String imageName = getImageName(serviceSpec, cleanUpPolicy);
 
         imageIds = hyscaleDockerClient.getImageIds(imageName, labels);

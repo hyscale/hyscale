@@ -25,7 +25,7 @@ import io.hyscale.commons.commands.provider.ImageCommandProvider;
 import io.hyscale.commons.constants.ToolConstants;
 
 @Component
-public class ImageMetadataUtil {
+public class ImageMetadataProvider {
     
     private static final String HYSCALE_IO_URL = "hyscale.io";
     private static final String SLASH = "/";

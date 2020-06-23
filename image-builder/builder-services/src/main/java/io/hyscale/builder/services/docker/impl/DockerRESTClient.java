@@ -65,7 +65,7 @@ import io.hyscale.commons.logger.ActivityContext;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.ImageRegistry;
 import io.hyscale.commons.models.Status;
-import io.hyscale.commons.utils.ImageMetadataUtil;
+import io.hyscale.commons.utils.ImageMetadataProvider;
 import io.hyscale.servicespec.commons.model.service.Dockerfile;
 import io.hyscale.servicespec.commons.model.service.Image;
 import io.hyscale.servicespec.commons.util.ImageUtil;
@@ -90,7 +90,7 @@ public class DockerRESTClient implements HyscaleDockerClient {
     private ImageBuilderConfig imageBuilderConfig;
     
     @Autowired
-    private ImageMetadataUtil imageMetadataUtil;
+    private ImageMetadataProvider imageMetadataProvider;
     
     private DefaultDockerClientConfig clientConfig;
 
@@ -170,7 +170,7 @@ public class DockerRESTClient implements HyscaleDockerClient {
         String appName = buildContext.getAppName();
         String serviceName = buildContext.getServiceName();
         
-        String buildImageName = imageMetadataUtil.getBuildImageNameWithTag(appName, serviceName, tag);
+        String buildImageName = imageMetadataProvider.getBuildImageNameWithTag(appName, serviceName, tag);
         BuildImageCmd buildImageCmd = getBuildCommand(dockerfile, buildImageName);
         
         String logFilePath = imageBuilderConfig.getDockerBuildlog(appName, serviceName);
@@ -217,7 +217,7 @@ public class DockerRESTClient implements HyscaleDockerClient {
             WorkflowLogger.endActivity(buildActivity, Status.DONE);
         }
         DockerImage dockerImage = new DockerImage();
-        dockerImage.setName(imageMetadataUtil.getBuildImageName(appName, serviceName));
+        dockerImage.setName(imageMetadataProvider.getBuildImageName(appName, serviceName));
         dockerImage.setTag(tag);
         return dockerImage;
     }
@@ -235,7 +235,7 @@ public class DockerRESTClient implements HyscaleDockerClient {
     private BuildImageCmd getBuildCommand(Dockerfile dockerfile, String tag) {
         Set<String> tags = new HashSet<>();
         tags.add(tag);
-        Map<String,String> labels = imageMetadataUtil.getImageOwnerLabel();
+        Map<String,String> labels = imageMetadataProvider.getImageOwnerLabel();
 
         DockerClient dockerClient = getDockerClient();
         BuildImageCmd buildImageCmd = dockerClient.buildImageCmd()

@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 import io.hyscale.builder.services.docker.HyscaleDockerClient;
 import io.hyscale.commons.component.InvokerHook;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.utils.ImageMetadataUtil;
+import io.hyscale.commons.utils.ImageMetadataProvider;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -42,7 +42,7 @@ public class ImageCleanUpHook implements InvokerHook<WorkflowContext> {
     private HyscaleDockerClient hyscaleDockerClient;
 
     @Autowired
-    private ImageMetadataUtil imageMetadataUtil;
+    private ImageMetadataProvider imageMetadataProvider;
     
     @Override
     public void preHook(WorkflowContext context) {
@@ -65,7 +65,7 @@ public class ImageCleanUpHook implements InvokerHook<WorkflowContext> {
                 String.class);
 
         // Clean up temp image
-        String imageName = imageMetadataUtil.getBuildImageNameWithTag(context.getAppName(), serviceName, tag);
+        String imageName = imageMetadataProvider.getBuildImageNameWithTag(context.getAppName(), serviceName, tag);
         hyscaleDockerClient.deleteImage(imageName, false);
     }
 

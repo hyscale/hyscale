@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
-import io.hyscale.commons.utils.ImageMetadataUtil;
+import io.hyscale.commons.utils.ImageMetadataProvider;
 import io.hyscale.commons.utils.NormalizationUtil;
 
 @Component
@@ -57,7 +57,7 @@ public class ImageCommandProvider {
 	private static final String TARGET = "target";
 	
 	@Autowired
-	private ImageMetadataUtil imageMetadataUtil;
+	private ImageMetadataProvider imageMetadataProvider;
 
     public String dockerBuildCommand(String appName, String serviceName, String tag, String dockerFilePath) {
         return dockerBuildCommand(appName, serviceName, tag, dockerFilePath, null, null);
@@ -78,7 +78,7 @@ public class ImageCommandProvider {
             buildCommand.append(getBuildArgs(buildArgs));
         }
         buildCommand.append(TAG_ARG);
-        buildCommand.append(imageMetadataUtil.getBuildImageNameWithTag(appName, serviceName, tag));
+        buildCommand.append(imageMetadataProvider.getBuildImageNameWithTag(appName, serviceName, tag));
         dockerFilePath = StringUtils.isNotBlank(dockerFilePath) ? dockerFilePath : SetupConfig.getAbsolutePath(".");
         buildCommand.append(SPACE).append(dockerFilePath).append(ToolConstants.FILE_SEPARATOR);
         return buildCommand.toString();
@@ -129,7 +129,7 @@ public class ImageCommandProvider {
     public String getImageCleanUpCommand(String appName, String serviceName, String tag) {
         StringBuilder imageCleanCommand = new StringBuilder(docker());
         imageCleanCommand.append(REMOVE_IMAGE).append(SPACE)
-                .append(imageMetadataUtil.getBuildImageNameWithTag(appName, serviceName, tag));
+                .append(imageMetadataProvider.getBuildImageNameWithTag(appName, serviceName, tag));
         return imageCleanCommand.toString();
     }
 
@@ -173,12 +173,12 @@ public class ImageCommandProvider {
 
     // docker images --filter label=imageowner=hyscale -q
     public String dockerImagesFilterByImageOwner() {
-        return dockerImageIds(null, imageMetadataUtil.getImageOwnerLabel());
+        return dockerImageIds(null, imageMetadataProvider.getImageOwnerLabel());
     }
 
     // docker images <imagename> --filter label=imageowner=hyscale -q
     public String dockerImageByNameFilterByImageOwner(String imageName) {
-        return dockerImageIds(imageName, imageMetadataUtil.getImageOwnerLabel());
+        return dockerImageIds(imageName, imageMetadataProvider.getImageOwnerLabel());
     }
     
     public String dockerImageIds(String imageName, Map<String, String> labels) {

@@ -34,7 +34,7 @@ import io.hyscale.builder.services.spring.DockerBinaryCondition;
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.models.CommandResult;
-import io.hyscale.commons.utils.ImageMetadataUtil;
+import io.hyscale.commons.utils.ImageMetadataProvider;
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.servicespec.commons.model.service.Image;
 import io.hyscale.servicespec.commons.util.ImageUtil;
@@ -67,7 +67,7 @@ public class DockerBinaryClient implements HyscaleDockerClient {
     private ImageCommandProvider imageCommandProvider;
     
     @Autowired
-    private ImageMetadataUtil imageMetadataUtil;
+    private ImageMetadataProvider imageMetadataProvider;
 
     @Autowired
     private DockerImageUtil dockerImageUtil;
@@ -147,7 +147,7 @@ public class DockerBinaryClient implements HyscaleDockerClient {
         }
 
         DockerImage dockerImage = new DockerImage();
-        dockerImage.setName(imageMetadataUtil.getBuildImageName(appName, serviceName));
+        dockerImage.setName(imageMetadataProvider.getBuildImageName(appName, serviceName));
         dockerImage.setTag(tag);
 
         return dockerImage;
