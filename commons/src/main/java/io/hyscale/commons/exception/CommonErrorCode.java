@@ -15,7 +15,7 @@
  */
 package io.hyscale.commons.exception;
 
-public enum CommonErrorCode implements HyscaleErrorCode {
+public enum CommonErrorCode implements HyscaleError {
     FAILED_TO_GET_VALID_INPUT("Could not get valid input"),
     INVALID_INPUT_PROVIDED("Input \"{}\" is invalid"),
     FAILED_TO_EXECUTE_COMMAND("Failed to execute command {}"),
@@ -46,17 +46,27 @@ public enum CommonErrorCode implements HyscaleErrorCode {
     UNABLE_READ_SCHEMA("Cannot process empty schema {}"),
     ERROR_OCCURED_WHILE_SCHEMA_VALIDATION("Schema validation failed due to \"{}\""),
     INVALID_JSON_FORMAT("Json format is invalid"),
-    FAILED_TO_CONNECT_TO_CLUSTER("Failed to connect to cluster");
+    FAILED_TO_CONNECT_TO_CLUSTER("Failed to connect to cluster",HyscaleErrorGroup.UPFRONT_VALIDATION);
 
     private String message;
+    private int code;
 
     CommonErrorCode(String message) {
         this.message = message;
     }
 
+    CommonErrorCode(String message,HyscaleErrorGroup errorGroup){
+        this.message=message;
+        this.code=errorGroup.getGroupCode();
+    }
     @Override
-    public String getErrorMessage() {
+    public String getMessage() {
         return this.message;
+    }
+
+    @Override
+    public int getCode() {
+        return this.code;
     }
 
 }

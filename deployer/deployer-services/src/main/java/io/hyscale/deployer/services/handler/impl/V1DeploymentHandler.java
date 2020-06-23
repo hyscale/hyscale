@@ -44,7 +44,6 @@ import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.model.ResourceStatus;
-import io.hyscale.deployer.services.model.ScaleOperation;
 import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
 import io.kubernetes.client.custom.V1Patch;
@@ -261,7 +260,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
                 delete(apiClient, deployment.getMetadata().getName(), namespace, wait);
             }
         } catch (HyscaleException e) {
-            if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleErrorCode())) {
+            if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleError())) {
                 LOGGER.error("Error while deleting deployment for selector {} in namespace {}, error {}", selector,
                         namespace, e.toString());
                 return false;
@@ -499,8 +498,8 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
             }
         } catch (InterruptedException e) {
             logger.error("Sleep Thread interrupted ", e);
-        }catch (HyscaleException ex){
-            logger.error("Error while fetching deployment {}", ex.getHyscaleErrorCode(), ex);
+        } catch (HyscaleException ex){
+            logger.error("Error while fetching deployment {}", ex.getHyscaleError(), ex);
         }
         return stable;
     }

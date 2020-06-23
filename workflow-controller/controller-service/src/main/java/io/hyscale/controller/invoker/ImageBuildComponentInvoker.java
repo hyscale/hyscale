@@ -145,7 +145,7 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
     @Override
     protected void onError(WorkflowContext context, HyscaleException he) throws HyscaleException {
         WorkflowLogger.header(ControllerActivity.ERROR);
-        WorkflowLogger.error(ControllerActivity.CAUSE, he != null ? he.getMessage() : ImageBuilderErrorCodes.FAILED_TO_BUILD_AND_PUSH_IMAGE.getErrorMessage());
+        WorkflowLogger.error(ControllerActivity.CAUSE, he != null ? he.getMessage() : ImageBuilderErrorCodes.FAILED_TO_BUILD_AND_PUSH_IMAGE.getMessage());
         context.setFailed(true);
         if (he != null) {
             throw he;

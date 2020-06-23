@@ -258,7 +258,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
                 delete(apiClient, V1Pod.getMetadata().getName(), namespace, wait);
             }
         } catch (HyscaleException e) {
-            if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleErrorCode())) {
+            if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleError())) {
                 LOGGER.error("Error while deleting Pods for selector {} in namespace {}, error {}", selector, namespace,
                         e.toString());
                 return false;

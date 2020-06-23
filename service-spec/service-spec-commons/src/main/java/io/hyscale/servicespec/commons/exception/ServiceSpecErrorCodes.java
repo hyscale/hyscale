@@ -15,36 +15,47 @@
  */
 package io.hyscale.servicespec.commons.exception;
 
-import io.hyscale.commons.exception.HyscaleErrorCode;
+import io.hyscale.commons.exception.HyscaleError;
+import io.hyscale.commons.exception.HyscaleErrorGroup;
 
 /**
  * Error codes for Service Spec related operations
  *
  */
-public enum ServiceSpecErrorCodes implements HyscaleErrorCode {
+public enum ServiceSpecErrorCodes implements HyscaleError {
 
-    SERVICE_SPEC_REQUIRED("Service spec required"),
-    SERVICE_SPEC_PARSE_ERROR("Failed to parse service spec"),
-    SERVICE_PROFILE_REQUIRED("Service profile required"),
-    SERVICE_PROFILE_PARSE_ERROR("Failed to parser service profile"),
-    FAILED_TO_PARSE_JSON_TREE("Failed to parse json tree"),
+    SERVICE_SPEC_REQUIRED("Service spec required",HyscaleErrorGroup.SERVICE_SPEC_PROCESSING),
+    SERVICE_SPEC_PARSE_ERROR("Failed to parse service spec",HyscaleErrorGroup.SERVICE_SPEC_PROCESSING),
+    SERVICE_PROFILE_REQUIRED("Service profile required",HyscaleErrorGroup.SERVICE_PROFILE_PROCESSING),
+    SERVICE_PROFILE_PARSE_ERROR("Failed to parser service profile",HyscaleErrorGroup.SERVICE_PROFILE_PROCESSING),
+    FAILED_TO_PARSE_JSON_TREE("Failed to parse json tree",HyscaleErrorGroup.SERVICE_SPEC_PROCESSING),
     ERROR_WHILE_FETCH_SERVICE_SPEC_FIELD("Failed to fetch service spec field {}"),
     INVALID_FILE_EXTENSION("Invalid file extension:{} given."),
     INVALID_FORMAT("Invalid format {}."),
-    MISSING_FIELD_IN_PROFILE_FILE("Cannot find {} in the hprof file."),
-    MISSING_FIELD_IN_SERVICE_FILE("Cannot find {} in the hspec file."),
+    MISSING_FIELD_IN_PROFILE_FILE("Cannot find {} in the hprof file.",HyscaleErrorGroup.SERVICE_PROFILE_PROCESSING),
+    MISSING_FIELD_IN_SERVICE_FILE("Cannot find {} in the hspec file.",HyscaleErrorGroup.SERVICE_SPEC_PROCESSING),
     INPUT_DATA_MISMATCH("Service or env name in the file name did not match with names specified in the input file.");
 
 
     private String message;
+    private int code;
 
     ServiceSpecErrorCodes(String message) {
         this.message = message;
     }
 
+    ServiceSpecErrorCodes(String message, HyscaleErrorGroup errorGroup){
+        this.message=message;
+        this.code=errorGroup.getGroupCode();
+    }
+
     @Override
-    public String getErrorMessage() {
+    public String getMessage() {
         return this.message;
+    }
+    @Override
+    public int getCode() {
+        return this.code;
     }
 
 }

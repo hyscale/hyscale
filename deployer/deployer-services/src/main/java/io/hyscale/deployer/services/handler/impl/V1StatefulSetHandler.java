@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import io.hyscale.deployer.services.model.ScaleOperation;
 import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -276,7 +275,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
                 delete(apiClient, statefulSet.getMetadata().getName(), namespace, wait);
             }
         } catch (HyscaleException e) {
-            if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleErrorCode())) {
+            if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleError())) {
                 return false;
             }
             throw e;
@@ -528,8 +527,8 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
             }
         } catch (InterruptedException e) {
             logger.error("Sleep Thread interrupted ", e);
-        }catch (HyscaleException ex){
-            logger.error("Error while fetching statefulset {}", ex.getHyscaleErrorCode(), ex);
+        } catch (HyscaleException ex){
+            logger.error("Error while fetching statefulset {}", ex.getHyscaleError(), ex);
         }
         return stable;
     }

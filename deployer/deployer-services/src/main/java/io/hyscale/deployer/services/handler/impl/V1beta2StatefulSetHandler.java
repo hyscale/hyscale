@@ -289,7 +289,7 @@ public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1bet
 				delete(apiClient, statefulSet.getMetadata().getName(), namespace, wait);
 			}
 		} catch (HyscaleException e) {
-			if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleErrorCode())) {
+			if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleError())) {
 				return false;
 			}
 			throw e;

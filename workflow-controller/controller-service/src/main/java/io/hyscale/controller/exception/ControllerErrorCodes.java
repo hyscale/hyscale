@@ -15,12 +15,12 @@
  */
 package io.hyscale.controller.exception;
 
-import io.hyscale.commons.exception.HyscaleErrorCode;
+import io.hyscale.commons.exception.HyscaleError;
 
 /**
  * Error Codes for Workflow Controller
  */
-public enum ControllerErrorCodes implements HyscaleErrorCode {
+public enum ControllerErrorCodes implements HyscaleError {
     INVALID_COMMAND("Invalid command {}"),
     MANIFEST_REQUIRED("Manifest required"),
     DOCKER_CONFIG_NOT_FOUND("Cannot find config.json at {}"),
@@ -40,14 +40,25 @@ public enum ControllerErrorCodes implements HyscaleErrorCode {
     FAILED_TO_SCALE_SERVICE("Failed to scale {} of application {} in {} namespace");
 
     private String message;
+    private int code;
 
     ControllerErrorCodes(String message) {
         this.message = message;
     }
 
+    ControllerErrorCodes(String message,Integer code){
+        this.message=message;
+        this.code=code;
+    }
+
     @Override
-    public String getErrorMessage() {
+    public String getMessage() {
         return this.message;
+    }
+
+    @Override
+    public int getCode() {
+        return this.code;
     }
 
 }
