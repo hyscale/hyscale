@@ -29,11 +29,11 @@ import io.hyscale.servicespec.commons.model.service.Agent;
 import io.hyscale.servicespec.commons.model.service.Secrets;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.DefaultBindingErrorProcessor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,6 +69,7 @@ public class AgentSecretBuilder extends AgentHelper implements AgentBuilder {
             secretSnippets.addAll(createSecretSnippet(secretName,manifestContext,serviceSpec));
             String secretsVolumePath = agent.getSecretsVolumePath();
             ManifestSnippet secretSnippet = SecretsDataUtil.build(secrets, secretsVolumePath, ManifestGenConstants.DEFAULT_SECRETS_FILE);
+            SecretsDataUtil.updatePodChecksum(secretSnippet, manifestContext, agent.getName());
             if (secretSnippet != null) {
                 secretSnippet.setName(secretName);
                 secretSnippets.add(secretSnippet);

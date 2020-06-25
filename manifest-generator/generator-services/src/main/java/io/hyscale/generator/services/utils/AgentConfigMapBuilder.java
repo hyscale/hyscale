@@ -19,8 +19,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.builder.DefaultLabelBuilder;
+import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.generator.MetadataManifestSnippetGenerator;
 import io.hyscale.generator.services.model.ManifestResource;
+import io.hyscale.generator.services.model.PodChecksum;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -28,6 +30,7 @@ import io.hyscale.servicespec.commons.model.service.Agent;
 import io.hyscale.servicespec.commons.model.service.Props;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +70,7 @@ public class AgentConfigMapBuilder extends AgentHelper implements AgentBuilder {
             props.setProps(agent.getProps());
             String propsVolumePath = agent.getPropsVolumePath();
             List<ManifestSnippet> agentConfigMapSnippets = ConfigMapDataUtil.build(props,propsVolumePath);
+            ConfigMapDataUtil.updatePodChecksum(agentConfigMapSnippets, manifestContext, agent.getName());
             agentConfigMapSnippets.forEach(manifestSnippet -> {
                 manifestSnippet.setName(configMapName);
             });
@@ -74,7 +78,7 @@ public class AgentConfigMapBuilder extends AgentHelper implements AgentBuilder {
         }
         return configMapSnippets;
     }
-
+    
     private List<ManifestSnippet> createConfigMapSnippet(String configMapName, ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
         String appName = manifestContext.getAppName();
         String envName = manifestContext.getEnvName();
@@ -104,4 +108,5 @@ public class AgentConfigMapBuilder extends AgentHelper implements AgentBuilder {
         configMapSnippets.add(snippet);
         return configMapSnippets;
     }
+    
 }

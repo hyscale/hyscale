@@ -19,7 +19,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
-import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
@@ -38,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 

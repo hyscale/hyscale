@@ -27,7 +27,6 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
-import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.generator.MetadataManifestSnippetGenerator;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.model.ServiceMetadata;

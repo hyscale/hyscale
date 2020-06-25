@@ -20,15 +20,14 @@ import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.utils.SecretsDataUtil;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.io.HyscaleFilesUtil;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Secrets;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -44,32 +43,29 @@ public class SecretsDataHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
-        Secrets secrets = serviceSpec.get(HyscaleSpecFields.secrets, Secrets.class);
         if (!ManifestResource.SECRET.getPredicate().test(serviceSpec)) {
             return null;
         }
-
+        Secrets secrets = serviceSpec.get(HyscaleSpecFields.secrets, Secrets.class);
         String secretsVolumePath = serviceSpec.get(HyscaleSpecFields.secretsVolumePath, String.class);
-        ServiceMetadata serviceMetadata = new ServiceMetadata();
-        serviceMetadata.setAppName(manifestContext.getAppName());
-        serviceMetadata.setEnvName(manifestContext.getEnvName());
-        serviceMetadata.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
+        String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
 
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         try {
-
-            manifestSnippetList.add(getSecretsData(secrets, secretsVolumePath));
+            ManifestSnippet secretsSnippet = getSecretsData(secrets, secretsVolumePath);
+            SecretsDataUtil.updatePodChecksum(secretsSnippet, manifestContext, null);
+            manifestSnippetList.add(secretsSnippet);
         } catch (JsonProcessingException e) {
-            logger.error("Error while generating manifest for secrets of service {}", serviceMetadata.getServiceName(), e);
+            logger.error("Error while generating manifest for secrets of service {}", serviceName, e);
         }
         return manifestSnippetList;
 
     }
-
-
+    
     private ManifestSnippet getSecretsData(Secrets secrets, String secretsVolumePath)
             throws JsonProcessingException {
         ManifestSnippet snippet = SecretsDataUtil.build(secrets, secretsVolumePath, ManifestGenConstants.DEFAULT_SECRETS_FILE);
         return snippet;
     }
+    
 }

@@ -16,7 +16,11 @@
 package io.hyscale.generator.services.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
+import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.model.ManifestResource;
+import io.hyscale.generator.services.model.PodChecksum;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
 import io.hyscale.servicespec.commons.model.service.MapBasedSecrets;
@@ -26,12 +30,10 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Component
 public class SecretsDataUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(SecretsDataUtil.class);
@@ -61,5 +63,21 @@ public class SecretsDataUtil {
             return snippet;
         }
         return null;
+    }
+    
+    public static void updatePodChecksum(ManifestSnippet secretsSnippet, ManifestContext manifestContext,
+            String agentName) {
+        if (secretsSnippet == null || StringUtils.isBlank(secretsSnippet.getSnippet())) {
+            return;
+        }
+        Object podChecksumObj = manifestContext.getGenerationAttribute(ManifestGenConstants.POD_CHECKSUM);
+        PodChecksum podChecksum = podChecksumObj == null ? new PodChecksum() : (PodChecksum) podChecksumObj;
+
+        if (StringUtils.isBlank(agentName)) {
+            podChecksum.setSecret(secretsSnippet.getSnippet());
+        } else {
+            podChecksum.addAgentSecret(agentName, secretsSnippet.getSnippet());
+        }
+        manifestContext.addGenerationAttribute(ManifestGenConstants.POD_CHECKSUM, podChecksum);
     }
 }
