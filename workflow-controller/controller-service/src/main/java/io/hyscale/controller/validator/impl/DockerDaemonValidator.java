@@ -15,21 +15,21 @@
  */
 package io.hyscale.controller.validator.impl;
 
+import io.hyscale.builder.core.models.ImageBuilderActivity;
+import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
+import io.hyscale.commons.commands.CommandExecutor;
+import io.hyscale.commons.commands.provider.ImageCommandProvider;
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.io.StructuredOutputHandler;
+import io.hyscale.commons.logger.LoggerTags;
+import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.validator.Validator;
+import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.servicespec.commons.util.ImageUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import io.hyscale.builder.core.models.ImageBuilderActivity;
-import io.hyscale.commons.commands.CommandExecutor;
-import io.hyscale.commons.commands.provider.ImageCommandProvider;
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.LoggerTags;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.Status;
-import io.hyscale.commons.validator.Validator;
-import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.servicespec.commons.util.ImageUtil;
 
 /**
  * Validates if docker is installed as well as running
@@ -42,6 +42,9 @@ public class DockerDaemonValidator implements Validator<WorkflowContext> {
 
     @Autowired
     private ImageCommandProvider commandProvider;
+
+    @Autowired
+    private StructuredOutputHandler outputHandler;
 
     private boolean isDockerAvailable = false;
     
@@ -73,6 +76,9 @@ public class DockerDaemonValidator implements Validator<WorkflowContext> {
         if (!success) {
             WorkflowLogger.persist(ImageBuilderActivity.DOCKER_NOT_INSTALLED, LoggerTags.ERROR);
             isDockerUnavailable = true;
+            if(WorkflowLogger.isDisabled()){
+                outputHandler.addErrorMessage(ImageBuilderErrorCodes.DOCKER_NOT_INSTALLED.getMessage());
+            }
             return false;
         }
         command = commandProvider.dockerImages();
@@ -81,6 +87,9 @@ public class DockerDaemonValidator implements Validator<WorkflowContext> {
         if (!success) {
             WorkflowLogger.persist(ImageBuilderActivity.DOCKER_DAEMON_NOT_RUNNING, LoggerTags.ERROR);
             isDockerUnavailable = true;
+            if(WorkflowLogger.isDisabled()){
+                outputHandler.addErrorMessage(ImageBuilderErrorCodes.DOCKER_DAEMON_NOT_RUNNING.getMessage());
+            }
             return false;
         }
         isDockerAvailable = true;

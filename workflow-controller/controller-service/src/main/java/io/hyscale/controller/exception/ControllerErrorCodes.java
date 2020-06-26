@@ -16,6 +16,7 @@
 package io.hyscale.controller.exception;
 
 import io.hyscale.commons.exception.HyscaleError;
+import io.hyscale.commons.exception.HyscaleErrorGroup;
 
 /**
  * Error Codes for Workflow Controller
@@ -37,7 +38,8 @@ public enum ControllerErrorCodes implements HyscaleError {
     INPUT_VALIDATION_FAILED("Input validation failed. Error messages {}"),
     PROFILE_VALIDATION_FAILED("Profile validation failed"),
     PROFILE_NAMES_MISMATCHED_WITH_FILES("Profile name mismatched with environment in {}"),
-    FAILED_TO_SCALE_SERVICE("Failed to scale {} of application {} in {} namespace");
+    FAILED_TO_SCALE_SERVICE("Failed to scale {} of application {} in {} namespace"),
+    MANIFEST_VALIDATION_FAILED("Manifest validation failed.",HyscaleErrorGroup.UPFRONT_VALIDATION);
 
     private String message;
     private int code;
@@ -46,9 +48,9 @@ public enum ControllerErrorCodes implements HyscaleError {
         this.message = message;
     }
 
-    ControllerErrorCodes(String message,Integer code){
+    ControllerErrorCodes(String message,HyscaleErrorGroup errorGroup){
         this.message=message;
-        this.code=code;
+        this.code=errorGroup.getGroupCode();
     }
 
     @Override

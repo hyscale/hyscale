@@ -210,6 +210,7 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
             errorMessage.append(ToolConstants.NEW_LINE).append(troubleshootMessage);
         }
         WorkflowLogger.error(ControllerActivity.TROUBLESHOOT, errorMessage.toString());
+        context.addAttribute(WorkflowConstants.ERROR_MESSAGE, errorMessage.toString());
         context.setFailed(true);
         if (he != null) {
             throw he;

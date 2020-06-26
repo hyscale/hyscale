@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import io.hyscale.commons.io.StructuredOutputHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,6 +79,9 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 
 	@Autowired
 	private K8sClientProvider clientProvider;
+
+	@Autowired
+	private StructuredOutputHandler outputHandler;
 
 	private List<V1StorageClass> storageClassList = new ArrayList<>();
 
@@ -172,6 +176,9 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 			String failMsg = HyscaleStringUtil.removeSuffixStr(failMsgBuilder, ToolConstants.COMMA);
 			failMsg = new HyscaleException(errorCode, failMsg, storageClassAllowed.toString()).getMessage();
 			WorkflowLogger.persist(ValidatorActivity.VOLUME_VALIDATION_FAILED, LoggerTags.ERROR, failMsg);
+			if(WorkflowLogger.isDisabled()){
+				outputHandler.addErrorMessage(ValidatorActivity.VOLUME_VALIDATION_FAILED.getActivityMessage());
+			}
             logger.info("StroageClass validation failed. Message : {}", failMsg);
             return false;
 		}

@@ -15,30 +15,27 @@
  */
 package io.hyscale.controller.invoker;
 
-import javax.annotation.PostConstruct;
-
+import io.hyscale.builder.core.models.BuildContext;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
+import io.hyscale.builder.services.service.ImageBuildPushService;
+import io.hyscale.commons.component.ComponentInvoker;
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.DockerfileEntity;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.constants.WorkflowConstants;
-import io.hyscale.controller.exception.ControllerErrorCodes;
+import io.hyscale.controller.hooks.ImageCleanUpHook;
 import io.hyscale.controller.manager.RegistryManager;
 import io.hyscale.controller.model.WorkflowContext;
-
+import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
+import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.builder.core.models.BuildContext;
-import io.hyscale.commons.component.ComponentInvoker;
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.DockerfileEntity;
-import io.hyscale.controller.hooks.ImageCleanUpHook;
-import io.hyscale.builder.services.service.ImageBuildPushService;
-import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
-import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
-import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+import javax.annotation.PostConstruct;
 
 /**
  *	Image builder component acts as a bridge between workflow controller and image-builder
@@ -120,6 +117,7 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
     protected void onError(WorkflowContext context, HyscaleException he) throws HyscaleException {
         WorkflowLogger.header(ControllerActivity.ERROR);
         WorkflowLogger.error(ControllerActivity.CAUSE, he != null ? he.getMessage() : ImageBuilderErrorCodes.FAILED_TO_BUILD_AND_PUSH_IMAGE.getMessage());
+        context.addAttribute(WorkflowConstants.ERROR_MESSAGE, (he != null) ? he.getMessage() : ImageBuilderErrorCodes.FAILED_TO_BUILD_AND_PUSH_IMAGE.getMessage());
         context.setFailed(true);
         if (he != null) {
             throw he;

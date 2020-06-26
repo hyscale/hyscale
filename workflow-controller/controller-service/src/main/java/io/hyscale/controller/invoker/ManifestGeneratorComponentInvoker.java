@@ -101,6 +101,7 @@ public class ManifestGeneratorComponentInvoker extends ComponentInvoker<Workflow
         WorkflowLogger.header(ControllerActivity.ERROR);
         WorkflowLogger.error(ControllerActivity.CAUSE, he != null ?
                 he.getMessage() : ManifestErrorCodes.ERROR_WHILE_CREATING_MANIFEST.getMessage());
+        context.addAttribute(WorkflowConstants.ERROR_MESSAGE, (he != null) ? he.getMessage() : ManifestErrorCodes.ERROR_WHILE_CREATING_MANIFEST.getMessage());
         context.setFailed(true);
         if (he != null) {
             throw he;

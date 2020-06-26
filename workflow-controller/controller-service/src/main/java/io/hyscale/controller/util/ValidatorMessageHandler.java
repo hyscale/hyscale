@@ -15,13 +15,14 @@
  */
 package io.hyscale.controller.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.io.StructuredOutputHandler;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.exception.ControllerErrorCodes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ValidatorMessageHandler {
 
@@ -40,6 +41,10 @@ public class ValidatorMessageHandler {
         }
         WorkflowLogger.logPersistedActivities();
         if (isFailed) {
+            if (WorkflowLogger.isDisabled() && exceptionMsg != null && !exceptionMsg.isEmpty()) {
+                exceptionMsg = exceptionMsg.startsWith(": \n") ? exceptionMsg.substring(3) : exceptionMsg;
+                StructuredOutputHandler.prepareOutput(WorkflowConstants.DEPLOYMENT_ERROR, exceptionMsg);
+            }
             throw new HyscaleException(ControllerErrorCodes.INPUT_VALIDATION_FAILED,
                     ToolConstants.INVALID_INPUT_ERROR_CODE, exceptionMsg);
         }

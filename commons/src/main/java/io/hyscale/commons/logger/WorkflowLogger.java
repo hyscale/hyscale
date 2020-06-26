@@ -35,15 +35,21 @@ public class WorkflowLogger {
     private static final String END_BRACES = "]";
     private static final List<String> persistedActivities = new ArrayList<>();
 
+    private static boolean disabled;
+
     public static void header(Activity activity, String... args) {
-        System.out.println();
-        System.out.println(STARS + getPaddedHeader(String.format(getActivity(activity), args)) + STARS);
-        System.out.println();
+        if(!isDisabled()){
+            System.out.println();
+            System.out.println(STARS + getPaddedHeader(String.format(getActivity(activity), args)) + STARS);
+            System.out.println();
+        }
     }
 
     public static void footer() {
-        System.out.println();
-        System.out.println(STARS + STARS + STARS + STARS);
+        if(!isDisabled()){
+            System.out.println();
+            System.out.println(STARS + STARS + STARS + STARS);
+        }
     }
 
     public static void info(Activity activity, String... args) {
@@ -71,34 +77,46 @@ public class WorkflowLogger {
     }
 
     public static void startActivity(Activity activity, String... args) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(LoggerTags.ACTION.getTag()).append(ALIGNEMENT_SPACES);
-        sb.append(getLeftAlignedActivity(getFormattedMessage(activity, args)));
-        System.out.print(sb.toString());
+        if(!isDisabled()){
+            StringBuilder sb = new StringBuilder();
+            sb.append(LoggerTags.ACTION.getTag()).append(ALIGNEMENT_SPACES);
+            sb.append(getLeftAlignedActivity(getFormattedMessage(activity, args)));
+            System.out.print(sb.toString());
+        }
     }
 
     public static void continueActivity() {
-        System.out.print(CONTINUATION_DOTS);
+        if(!isDisabled()){
+            System.out.print(CONTINUATION_DOTS);
+        }
     }
 
     public static void endActivity(Status status, String... args) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(ALIGNEMENT_SPACES).append(START_BRACES);
-        sb.append(String.format(status.getMessage(), args));
-        sb.append(END_BRACES);
-        System.out.println(sb.toString());
+        if(!isDisabled()){
+            StringBuilder sb = new StringBuilder();
+            sb.append(ALIGNEMENT_SPACES).append(START_BRACES);
+            sb.append(String.format(status.getMessage(), args));
+            sb.append(END_BRACES);
+            System.out.println(sb.toString());
+        }
     }
 
     public static void logTable(TableFormatter tableFormatter) {
-        System.out.print(tableFormatter.toString());
+        if(!isDisabled()){
+            System.out.print(tableFormatter.toString());
+        }
     }
 
     public static void logTableRow(TableFormatter tableFormatter, String[] row) {
-        System.out.println(tableFormatter.getFormattedRow(row));
+        if(!isDisabled()){
+            System.out.println(tableFormatter.getFormattedRow(row));
+        }
     }
 
     public static void logTableFields(TableFormatter tableFormatter) {
-        System.out.println(tableFormatter.getFormattedFields());
+        if(!isDisabled()){
+            System.out.println(tableFormatter.getFormattedFields());
+        }
     }
 
     private static String getActivityMessage(Activity activity, LoggerTags tag, String... args) {
@@ -112,7 +130,10 @@ public class WorkflowLogger {
     }
 
     private static void logActivity(Activity activity, LoggerTags tag, String... args) {
-        System.out.println(getActivityMessage(activity, tag, args));
+        if(!isDisabled()){
+            System.out.println(getActivityMessage(activity, tag, args));
+        }
+
     }
 
     private static String getFormattedMessage(Activity activity, String... args) {
@@ -159,7 +180,7 @@ public class WorkflowLogger {
     }
 
     public static void startActivity(ActivityContext context, String... args) {
-        if (context != null) {
+        if (context != null && !isDisabled()) {
             context.setStartTime(System.currentTimeMillis());
             StringBuilder sb = new StringBuilder();
             sb.append(LoggerTags.ACTION.getTag()).append(ALIGNEMENT_SPACES);
@@ -169,7 +190,7 @@ public class WorkflowLogger {
     }
 
     public static void continueActivity(ActivityContext context) {
-        if (context != null) {
+        if (context != null && !isDisabled()) {
             int remaining = context.getRemaining();
             if (context.getRemaining() > 0) {
                 System.out.print(CONTINUATION_DOTS);
@@ -181,7 +202,7 @@ public class WorkflowLogger {
     }
 
     public static void endActivity(ActivityContext context, Status status, String... args) {
-        if (context != null) {
+        if (context != null && !isDisabled()) {
             int remaining = context.getRemaining();
             if (remaining > 0) {
                 for (int i = 0; i < remaining; i++) {
@@ -211,7 +232,7 @@ public class WorkflowLogger {
     }
 
     public static void logPersistedActivities() {
-        if (persistedActivities != null && !persistedActivities.isEmpty()) {
+        if (!isDisabled() && persistedActivities != null && !persistedActivities.isEmpty()) {
             persistedActivities.stream().filter(each -> {
                 return each != null && StringUtils.isNotBlank(each);
             }).forEach(each -> {
@@ -221,5 +242,13 @@ public class WorkflowLogger {
         }
         persistedActivities.clear();
     }
-    
+
+    public static boolean isDisabled() {
+        return disabled;
+    }
+
+    public static void setDisabled(boolean disabled) {
+        WorkflowLogger.disabled = disabled;
+    }
+
 }
