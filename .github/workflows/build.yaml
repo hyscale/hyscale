@@ -42,6 +42,7 @@ jobs:
         DOCKER_REPO: 'hyscale'
 
     - uses: azure/container-scan@v0
+      if: github.ref == 'refs/heads/master' || contains(github.ref, 'release/HyScale')
       with:
         image-name: hyscale:latest
 
