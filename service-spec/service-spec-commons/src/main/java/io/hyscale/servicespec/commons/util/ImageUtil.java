@@ -29,13 +29,14 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 
 public class ImageUtil {
-	private static final Logger logger = LoggerFactory.getLogger(ImageUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(ImageUtil.class);
 
 
     private static final String DELIMITER = "/";
 
     /**
      * Get complete image name from service spec
+     *
      * @param serviceSpec
      * @return image complete name
      * registry url + "/" + imageName:tag
@@ -47,7 +48,10 @@ public class ImageUtil {
         if (serviceSpec == null) {
             return null;
         }
-        Image image = serviceSpec.get(HyscaleSpecFields.image, Image.class);
+        return getImage(serviceSpec.get(HyscaleSpecFields.image, Image.class));
+    }
+
+    public static String getImage(Image image) {
         if (image == null) {
             return null;
         }
@@ -73,7 +77,7 @@ public class ImageUtil {
     }
 
 
-    private static String getImageWithoutTag(Image image) {
+    public static String getImageWithoutTag(Image image) {
         String registryUrl = image.getRegistry();
         StringBuilder sb = new StringBuilder();
         if (StringUtils.isNotBlank(registryUrl)) {
@@ -91,7 +95,7 @@ public class ImageUtil {
      * Gets complete image name which includes registry url, image name and digest.
      *
      * @param serviceSpec
-     * @param digest latest digest of the image in service spec
+     * @param digest      latest digest of the image in service spec
      * @return digest image tagged with digest
      * 1.digest is null - registry url + "/" + imageName
      * 2.digest present -registry url + "/" + imageName+"@"+digest
@@ -117,29 +121,29 @@ public class ImageUtil {
     /**
      * Checks if service spec requires image build or push operation
      * Build or push required if service spec contains build spec or dockerfile filed in image
-     * 
+     *
      * @param serviceSpec
      * @return true if build or push required else false
      */
-	public static boolean isImageBuildPushRequired(ServiceSpec serviceSpec) {
-	    if (serviceSpec == null) {
-	        return false;
-	    }
-		Image image = null;
-		try {
-			image = serviceSpec.get(HyscaleSpecFields.image, Image.class);
-		} catch (HyscaleException e) {
-			logger.info("Error while fetching buildSpec and registryUrl from serviceSpec ");
-		}
-		
-		if (image == null) {
-		    return false;
-		}
-		
-		if (image instanceof BuildSpecImage || image instanceof DockerBuildImage) {
-			return true;
-		}
-		
-		return false;
-	}
+    public static boolean isImageBuildPushRequired(ServiceSpec serviceSpec) {
+        if (serviceSpec == null) {
+            return false;
+        }
+        Image image = null;
+        try {
+            image = serviceSpec.get(HyscaleSpecFields.image, Image.class);
+        } catch (HyscaleException e) {
+            logger.info("Error while fetching buildSpec and registryUrl from serviceSpec ");
+        }
+
+        if (image == null) {
+            return false;
+        }
+
+        if (image instanceof BuildSpecImage || image instanceof DockerBuildImage) {
+            return true;
+        }
+
+        return false;
+    }
 }

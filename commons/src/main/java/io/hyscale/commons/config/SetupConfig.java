@@ -33,6 +33,7 @@ public class SetupConfig {
     public static final String KUBECONF_PATH_DIR = System.getenv(KUBECONF_PATH_PROP);
     public static final String DOCKERCONF_PATH_PROP = "HYSCALECTL_DOCKERCONF";
     public static final String DOCKERCONF_PATH_DIR = System.getenv(DOCKERCONF_PATH_PROP);
+    public static final String HYS_REGISTRY_CONFIG_ENV = "HYS_REGISTRY_CONFIG";
 
 
     private static final String generatedFilesDir = "generated-files";
@@ -61,8 +62,8 @@ public class SetupConfig {
         return absolutePathTL.get();
     }
 
-    public static void clearAbsolutePath(){
-        if(absolutePathTL!=null){
+    public static void clearAbsolutePath() {
+        if (absolutePathTL != null) {
             absolutePathTL.remove();
         }
     }
@@ -152,5 +153,13 @@ public class SetupConfig {
             }
         }
         return dir;
+    }
+
+    public static boolean hasExternalRegistryConf() {
+        String hyscaleregistryConf = System.getenv(HYS_REGISTRY_CONFIG_ENV);
+        if (StringUtils.isBlank(hyscaleregistryConf)) {
+            return false;
+        }
+        return Boolean.valueOf(hyscaleregistryConf);
     }
 }

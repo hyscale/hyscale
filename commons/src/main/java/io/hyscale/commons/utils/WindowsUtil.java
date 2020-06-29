@@ -33,6 +33,8 @@ public class WindowsUtil {
 	private static final Logger logger = LoggerFactory.getLogger(WindowsUtil.class);
 	public static final String HYSCALE_HOST_FS = System.getenv(ToolConstants.HYSCALE_HOST_FS_PROPERTY);
 	private static final String WINDOWS_FS_MATCHER = "\\\\";
+	private static final String WINDOWS_DOCKER_HOST = "tcp://localhost:2375";
+
 
 	/**
 	 * 
@@ -72,4 +74,8 @@ public class WindowsUtil {
 		}
 		return filePath.replaceAll(WINDOWS_FS_MATCHER, ToolConstants.LINUX_FILE_SEPARATOR);
     }
+
+	public static String dockerHost() {
+		return WINDOWS_DOCKER_HOST;
+	}
 }

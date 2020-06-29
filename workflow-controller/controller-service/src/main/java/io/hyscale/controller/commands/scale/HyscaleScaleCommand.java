@@ -16,6 +16,7 @@
 package io.hyscale.controller.commands.scale;
 
 import io.hyscale.commons.constants.ToolConstants;
+import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
@@ -33,6 +34,7 @@ import java.util.concurrent.Callable;
  */
 //TODO make it work with scale
 @CommandLine.Command(name = "scale", subcommands = {HyscaleScaleServiceCommand.class}, description = "scale the resource")
+@Component
 public class HyscaleScaleCommand implements Callable<Integer> {
 
     @CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "Displays the  help information of the specified command")

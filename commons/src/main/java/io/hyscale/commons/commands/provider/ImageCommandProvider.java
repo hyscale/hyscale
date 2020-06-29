@@ -15,20 +15,25 @@
  */
 package io.hyscale.commons.commands.provider;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
+import io.hyscale.commons.utils.ImageMetadataProvider;
+import io.hyscale.commons.utils.NormalizationUtil;
 
 @Component
 public class ImageCommandProvider {
 
-	private static final String HYSCALE_IO_URL = "hyscale.io";
-	private static final String SLASH = "/";
+    public static final String IMAGE_OWNER = "imageowner";
+    public static final String HYSCALE = "hyscale";
 	private static final String EQUALS = "=";
 	private static final String DOCKER_COMMAND = "docker";
 	private static final String VERSION_COMMAND = "-v";
@@ -44,29 +49,15 @@ public class ImageCommandProvider {
 	private static final String REMOVE_IMAGE = "rmi";
 	private static final String PULL_COMMAND = "pull";
 	private static final String LABEL_ARGS = "label";
-	private static final String IMAGE_OWNER = "imageowner";
-	private static final String HYSCALE = "hyscale";
 	private static final String HYPHEN = "-";
 	private static final String FORCE_FLAG = "f";
 	private static final String QUIET = "q";
-	private static final String FILTER = "filter";
+	private static final String FILTER = "--filter";
 	private static final boolean USE_SUDO = false;
 	private static final String TARGET = "target";
-
-    public String getBuildImageName(String appName, String serviceName) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(HYSCALE_IO_URL).append(SLASH).append(appName).append(SLASH).append(serviceName);
-        return normalize(sb.toString());
-    }
-
-    public String getBuildImageNameWithTag(String appName, String serviceName, String tag) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(HYSCALE_IO_URL).append(SLASH).append(appName).append(SLASH).append(serviceName);
-        if (StringUtils.isNotBlank(tag)) {
-            sb.append(ToolConstants.COLON).append(tag);
-        }
-        return normalize(sb.toString());
-    }
+	
+	@Autowired
+	private ImageMetadataProvider imageMetadataProvider;
 
     public String dockerBuildCommand(String appName, String serviceName, String tag, String dockerFilePath) {
         return dockerBuildCommand(appName, serviceName, tag, dockerFilePath, null, null);
@@ -87,7 +78,7 @@ public class ImageCommandProvider {
             buildCommand.append(getBuildArgs(buildArgs));
         }
         buildCommand.append(TAG_ARG);
-        buildCommand.append(getBuildImageNameWithTag(appName, serviceName, tag));
+        buildCommand.append(imageMetadataProvider.getBuildImageNameWithTag(appName, serviceName, tag));
         dockerFilePath = StringUtils.isNotBlank(dockerFilePath) ? dockerFilePath : SetupConfig.getAbsolutePath(".");
         buildCommand.append(SPACE).append(dockerFilePath).append(ToolConstants.FILE_SEPARATOR);
         return buildCommand.toString();
@@ -110,15 +101,15 @@ public class ImageCommandProvider {
     }
 
     public String dockerPush(String imageFullPath) {
-        imageFullPath = normalize(imageFullPath);
+        imageFullPath = NormalizationUtil.normalizeImageName(imageFullPath);
         StringBuilder pushCommand = new StringBuilder(docker());
         pushCommand.append(PUSH_COMMAND).append(SPACE).append(imageFullPath);
         return pushCommand.toString();
     }
 
     public String dockerTag(String sourcePath, String targetPath) {
-        sourcePath = normalize(sourcePath);
-        targetPath = normalize(targetPath);
+        sourcePath = NormalizationUtil.normalizeImageName(sourcePath);
+        targetPath = NormalizationUtil.normalizeImageName(targetPath);
         StringBuilder tagCommand = new StringBuilder(docker());
         tagCommand.append(TAG_COMMAND).append(SPACE).append(sourcePath).append(SPACE).append(targetPath);
 
@@ -129,7 +120,7 @@ public class ImageCommandProvider {
         if (StringUtils.isBlank(imageName)) {
             return null;
         }
-        imageName = normalize(imageName);
+        imageName = NormalizationUtil.normalizeImageName(imageName);
         StringBuilder imagePullCmd = new StringBuilder(docker());
         imagePullCmd.append(PULL_COMMAND).append(SPACE).append(imageName);
         return imagePullCmd.toString();
@@ -138,12 +129,12 @@ public class ImageCommandProvider {
     public String getImageCleanUpCommand(String appName, String serviceName, String tag) {
         StringBuilder imageCleanCommand = new StringBuilder(docker());
         imageCleanCommand.append(REMOVE_IMAGE).append(SPACE)
-                .append(getBuildImageNameWithTag(appName, serviceName, tag));
+                .append(imageMetadataProvider.getBuildImageNameWithTag(appName, serviceName, tag));
         return imageCleanCommand.toString();
     }
 
     public String dockerInspect(String imageFullPath) {
-        imageFullPath = normalize(imageFullPath);
+        imageFullPath = NormalizationUtil.normalizeImageName(imageFullPath);
         StringBuilder inspectCommand = new StringBuilder(docker());
         inspectCommand.append(INSPECT_COMMAND).append(SPACE).append(imageFullPath);
         return inspectCommand.toString();
@@ -156,55 +147,62 @@ public class ImageCommandProvider {
         return DOCKER_COMMAND + SPACE;
     }
 
-    private String normalize(String input) {
-        input = input.replaceAll(" ", "");
-        input = input.toLowerCase();
-        return input;
-    }
-
-
     // docker rmi <id1> <id2> <id3>
-    public String removeDockerImages(Set<String> imageIds) {
+    public String removeDockerImages(Set<String> imageIds, boolean force) {
         if (imageIds == null || imageIds.isEmpty()) {
             return null;
         }
         StringBuilder removeDockerImages = new StringBuilder(docker());
-        removeDockerImages.append(REMOVE_IMAGE).append(SPACE).append(HYPHEN).append(FORCE_FLAG);
-        for (String imageId : imageIds) {
-            removeDockerImages.append(SPACE).append(imageId);
+        removeDockerImages.append(REMOVE_IMAGE);
+        if (force) {
+            removeDockerImages.append(SPACE).append(HYPHEN).append(FORCE_FLAG);
         }
+        imageIds.stream().forEach( imageId -> {
+            removeDockerImages.append(SPACE).append(imageId);
+        });
         return removeDockerImages.toString();
     }
 
     // docker rmi <id1> <id2> <id3>
-    public String removeDockerImages(String[] imageIds) {
+    public String removeDockerImages(String[] imageIds, boolean force) {
         if (imageIds == null || imageIds.length == 0) {
             return null;
         }
-        StringBuilder removeDockerImages = new StringBuilder(docker());
-        removeDockerImages.append(REMOVE_IMAGE).append(SPACE).append(HYPHEN).append(FORCE_FLAG);
-        for (String imageId : imageIds) {
-            removeDockerImages.append(SPACE).append(imageId);
-        }
-        return removeDockerImages.toString();
+        return removeDockerImages(new HashSet<>(Arrays.asList(imageIds)), force);
     }
 
     // docker images --filter label=imageowner=hyscale -q
     public String dockerImagesFilterByImageOwner() {
-        StringBuilder sb = new StringBuilder(dockerImages());
-        return sb.append(filter(IMAGE_OWNER, HYSCALE)).append(quiet()).toString();
+        return dockerImageIds(null, imageMetadataProvider.getImageOwnerLabel());
     }
 
     // docker images <imagename> --filter label=imageowner=hyscale -q
     public String dockerImageByNameFilterByImageOwner(String imageName) {
-        StringBuilder sb = new StringBuilder(dockerImages());
-        return sb.append(SPACE).append(imageName).append(filter(IMAGE_OWNER, HYSCALE)).append(quiet()).toString();
+        return dockerImageIds(imageName, imageMetadataProvider.getImageOwnerLabel());
     }
-
-    // --filter label=key=value
-    private StringBuilder filter(String key, String value) {
-        return new StringBuilder().append(SPACE).append(HYPHEN).append(HYPHEN).append(FILTER).append(SPACE).append(LABEL_ARGS)
-                .append(EQUALS).append(key).append(EQUALS).append(value);
+    
+    public String dockerImageIds(String imageName, Map<String, String> labels) {
+        StringBuilder sb = new StringBuilder(dockerImages());
+        if (imageName != null) {
+            sb.append(SPACE).append(imageName);
+        }
+        if (labels != null && !labels.isEmpty()) {
+            sb.append(labelFilter(labels));
+        }
+        return sb.append(quiet()).toString();
+    }
+    
+    // --filter label=key1=value1 --filter label=key2=value2 etc
+    private String labelFilter(Map<String, String> labels) {
+        if (labels == null || labels.isEmpty()) {
+            return null;
+        }
+        StringBuilder labelFilter = new StringBuilder();
+        labels.entrySet().stream().forEach(each -> {
+            labelFilter.append(SPACE).append(FILTER).append(SPACE).append(LABEL_ARGS)
+            .append(EQUALS).append(each.getKey()).append(EQUALS).append(each.getValue());
+        });
+        return labelFilter.toString();
     }
 
     // -q

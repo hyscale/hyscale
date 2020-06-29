@@ -62,9 +62,15 @@
 		<copyright.company>Pramati Prism, Inc.</copyright.company>
 		<release.name>First Light</release.name>
 		<hspec.supported.version>0.6.2.1</hspec.supported.version>
+		<docker.java.version>3.1.5</docker.java.version>
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.github.docker-java</groupId>
+			<artifactId>docker-java</artifactId>
+			<version>${docker.java.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
