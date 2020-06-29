@@ -32,6 +32,7 @@ import io.hyscale.deployer.services.model.ScaleStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 
 import javax.validation.constraints.Pattern;
@@ -50,6 +51,7 @@ import java.util.concurrent.Callable;
  */
 
 @CommandLine.Command(name = "service", description = "scales the service of an application")
+@Component
 public class HyscaleScaleServiceCommand implements Callable<Integer> {
 
     private static final Logger logger = LoggerFactory.getLogger(HyscaleScaleServiceCommand.class);

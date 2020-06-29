@@ -16,7 +16,6 @@
 package io.hyscale.controller.validator.impl;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -27,8 +26,6 @@ import org.springframework.stereotype.Component;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.LoggerTags;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.DockerHubAliases;
-import io.hyscale.commons.models.ImageRegistry;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.manager.RegistryManager;

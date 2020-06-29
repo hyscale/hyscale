@@ -18,6 +18,7 @@ package io.hyscale.deployer.services.handler;
 import java.util.List;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.utils.ResourceLabelUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;

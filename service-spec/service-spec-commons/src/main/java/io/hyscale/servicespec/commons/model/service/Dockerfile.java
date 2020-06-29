@@ -79,4 +79,10 @@ public class Dockerfile {
 		return Objects.equals(args, other.args) && Objects.equals(dockerfilePath, other.dockerfilePath)
 				&& Objects.equals(path, other.path) && Objects.equals(target, other.target);
 	}
+
+    @Override
+    public String toString() {
+        return "Dockerfile [path=" + path + ", dockerfilePath=" + dockerfilePath + ", target=" + target + ", args="
+                + args + "]";
+    }
 }

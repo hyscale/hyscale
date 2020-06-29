@@ -40,5 +40,11 @@ public class NormalizationUtil {
         int length = name.length();
         return normalize(name, length);
     }
+    
+    public static String normalizeImageName(String imageName) {
+        imageName = imageName.replaceAll(" ", "");
+        imageName = imageName.toLowerCase();
+        return imageName;
+    }
 
 }
