@@ -24,6 +24,7 @@ import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.manager.RegistryManager;
 import io.hyscale.controller.model.WorkflowContext;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,7 @@ import io.hyscale.controller.hooks.ImageCleanUpHook;
 import io.hyscale.builder.services.service.ImageBuildPushService;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.service.BuildSpec;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 /**
@@ -47,6 +49,8 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
  */
 @Component
 public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext> {
+
+    private static final Logger logger = LoggerFactory.getLogger(ImageBuildComponentInvoker.class);
 
     @Autowired
     private ImageBuildPushService imageBuildService;
@@ -62,8 +66,6 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
         super.addHook(imageCleanUpHook);
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(ImageBuildComponentInvoker.class);
-
     @Override
     protected void doExecute(WorkflowContext context) throws HyscaleException {
         if (context == null || context.isFailed()) {
@@ -77,7 +79,8 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
         }
         String serviceName;
         try {
-            serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
+            serviceName = context.getServiceName() != null ? context.getServiceName()
+                    : serviceSpec.get(HyscaleSpecFields.name, String.class);
         } catch (HyscaleException e) {
             logger.error("Failed to get service name, error {}", e.toString());
             throw e;
@@ -90,12 +93,16 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
         BuildContext buildContext = new BuildContext();
         buildContext.setAppName(appName);
         buildContext.setServiceName(serviceName);
-        Boolean stackAsServiceImage = (Boolean) context.getAttribute(WorkflowConstants.STACK_AS_SERVICE_IMAGE);
-        buildContext.setStackAsServiceImage(stackAsServiceImage == null ? false : stackAsServiceImage);
+        buildContext.setStackAsServiceImage(isStackImage(context));
         buildContext.setVerbose((Boolean) context.getAttribute(WorkflowConstants.VERBOSE));
-        buildContext.setImageRegistry(registryManager.getImageRegistry(serviceSpec
+        buildContext.setPushRegistry(registryManager.getImageRegistry(serviceSpec
                 .get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.registry), String.class)));
-
+        if (isStackImage(context)) {
+            String pullImageRegistryName = getPullImageRegistry(context);
+            if (StringUtils.isNotBlank(pullImageRegistryName)) {
+                buildContext.setPullRegistry(registryManager.getImageRegistry(pullImageRegistryName));
+            }
+        }
         DockerfileEntity dockerfileEntity = (DockerfileEntity) context
                 .getAttribute(WorkflowConstants.DOCKERFILE_ENTITY);
         buildContext.setDockerfileEntity(dockerfileEntity);
@@ -140,6 +147,7 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
     protected void onError(WorkflowContext context, HyscaleException he) throws HyscaleException {
         WorkflowLogger.header(ControllerActivity.ERROR);
         WorkflowLogger.error(ControllerActivity.CAUSE, he != null ? he.getMessage() : ImageBuilderErrorCodes.FAILED_TO_BUILD_AND_PUSH_IMAGE.getMessage());
+        context.addAttribute(WorkflowConstants.ERROR_MESSAGE, (he != null) ? he.getMessage() : ImageBuilderErrorCodes.FAILED_TO_BUILD_AND_PUSH_IMAGE.getMessage());
         context.setFailed(true);
         if (he != null) {
             throw he;

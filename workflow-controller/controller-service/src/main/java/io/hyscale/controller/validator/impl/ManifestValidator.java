@@ -71,7 +71,7 @@ public class ManifestValidator implements Validator<WorkflowContext> {
         StringBuilder messageBuilder = new StringBuilder(" Invalid volumes ").append(invalidVolumes);
         WorkflowLogger.persist(ValidatorActivity.MANIFEST_VALIDATION_FAILED, LoggerTags.ERROR, messageBuilder.toString());
         if(WorkflowLogger.isDisabled()){
-            outputHandler.addErrorMessage(ControllerErrorCodes.MANIFEST_VALIDATION_FAILED.getMessage()+messageBuilder.toString());
+            outputHandler.addErrorMessage(ControllerErrorCodes.MANIFEST_VALIDATION_FAILED.getMessage(),messageBuilder.toString());
         }
         return false;
         

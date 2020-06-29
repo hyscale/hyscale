@@ -107,7 +107,7 @@ public abstract class SpecSchemaValidator implements Validator<File> {
                 messageBuilder.append(message.getMessage());
                 JsonNode jsonNode = message.asJson();
                 String location = getLocation(jsonNode);
-                if (!StringUtils.isEmpty(location)) {
+                if (StringUtils.isNotBlank(location)) {
                     messageBuilder.append(" at ").append(location);
                 }
             } else {

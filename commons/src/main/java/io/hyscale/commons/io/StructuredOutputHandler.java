@@ -17,6 +17,7 @@ package io.hyscale.commons.io;
 
 import com.google.gson.*;
 import io.hyscale.commons.constants.ToolConstants;
+import io.hyscale.commons.utils.HyscaleStringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -30,12 +31,13 @@ public class StructuredOutputHandler {
     private List<String> errorMessages = new ArrayList<>();
 
     public void addErrorMessage(String message, String... args) {
-        if (!StringUtils.isEmpty(message)) {
-            if (args != null && args.length > 0) {
-                errorMessages.add(String.format(message.replaceAll("\\{\\}", "%s"), args));
-            } else {
-                errorMessages.add(message);
-            }
+        if (StringUtils.isEmpty(message)) {
+            return;
+        }
+        if (args != null && args.length > 0) {
+            errorMessages.add(String.format(message.replaceAll("\\{\\}", "%s"), args));
+        } else {
+            errorMessages.add(message);
         }
     }
 
@@ -55,7 +57,7 @@ public class StructuredOutputHandler {
         StringBuilder sb = new StringBuilder();
         errorMessages.forEach(each -> sb.append(each).append(ToolConstants.COMMA));
         JsonObject outputJson = new JsonObject();
-        outputJson.addProperty(key, sb.toString().substring(0,sb.length()-1));
+        outputJson.addProperty(key, HyscaleStringUtil.removeSuffixStr(sb,ToolConstants.COMMA));
         System.out.println(GSON_BUILDER.toJson(outputJson));
     }
 

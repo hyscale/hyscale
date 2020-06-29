@@ -177,7 +177,7 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 			failMsg = new HyscaleException(errorCode, failMsg, storageClassAllowed.toString()).getMessage();
 			WorkflowLogger.persist(ValidatorActivity.VOLUME_VALIDATION_FAILED, LoggerTags.ERROR, failMsg);
 			if(WorkflowLogger.isDisabled()){
-				outputHandler.addErrorMessage(ValidatorActivity.VOLUME_VALIDATION_FAILED.getActivityMessage());
+				outputHandler.addErrorMessage(ValidatorActivity.VOLUME_VALIDATION_FAILED.getActivityMessage(),failMsg);
 			}
             logger.info("StroageClass validation failed. Message : {}", failMsg);
             return false;

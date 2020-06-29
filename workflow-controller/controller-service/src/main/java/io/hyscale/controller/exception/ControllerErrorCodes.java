@@ -39,7 +39,7 @@ public enum ControllerErrorCodes implements HyscaleError {
     PROFILE_VALIDATION_FAILED("Profile validation failed"),
     PROFILE_NAMES_MISMATCHED_WITH_FILES("Profile name mismatched with environment in {}"),
     FAILED_TO_SCALE_SERVICE("Failed to scale {} of application {} in {} namespace"),
-    MANIFEST_VALIDATION_FAILED("Manifest validation failed.",HyscaleErrorGroup.UPFRONT_VALIDATION);
+    MANIFEST_VALIDATION_FAILED("Manifest validation failed. Error {}",HyscaleErrorGroup.UPFRONT_VALIDATION);
 
     private String message;
     private int code;

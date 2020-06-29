@@ -18,13 +18,13 @@ package io.hyscale.controller.commands.deploy;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
-
+import com.google.gson.*;
 import io.hyscale.commons.component.ComponentInvoker;
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.io.StructuredOutputHandler;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
@@ -35,6 +35,8 @@ import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.ServiceSpecUtil;
 import io.hyscale.controller.validator.impl.*;
 
+import io.hyscale.deployer.core.model.ServiceStatus;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,6 +105,10 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
     @CommandLine.Option(names = {"-f", "--files"}, required = true, description = "Service specs files.", split = ",")
     private List<File> serviceSpecsFiles;
 
+    @Pattern(regexp = ValidationConstants.STRUCTURED_OUTPUT_FORMAT_REGEX, message = ValidationConstants.INVALID_OUTPUT_FORMAT_MSG)
+    @CommandLine.Option(names = {"-o", "--output"},paramLabel = "json" ,required = false, description = "Output in json format.")
+    private String structuredOutput;
+
     @ArgGroup(exclusive = true, heading = "Profile options", order = 10)
     private ProfileArg profileArg;
 
@@ -145,7 +151,15 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
     @Autowired
     private VolumeValidator volumeValidator;
 
+    @Autowired
+    private StructuredOutputHandler outputHandler;
+
     private List<Validator<WorkflowContext>> postValidators;
+
+    private JsonArray jsonArr = new JsonArray();
+
+    private JsonParser jsonParser = new JsonParser();
+
 
     @PostConstruct
     public void init() {
@@ -163,8 +177,16 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
 
+        if(!StringUtils.isEmpty(structuredOutput)){
+            WorkflowLogger.setDisabled(true);
+            verbose=false;
+        }
+
         // Validate Service specs with schema
         if (!serviceSpecInputValidator.validate(serviceSpecsFiles)) {
+            if(WorkflowLogger.isDisabled()){
+                outputHandler.generateErrorMessage(WorkflowConstants.DEPLOYMENT_ERROR);
+            }
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
 
@@ -174,7 +196,15 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
         }
 
         // Process servicespecs to form EffectiveServiceSpec from ProfileArg & ServiceSpecFiles
-        List<EffectiveServiceSpec> effectiveServiceSpecs = serviceSpecProcessor.process(profileArg, serviceSpecsFiles);
+        List<EffectiveServiceSpec> effectiveServiceSpecs;
+        try {
+            effectiveServiceSpecs = serviceSpecProcessor.process(profileArg, serviceSpecsFiles);
+        } catch (HyscaleException e) {
+            if (WorkflowLogger.isDisabled()) {
+                StructuredOutputHandler.prepareOutput(WorkflowConstants.DEPLOYMENT_ERROR, e.getMessage());
+            }
+            throw e;
+        }
 
         // Construct WorkflowContext
         List<WorkflowContext> contextList = new ArrayList<>();
@@ -189,6 +219,9 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
                     contextList.add(builder.get());
                 } catch (HyscaleException e) {
                     logger.error("Error while preparing workflow context ", e);
+                    if (WorkflowLogger.isDisabled()) {
+                        StructuredOutputHandler.prepareOutput(WorkflowConstants.DEPLOYMENT_ERROR, e.getMessage());
+                    }
                     throw e;
                 }
             }
@@ -198,6 +231,9 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
 
         if (!inputSpecPostValidator.validate(contextList)) {
             WorkflowLogger.logPersistedActivities();
+            if(WorkflowLogger.isDisabled()){
+                outputHandler.generateErrorMessage(WorkflowConstants.DEPLOYMENT_ERROR);
+            }
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
 
@@ -228,8 +264,19 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
             }
             logWorkflowInfo(workflowContext);
             isCommandFailed = isCommandFailed ? isCommandFailed : workflowContext.isFailed();
+            if (WorkflowLogger.isDisabled() && !isCommandFailed) {
+                ServiceStatus serviceStatus = new ServiceStatus();
+                serviceStatus.setName(workflowContext.getServiceName());
+                if (workflowContext.getAttribute(WorkflowConstants.SERVICE_IP) != null) {
+                    serviceStatus.setMessage(workflowContext.getAttribute(WorkflowConstants.SERVICE_IP).toString());
+                }
+                JsonObject json = (JsonObject) jsonParser.parse(StructuredOutputHandler.GSON_BUILDER.toJson(serviceStatus));
+                jsonArr.add(json);
+            }
         }
-
+        if(WorkflowLogger.isDisabled()) {
+            StructuredOutputHandler.prepareOutput(WorkflowConstants.SERVICE_STATUS,jsonArr);
+        }
         return isCommandFailed ? ToolConstants.HYSCALE_ERROR_CODE : 0;
     }
 
@@ -243,6 +290,21 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
             logger.error("Error while executing component invoker: {}, for app: {}, service: {}",
                     invoker.getClass(), appName, context.getServiceName(), e);
             context.setFailed(true);
+            if (WorkflowLogger.isDisabled()) {
+                ServiceStatus serviceStatus = new ServiceStatus();
+                serviceStatus.setName(context.getServiceName());
+                serviceStatus.setExitCode(e.getCode());
+                if (context.getAttribute(WorkflowConstants.TROUBLESHOOT_MESSAGE) != null) {
+                    serviceStatus.setMessage(context.getAttribute(WorkflowConstants.TROUBLESHOOT_MESSAGE).toString());
+                } else if(context.getAttribute(WorkflowConstants.ERROR_MESSAGE) != null){
+                    serviceStatus.setMessage(context.getAttribute(WorkflowConstants.ERROR_MESSAGE).toString());
+                } else {
+                    serviceStatus.setMessage(e.getMessage());
+                }
+                //TODO: serviceStatus.setK8sError(e.getMessage());
+                JsonObject json = (JsonObject) jsonParser.parse(StructuredOutputHandler.GSON_BUILDER.toJson(serviceStatus));
+                jsonArr.add(json);
+            }
         }
         return context.isFailed() ? false : true;
     }

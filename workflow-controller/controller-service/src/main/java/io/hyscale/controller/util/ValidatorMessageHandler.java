@@ -21,6 +21,7 @@ import io.hyscale.commons.io.StructuredOutputHandler;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.exception.ControllerErrorCodes;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +42,7 @@ public class ValidatorMessageHandler {
         }
         WorkflowLogger.logPersistedActivities();
         if (isFailed) {
-            if (WorkflowLogger.isDisabled() && exceptionMsg != null && !exceptionMsg.isEmpty()) {
+            if (WorkflowLogger.isDisabled() &&  !StringUtils.isEmpty(exceptionMsg)) {
                 exceptionMsg = exceptionMsg.startsWith(": \n") ? exceptionMsg.substring(3) : exceptionMsg;
                 StructuredOutputHandler.prepareOutput(WorkflowConstants.DEPLOYMENT_ERROR, exceptionMsg);
             }
