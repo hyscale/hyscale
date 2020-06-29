@@ -93,6 +93,7 @@ public class LoggerUtility {
         } catch (HyscaleException e) {
             context.setFailed(true);
             WorkflowLogger.error(ControllerActivity.CAUSE, e.getMessage());
+            WorkflowLogger.footer();
             throw e;
         }
         if (StringUtils.isBlank(selectedPod)) {
@@ -160,7 +161,7 @@ public class LoggerUtility {
                 replicaInfo = replicaInfoList.get(0);
             }
             // interactively consume the replica name from the user if replicaInfo is null
-            replicaName = replicaInfo != null ? replicaInfo.getName() : serviceLogsInputHandler.getPodFromUser(replicaInfoList);
+            return replicaInfo != null ? replicaInfo.getName() : serviceLogsInputHandler.getPodFromUser(replicaInfoList);
         }
 
         if (!replicaProcessingService.doesReplicaExist(replicaName, replicaInfoList)) {
