@@ -273,6 +273,9 @@ public class WorkflowLogger {
     }
 
     public static void log(String message) {
+        if(isDisabled()){
+            return;
+        }
         System.out.println(message);
     }
 
