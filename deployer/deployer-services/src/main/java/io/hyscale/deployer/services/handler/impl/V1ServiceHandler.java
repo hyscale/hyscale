@@ -301,7 +301,8 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
         V1Service service = v1ServiceList != null && !v1ServiceList.isEmpty() ? v1ServiceList.get(0) : null;
 
         if (service == null) {
-            throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_SERVICE_ADDRESS);
+            logger.debug("No service found for selector {} in namespace {}, returning null", selector, namespace);
+            return null;
         }
         return K8sServiceUtil.getServiceAddress(service);
 
