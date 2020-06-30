@@ -104,7 +104,7 @@ public class PodStatusUtil {
 	public static V1ContainerState getLastState(V1Pod pod) {
 		List<V1ContainerStatus> v1ContainerStatus = pod.getStatus().getContainerStatuses();
 		for (V1ContainerStatus containerStatus : v1ContainerStatus) {
-			if (containerStatus.getState().getRunning() == null && !containerStatus.getReady()) {
+			if (!containerStatus.getReady()) {
 				return containerStatus.getLastState();
 			}
 		}
