@@ -20,7 +20,6 @@ import io.hyscale.generator.services.utils.ConfigMapDataUtil;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
-import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.generator.services.provider.PropsProvider;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
@@ -28,6 +27,7 @@ import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Props;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -42,25 +42,25 @@ public class ConfigMapDataHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
-        Props props = PropsProvider.getProps(serviceSpec);
         if (!ManifestPredicates.getPropsPredicate().test(serviceSpec)) {
             logger.debug("Props found to be empty while processing ConfigMap data.");
             return null;
         }
-        ServiceMetadata serviceMetadata = new ServiceMetadata();
-        serviceMetadata.setAppName(manifestContext.getAppName());
-        serviceMetadata.setEnvName(manifestContext.getEnvName());
-        serviceMetadata.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
+        Props props = PropsProvider.getProps(serviceSpec);
+        String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
 
         String propsVolumePath = serviceSpec.get(HyscaleSpecFields.propsVolumePath, String.class);
 
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         try {
-            manifestSnippetList.addAll(ConfigMapDataUtil.build(props,propsVolumePath));
+            List<ManifestSnippet> configMapSnippets = ConfigMapDataUtil.build(props,propsVolumePath);
+            ConfigMapDataUtil.updatePodChecksum(configMapSnippets, manifestContext, null);
+            manifestSnippetList.addAll(configMapSnippets);
             logger.debug("Added ConfigMap map data to the manifest snippet list");
         } catch (JsonProcessingException e) {
-            logger.error("Error while generating manifest for props of service {}", serviceMetadata.getServiceName(), e);
+            logger.error("Error while generating manifest for props of service {}", serviceName, e);
         }
         return manifestSnippetList;
     }
+
 }

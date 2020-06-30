@@ -29,6 +29,8 @@ import io.hyscale.servicespec.commons.model.service.Agent;
 import io.hyscale.servicespec.commons.model.service.AgentVolume;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.kubernetes.client.openapi.models.V1VolumeMount;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -81,7 +83,7 @@ public class AgentVolumeMountBuilder extends AgentHelper implements AgentBuilder
                 volumeMounts.add(VolumeMountsUtil.buildForProps(propsVolumePath,
                         K8sResourceNameGenerator.getResourceVolumeName(configMapName, ManifestResource.CONFIG_MAP.getKind())));
             }
-            if (agent.getSecrets() != null) {
+            if (agent.getSecrets() != null && StringUtils.isNotBlank(secretsVolumePath)) {
                 String secretName = agentManifestNameGenerator.generateSecretName(agent.getName(),serviceName);
                 volumeMounts.add(VolumeMountsUtil.buildForSecrets(secretsVolumePath,
                         K8sResourceNameGenerator.getResourceVolumeName(secretName, ManifestResource.SECRET.getKind())));

@@ -27,10 +27,8 @@ import io.hyscale.generator.services.model.ManifestGeneratorActivity;
 import io.hyscale.generator.services.builder.DefaultLabelBuilder;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.model.ServiceMetadata;
-import io.hyscale.generator.services.model.ResourceName;
 import io.hyscale.generator.services.generator.MetadataManifestSnippetGenerator;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -93,7 +91,7 @@ public class ImagePullSecretHandler implements ManifestHandler {
             logger.debug("Added the data to image pull secret manifest snippet.");
             // Get the secret type snippet as kubernetes.io/dockerconfigjson
             manifestSnippetList.add(getSecretTypeSnippet());
-            //Add Name to each snippet execpt podSpec ImagePullSecretName
+            //Add Name to each snippet except podSpec ImagePullSecretName
             manifestSnippetList.stream().forEach(each -> {
                 each.setName(name);
             });

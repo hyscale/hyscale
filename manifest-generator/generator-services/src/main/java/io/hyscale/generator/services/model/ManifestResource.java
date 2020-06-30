@@ -17,15 +17,12 @@ package io.hyscale.generator.services.model;
 
 import java.util.Map;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import io.hyscale.generator.services.builder.DefaultLabelBuilder;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import org.apache.commons.lang3.StringUtils;
 
-import io.hyscale.commons.models.ResourceLabelKey;
-import io.hyscale.commons.utils.ResourceLabelBuilder;
 import io.hyscale.commons.utils.NormalizationUtil;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 

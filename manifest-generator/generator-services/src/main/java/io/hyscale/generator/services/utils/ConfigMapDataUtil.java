@@ -18,8 +18,10 @@ package io.hyscale.generator.services.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
+import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.model.ManifestResource;
+import io.hyscale.generator.services.model.PodChecksum;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
 import io.hyscale.servicespec.commons.model.PropType;
@@ -29,7 +31,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -39,10 +40,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
 public class ConfigMapDataUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigMapDataUtil.class);
+    
+    private static final String DATA_PATH = "data";
+    
+    private static final String BINARY_DATA_PATH = "binaryData";
 
     public static List<ManifestSnippet> build(Props props, String propsVolumePath) throws JsonProcessingException {
 
@@ -86,16 +90,53 @@ public class ConfigMapDataUtil {
 
         ManifestSnippet configMapDataSnippet = new ManifestSnippet();
         configMapDataSnippet.setKind(ManifestResource.CONFIG_MAP.getKind());
-        configMapDataSnippet.setPath("data");
+        configMapDataSnippet.setPath(DATA_PATH);
         configMapDataSnippet.setSnippet(JsonSnippetConvertor.serialize(configProps));
         manifestSnippetList.add(configMapDataSnippet);
 
         ManifestSnippet binaryDataSnippet = new ManifestSnippet();
         binaryDataSnippet.setKind(ManifestResource.CONFIG_MAP.getKind());
-        binaryDataSnippet.setPath("binaryData");
+        binaryDataSnippet.setPath(BINARY_DATA_PATH);
         binaryDataSnippet.setSnippet(JsonSnippetConvertor.serialize(fileProps));
         manifestSnippetList.add(binaryDataSnippet);
 
         return manifestSnippetList;
+    }
+    
+    public static PodChecksum.Prop getPodChecksumProp(List<ManifestSnippet> configMapSnippets){
+        if (configMapSnippets == null || configMapSnippets.isEmpty()) {
+            return null;
+        }
+        PodChecksum.Prop propChecksum = new PodChecksum().new Prop();
+        configMapSnippets.stream().forEach(snippet -> {
+            if (DATA_PATH.equals(snippet.getPath())) {
+                propChecksum.setData(snippet.getSnippet());
+            }
+            if (BINARY_DATA_PATH.equals(snippet.getPath())) {
+                propChecksum.setBinaryData(snippet.getSnippet());
+            }
+        });
+        return propChecksum;
+    }
+    
+    public static void updatePodChecksum(List<ManifestSnippet> configMapSnippets, ManifestContext manifestContext,
+            String agentName) {
+        if (configMapSnippets == null || configMapSnippets.isEmpty()) {
+            return;
+        }
+        PodChecksum.Prop prop = getPodChecksumProp(configMapSnippets);
+        if (prop == null) {
+            return;
+        }
+
+        Object podChecksumObj = manifestContext.getGenerationAttribute(ManifestGenConstants.POD_CHECKSUM);
+        PodChecksum podChecksum = podChecksumObj == null ? new PodChecksum() : (PodChecksum) podChecksumObj;
+
+        if (StringUtils.isBlank(agentName)) {
+            podChecksum.setProp(prop);
+        } else {
+            podChecksum.addAgentProp(agentName, prop);
+        }
+        manifestContext.addGenerationAttribute(ManifestGenConstants.POD_CHECKSUM, podChecksum);
     }
 }
