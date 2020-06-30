@@ -28,7 +28,7 @@ public enum ResourceKind {
     SERVICE("Service", 0),
     NAMESPACE("Namespace"),
     STORAGE_CLASS("StorageClass"),
-    HORIZONTAL_POD_AUTOSCALER("HorizontalPodAutoscaler", 0),
+    HORIZONTAL_POD_AUTOSCALER("HorizontalPodAutoscaler", 2),
     PERSISTENT_VOLUME_CLAIM("PersistentVolumeClaim", 2),
     EVENT("Event"),
     VERSION("VersionInfo");
