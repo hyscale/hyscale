@@ -36,6 +36,7 @@ import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
+import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -116,7 +117,11 @@ public class HyscaleServiceLogsCommand implements Callable<Integer> {
         }
 
         WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
-        loggerUtility.deploymentLogs(workflowContext);
+        try {
+            loggerUtility.deploymentLogs(workflowContext);
+        } catch (HyscaleException ex) {
+            return ex.getCode();
+        }
 
         return workflowContext.isFailed() ? ToolConstants.HYSCALE_ERROR_CODE : ToolConstants.HYSCALE_SUCCESS_CODE;
     }

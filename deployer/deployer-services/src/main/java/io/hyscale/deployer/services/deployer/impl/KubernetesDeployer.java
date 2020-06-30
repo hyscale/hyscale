@@ -250,7 +250,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
             serviceAddress = v1ServiceHandler.getServiceAddress(apiClient, selector, context.getNamespace(),
                     context.isWaitForReadiness());
         } catch (HyscaleException e) {
-            logger.error("Error while preparing client, error {} ", e.toString());
+            logger.error("Error while getting service address, error {} ", e.toString());
             throw e;
         }
         return serviceAddress;
