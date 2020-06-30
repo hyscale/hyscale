@@ -15,6 +15,11 @@
  */
 package io.hyscale.deployer.core.model;
 
+import org.apache.commons.lang3.StringUtils;
+
+/**
+ * status information of a service after deploying it.
+ */
 public class ServiceStatus {
     private Integer exitCode;
     private String message;
@@ -53,4 +58,23 @@ public class ServiceStatus {
         this.k8sError = k8sError;
     }
 
+    @Override
+    public String toString() {
+        if (StringUtils.isEmpty(name)) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder("[");
+        sb.append("name: ").append(name);
+        if (!StringUtils.isEmpty(message)) {
+            sb.append(',').append("message: ").append(message);
+        }
+        if (!StringUtils.isEmpty(k8sError)) {
+            sb.append(',').append("k8sError: ").append(k8sError);
+        }
+        if (exitCode != null) {
+            sb.append(',').append("exitCode: ").append(exitCode);
+        }
+        sb.append(']');
+        return sb.toString();
+    }
 }

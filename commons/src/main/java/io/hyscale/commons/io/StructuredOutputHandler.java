@@ -26,7 +26,8 @@ import java.util.List;
 
 @Component
 public class StructuredOutputHandler {
-    public static final Gson GSON_BUILDER = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+
+    private static final Gson GSON_BUILDER = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
     private List<String> errorMessages = new ArrayList<>();
 
@@ -61,4 +62,7 @@ public class StructuredOutputHandler {
         System.out.println(GSON_BUILDER.toJson(outputJson));
     }
 
+    public static Gson getGsonBuilder() {
+        return GSON_BUILDER;
+    }
 }

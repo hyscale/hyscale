@@ -156,9 +156,9 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
 
     private List<Validator<WorkflowContext>> postValidators;
 
-    private JsonArray jsonArr = new JsonArray();
+    private JsonArray jsonArr;
 
-    private JsonParser jsonParser = new JsonParser();
+    private JsonParser jsonParser;
 
 
     @PostConstruct
@@ -169,6 +169,8 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
         this.postValidators.add(manifestValidator);
         this.postValidators.add(clusterValidator);
         this.postValidators.add(volumeValidator);
+        jsonArr = new JsonArray();
+        jsonParser = new JsonParser();
     }
 
     @Override
@@ -270,7 +272,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
                 if (workflowContext.getAttribute(WorkflowConstants.SERVICE_IP) != null) {
                     serviceStatus.setMessage(workflowContext.getAttribute(WorkflowConstants.SERVICE_IP).toString());
                 }
-                JsonObject json = (JsonObject) jsonParser.parse(StructuredOutputHandler.GSON_BUILDER.toJson(serviceStatus));
+                JsonObject json = (JsonObject) jsonParser.parse(StructuredOutputHandler.getGsonBuilder().toJson(serviceStatus));
                 jsonArr.add(json);
             }
         }
@@ -302,7 +304,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
                     serviceStatus.setMessage(e.getMessage());
                 }
                 //TODO: serviceStatus.setK8sError(e.getMessage());
-                JsonObject json = (JsonObject) jsonParser.parse(StructuredOutputHandler.GSON_BUILDER.toJson(serviceStatus));
+                JsonObject json = (JsonObject) jsonParser.parse(StructuredOutputHandler.getGsonBuilder().toJson(serviceStatus));
                 jsonArr.add(json);
             }
         }
