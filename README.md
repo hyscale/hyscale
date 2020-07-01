@@ -147,13 +147,7 @@ volumes:
     - name: tomcat-logs-dir
       path: /usr/local/tomcat/logs
       size: 1Gi
-      storageClass: standard
 
-replicas:
-    min: 1
-    max: 3
-    cpuThreshold: 40%
- 
 external: true
 ports:
   - port: 8080/tcp
