@@ -18,7 +18,6 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
       - run: |
-         echo "Running Static code analysis"
          mvn clean install sonar:sonar
         env:
          SONAR_TOKEN: ${{ secrets.HYS_SONAR_TOKEN }}
