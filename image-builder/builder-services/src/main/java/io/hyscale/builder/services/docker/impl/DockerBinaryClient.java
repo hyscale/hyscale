@@ -57,6 +57,8 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.servicespec.commons.model.service.Dockerfile;
 import io.hyscale.commons.models.Status;
 
+import javax.annotation.PostConstruct;
+
 @Component
 @Conditional(DockerBinaryCondition.class)
 public class DockerBinaryClient implements HyscaleDockerClient {
@@ -65,7 +67,7 @@ public class DockerBinaryClient implements HyscaleDockerClient {
 
     @Autowired
     private ImageCommandProvider imageCommandProvider;
-    
+
     @Autowired
     private ImageMetadataProvider imageMetadataProvider;
 
@@ -77,6 +79,11 @@ public class DockerBinaryClient implements HyscaleDockerClient {
 
     @Autowired
     private ImageBuilderConfig imageBuilderConfig;
+
+    @PostConstruct
+    public void init() {
+        logger.debug("Using Docker Binary for Image Building");
+    }
 
     @Override
     public boolean isDockerRunning() {
@@ -91,7 +98,7 @@ public class DockerBinaryClient implements HyscaleDockerClient {
         logger.debug("Docker Installed check command: {}", command);
         return CommandExecutor.execute(command);
     }
-    
+
     @Override
     public void deleteImages(List<String> imageIds, boolean force) {
         if (imageIds == null || imageIds.isEmpty()) {
@@ -102,7 +109,7 @@ public class DockerBinaryClient implements HyscaleDockerClient {
 
         logger.debug("Image clean up {}", isSuccess ? Status.DONE.getMessage() : Status.FAILED.getMessage());
     }
-    
+
     @Override
     public void deleteImage(String imageId, boolean force) {
         if (StringUtils.isBlank(imageId)) {
