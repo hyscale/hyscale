@@ -1,6 +1,10 @@
 name: Compile PR
 
 on:
+  push:
+    branches:
+      - master
+      - release/HyScale*
   pull_request:
     branches: [ master ]
 
