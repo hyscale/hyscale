@@ -6,7 +6,7 @@ on:
       - master
       - release/HyScale*
   pull_request:
-    types: [opened, synchronize, reopened]
+    branches: [ master ]
 
 jobs:
   compile:
