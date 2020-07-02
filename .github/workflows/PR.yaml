@@ -23,6 +23,7 @@ jobs:
           java-version: ${{ matrix.java }}
       - shell: bash
         run: |
+         echo "Running Static Code Analysis"
          mvn clean install sonar:sonar -D sonar.login="$SONAR_TOKEN"
         env:
          SONAR_TOKEN: ${{ secrets.HYS_SONAR_TOKEN }}
