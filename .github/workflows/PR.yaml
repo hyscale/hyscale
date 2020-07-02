@@ -1,4 +1,4 @@
-name: Compile PR
+name: Compile and Run Static Code Analysis
 
 on:
   push:
@@ -22,7 +22,7 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
       - run: |
-         mvn clean install sonar:sonar -D sonar.login=$SONAR_TOKEN
+         mvn clean install sonar:sonar -D sonar.login=${{ secrets.HYS_SONAR_TOKEN }}
         env:
          SONAR_TOKEN: ${{ secrets.HYS_SONAR_TOKEN }}
          GITHUB_TOKEN: ${{ secrets.HYS_SONAR_GITHUB_TOKEN }}
