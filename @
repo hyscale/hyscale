@@ -25,6 +25,7 @@ jobs:
         run: |
          echo "Running Static Code Analysis"
          mvn clean install sonar:sonar -D sonar.login="$SONAR_TOKEN"
+         echo $SONAR_TOKEN
         env:
          SONAR_TOKEN: ${{ secrets.HYS_SONAR_TOKEN }}
          GITHUB_TOKEN: ${{ secrets.HYS_SONAR_GITHUB_TOKEN }}
