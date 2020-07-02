@@ -1,6 +1,10 @@
-name: Compile PR
+name: Compile and Run Static Code Analysis
 
 on:
+  push:
+    branches:
+      - master
+      - release/HyScale*
   pull_request:
     branches: [ master ]
 
@@ -17,8 +21,11 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: ${{ matrix.java }}
-      - run: |
-         mvn clean install sonar:sonar
+      - shell: bash
+        run: |
+         echo "Running Static Code Analysis"
+         echo $SONAR_TOKEN
+         mvn -X clean install sonar:sonar -D sonar.login="$SONAR_TOKEN"
         env:
          SONAR_TOKEN: ${{ secrets.HYS_SONAR_TOKEN }}
          GITHUB_TOKEN: ${{ secrets.HYS_SONAR_GITHUB_TOKEN }}
