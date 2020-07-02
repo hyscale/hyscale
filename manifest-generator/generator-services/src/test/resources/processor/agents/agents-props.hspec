@@ -1,0 +1,41 @@
+name: myservice
+image:
+  registry: x.y.z
+  name: myServiceImage
+  tag: 1.2.3
+  buildSpec:
+    stackImage: abc/pqr:1.0
+    artifacts:
+      - name: sample
+        source: sample.war
+        destination: /abc/def/ghi/sample.txt
+    configCommands: |-
+      echo "Hello, I'm configure commands"
+    runCommandsScript: /abc/def/run.sh
+    runCommands: |-
+      echo "Hello, I'm run commands"
+
+startCommand: "a,bc,def"
+replicas: 2
+
+volumes:
+  - name: vol-name
+    path: /volume/mount/path
+    size: 1Gi
+    storageClass: storageClass
+
+external: true
+ports:
+  - port: 8080/http
+    healthCheck:
+      httpPath: /sample
+  - port : 8081
+
+agents:
+- name: fluentd
+  image: quay.io/fluentd_elasticsearch/fluentd
+  props:
+    FLUENTD_ARGS: --no-supervisor -vv
+    output.conf: file(output.conf)
+    system.input.conf: file(system.input.conf)
+    #SIDECARL_PASSWORD: pramati

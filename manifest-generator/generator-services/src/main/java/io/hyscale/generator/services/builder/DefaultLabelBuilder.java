@@ -22,12 +22,15 @@ import io.hyscale.generator.services.model.ServiceMetadata;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-//TODO Normaliza label as per regex (([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?
+//TODO Normalize label as per regex (([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?
 public class DefaultLabelBuilder {
     
     private DefaultLabelBuilder() {}
 
     public static Map<String, String> build(ServiceMetadata serviceMetadata) {
+        if (serviceMetadata == null) {
+            return null;
+        }
         Map<ResourceLabelKey, String> resourceLabelMap = ResourceLabelBuilder.build(serviceMetadata.getAppName(), serviceMetadata.getEnvName(),
                 serviceMetadata.getServiceName());
         return build(resourceLabelMap);

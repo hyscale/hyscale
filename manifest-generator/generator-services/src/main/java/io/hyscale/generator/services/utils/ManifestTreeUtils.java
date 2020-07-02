@@ -21,6 +21,8 @@ import javax.annotation.PostConstruct;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +38,8 @@ import io.hyscale.generator.services.json.JsonTreeUtil;
 
 @Component
 public class ManifestTreeUtils {
+    
+    private static final Logger logger = LoggerFactory.getLogger(ManifestTreeUtils.class);
 
     private ObjectMapper objectMapper;
 
@@ -52,6 +56,10 @@ public class ManifestTreeUtils {
             throws IOException, HyscaleException {
         if (StringUtils.isBlank(snippet)) {
             return rootNode;
+        }
+        if (StringUtils.isBlank(path) || rootNode == null) {
+            logger.error("Path and root node required for injecting snippet");
+            throw new HyscaleException(ManifestErrorCodes.ERROR_WHILE_INJECTING_MANIFEST_SNIPPET);
         }
         String parentKey = JsonTreeUtil.getParentKey(path);
         JsonNode elementNode = objectMapper.readTree(snippet);
