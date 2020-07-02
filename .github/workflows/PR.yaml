@@ -22,7 +22,7 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
       - run: |
-         mvn clean install sonar:sonar
+         mvn -X clean install sonar:sonar
         env:
          SONAR_TOKEN: ${{ secrets.HYS_SONAR_TOKEN }}
          GITHUB_TOKEN: ${{ secrets.HYS_SONAR_GITHUB_TOKEN }}
