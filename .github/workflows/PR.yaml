@@ -21,8 +21,9 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: ${{ matrix.java }}
-      - run: |
-         mvn clean install sonar:sonar -Dsonar.login=$SONAR_TOKEN
+      - shell: bash
+        run: |
+         mvn clean install sonar:sonar -D sonar.login="$SONAR_TOKEN"
         env:
          SONAR_TOKEN: ${{ secrets.HYS_SONAR_TOKEN }}
          GITHUB_TOKEN: ${{ secrets.HYS_SONAR_GITHUB_TOKEN }}
