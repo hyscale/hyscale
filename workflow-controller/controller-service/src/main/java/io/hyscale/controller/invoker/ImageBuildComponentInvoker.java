@@ -20,7 +20,6 @@ import javax.annotation.PostConstruct;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.constants.WorkflowConstants;
-import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.manager.RegistryManager;
 import io.hyscale.controller.model.WorkflowContext;
 

@@ -15,8 +15,10 @@
  */
 package io.hyscale.commons.io;
 
-import com.google.gson.*;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import io.hyscale.commons.constants.ToolConstants;
+import io.hyscale.commons.utils.GsonProviderUtil;
 import io.hyscale.commons.utils.HyscaleStringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -24,10 +26,11 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class to handle output acivity in structured format like JSON/YAML.
+ */
 @Component
 public class StructuredOutputHandler {
-
-    private static final Gson GSON_BUILDER = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
     private List<String> errorMessages = new ArrayList<>();
 
@@ -45,13 +48,13 @@ public class StructuredOutputHandler {
     public static void prepareOutput(String key, JsonElement jsonElement) {
         JsonObject outputJson = new JsonObject();
         outputJson.add(key, jsonElement);
-        System.out.println(GSON_BUILDER.toJson(outputJson));
+        System.out.println(GsonProviderUtil.getPrettyGsonBuilder().toJson(outputJson));
     }
 
     public static void prepareOutput(String key, String message) {
         JsonObject outputJson = new JsonObject();
         outputJson.addProperty(key, message);
-        System.out.println(GSON_BUILDER.toJson(outputJson));
+        System.out.println(GsonProviderUtil.getPrettyGsonBuilder().toJson(outputJson));
     }
 
     public void generateErrorMessage(String key) {
@@ -59,10 +62,6 @@ public class StructuredOutputHandler {
         errorMessages.forEach(each -> sb.append(each).append(ToolConstants.COMMA));
         JsonObject outputJson = new JsonObject();
         outputJson.addProperty(key, HyscaleStringUtil.removeSuffixStr(sb,ToolConstants.COMMA));
-        System.out.println(GSON_BUILDER.toJson(outputJson));
-    }
-
-    public static Gson getGsonBuilder() {
-        return GSON_BUILDER;
+        System.out.println(GsonProviderUtil.getPrettyGsonBuilder().toJson(outputJson));
     }
 }
