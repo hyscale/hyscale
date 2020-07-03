@@ -1,6 +1,7 @@
 ![HyScale](https://www.hyscale.io/wp-content/uploads/2019/01/hyscale-logo.png)
 
 [![Actions Status](https://github.com/hyscale/hyscale/workflows/Build/badge.svg)](https://github.com/hyscale/hyscale/actions?query=workflow%3ABuild)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=io.hyscale%3Ahyscale&metric=security_rating)](https://sonarcloud.io/dashboard?id=io.hyscale%3Ahyscale)
 
 HyScale is an application deployment tool that helps you effortlessly deploy to Kubernetes. It offers a high-level abstraction on top of Kubernetes so that teams can deploy software to K8s while focusing more on code rather than on low-level details.
 
@@ -147,13 +148,7 @@ volumes:
     - name: tomcat-logs-dir
       path: /usr/local/tomcat/logs
       size: 1Gi
-      storageClass: standard
 
-replicas:
-    min: 1
-    max: 3
-    cpuThreshold: 40%
- 
 external: true
 ports:
   - port: 8080/tcp
