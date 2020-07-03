@@ -197,18 +197,12 @@ public class DockerRESTClient implements HyscaleDockerClient {
                 }
                 super.onNext(item);
             }
-
-            @Override
-            public void onError(Throwable throwable) {
-                WorkflowLogger.endActivity(buildActivity, Status.FAILED);
-                super.onError(throwable);
-            }
         };
         try {
             buildImageCmd.exec(callback).awaitCompletion();
         } catch (DockerClientException | InterruptedException e) {
-            logger.error("Failed to build image", e);
-            throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_PUSH_IMAGE);
+            WorkflowLogger.endActivity(buildActivity, Status.FAILED);
+            throw new HyscaleException(e, ImageBuilderErrorCodes.FAILED_TO_BUILD_IMAGE);
         }
 
         if (buildContext.isVerbose()) {
@@ -351,20 +345,13 @@ public class DockerRESTClient implements HyscaleDockerClient {
                 }
                 super.onNext(item);
             }
-
-            @Override
-            public void onError(Throwable throwable) {
-                WorkflowLogger.endActivity(pushActivity, Status.FAILED);
-                //WorkflowLogger.error(ImageBuilderActivity.FAILED_TO_PUSH_IMAGE, image.getName(), throwable.getMessage());
-                super.onError(throwable);
-            }
         };
 
         try {
             pushImageCmd.exec(callback).awaitCompletion();
         } catch (DockerClientException | InterruptedException e) {
-            logger.error("Failed to push image {}", image.getName(), e);
-            throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_PUSH_IMAGE);
+            WorkflowLogger.endActivity(pushActivity, Status.FAILED);
+            throw new HyscaleException(e, ImageBuilderErrorCodes.FAILED_TO_PUSH_IMAGE);
         }
         if (buildContext.isVerbose()) {
             WorkflowLogger.endActivity(Status.DONE);
