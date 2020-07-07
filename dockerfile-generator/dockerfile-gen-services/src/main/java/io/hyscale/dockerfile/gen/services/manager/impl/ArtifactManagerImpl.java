@@ -29,6 +29,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.servicespec.commons.model.service.Artifact;
 import io.hyscale.commons.models.DecoratedArrayList;
@@ -50,7 +51,11 @@ public class ArtifactManagerImpl implements DockerfileEntityManager {
     @Override
     public List<SupportingFile> getSupportingFiles(ServiceSpec serviceSpec, DockerfileGenContext context)
             throws HyscaleException {
-        List<SupportingFile> supportingFiles = new ArrayList<SupportingFile>();
+        if (serviceSpec == null) {
+            throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
+        }
+        
+        List<SupportingFile> supportingFiles = new ArrayList<>();
         TypeReference<List<Artifact>> artifactTypeRef = new TypeReference<List<Artifact>>() {
         };
         List<Artifact> artifactsList;
@@ -85,7 +90,7 @@ public class ArtifactManagerImpl implements DockerfileEntityManager {
             return;
         }
         // Artifacts should exist
-        List<String> artifactsNotFound = new ArrayList<String>();
+        List<String> artifactsNotFound = new ArrayList<>();
         artifactsList.stream().forEach(artifact -> {
             String artifactPath = SetupConfig.getAbsolutePath(artifact.getSource());
             File artifactFile = new File(artifactPath);
@@ -103,7 +108,7 @@ public class ArtifactManagerImpl implements DockerfileEntityManager {
         if (artifactsList == null) {
             return null;
         }
-        DecoratedArrayList<Artifact> updatedArtifacts = new DecoratedArrayList<Artifact>();
+        DecoratedArrayList<Artifact> updatedArtifacts = new DecoratedArrayList<>();
         artifactsList.stream().filter(each -> {
             return StringUtils.isNotBlank(each.getName()) && StringUtils.isNotBlank(each.getSource()) && StringUtils.isNotBlank(each.getDestination());
         }).forEach(each -> {

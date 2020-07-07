@@ -3,10 +3,11 @@ image:
   registry: x.y.z
   name: myServiceImage
   tag: 1.2.3
-  buildSpec:
+  builderSpec:
     stackImage: abc/pqr:1.0
     artifacts:
       - name: sample
         source: sample.war
         destination: /abc/def/ghi/sample.txt
-    runCommandsScript: script/run.sh
+    configCommands: |-
+      echo "Hello, I'm configure commands"

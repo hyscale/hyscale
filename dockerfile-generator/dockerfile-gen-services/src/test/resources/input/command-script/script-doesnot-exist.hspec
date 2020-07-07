@@ -9,4 +9,4 @@ image:
       - name: sample
         source: sample.war
         destination: /abc/def/ghi/sample.txt
-    runCommandsScript: script/run.sh
+    configCommandsScript: script/config-does-not-exist.sh

@@ -15,72 +15,95 @@
  */
 package io.hyscale.dockerfile.gen.services.manager.impl;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.util.CollectionUtils;
 
+import io.hyscale.commons.exception.CommonErrorCode;
+import io.hyscale.commons.exception.HyscaleError;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.SupportingFile;
+import io.hyscale.commons.utils.MustacheTemplateResolver;
+import io.hyscale.dockerfile.gen.services.exception.DockerfileErrorCodes;
+import io.hyscale.dockerfile.gen.services.model.CommandType;
 import io.hyscale.dockerfile.gen.services.model.DockerfileGenContext;
 import io.hyscale.dockerfile.gen.services.util.ServiceSpecTestUtil;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @SpringBootTest
-public class DockerScriptManagerTest {
+@TestInstance(Lifecycle.PER_CLASS)
+class DockerScriptManagerTest {
 
     @Autowired
     private DockerScriptManagerImpl dockerScriptManagerImpl;
-
+    
+    @Autowired
+    private MustacheTemplateResolver mustacheTemplateResolver;
+    
+    @BeforeEach
+    public void initMocks() throws HyscaleException {
+        Mockito.when(mustacheTemplateResolver.resolveTemplate(anyString(), anyMap())).thenReturn("test");
+    }
+    
     public static Stream<Arguments> input() {
-        return Stream.of(Arguments.of("/input/command-script/script-and-cmd.hspec"),
-                Arguments.of("/input/command-script/config-script.hspec"),
-                Arguments.of("/input/command-script/run-script.hspec"),
-                Arguments.of("/input/command-script/run-cmd.hspec"),
-                Arguments.of("/input/command-script/config-cmd.hspec"));
+        return Stream.of(
+                Arguments.of(null, false, CommonErrorCode.SERVICE_SPEC_REQUIRED),
+                Arguments.of("/input/command-script/script-doesnot-exist.hspec", false, DockerfileErrorCodes.SCRIPT_FILE_NOT_FOUND),
+                Arguments.of("/input/command-script/script-and-cmd.hspec", true, null),
+                Arguments.of("/input/command-script/config-script.hspec", true, null),
+                Arguments.of("/input/command-script/run-script.hspec", true, null),
+                Arguments.of("/input/command-script/run-cmd.hspec", true, null),
+                Arguments.of("/input/command-script/config-cmd.hspec", true, null),
+                Arguments.of("/input/command-script/noscript.hspec", false, null));
     }
 
     @ParameterizedTest
     @MethodSource("input")
-    public void scriptManagerTest(String serviceSpecPath) throws IOException {
-        ServiceSpec serviceSpec = ServiceSpecTestUtil.getServiceSpec(serviceSpecPath);
+    void scriptManagerTest(String serviceSpecPath, boolean supportingFilesAvailable, HyscaleError hyscaleError) {
         try {
+            ServiceSpec serviceSpec = ServiceSpecTestUtil.getServiceSpec(serviceSpecPath, true);
             List<SupportingFile> supportingFiles = dockerScriptManagerImpl.getSupportingFiles(serviceSpec,
                     new DockerfileGenContext());
-            supportingFiles.stream().forEach(each -> {
-                if (!isFileValid(each)) {
-                    fail();
-                }
-            });
+            if (hyscaleError != null) {
+                fail("Expected error: " + hyscaleError);
+            }
+            assertTrue(supportingFilesAvailable
+                    ? !supportingFiles.isEmpty() && supportingFiles.stream().allMatch(each -> verify(each))
+                    : CollectionUtils.isEmpty(supportingFiles));
         } catch (HyscaleException e) {
-            fail(e);
+            if (hyscaleError == null || !hyscaleError.equals(e.getHyscaleError())) {
+                fail(e);
+            }
         }
     }
-
+    
     @Test
-    public void noScriptTest() throws IOException {
-        ServiceSpec serviceSpec = ServiceSpecTestUtil.getServiceSpec("/input/command-script/noscript.hspec");
+    void testScript() throws HyscaleException {
         try {
-            List<SupportingFile> supportingFiles = dockerScriptManagerImpl.getSupportingFiles(serviceSpec,
-                    new DockerfileGenContext());
-            assertTrue(CollectionUtils.isEmpty(supportingFiles));
+            assertTrue(StringUtils.isNotBlank(dockerScriptManagerImpl.getScript(CommandType.CONFIGURE, "test command")));
+            assertNull(dockerScriptManagerImpl.getScript(CommandType.CONFIGURE, null));
         } catch (HyscaleException e) {
             fail(e);
         }
     }
-
-    private boolean isFileValid(SupportingFile supportingFile) {
+    
+    private boolean verify(SupportingFile supportingFile) {
         if (supportingFile == null) {
             return false;
         }

@@ -17,7 +17,6 @@ package io.hyscale.dockerfile.gen.services.manager.impl;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -29,6 +28,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import io.hyscale.commons.exception.CommonErrorCode;
+import io.hyscale.commons.exception.HyscaleError;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.SupportingFile;
 import io.hyscale.dockerfile.gen.services.config.DockerfileGenConfig;
@@ -39,7 +40,7 @@ import io.hyscale.servicespec.commons.model.service.Artifact;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @SpringBootTest
-public class ArtifactManagerTest {
+class ArtifactManagerTest {
 
     @Autowired
     private ArtifactManagerImpl artifactManagerImpl;
@@ -52,28 +53,32 @@ public class ArtifactManagerTest {
 
     public static Stream<Arguments> input() {
         return Stream.of(Arguments.of("/input/artifacts/valid-artifact.hspec", null),
-                Arguments.of("/input/artifacts/artifact-doesnt-exist.hspec", new HyscaleException(DockerfileErrorCodes.ARTIFACTS_NOT_FOUND)),
+                Arguments.of(null, CommonErrorCode.SERVICE_SPEC_REQUIRED),
+                Arguments.of("/input/artifacts/artifact-doesnt-exist.hspec", DockerfileErrorCodes.ARTIFACTS_NOT_FOUND),
                 Arguments.of("/input/artifacts/no-artifact.hspec", null));
     }
 
     @ParameterizedTest
     @MethodSource("input")
-    public void artifactManagetTest(String serviceSpecPath, HyscaleException expectedException) throws IOException {
-        ServiceSpec serviceSpec = ServiceSpecTestUtil.getServiceSpec(serviceSpecPath);
+    void artifactManagerTest(String serviceSpecPath, HyscaleError hyscaleError) {
         List<SupportingFile> supportingFiles = null;
         try {
+            ServiceSpec serviceSpec = ServiceSpecTestUtil.getServiceSpec(serviceSpecPath, true);
             supportingFiles = artifactManagerImpl.getSupportingFiles(serviceSpec, null);
-            if (!isFileValid(supportingFiles, serviceSpec)) {
+            if (hyscaleError != null) {
+                fail("Expected error: " + hyscaleError);
+            }
+            if (!verify(supportingFiles, serviceSpec)) {
                 fail();
             }
         } catch (HyscaleException e) {
-            if (expectedException == null || !e.getHyscaleError().equals(expectedException.getHyscaleError())) {
+            if (hyscaleError == null || !hyscaleError.equals(e.getHyscaleError())) {
                 fail(e);
             }
         }
     }
 
-    private boolean isFileValid(List<SupportingFile> supportingFiles, ServiceSpec serviceSpec) {
+    private boolean verify(List<SupportingFile> supportingFiles, ServiceSpec serviceSpec) {
         List<Artifact> artifactsList = null;
         try {
             artifactsList = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image,

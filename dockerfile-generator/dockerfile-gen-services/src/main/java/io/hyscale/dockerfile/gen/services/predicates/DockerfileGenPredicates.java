@@ -45,7 +45,7 @@ public class DockerfileGenPredicates {
                         HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.buildSpec),    
                         BuildSpec.class);
             } catch (HyscaleException e) {
-                logger.error("Error while fetching dockerfile from  image {}", e);
+                logger.error("Error while fetching dockerfile from  image", e);
             }
             if (userDockerfile == null && buildSpec == null) {
                 return true;
@@ -54,12 +54,9 @@ public class DockerfileGenPredicates {
             if (userDockerfile != null) {
                 return true;
             }
+            
+            return stackAsServiceImage().test(serviceSpec);
 
-            if (stackAsServiceImage().test(serviceSpec)) {
-                return true;
-            }
-
-            return false;
         };
     }
 
@@ -74,18 +71,16 @@ public class DockerfileGenPredicates {
                         HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.buildSpec),
                         BuildSpec.class);
             } catch (HyscaleException e) {
-                logger.error("Error while fetching dockerfile from  image {}", e);
+                logger.error("Error while fetching dockerfile from  image", e);
             }
 
             if (buildSpec == null) {
                 return false;
             }
-            if (!haveArtifacts().test(buildSpec) && !haveConfigCommands().test(buildSpec)
+            
+            return (!haveArtifacts().test(buildSpec) && !haveConfigCommands().test(buildSpec)
                     && !haveConfigScript().test(buildSpec) && !haveRunScript().test(buildSpec)
-                    && !haveRunCommands().test(buildSpec)) {
-                return true;
-            }
-            return false;
+                    && !haveRunCommands().test(buildSpec));
         };
     }
 

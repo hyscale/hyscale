@@ -129,7 +129,7 @@ public class DockerfileGeneratorImpl implements DockerfileGenerator {
             dockerFileEntity.setDockerfile(dockerfile);
 
             // Get Supporting Files
-            List<SupportingFile> supportingFiles = new ArrayList<SupportingFile>();
+            List<SupportingFile> supportingFiles = new ArrayList<>();
             supportingFiles.addAll(dockerScriptHelper.getSupportingFiles(serviceSpec, context));
             supportingFiles.addAll(artifactHelper.getSupportingFiles(serviceSpec, context));
 
@@ -184,7 +184,7 @@ public class DockerfileGeneratorImpl implements DockerfileGenerator {
      * @return true if docker file generation required
      * @throws HyscaleException
      */
-    private boolean skipDockerfileGen(ServiceSpec serviceSpec, DockerfileGenContext context) throws HyscaleException {
+    private boolean skipDockerfileGen(ServiceSpec serviceSpec, DockerfileGenContext context) {
 
         if (DockerfileGenPredicates.skipDockerfileGen().test(serviceSpec)) {
             WorkflowLogger.startActivity(DockerfileActivity.DOCKERFILE_GENERATION);

@@ -9,4 +9,4 @@ image:
       - name: sample
         source: sample.war
         destination: /abc/def/ghi/sample.txt
-    configCommandsScript: src/test/resources/input/command-script/script/config.sh
+    configCommandsScript: script/config.sh

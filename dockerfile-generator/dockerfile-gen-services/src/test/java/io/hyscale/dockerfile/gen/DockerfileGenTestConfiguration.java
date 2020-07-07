@@ -15,20 +15,12 @@
  */
 package io.hyscale.dockerfile.gen;
 
-import javax.annotation.PostConstruct;
-
-import org.mockito.Mockito;
-
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.anyMap;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 
 import io.hyscale.commons.config.SetupConfig;
-import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
 
 @SpringBootConfiguration
@@ -42,9 +34,4 @@ public class DockerfileGenTestConfiguration {
     @MockBean
     private MustacheTemplateResolver mustacheTemplateResolver;
 
-    @PostConstruct
-    public void init() throws HyscaleException {
-        Mockito.when(mustacheTemplateResolver.resolveTemplate(anyString(), anyMap())).then(returnsFirstArg());
-
-    }
 }

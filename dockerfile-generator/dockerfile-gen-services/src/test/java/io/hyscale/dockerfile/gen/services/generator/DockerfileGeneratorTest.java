@@ -18,7 +18,6 @@ package io.hyscale.dockerfile.gen.services.generator;
 import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -33,9 +32,10 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.dockerfile.gen.services.exception.DockerfileErrorCodes;
 import io.hyscale.dockerfile.gen.services.model.DockerfileGenContext;
 import io.hyscale.dockerfile.gen.services.util.ServiceSpecTestUtil;
+import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @SpringBootTest
-public class DockerfileGeneratorTest {
+class DockerfileGeneratorTest {
 
     @Autowired
     private DockerfileGenerator dockerfileGenerator;
@@ -47,11 +47,11 @@ public class DockerfileGeneratorTest {
 
     @ParameterizedTest
     @MethodSource("skipGenInput")
-    public void skipDockerfileGenTest(String serviceSpecPath) {
+    void skipDockerfileGenTest(String serviceSpecPath) {
         try {
             assertNull(dockerfileGenerator.generateDockerfile(ServiceSpecTestUtil.getServiceSpec(serviceSpecPath),
                     new DockerfileGenContext()));
-        } catch (HyscaleException | IOException e) {
+        } catch (HyscaleException e) {
             fail(e);
         }
     }
@@ -66,13 +66,11 @@ public class DockerfileGeneratorTest {
 
     @ParameterizedTest
     @MethodSource("invalidInput")
-    public void invalidInputTest(String serviceSpecPath, HyscaleError hyscaleError) {
+    void invalidInputTest(String serviceSpecPath, HyscaleError hyscaleError) throws HyscaleException {
+        ServiceSpec serviceSpec = ServiceSpecTestUtil.getServiceSpec(serviceSpecPath);
         try {
-            dockerfileGenerator.generateDockerfile(ServiceSpecTestUtil.getServiceSpec(serviceSpecPath),
-                    new DockerfileGenContext());
+            dockerfileGenerator.generateDockerfile(serviceSpec, new DockerfileGenContext());
             fail();
-        } catch (IOException e) {
-            fail(e);
         } catch (HyscaleException ex) {
             if (ex.getHyscaleError() != hyscaleError) {
                 fail(ex);

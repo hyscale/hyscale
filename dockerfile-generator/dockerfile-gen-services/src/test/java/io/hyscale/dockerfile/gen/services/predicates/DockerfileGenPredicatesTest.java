@@ -16,45 +16,45 @@
 package io.hyscale.dockerfile.gen.services.predicates;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.dockerfile.gen.services.util.ServiceSpecTestUtil;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
-public class DockerfileGenPredicatesTest {
+class DockerfileGenPredicatesTest {
 
-    public static Stream<Arguments> skipDockerfileGenInput() {
-        return Stream.of(Arguments.of("/input/skip-generation/dockerfile.hspec", true),
-                Arguments.of("/input/skip-generation/stack-as-service.hspec", true),
-                Arguments.of("/input/skip-generation/only-image.hspec", true),
-                Arguments.of("/input/skip-generation/dont-skip.hspec", false));
-    }
-
-    @ParameterizedTest
-    @MethodSource("skipDockerfileGenInput")
-    public void skipDockerfileGenTest(String serviceSpecPath, boolean skipGeneration) throws IOException {
-        ServiceSpec serviceSpec = ServiceSpecTestUtil.getServiceSpec(serviceSpecPath);
-        assertEquals(DockerfileGenPredicates.skipDockerfileGen().test(serviceSpec), skipGeneration);
+    private static Stream<Arguments> input() {
+        return Stream.of(Arguments.of(DockerfileGenPredicates.skipDockerfileGen(), null, false),
+                Arguments.of(DockerfileGenPredicates.skipDockerfileGen(), "/input/skip-generation/dockerfile.hspec", true),
+                Arguments.of(DockerfileGenPredicates.skipDockerfileGen(), "/input/skip-generation/stack-as-service.hspec", true),
+                Arguments.of(DockerfileGenPredicates.skipDockerfileGen(), "/input/skip-generation/only-image.hspec", true),
+                Arguments.of(DockerfileGenPredicates.skipDockerfileGen(), "/input/skip-generation/invalid-spec.hspec", true),
+                Arguments.of(DockerfileGenPredicates.skipDockerfileGen(), "/input/skip-generation/dont-skip.hspec", false),
+                Arguments.of(DockerfileGenPredicates.stackAsServiceImage(), null, false),
+                Arguments.of(DockerfileGenPredicates.stackAsServiceImage(), "/input/skip-generation/dockerfile.hspec", false),
+                Arguments.of(DockerfileGenPredicates.stackAsServiceImage(), "/input/skip-generation/only-image.hspec", false),
+                Arguments.of(DockerfileGenPredicates.stackAsServiceImage(), "/input/skip-generation/dont-skip.hspec", false),
+                Arguments.of(DockerfileGenPredicates.stackAsServiceImage(), "/input/skip-generation/invalid-spec.hspec", false),
+                Arguments.of(DockerfileGenPredicates.stackAsServiceImage(), "/input/skip-generation/stack-as-service.hspec", true)
+                );
     }
     
-    public static Stream<Arguments> stackAsServiceImageInput() {
-        return Stream.of(Arguments.of("/input/skip-generation/dockerfile.hspec", false),
-                Arguments.of("/input/skip-generation/stack-as-service.hspec", true),
-                Arguments.of("/input/skip-generation/only-image.hspec", false),
-                Arguments.of("/input/skip-generation/dont-skip.hspec", false));
-    }
-
     @ParameterizedTest
-    @MethodSource("stackAsServiceImageInput")
-    public void stackAsServiceImageTest(String serviceSpecPath, boolean isStackAsServiceImage) throws IOException {
-        ServiceSpec serviceSpec = ServiceSpecTestUtil.getServiceSpec(serviceSpecPath);
-        assertEquals(DockerfileGenPredicates.stackAsServiceImage().test(serviceSpec), isStackAsServiceImage);
+    @MethodSource("input")
+    void testPredicate(Predicate<ServiceSpec> predicate, String serviceSpecPath, boolean result) {
+        try {
+            ServiceSpec serviceSpec = ServiceSpecTestUtil.getServiceSpec(serviceSpecPath);
+            assertEquals(predicate.test(serviceSpec), result);
+        } catch (HyscaleException e) {
+            fail(e);
+        }
     }
-    
 }

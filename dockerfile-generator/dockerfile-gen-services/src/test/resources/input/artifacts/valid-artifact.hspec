@@ -7,5 +7,5 @@ image:
     stackImage: abc/pqr:1.0
     artifacts:
        - name: test
-         source: src/test/resources/input/artifacts/source/artifact.txt
+         source: source/artifact.txt
          destination: /tmp/

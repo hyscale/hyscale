@@ -65,7 +65,7 @@ public class DockerScriptManagerImpl implements DockerfileEntityManager {
 		if (serviceSpec == null) {
 			throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
 		}
-		List<SupportingFile> supportingFiles = new ArrayList<SupportingFile>();
+		List<SupportingFile> supportingFiles = new ArrayList<>();
 
 		BuildSpec buildSpec = serviceSpec
 				.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.buildSpec), BuildSpec.class);
@@ -138,36 +138,11 @@ public class DockerScriptManagerImpl implements DockerfileEntityManager {
 			return null;
 		}
 		ConfigTemplate configTemplate = templateProvider.getTemplateFor(commandType);
-		Map<String, Object> configureCmdContext = new HashMap<String, Object>();
+		Map<String, Object> configureCmdContext = new HashMap<>();
 		configureCmdContext.put(commandType.getTemplateField(), commands);
-
+		
 		return templateResolver.resolveTemplate(configTemplate.getTemplatePath(), configureCmdContext);
 	}
-
-	/*public String getRunCmdScript(String runCommand) throws HyscaleException {
-		if (StringUtils.isBlank(runCommand)) {
-			return null;
-		}
-		ConfigTemplate configTemplate = templateProvider.getTemplateFor(CommandType.RUN);
-		Map<String, Object> runCmdContext = new HashMap<String, Object>();
-
-		if (StringUtils.isNotBlank(runCommand)) {
-			runCmdContext.put(DockerfileGenConstants.RUN_COMMANDS_FIELD, runCommand);
-		}
-		return templateResolver.resolveTemplate(configTemplate.getTemplatePath(), runCmdContext);
-	}
-
-	public String getConfigureCmdScript(String configCommand) throws HyscaleException {
-		if (StringUtils.isBlank(configCommand)) {
-			return null;
-		}
-		ConfigTemplate configTemplate = templateProvider.getTemplateFor(CommandType.CONFIGURE);
-		Map<String, Object> configureCmdContext = new HashMap<String, Object>();
-		configureCmdContext.put(DockerfileGenConstants.CONFIGURE_COMMANDS_FIELD, configCommand);
-
-		return templateResolver.resolveTemplate(configTemplate.getTemplatePath(), configureCmdContext);
-
-	}*/
 
 	public String getScriptFile(String scriptFile, CommandType commandType) {
 		if (StringUtils.isNotBlank(scriptFile)) {
@@ -186,10 +161,7 @@ public class DockerScriptManagerImpl implements DockerfileEntityManager {
 	}
 
 	public boolean scriptAvailable(String commands, String script) {
-		if (StringUtils.isBlank(script) && StringUtils.isBlank(commands)) {
-			return false;
-		}
-		return true;
+	    return (StringUtils.isNotBlank(script) || StringUtils.isNotBlank(commands));
 	}
 	
 	/**
