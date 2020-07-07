@@ -30,6 +30,37 @@ var GetCmd = &cobra.Command{
 	},
 }
 
+//GetServiceCmd represents the 'hyscale get service' command
+var GetServiceCmd = &cobra.Command{
+	Use:   "service",
+	Short: "Performs GET action on the service",
+	DisableFlagsInUseLine: true,
+	Aliases: []string{"services"},
+	Run: func(cmd *cobra.Command, args []string) {
+        cmd.Usage()
+	},
+}
+
+//GetAppCmd represents the 'hyscale get app' command
+var GetAppCmd = &cobra.Command{
+	Use:   "app",
+	Short: "Gets the application ",
+	Aliases: []string{"apps"},
+	DisableFlagsInUseLine: true,
+	Run: func(cmd *cobra.Command, args []string) {
+
+		clinput := CLIInput{
+			Cmd:        cmd,
+			Interative: false,
+		}
+
+		HyscaleRun(&clinput)
+	},
+}
+
+
 func init() {
-	RootCmd.AddCommand(GetCmd)
+    RootCmd.AddCommand(GetCmd)
+    GetCmd.AddCommand(GetServiceCmd)
+    GetCmd.AddCommand(GetAppCmd)
 }

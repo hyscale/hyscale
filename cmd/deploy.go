@@ -16,7 +16,11 @@ Copyright 2019 Pramati Prism, Inc.
 package cmd
 
 import (
-	"github.com/spf13/cobra"
+    "github.com/spf13/cobra"
+    opts "hyscale/cmd/options"
+)
+var(
+	hspecList []string
 )
 
 // DeployCmd represents the 'hyscale deploy' command
@@ -29,6 +33,39 @@ var DeployCmd = &cobra.Command{
 	},
 }
 
+//ServiceCmd represents the 'hyscale deploy service' command
+var ServiceCmd = &cobra.Command{
+	Use:   "service",
+	Short: "Deploys the services to k8s cluster",
+	DisableFlagsInUseLine: true,
+	Run: func(cmd *cobra.Command, args []string) {
+		clinput := CLIInput{
+			Cmd:        cmd,
+			Args:       hspecList,
+			Interative: false,
+		}
+
+		HyscaleRun(&clinput)
+	},
+}
+
+
 func init() {
-	RootCmd.AddCommand(DeployCmd)
+    RootCmd.AddCommand(DeployCmd)
+    DeployCmd.AddCommand(ServiceCmd)
+
+    ServiceCmd.Flags().StringP(opts.AppOpts.Option,opts.AppOpts.Shorthand,"",opts.AppOpts.Description)
+    //TODO accepting 'ns' alias for namespace
+	ServiceCmd.Flags().StringP(opts.NamespaceOpts.Option, opts.NamespaceOpts.Shorthand, "", opts.NamespaceOpts.Description)
+	ServiceCmd.Flags().StringSliceVarP(&hspecList,opts.HspecOpts.Option, opts.HspecOpts.Shorthand, []string{}, opts.HspecOpts.Description)
+	ServiceCmd.Flags().BoolP("verbose", "v", false, "Verbose output")
+
+	//TODO making profiles exclusive
+	ServiceCmd.Flags().StringSliceP(opts.HprofOpts.Option,opts.HprofOpts.Shorthand, []string{}, opts.HprofOpts.Description)
+	ServiceCmd.Flags().StringP(opts.ProfileNameOpts.Option, opts.ProfileNameOpts.Shorthand, "", opts.ProfileNameOpts.Description)
+
+	//Required fields
+	ServiceCmd.MarkFlagRequired(opts.HspecOpts.Option)
+	ServiceCmd.MarkFlagRequired(opts.NamespaceOpts.Option)
+	ServiceCmd.MarkFlagRequired(opts.AppOpts.Option)
 }

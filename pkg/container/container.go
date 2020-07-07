@@ -177,13 +177,6 @@ func getVolumes() *[]mount.Mount {
 			Target:   containerFileSeparator + constants.Hyscale + containerFileSeparator + constants.Hyscale,
 			ReadOnly: false,
 		},
-		/*{
-			//TODO Temporary remove it later
-			Type:     mount.TypeBind,
-			Source:   "/Users/sameerag/workspace/hyscale-tool/hyscale/workflow-controller/controller-service/target/hyscale.jar",
-			Target:   "/usr/local/bin/hyscale.jar",
-			ReadOnly: true,
-		},*/
 	}
 
 	// Mount unix docket for all unix OS

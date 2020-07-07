@@ -17,11 +17,12 @@ package cmd
 
 import (
 
-	"github.com/spf13/cobra"
+    "github.com/spf13/cobra"
+    opts "hyscale/cmd/options"
 )
 
 // UndeployCmd represents the 'hyscale undeploy' command
-var UndeployCmd = &cobra.Command{
+var undeployCmd = &cobra.Command{
 	Use:   "undeploy",
 	Short: "Undeploys a resource",
 	DisableFlagsInUseLine: true,	
@@ -30,6 +31,55 @@ var UndeployCmd = &cobra.Command{
 	},
 }
 
+//appUndeployCmd represents the 'hyscale undeploy app' command
+var appUndeployCmd = &cobra.Command{
+	Use:   "app",
+	Short: "Undeploys app from the kubernetes cluster",
+	DisableFlagsInUseLine: true,
+	Run: func(cmd *cobra.Command, args []string) {
+		clinput := CLIInput{
+			Cmd:        cmd,
+			Interative: false,
+		}
+		HyscaleRun(&clinput)
+	},
+}
+
+var serviceUndeployCmd = &cobra.Command{
+	Use:   "service",
+	Short: "Undeploys a service",
+	DisableFlagsInUseLine: true,
+	Run: func(cmd *cobra.Command, args []string) {
+		clinput := CLIInput{
+			Cmd:        cmd,
+			Interative: false,
+		}
+		HyscaleRun(&clinput)
+	},
+}
+
 func init() {
-	RootCmd.AddCommand(UndeployCmd)
+    RootCmd.AddCommand(undeployCmd)
+    undeployCmd.AddCommand(appUndeployCmd)
+    undeployCmd.AddCommand(serviceUndeployCmd)
+
+    appUndeployCmd.Flags().StringP(opts.AppOpts.Option,opts.AppOpts.Shorthand,"",opts.AppOpts.Description)
+    appUndeployCmd.MarkFlagRequired(opts.AppOpts.Option)
+	//TODO accepting 'ns' alias for namespace
+	appUndeployCmd.Flags().StringP(opts.NamespaceOpts.Option, opts.NamespaceOpts.Shorthand, "", opts.NamespaceOpts.Description)
+    appUndeployCmd.MarkFlagRequired(opts.NamespaceOpts.Option)
+    
+    
+    serviceUndeployCmd.Flags().StringP(opts.AppOpts.Option,opts.AppOpts.Shorthand,"",opts.AppOpts.Description)
+	//TODO accepting 'ns' alias for namespace
+	serviceUndeployCmd.Flags().StringP(opts.NamespaceOpts.Option, opts.NamespaceOpts.Shorthand, "", opts.NamespaceOpts.Description)
+	// Allow with ',' delimiter also
+    serviceUndeployCmd.Flags().StringSliceP(opts.ServiceOpts.Option, opts.ServiceOpts.Shorthand, nil, opts.ServiceOpts.Description)
+    
+    //Required fields
+    serviceUndeployCmd.MarkFlagRequired(opts.ServiceOpts.Option)
+    serviceUndeployCmd.MarkFlagRequired(opts.AppOpts.Option)
+    serviceUndeployCmd.MarkFlagRequired(opts.NamespaceOpts.Option)
+	
+	
 }

@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	opts "hyscale/cmd/options"
 	
 )
 
@@ -39,10 +40,9 @@ var appStatusCmd = &cobra.Command{
 func init() {
 	GetAppCmd.AddCommand(appStatusCmd)
 	
-	//TODO accepting 'ns' alias for namespace
-	appStatusCmd.Flags().StringP("namespace", "n", "", "Namespace")
-	appStatusCmd.MarkFlagRequired("namespace")	
+	appStatusCmd.Flags().StringP(opts.NamespaceOpts.Option, opts.NamespaceOpts.Shorthand, "", opts.NamespaceOpts.Description)
+	appStatusCmd.MarkFlagRequired(opts.NamespaceOpts.Option)	
 
-	appStatusCmd.Flags().StringP("app", "a", "", "App Name")
-	appStatusCmd.MarkFlagRequired("app")
+	appStatusCmd.Flags().StringP(opts.AppOpts.Option,opts.AppOpts.Shorthand,"",opts.AppOpts.Description)
+	appStatusCmd.MarkFlagRequired(opts.AppOpts.Option)
 }

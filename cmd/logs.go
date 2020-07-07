@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	opts "hyscale/cmd/options"
 )
 
 // 'hyscale get service logs' command
@@ -36,14 +37,14 @@ var logsCmd = &cobra.Command{
 
 func init() {
 	GetServiceCmd.AddCommand(logsCmd)
-	logsCmd.Flags().StringP("app", "a", "", "App Name")
-	logsCmd.Flags().StringP("service", "s", "", "Service Name")
+	logsCmd.Flags().StringP(opts.AppOpts.Option,opts.AppOpts.Shorthand,"",opts.AppOpts.Description)
+	logsCmd.Flags().StringP(opts.ServiceOpts.Option, opts.ServiceOpts.Shorthand, "", opts.ServiceOpts.Description)
+	logsCmd.Flags().StringP(opts.NamespaceOpts.Option, opts.NamespaceOpts.Shorthand, "", opts.NamespaceOpts.Description)
 	logsCmd.Flags().StringP("replica", "r", "", "Replica Name")
-	logsCmd.Flags().StringP("namespace", "n", "", "Namespace")
 	logsCmd.Flags().BoolP("tail", "t", false, "Tail output of the service logs")
 	logsCmd.Flags().IntP("line", "l", 50, "To specify number of lines")
 	
-	logsCmd.MarkFlagRequired("service")
-	logsCmd.MarkFlagRequired("namespace")
-	logsCmd.MarkFlagRequired("app")
+	logsCmd.MarkFlagRequired(opts.ServiceOpts.Option)
+	logsCmd.MarkFlagRequired(opts.NamespaceOpts.Option)
+	logsCmd.MarkFlagRequired(opts.AppOpts.Option)
 }
