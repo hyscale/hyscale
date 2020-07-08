@@ -18,6 +18,7 @@ package io.hyscale.builder.services.docker.impl;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,7 +39,6 @@ import org.springframework.stereotype.Component;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.*;
-import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.AuthConfig;
 import com.github.dockerjava.api.model.BuildResponseItem;
@@ -59,6 +59,7 @@ import io.hyscale.builder.services.docker.HyscaleDockerClient;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
 import io.hyscale.builder.services.spring.DockerClientCondition;
 import io.hyscale.commons.constants.ToolConstants;
+import io.hyscale.commons.exception.HyscaleError;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.io.HyscaleFilesUtil;
 import io.hyscale.commons.logger.ActivityContext;
@@ -182,25 +183,21 @@ public class DockerRESTClient implements HyscaleDockerClient {
         BuildImageResultCallback callback = new BuildImageResultCallback() {
             @Override
             public void onNext(BuildResponseItem item) {
-                try {
-                    String stream = item.getStream();
-                    if (stream != null) {
-                        HyscaleFilesUtil.updateFile(logFilePath, stream.concat(ToolConstants.NEW_LINE));
-                        if (buildContext.isVerbose()) {
-                            WorkflowLogger.log(stream);
-                        } else {
-                            WorkflowLogger.continueActivity(buildActivity);
-                        }
-                    }
-                } catch (HyscaleException e) {
-                    logger.error("Error while writing build progress to build logs", e);
+                if (item.isErrorIndicated()) {
+                    logger.error("Error while building image: {}", item.getErrorDetail());
+                    onError(new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_BUILD_IMAGE));
                 }
+                handleOutput(item.getStream(), logFilePath, buildActivity, buildContext.isVerbose());
                 super.onNext(item);
             }
         };
         try {
             buildImageCmd.exec(callback).awaitCompletion();
-        } catch (DockerClientException | InterruptedException e) {
+        } catch (RuntimeException e) {
+            WorkflowLogger.endActivity(buildActivity, Status.FAILED);
+            throw new HyscaleException(e, ImageBuilderErrorCodes.FAILED_TO_BUILD_IMAGE);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             WorkflowLogger.endActivity(buildActivity, Status.FAILED);
             throw new HyscaleException(e, ImageBuilderErrorCodes.FAILED_TO_BUILD_IMAGE);
         }
@@ -222,7 +219,7 @@ public class DockerRESTClient implements HyscaleDockerClient {
             throw new HyscaleException(ImageBuilderErrorCodes.DOCKERFILE_REQUIRED);
         }
         File dockerfile = getDockerFile(dockerfileModel.getDockerfilePath());
-        if (dockerfile == null || !dockerfile.exists() || dockerfile.isDirectory()) {
+        if (!dockerfile.exists() || dockerfile.isDirectory()) {
             throw new HyscaleException(ImageBuilderErrorCodes.DOCKERFILE_NOT_FOUND, dockerfile.getAbsolutePath());
         }
     }
@@ -244,9 +241,7 @@ public class DockerRESTClient implements HyscaleDockerClient {
             buildImageCmd.withDockerfilePath(dockerfile.getPath());
         }
         if (dockerfile.getArgs() != null && !dockerfile.getArgs().isEmpty()) {
-            dockerfile.getArgs().entrySet().stream().forEach(each -> {
-                buildImageCmd.withBuildArg(each.getKey(), each.getValue());
-            });
+            dockerfile.getArgs().entrySet().stream().forEach(each -> buildImageCmd.withBuildArg(each.getKey(), each.getValue()));
         }
         return buildImageCmd;
     }
@@ -278,10 +273,15 @@ public class DockerRESTClient implements HyscaleDockerClient {
                 }
 
             }).awaitCompletion();
-        } catch (DockerException | InterruptedException e) {
-            logger.error("Error while pulling the image {}", image);
+        } catch (RuntimeException e) {
+            logger.error("Error while pulling the image {}", image, e);
             WorkflowLogger.endActivity(pullActivity, Status.FAILED);
-            throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_PULL_IMAGE, image);
+            throw new HyscaleException(e, ImageBuilderErrorCodes.FAILED_TO_PULL_IMAGE);
+        } catch (InterruptedException e) {
+            logger.error("Error while pulling the image {}", image, e);
+            Thread.currentThread().interrupt();
+            WorkflowLogger.endActivity(pullActivity, Status.FAILED);
+            throw new HyscaleException(e, ImageBuilderErrorCodes.FAILED_TO_PULL_IMAGE);
         }
         WorkflowLogger.endActivity(pullActivity, Status.DONE);
     }
@@ -298,9 +298,9 @@ public class DockerRESTClient implements HyscaleDockerClient {
             TagImageCmd tagImageCmd = dockerClient.tagImageCmd(source, ImageUtil.getImageWithoutTag(dest), dest.getTag());
             tagImageCmd.exec();
         } catch (DockerException e) {
+            logger.error("Error while agging image",e);
             WorkflowLogger.endActivity(Status.FAILED);
-            logger.error(e.toString());
-            throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_TAG_IMAGE);
+            throw new HyscaleException(e, ImageBuilderErrorCodes.FAILED_TO_TAG_IMAGE);
         }
         WorkflowLogger.endActivity(Status.DONE);
     }
@@ -326,22 +326,14 @@ public class DockerRESTClient implements HyscaleDockerClient {
         PushImageResultCallback callback = new PushImageResultCallback() {
             @Override
             public void onNext(PushResponseItem item) {
-                try {
-                    String status = item.getStatus();
-                    if (status != null) {
-                        HyscaleFilesUtil.updateFile(logFilePath, status.concat(ToolConstants.NEW_LINE));
-                        if (buildContext.isVerbose()) {
-                            WorkflowLogger.log(status);
-                        } else {
-                            WorkflowLogger.continueActivity(pushActivity);
-                        }
-                        // From the push item we should be able to get SHAID?
-                        if (status.contains(SHA256)) {
-                            buildContext.setImageShaSum(getImageDigest(status));
-                        }
-                    }
-                } catch (HyscaleException e) {
-                    logger.error("Error while writing push progress to push logs", e);
+                if (item.isErrorIndicated()) {
+                    logger.error("Error while pushing image: {}", item.getErrorDetail());
+                    onError(new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_PUSH_IMAGE));
+                }
+                String status = item.getStatus();
+                handleOutput(status, logFilePath, pushActivity, buildContext.isVerbose());
+                if (StringUtils.isNotBlank(status) && status.contains(SHA256)) {
+                    buildContext.setImageShaSum(getImageDigest(status));
                 }
                 super.onNext(item);
             }
@@ -349,7 +341,11 @@ public class DockerRESTClient implements HyscaleDockerClient {
 
         try {
             pushImageCmd.exec(callback).awaitCompletion();
-        } catch (DockerClientException | InterruptedException e) {
+        } catch (RuntimeException e) {
+            WorkflowLogger.endActivity(pushActivity, Status.FAILED);
+            throw new HyscaleException(e, ImageBuilderErrorCodes.FAILED_TO_PUSH_IMAGE);
+        } catch (InterruptedException  e) {
+            Thread.currentThread().interrupt();
             WorkflowLogger.endActivity(pushActivity, Status.FAILED);
             throw new HyscaleException(e, ImageBuilderErrorCodes.FAILED_TO_PUSH_IMAGE);
         }
@@ -358,6 +354,22 @@ public class DockerRESTClient implements HyscaleDockerClient {
             WorkflowLogger.footer();
         } else {
             WorkflowLogger.endActivity(pushActivity, Status.DONE);
+        }
+    }
+    
+    private void handleOutput(String output, String filePath, ActivityContext context, boolean isVerbose) {
+        if (output == null) {
+            return;
+        }
+        if (isVerbose) {
+            WorkflowLogger.log(output);
+        } else {
+            WorkflowLogger.continueActivity(context);
+        }
+        try {
+            HyscaleFilesUtil.updateFile(filePath, output.concat(ToolConstants.NEW_LINE));
+        } catch (HyscaleException e) {
+            logger.error("Error while writing output to log file: {}", filePath, e);
         }
     }
 
@@ -374,7 +386,6 @@ public class DockerRESTClient implements HyscaleDockerClient {
             authConfig.withUsername(credentialArr[0]);
             authConfig.withPassword(credentialArr[1]);
         }
-        //authConfig.withAuth(buildContext.getImageRegistry().getToken());
         return authConfig;
     }
 
@@ -400,11 +411,9 @@ public class DockerRESTClient implements HyscaleDockerClient {
         List<com.github.dockerjava.api.model.Image> imageList = listImageCmd.exec();
         if (imageList == null || imageList.isEmpty()) {
             logger.debug("No images found to clean from the host machine");
-            return null;
+            return Collections.emptyList();
         }
-        return imageList.stream().map(image -> {
-            return image.getId();
-        }).collect(Collectors.toCollection(LinkedList::new));
+        return imageList.stream().map(com.github.dockerjava.api.model.Image::getId).collect(Collectors.toCollection(LinkedList::new));
     }
 
 }
