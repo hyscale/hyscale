@@ -46,9 +46,10 @@ public enum ControllerActivity implements Activity {
     MANIFESTS_GENERATION_PATH("Manifests  path : {} "),
     DOCKERFILE_PATH("Dockerfile path : {}"),
     DEPLOY_LOGS_AT("Deploy Logs : {} "),
-    NO_SERVICE_FOUND_FOR_PROFILE("Service spec not provided for services {}."),
-    APPLYING_PROFILE_FOR_SERVICE("Applying profile \"{}\" for service \"{}\" "),
-    ERROR_WHILE_PROCESSING_PROFILE("Error while looking for profile. {}"),
+    NO_SERVICE_FOUND_FOR_PROFILE("Service Spec not found for services {} mentioned in profiles."),
+    LOOKING_FOR_PROFILE("Looking for profile {}"),
+    APPLYING_PROFILE_FOR_SERVICE("Applying profile \"{}\" for service \"{}\""),
+    ERROR_WHILE_PROCESSING_PROFILE("Error while looking for profile \"{}\". {}"),
     MULIPLE_PROFILES_FOUND("Multiple profiles found for services {}. Only one profile is allowed per deployment"),
     ERROR_WHILE_READING("Error while reading {} due to {}"),
     ERROR_WHILE_FETCHING_STATUS("Error while fetching status"),
@@ -71,7 +72,8 @@ public enum ControllerActivity implements Activity {
     DIRECTORY_INPUT_FOUND("Found directory {} instead of file"),
     WAITING_FOR_SERVICE_STATUS("It might take some time as it runs diagnosis for services"),
     TROUBLESHOOT("{}"), 
-    PROCESSING_INPUT("Processing Input");
+    APPLICATION_DETAILS("Applications"),
+    SUCCESSFULLY_SCALED("Successfully  {} {}");
 
     private String message;
 

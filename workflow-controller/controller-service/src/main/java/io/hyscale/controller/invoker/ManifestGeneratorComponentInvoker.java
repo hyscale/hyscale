@@ -19,16 +19,14 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.builder.ManifestContextBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
-import io.hyscale.controller.manager.RegistryManager;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.hooks.ManifestCleanUpHook;
 import io.hyscale.generator.services.config.ManifestConfig;
-import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.generator.services.generator.ManifestGenerator;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
-import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +52,7 @@ public class ManifestGeneratorComponentInvoker extends ComponentInvoker<Workflow
     private ManifestGenerator manifestGenerator;
 
     @Autowired
-    private RegistryManager registryManager;
+    private ManifestContextBuilder manifestContextBuilder;
 
     @Autowired
     private ManifestConfig manifestConfig;
@@ -77,17 +75,10 @@ public class ManifestGeneratorComponentInvoker extends ComponentInvoker<Workflow
             logger.error("Cannot generate manifests for empty service spec.");
             throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_REQUIRED);
         }
-        String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
+        String serviceName = context.getServiceName();
 
-        String registryUrl = serviceSpec
-                .get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.registry), String.class);
         WorkflowLogger.header(ControllerActivity.STARTING_MANIFEST_GENERATION);
-        ManifestContext manifestContext = new ManifestContext();
-        manifestContext.setAppName(context.getAppName());
-        manifestContext.setEnvName(context.getEnvName());
-        manifestContext.setNamespace(context.getNamespace());
-        manifestContext.setImageRegistry(registryManager.getImageRegistry(registryUrl));
-        manifestContext.addGenerationAttribute(ManifestGenConstants.IMAGE_SHA_SUM, context.getAttribute(WorkflowConstants.IMAGE_SHA_SUM));
+        ManifestContext manifestContext = manifestContextBuilder.build(context);
 
         List<Manifest> manifestList = null;
         try {
@@ -109,7 +100,7 @@ public class ManifestGeneratorComponentInvoker extends ComponentInvoker<Workflow
     protected void onError(WorkflowContext context, HyscaleException he) throws HyscaleException {
         WorkflowLogger.header(ControllerActivity.ERROR);
         WorkflowLogger.error(ControllerActivity.CAUSE, he != null ?
-                he.getMessage() : ManifestErrorCodes.ERROR_WHILE_CREATING_MANIFEST.getErrorMessage());
+                he.getMessage() : ManifestErrorCodes.ERROR_WHILE_CREATING_MANIFEST.getMessage());
         context.setFailed(true);
         if (he != null) {
             throw he;

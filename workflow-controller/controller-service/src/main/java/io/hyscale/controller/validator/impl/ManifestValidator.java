@@ -28,7 +28,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.LoggerTags;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.Status;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
@@ -44,10 +43,8 @@ public class ManifestValidator implements Validator<WorkflowContext> {
     @Override
     public boolean validate(WorkflowContext context) throws HyscaleException {
         logger.debug("Executing Manifest Validator Hook");
-        WorkflowLogger.startActivity(ValidatorActivity.VALIDATING_MANIFEST, context.getServiceName());
         ServiceSpec serviceSpec = context.getServiceSpec();
         if (serviceSpec == null) {
-            WorkflowLogger.endActivity(Status.FAILED);
             return false;
         }
         
@@ -63,12 +60,10 @@ public class ManifestValidator implements Validator<WorkflowContext> {
         }
         
         if (invalidVolumes == null || invalidVolumes.isEmpty()) {
-            WorkflowLogger.endActivity(Status.DONE);
             return true;
         }
         StringBuilder messageBuilder = new StringBuilder("Invalid volumes ").append(invalidVolumes);
         WorkflowLogger.persist(ValidatorActivity.MANIFEST_VALIDATION_FAILED, LoggerTags.ERROR, messageBuilder.toString());
-        WorkflowLogger.endActivity(Status.FAILED);
         return false;
         
     }

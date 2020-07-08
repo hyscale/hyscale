@@ -33,27 +33,37 @@ import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.apis.AuthenticationV1Api;
 import io.kubernetes.client.openapi.models.V1APIResourceList;
 
+/**
+ * Kubernetes cluster authorisation handler
+ * Checks if cluster access is allowed for given {@link AuthConfig}
+ *
+ */
 @Component
-public class K8sAuthenticationHandler implements AuthenticationHandler {
+public class K8sAuthenticationHandler implements AuthenticationHandler<K8sAuthorisation> {
     
 	private static final Logger logger = LoggerFactory.getLogger(K8sAuthenticationHandler.class);
 
 	private static final String KUBERNETES_AUTHENTICATION = "Kubernetes authentication";
 	
+	private static final int UNAUTHORISED_ERROR_CODE = 401;
+	
 	@Autowired
 	private K8sClientProvider clientProvider;
 
-	public boolean authenticate(AuthConfig authConfig) throws HyscaleException {
-	    if (authConfig == null || !(authConfig instanceof K8sAuthorisation)) {
+	public boolean authenticate(K8sAuthorisation authConfig) throws HyscaleException {
+	    if (authConfig == null) {
 	        return false;
 	    }
-		ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
+		ApiClient apiClient = clientProvider.get(authConfig);
 		AuthenticationV1Api apiInstance = new AuthenticationV1Api(apiClient);
 		try {
 			V1APIResourceList result = apiInstance.getAPIResources();
 			return result != null ? true : false;
 		} catch (ApiException e) {
-			logger.error("Exception when calling " + KUBERNETES_AUTHENTICATION, e);
+			logger.error("Exception when calling k8s authentication {} {} ", e.getCode(), e.getResponseBody(), e);
+		    if (UNAUTHORISED_ERROR_CODE == e.getCode()) {
+		        return false;
+		    }
 			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_CONNECT_TO_CLUSTER,
 					ExceptionHelper.getExceptionMessage(KUBERNETES_AUTHENTICATION, e, ResourceOperation.GET));
 			throw ex; 

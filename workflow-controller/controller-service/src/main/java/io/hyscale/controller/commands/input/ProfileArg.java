@@ -21,6 +21,11 @@ import java.util.List;
 import io.hyscale.controller.piccoli.ProfileArgsManipulator;
 import picocli.CommandLine;
 
+/**
+ * Provides profile input options
+ * @author tushar
+ *
+ */
 public class ProfileArg {
 
     @CommandLine.Option(names = { "-p", "--profile" }, required = false, description = "Profile for service.")

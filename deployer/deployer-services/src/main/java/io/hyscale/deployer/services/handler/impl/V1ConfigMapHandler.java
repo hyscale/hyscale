@@ -236,7 +236,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
                 delete(apiClient, configMap.getMetadata().getName(), namespace, wait);
             }
         } catch (HyscaleException e) {
-            if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleErrorCode())) {
+            if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleError())) {
                 LOGGER.error("Error while deleting ConfigMap for selector {} in namespace {}, error {}", selector,
                         namespace, e.toString());
                 return false;

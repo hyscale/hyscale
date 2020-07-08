@@ -15,12 +15,12 @@
  */
 package io.hyscale.controller.exception;
 
-import io.hyscale.commons.exception.HyscaleErrorCode;
+import io.hyscale.commons.exception.HyscaleError;
 
 /**
  * Error Codes for Workflow Controller
  */
-public enum ControllerErrorCodes implements HyscaleErrorCode {
+public enum ControllerErrorCodes implements HyscaleError {
     INVALID_COMMAND("Invalid command {}"),
     MANIFEST_REQUIRED("Manifest required"),
     DOCKER_CONFIG_NOT_FOUND("Cannot find config.json at {}"),
@@ -30,20 +30,35 @@ public enum ControllerErrorCodes implements HyscaleErrorCode {
     UNEXPECTED_ERROR("Unexpected error occurred"),
     UNDEPLOYMENT_FAILED("Failed to Undeploy"),
     UNIQUE_PROFILE_REQUIRED("Service {} cannot have multiple profiles"),
-    INVALID_REPLICA_SELECTED_REACHED_MAX_RETRIES("Invalid input provided . Reached maximum retries. Please try again"),
-    SERVICE_NOT_PROVIDED_FOR_PROFILE("Services {} mentioned in profiles not found"),
+    INVALID_REPLICA_SELECTED_REACHED_MAX_RETRIES("Invalid input provided. Reached maximum retries. Please try again"),
+    PROFILE_NOT_PROVIDED_FOR_SERVICES("Profile not found for services {}"),
+    SERVICES_NOT_PROVIDED_FOR_PROFILE("Services {} mentioned in profile are not found"),
     ERROR_WHILE_PROCESSING_PROFILE("Error while looking for profile. {}"),
-    INPUT_VALIDATION_FAILED("Input validation failed. Error messages {}");
+    INPUT_VALIDATION_FAILED("Input validation failed. Error messages {}"),
+    PROFILE_VALIDATION_FAILED("Profile validation failed"),
+    PROFILE_NAMES_MISMATCHED_WITH_FILES("Profile name mismatched with environment in {}"),
+    FAILED_TO_SCALE_SERVICE("Failed to scale {} of application {} in {} namespace");
 
     private String message;
+    private int code;
 
     ControllerErrorCodes(String message) {
         this.message = message;
     }
 
+    ControllerErrorCodes(String message,Integer code){
+        this.message=message;
+        this.code=code;
+    }
+
     @Override
-    public String getErrorMessage() {
+    public String getMessage() {
         return this.message;
+    }
+
+    @Override
+    public int getCode() {
+        return this.code;
     }
 
 }

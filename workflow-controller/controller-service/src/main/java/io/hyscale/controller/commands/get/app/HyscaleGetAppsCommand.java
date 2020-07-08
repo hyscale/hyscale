@@ -15,13 +15,12 @@
  */
 package io.hyscale.controller.commands.get.app;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-import io.hyscale.controller.commands.get.app.HyscaleAppStatusCommand;
+import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.validator.impl.ClusterValidator;
 
@@ -37,61 +36,60 @@ import io.hyscale.commons.logger.TableFormatter;
 import io.hyscale.commons.logger.TableFormatter.Builder;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.builder.WorkflowContextBuilder;
+import io.hyscale.controller.model.WorkflowContextBuilder;
 import io.hyscale.deployer.core.model.AppMetadata;
 import io.hyscale.deployer.services.deployer.Deployer;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 /**
- * 
  * This class executes 'hyscale get apps' command.
- *  It is a sub-command of the 'hyscale get' command
- *  @see io.hyscale.controller.commands.get.HyscaleGetCommand .
- *  It also act as parent command to perform app level operation like get status
- *  @see HyscaleAppStatusCommand
- *  Every command/sub-command has to implement the {@link Callable} so that
- *  whenever the command is executed the {@link #call()}
- *  method will be invoked
+ * It is a sub-command of the 'hyscale get' command
  *
- * TODO @option wide - to display extra information
- *
- * Eg: hyscale get apps
- *
- * Displays all the apps along with namespace deployed on the cluster.
- * 
  * @author tushar
- *
+ * @see io.hyscale.controller.commands.get.HyscaleGetCommand .
+ * It also act as parent command to perform app level operation like get status
+ * @see HyscaleAppStatusCommand
+ * Every command/sub-command has to implement the {@link Callable} so that
+ * whenever the command is executed the {@link #call()}
+ * method will be invoked
+ * <p>
+ * TODO @option wide - to display extra information
+ * <p>
+ * Eg: hyscale get apps
+ * <p>
+ * Displays all the apps along with namespace deployed on the cluster.
+ * Ignores system namespace {@link K8SRuntimeConstants#SYSTEM_NAMESPACE} on the cluster
  */
-@Command(name = "apps", aliases =  "app", subcommands = { HyscaleAppStatusCommand.class }, description = "Operates on the application specified.")
+@Command(name = "apps", aliases = "app", subcommands = {HyscaleAppStatusCommand.class}, description = "Operates on the application specified.")
 @Component
 public class HyscaleGetAppsCommand implements Callable<Integer> {
 
-    @Option(names = { "-h", "--help" }, usageHelp = true, description = "Displays the  help information of the specified command")
+    @Option(names = {"-h", "--help"}, usageHelp = true, description = "Displays the  help information of the specified command")
     private boolean helpRequested = false;
 
-//    @Option(names = { "--wide" }, required = false, description = "Display additional information like services.")
+    //    @Option(names = { "--wide" }, required = false, description = "Display additional information like services.")
     private boolean wide = false;
-    
+
     @Autowired
     private ClusterValidator clusterValidator;
 
     @Autowired
     private Deployer deployer;
-    
+
     @Autowired
-    private WorkflowContextBuilder workflowContextBuilder;
+    private K8sAuthConfigBuilder authConfigBuilder;
 
     @Override
     public Integer call() throws Exception {
-        WorkflowLogger.header(ControllerActivity.PROCESSING_INPUT);
-        WorkflowContext context = workflowContextBuilder.updateAuthConfig(new WorkflowContext());
-        
+        WorkflowContext context = new WorkflowContextBuilder(null).
+                withAuthConfig(authConfigBuilder.getAuthConfig()).get();
+
         if (!clusterValidator.validate(context)) {
             WorkflowLogger.logPersistedActivities();
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        WorkflowLogger.printLine();
+        WorkflowLogger.header(ControllerActivity.APPLICATION_DETAILS);
         List<AppMetadata> appInfoList = null;
         try {
             appInfoList = deployer.getAppsMetadata(context.getAuthConfig());
@@ -102,9 +100,10 @@ public class HyscaleGetAppsCommand implements Callable<Integer> {
 
         if (appInfoList == null || appInfoList.isEmpty()) {
             WorkflowLogger.info(ControllerActivity.NO_DEPLOYMENTS);
+            WorkflowLogger.footer();
             return ToolConstants.HYSCALE_SUCCESS_CODE;
         }
-        
+
         appInfoList = appInfoList.stream().filter(appInfo -> {
             if (appInfo == null || StringUtils.isBlank(appInfo.getAppName())
                     || K8SRuntimeConstants.SYSTEM_NAMESPACE.contains(appInfo.getNamespace())) {
@@ -112,15 +111,18 @@ public class HyscaleGetAppsCommand implements Callable<Integer> {
             }
             return true;
         }).sorted(Comparator.comparing(AppMetadata::getAppName)).collect(Collectors.toList());
-        
+
         if (appInfoList.isEmpty()) {
             WorkflowLogger.info(ControllerActivity.NO_DEPLOYMENTS);
+            WorkflowLogger.footer();
             return ToolConstants.HYSCALE_SUCCESS_CODE;
         }
-        
+
+
         Builder tableBuilder = new TableFormatter.Builder()
-                .addField(TableFields.APPLICATION.getFieldName(), TableFields.APPLICATION.getLength())
-                .addField(TableFields.NAMESPACE.getFieldName(), TableFields.NAMESPACE.getLength());
+                .addField(TableFields.APPLICATION.getFieldName())
+                .addField(TableFields.PROFILE.getFieldName())
+                .addField(TableFields.NAMESPACE.getFieldName());
 
         if (wide) {
             tableBuilder.addField(TableFields.SERVICES.getFieldName(), TableFields.SERVICES.getLength());
@@ -130,11 +132,11 @@ public class HyscaleGetAppsCommand implements Callable<Integer> {
         appInfoList.forEach(appInfo -> {
             String services = appInfo.getServices() == null || appInfo.getServices().isEmpty() ? null
                     : appInfo.getServices().toString().replace("[", "").replace("]", "");
-            String[] row = new String[] { appInfo.getAppName(), appInfo.getNamespace(), services };
+            String[] row = new String[]{appInfo.getAppName(), appInfo.getEnvName(), appInfo.getNamespace(), services};
             table.addRow(row);
         });
         WorkflowLogger.logTable(table);
-
+        WorkflowLogger.footer();
         return ToolConstants.HYSCALE_SUCCESS_CODE;
     }
 

@@ -156,7 +156,7 @@ public class V1PersistentVolumeClaimHandler implements ResourceLifeCycleHandler<
 				delete(apiClient, persistentVolumeClaim.getMetadata().getName(), namespace, wait);
 			}
 		} catch (HyscaleException e) {
-			if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleErrorCode())) {
+			if (DeployerErrorCodes.RESOURCE_NOT_FOUND.equals(e.getHyscaleError())) {
 				logger.error("Error while deleting Persistent Volume claims for selector {} in namespace {}, error {}",
 						selector, namespace, e.toString());
 				return false;

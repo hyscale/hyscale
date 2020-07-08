@@ -28,7 +28,6 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.DeploymentContextBuilder;
-import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.hooks.AppDirCleanUpHook;
 import io.hyscale.controller.hooks.ServiceDirCleanUpHook;
@@ -50,9 +49,6 @@ public class UndeployComponentInvoker extends ComponentInvoker<WorkflowContext> 
     
     @Autowired
     private DeploymentContextBuilder deploymentContextBuilder;
-
-    @Autowired
-    private K8sAuthConfigBuilder authConfigBuilder;
 
     @Autowired
     private ServiceDirCleanUpHook serviceDirCleanUpHook;
@@ -98,7 +94,7 @@ public class UndeployComponentInvoker extends ComponentInvoker<WorkflowContext> 
     protected void onError(WorkflowContext context, HyscaleException he) throws HyscaleException {
         WorkflowLogger.header(ControllerActivity.ERROR);
         WorkflowLogger.error(ControllerActivity.CAUSE, he != null ?
-                he.getMessage() : ControllerErrorCodes.UNDEPLOYMENT_FAILED.getErrorMessage());
+                he.getMessage() : ControllerErrorCodes.UNDEPLOYMENT_FAILED.getMessage());
         context.setFailed(true);
         if (he != null) {
             throw he;

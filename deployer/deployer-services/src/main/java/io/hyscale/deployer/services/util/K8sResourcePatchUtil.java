@@ -63,7 +63,7 @@ public class K8sResourcePatchUtil {
 		}
 	}
 
-	private static Object deserialize(String jsonStr, Class<?> targetClass) {
+	public static Object deserialize(String jsonStr, Class<?> targetClass) {
 		Gson gson = new Gson();
 		Object obj = gson.fromJson(jsonStr, targetClass);
 		return obj;

@@ -47,7 +47,7 @@ public class IsApplicationCrashing extends ConditionNode<TroubleshootingContext>
         }
 
         if (lastState != null) {
-            return lastState.equals(PodStatus.OOMKILLED.getStatus()) || lastState.equals(PodStatus.COMPLETED.getStatus());
+            return lastState.equals(PodStatus.OOMKILLED.getStatus()) || lastState.equals(PodStatus.COMPLETED.getStatus()) || lastState.equals(PodStatus.ERROR.getStatus());
         }
         return false;
     }

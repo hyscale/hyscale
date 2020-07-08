@@ -25,13 +25,18 @@ public class ValidationConstants {
     
     public static final int APP_NAME_LENGTH_MIN = 2;
 
+    public static final int PROFILE_NAME_LENGTH_MAX = 30;
+
+    public static final int PROFILE_NAME_LENGTH_MIN = 2;
+
+
     public static final String APP_NAME_REGEX = "([a-z0-9-]){" + APP_NAME_LENGTH_MIN + "," + APP_NAME_LENGTH_MAX + "}";
     
     public static final String SERVICE_NAME_REGEX = "[a-z]([-a-z0-9]*[a-z0-9])?";
     
     public static final String SERVICE_SPEC_NAME_REGEX = "^" + SERVICE_NAME_REGEX + "(\\.hspec)$";
-    
-    public static final String PROFILE_NAME_REGEX = "([-a-zA-Z0-9]){2,30}";
+
+    public static final String PROFILE_NAME_REGEX = "([-a-zA-Z0-9]){" + PROFILE_NAME_LENGTH_MIN + "," + PROFILE_NAME_LENGTH_MAX + "}";
     
     public static final String PROFILE_FILENAME_REGEX = "^" + PROFILE_NAME_REGEX + ToolConstants.DASH + SERVICE_NAME_REGEX + "(\\.hprof)$";
 

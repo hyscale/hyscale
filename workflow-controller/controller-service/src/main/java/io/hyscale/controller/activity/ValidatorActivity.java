@@ -17,21 +17,28 @@ package io.hyscale.controller.activity;
 
 import io.hyscale.commons.models.Activity;
 
+/**
+ * Activities list for validation
+ *
+ */
 public enum ValidatorActivity implements Activity {
     VALIDATING_SERVICE_SPEC("Validating service spec(s) "),
     VALIDATING_PROFILE("Validating profile(s) "),
+    VALIDATING_MAPPING("Validating Service and Profile mapping"),
     VALIDATING_DOCKER("Validating docker "),
     VALIDATING_CLUSTER("Validating cluster "),
     VALIDATING_MANIFEST("Validating manifest for service {} "),
     VALIDATING_REGISTRY("Validating registry {} "),
     VALIDATING_VOLUME("Validating volumes for service {} "),
+    
     VOLUME_VALIDATION_FAILED("Volume validation failed. Error {}"),
     MANIFEST_VALIDATION_FAILED("Manifest validation failed. Error {}"),
     DOCKER_NOT_INSTALLED("Docker not installed. Install docker to continue "),
     DOCKER_DAEMON_NOT_RUNNONG("Docker daemon not running. Start Docker to continue "),
     MISSING_DOCKER_REGISTRY_CREDENTIALS("Cannot find {} credentials. Do 'docker login {}' to continue with the deployment"),
-    SERVICE_SPEC_VALIDATION_FAILED("Service spec validation failed. {} "),
-    PROFILE_VALIDATION_FAILED("Profile validation failed. {} ");
+    SERVICE_SPEC_VALIDATION_FAILED("Service spec validation failed for {}. {} "),
+    PROFILE_VALIDATION_FAILED("Profile validation failed for {}. {} "),
+    CLUSTER_AUTHENTICATION_FAILED("Cluster authentication failed. Verify if cluster config is valid");
 
     private String message;
 

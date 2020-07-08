@@ -22,6 +22,7 @@ public class AppMetadata {
 
     private String namespace;
     private String appName;
+    private String envName;
     private List<String> services;
 
     public String getNamespace() {
@@ -58,5 +59,13 @@ public class AppMetadata {
     @Override
     public String toString() {
         return "AppMetadata [namespace=" + namespace + ", appName=" + appName + ", services=" + services + "]";
+    }
+
+    public String getEnvName() {
+        return envName;
+    }
+
+    public void setEnvName(String envName) {
+        this.envName = envName;
     }
 }

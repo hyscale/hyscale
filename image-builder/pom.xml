@@ -5,7 +5,7 @@
     <parent>
         <artifactId>hyscale</artifactId>
         <groupId>io.hyscale</groupId>
-        <version>0.9.5</version>
+        <version>0.9.6.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -38,6 +38,16 @@
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
                 <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.docker-java</groupId>
+                <artifactId>docker-java</artifactId>
+                <version>${docker.java.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>${javax.annotation-api.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

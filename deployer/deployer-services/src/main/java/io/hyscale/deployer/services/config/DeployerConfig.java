@@ -39,12 +39,19 @@ public class DeployerConfig {
 
     @Value(("${hyscale.ctl.k8s.pod.log.tail.lines:100}"))
     private int defaultTailLines;
+    
+    @Value(("${hyscale.ctl.k8s.pod.max.restart.count:3}"))
+    private int maxPodRestartCount;
 
     @Autowired
     private SetupConfig setupConfig;
 
     public int getDefaultTailLines() {
         return defaultTailLines;
+    }
+    
+    public int getMaxPodRestartCount() {
+        return maxPodRestartCount;
     }
 
     /**

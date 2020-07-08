@@ -1,6 +1,7 @@
 ![HyScale](https://www.hyscale.io/wp-content/uploads/2019/01/hyscale-logo.png)
 
 [![Actions Status](https://github.com/hyscale/hyscale/workflows/Build/badge.svg)](https://github.com/hyscale/hyscale/actions?query=workflow%3ABuild)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=io.hyscale%3Ahyscale&metric=security_rating)](https://sonarcloud.io/dashboard?id=io.hyscale%3Ahyscale)
 
 HyScale is an application deployment tool that helps you effortlessly deploy to Kubernetes. It offers a high-level abstraction on top of Kubernetes so that teams can deploy software to K8s while focusing more on code rather than on low-level details.
 
@@ -27,13 +28,14 @@ Let us know your experiences with HyScale! Questions, Issues, Suggestions - we l
 
 ## Capabilities
 
-**Automatic containerization & auto-generation of K8s yamls**
+**1. Automatic containerization & auto-generation of K8s yamls**
 
 HyScale offers a declarative spec for K8s abstraction using which K8s manifests & docker files are automatically generated, docker images are built & pushed to the target docker registry, and the manifests are deployed to the K8s cluster resulting in a URL.
 
-**App-centric abstraction**
 
-Some useful things you can achieve in just a few lines with HyScale's app-centric abstraction:
+**2. App-centric abstraction**
+
+HyScale's app centric abstraction helps you achieve the folowing with just a few lines of declaration:
 
 + Setting up resource-limits and enabling auto-scaling.
 
@@ -50,7 +52,7 @@ Some useful things you can achieve in just a few lines with HyScale's app-centri
 + Override or add different configurations for different environments using profiles.
 
 
-**App-centric troubleshooting**
+**3. App-centric troubleshooting**
 
 Deployment failures at Kubernetes are cryptic and not intuitive for debugging. Users have to refer many things to identify the root cause of the failure like pod status, describe pod , statuses of other kinds etc. When issues occur abstraction is needed to simplify troubleshooting. So instead of presenting users with an error like "CrashLoopBackOff", HyScale executes a troubleshooting flowchart that will basically try to figure out the possible causes and inform the user in plain terms. 
 Hyscale abstracts Kubernetes errors to an app-centric model eg.: a "Pending" state may mean one of many things such as "New services cannot be accommodated as cluster capacity is full" or "Specified volume cannot be attached to the service"
@@ -87,27 +89,46 @@ Open your terminal and enter the following:
 curl -sSL https://get.hyscale.io | bash
 ```
 
-#### Mac & Windows
+#### Mac 
 Usage Pre-Requisites:
 
 * JDK version 11 and above
-* Download the [hyscale jar](https://github.com/hyscale/hyscale/releases/latest/download/hyscale.jar) to your local machine
 
-Usage:
+1.Download the latest stable release:
 
-`java -Djdk.tls.client.protocols=TLSv1.2 -jar </path/to/hyscale.jar> <commands>` 
+    curl -L https://get.hyscale.io/mac -o hyscale
 
-Note:
-jdk.tls.client.protocols property is set to overcome a known issue in open jdk.
+2.Make the hyscale binary executable.
+
+    chmod +x ./hyscale
+
+3.Move the binary in to your PATH.
+
+    sudo mv ./hyscale /usr/local/bin/hyscale
+4.Test to ensure hyscale is installed.
+   
+    hyscale --version
 
 
-For commands refer [here](https://github.com/hyscale/hyscale/blob/master/docs/hyscale-commands-reference.md) by replacing `hyscale` with `java command`.  
+### Windows
+Usage Pre-Requisites:
 
-```
-Example :  java -Djdk.tls.client.protocols=TLSv1.2 -jar </path/to/hyscale.jar> deploy service -f myservice.hspec -n my-namespace -a my-app
-```
+* JDK version 11 and above
 
-Verified on CentOS, Ubuntu and Debian Linux, Mac, Windows.
+1.Download the latest stable release from this [link](https://get.hyscale.io/win) Or run the below command in powershell.
+
+     Invoke-WebRequest -Uri https://get.hyscale.io/win -OutFile hyscale.ps1               
+
+2.Add the downloaded hyscale.ps1 to your PATH
+
+3.Verify the installation by running the below command in the powershell window.
+
+    hyscale.ps1 --version
+
+*Note: The first time run would take time as the script downloads the required binary file. If you get execution error, please set execution policy for current user, for more info refer [here](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies?view=powershell-7) *
+
+
+Note: Verified on CentOS, Ubuntu, Debian Linux, Mac and Windows.
 
 ## Deploying to K8s
 
@@ -128,13 +149,7 @@ volumes:
     - name: tomcat-logs-dir
       path: /usr/local/tomcat/logs
       size: 1Gi
-      storageClass: standard
 
-replicas:
-    min: 1
-    max: 3
-    cpuThreshold: 40%
- 
 external: true
 ports:
   - port: 8080/tcp

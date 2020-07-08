@@ -24,7 +24,6 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 /**
  * Context information for workflow controller
- *
  */
 public class WorkflowContext extends ComponentInvokerContext {
 
@@ -34,10 +33,10 @@ public class WorkflowContext extends ComponentInvokerContext {
     private String serviceName;
     private String envName;
     private AuthConfig authConfig;
-
     private Map<String, Object> attributes;
 
-    public WorkflowContext() {
+    WorkflowContext(String appName) {
+        this.appName = appName;
         attributes = new HashMap<>();
     }
 
@@ -45,16 +44,12 @@ public class WorkflowContext extends ComponentInvokerContext {
         return namespace;
     }
 
-    public void setNamespace(String namespace) {
+    protected void setNamespace(String namespace) {
         this.namespace = namespace;
     }
 
     public String getAppName() {
         return appName;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
     }
 
     public Object getAttribute(String key) {
@@ -69,7 +64,7 @@ public class WorkflowContext extends ComponentInvokerContext {
         return serviceName;
     }
 
-    public void setServiceName(String serviceName) {
+    protected void setServiceName(String serviceName) {
         this.serviceName = serviceName;
     }
 
@@ -77,24 +72,23 @@ public class WorkflowContext extends ComponentInvokerContext {
         return envName;
     }
 
-    public void setEnvName(String envName) {
-        this.envName = envName;
-    }
-
     public ServiceSpec getServiceSpec() {
         return serviceSpec;
     }
 
-    public void setServiceSpec(ServiceSpec serviceSpec) {
+    protected void setServiceSpec(ServiceSpec serviceSpec) {
         this.serviceSpec = serviceSpec;
     }
 
-	public AuthConfig getAuthConfig() {
-		return authConfig;
-	}
+    public AuthConfig getAuthConfig() {
+        return authConfig;
+    }
 
-	public void setAuthConfig(AuthConfig authConfig) {
-		this.authConfig = authConfig;
-	}
+    protected void setAuthConfig(AuthConfig authConfig) {
+        this.authConfig = authConfig;
+    }
 
+    protected void setEnvName(String envName) {
+        this.envName = envName;
+    }
 }

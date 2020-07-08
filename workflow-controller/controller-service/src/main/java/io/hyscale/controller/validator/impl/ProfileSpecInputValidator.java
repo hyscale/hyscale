@@ -17,6 +17,8 @@ package io.hyscale.controller.validator.impl;
 
 import java.io.File;
 
+import io.hyscale.commons.constants.ValidationConstants;
+import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,28 +27,29 @@ import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.validator.InputSpecValidator;
 
+/**
+ * Provides Profile spec related implementation to {@link InputSpecValidator}
+ *
+ */
 @Component
 public class ProfileSpecInputValidator extends InputSpecValidator {
 
     @Autowired
-    private ProfileFileValidator profileFileValidator;
-
-    @Autowired
-    private ProfileSpecSchemaValidator profileSpecSchemaValidator;
+    private HprofSchemaValidator hprofSchemaValidator;
 
     @Override
-    protected Validator<File> getFileValidator() {
-        return profileFileValidator;
+    public String getFilePattern() {
+        return ValidationConstants.PROFILE_FILENAME_REGEX;
+    }
+
+    @Override
+    public ServiceSpecActivity getWarnMessage() {
+        return ServiceSpecActivity.IMPROPER_PROFILE_FILE_NAME;
     }
 
     @Override
     protected Validator<File> getSchemaValidator() {
-        return profileSpecSchemaValidator;
-    }
-
-    @Override
-    protected Activity getValidatorActivity() {
-        return ValidatorActivity.VALIDATING_PROFILE;
+        return hprofSchemaValidator;
     }
 
 }

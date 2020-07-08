@@ -36,6 +36,8 @@ public class ToolConstants {
     public static final String HYSCALECTL_LOGS_DIR_PROPERTY = "HYSCALECTL_LOGS_DIR";
 
     public static final String EMPTY_STRING = "";
+    
+	public static final String EQUALS="=";
 
     public static final String QUOTES = "\"";
 

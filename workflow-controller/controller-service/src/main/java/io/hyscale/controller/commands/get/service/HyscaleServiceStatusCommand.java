@@ -18,11 +18,11 @@ package io.hyscale.controller.commands.get.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 
 import javax.validation.constraints.Pattern;
 
 import io.hyscale.commons.logger.TableFields;
+import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.invoker.StatusComponentInvoker;
 import io.hyscale.controller.model.WorkflowContext;
@@ -40,7 +40,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.TableFormatter;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.builder.WorkflowContextBuilder;
+import io.hyscale.controller.model.WorkflowContextBuilder;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -77,7 +77,7 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
     private String namespace;
 
     @Pattern(regexp = ValidationConstants.APP_NAME_REGEX, message = ValidationConstants.INVALID_APP_NAME_MSG)
-    @Option(names = {"-a", "--app"}, required = true, description = "Application name")
+    @Option(names = {"-a", "--app","--application"}, required = true, description = "Application name")
     private String appName;
 
     @Option(names = {"-s", "--service"}, required = true, description = "Service names", split = ",")
@@ -87,33 +87,33 @@ public class HyscaleServiceStatusCommand implements Callable<Integer> {
 
     @Autowired
     private ClusterValidator clusterValidator;
-    
+
     @Autowired
     private StatusComponentInvoker statusComponentInvoker;
-    
+
     @Autowired
-    private WorkflowContextBuilder workflowContextBuilder;
+    private K8sAuthConfigBuilder authConfigBuilder;
 
     @Override
     public Integer call() throws Exception {
-        WorkflowLogger.header(ControllerActivity.PROCESSING_INPUT);
-        
+
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        List<WorkflowContext> contextList = workflowContextBuilder.buildContextList(appName, namespace,
-                serviceList.stream().distinct().collect(Collectors.toList()));
-        contextList = workflowContextBuilder.updateAuthConfig(contextList);
-        
-        for (WorkflowContext context : contextList) {
+
+        List<WorkflowContext> contextList = new ArrayList<>();
+        for (String each : serviceList) {
+            WorkflowContext context = new WorkflowContextBuilder(appName).withNamespace(namespace)
+                    .withServiceName(each).withAuthConfig(authConfigBuilder.getAuthConfig()).get();
             if (!clusterValidator.validate(context)) {
                 WorkflowLogger.logPersistedActivities();
                 return ToolConstants.INVALID_INPUT_ERROR_CODE;
             }
+            contextList.add(context);
         }
-        WorkflowLogger.printLine();
+
         WorkflowLogger.info(ControllerActivity.WAITING_FOR_SERVICE_STATUS);
-        
+
         WorkflowLogger.header(ControllerActivity.APP_NAME, appName);
         try {
             boolean isLarge = false;

@@ -26,7 +26,6 @@ import org.springframework.stereotype.Component;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.LoggerTags;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.Status;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.manager.RegistryManager;
@@ -35,6 +34,12 @@ import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Image;
 import io.hyscale.servicespec.commons.util.ImageUtil;
 
+/**
+ * Validates registry related details
+ * Returns true if registry details are not required
+ * i.e. image build or push not required
+ * 
+ */
 @Component
 public class RegistryValidator implements Validator<WorkflowContext> {
 	private static final Logger logger = LoggerFactory.getLogger(ClusterValidator.class);
@@ -42,7 +47,9 @@ public class RegistryValidator implements Validator<WorkflowContext> {
 	@Autowired
 	private RegistryManager registryManager;
 	
-	private Set<String> registriesValidated = new HashSet<String>();
+	private Set<String> validRegistries = new HashSet<String>();
+	
+	private Set<String> inValidRegistries = new HashSet<String>();
 
 	/**
 	 * 1. It will check that spec has buildspec or dockerfile 
@@ -56,25 +63,27 @@ public class RegistryValidator implements Validator<WorkflowContext> {
 	public boolean validate(WorkflowContext context) throws HyscaleException {
 	    logger.debug("Starting registry validation");
 	    Image image = context.getServiceSpec().get(HyscaleSpecFields.image, Image.class);
-	    
 	    String registry = image.getRegistry();
-	    
-	    if (registriesValidated.contains(registry)) {
+
+	    if (validRegistries.contains(registry)) {
 	        return true;
 	    }
-	    WorkflowLogger.startActivity(ValidatorActivity.VALIDATING_REGISTRY, registry);
+	    
+	    if (inValidRegistries.contains(registry)) {
+	        return false;
+	    }
 		if (!ImageUtil.isImageBuildPushRequired(context.getServiceSpec())) {
-		    WorkflowLogger.endActivity(Status.SKIPPING);
 			return true;
 		}
 		boolean isRegistryAvailable = registryManager.getImageRegistry(registry) != null ? true : false;
 		if (isRegistryAvailable) {
-			registriesValidated.add(registry);
-			WorkflowLogger.endActivity(Status.DONE);
+			validRegistries.add(registry);
 			return true;
+		} else {
+		    inValidRegistries.add(registry);
 		}
+		registry=registry!=null?registry:"";
 		WorkflowLogger.persist(ValidatorActivity.MISSING_DOCKER_REGISTRY_CREDENTIALS, LoggerTags.ERROR, registry, registry);
-		WorkflowLogger.endActivity(Status.FAILED);
 		return false;
 	}
 }

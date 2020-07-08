@@ -1,0 +1,46 @@
+#!/bin/bash
+set -euo pipefail
+HYS_VERSION="@@HYSCALE_BUILD_VERSION@@"
+HYS_JAR_BIN="hyscale-${HYS_VERSION}.jar"
+HYS_CONF_DIR="$HOME/.hyscale"
+HYS_DOWNLOAD_URL="@@HYSCALE_URL@@"
+
+check_java_version(){
+  set +e
+  java -version > /dev/null 2>&1
+  if [ $? != 0  ]
+  then
+    echo "Java is not installed"
+    exit 1
+  set -e
+  elif [ $(java  -version 2>&1 | awk -F '"' '/version/ {print $2}'| awk -F '.' '{print $1}') -lt 11 ]
+  then
+     echo "JDK version 11 and above is required but found lesser version"
+     exit 1
+  fi
+}
+
+download_hyscale_jar(){
+  #Check if the $HYS_CONF_DIR dir exists, else create.
+  if [ ! -d $HYS_CONF_DIR  ]
+  then
+     mkdir -p $HYS_CONF_DIR
+  fi
+  #Delete the old existing hyscale-*.jar files in $HYS_CONF_DIR and download the latest jar
+  if [ ! -f ${HYS_CONF_DIR}/${HYS_JAR_BIN} ]
+  then
+    rm -rf ${HYS_CONF_DIR}/hyscale-*.jar
+    echo "Downloading hyscale ..."
+    if [ $(curl -L -w "%{http_code}" $HYS_DOWNLOAD_URL -o ${HYS_JAR_BIN}) != 200 ];then
+     echo -e "\nDownload Failed !!!"
+     exit 1
+    fi
+    echo -e "Download successful\n"
+    mv ${HYS_JAR_BIN} ${HYS_CONF_DIR}
+  fi
+}
+
+check_java_version
+download_hyscale_jar
+
+java -Djdk.tls.client.protocols=TLSv1.2 -Xms216m -Xmx512m -jar ${HYS_CONF_DIR}/${HYS_JAR_BIN} $@

@@ -38,6 +38,7 @@ import io.hyscale.commons.constants.K8SRuntimeConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.commons.models.ResourceLabelKey;
 import io.hyscale.commons.models.VolumeAccessMode;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.model.ServiceMetadata;
@@ -60,8 +61,6 @@ public class VolumeTemplatesHandler implements ManifestHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(VolumeTemplatesHandler.class);
 
-    private static final String PVC_DEFAULT_STORAGE_UNIT = "Gi";
-
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext)
             throws HyscaleException {
@@ -82,11 +81,11 @@ public class VolumeTemplatesHandler implements ManifestHandler {
         serviceMetadata.setAppName(manifestContext.getAppName());
 
         List<ManifestSnippet> snippetList = new ArrayList<>();
-
+        Map<String, String> customLabels = manifestContext.getCustomLabels();
 
         try {
             // Creating a manifest snippet for volumeClaimTemplates
-            snippetList.add(buildVolumeClaimSnippet(volumes, serviceMetadata));
+            snippetList.add(buildVolumeClaimSnippet(volumes, serviceMetadata, customLabels));
             snippetList.add(getServiceNameSnippet(serviceMetadata.getServiceName()));
         } catch (JsonProcessingException e) {
             logger.error("Error while serializing volumes snippet ", e);
@@ -94,17 +93,17 @@ public class VolumeTemplatesHandler implements ManifestHandler {
         return snippetList.isEmpty() ? null : snippetList;
     }
 
-    private ManifestSnippet buildVolumeClaimSnippet(List<Volume> volumes, ServiceMetadata serviceMetadata)
-            throws JsonProcessingException, HyscaleException {
+    private ManifestSnippet buildVolumeClaimSnippet(List<Volume> volumes, ServiceMetadata serviceMetadata,
+            Map<String, String> customLabels) throws JsonProcessingException, HyscaleException {
         ManifestSnippet snippet = new ManifestSnippet();
-        snippet.setSnippet(GsonSnippetConvertor.serialize(getVolumeClaims(volumes, serviceMetadata)));
+        snippet.setSnippet(GsonSnippetConvertor.serialize(getVolumeClaims(volumes, serviceMetadata, customLabels)));
         snippet.setKind(ManifestResource.STATEFUL_SET.getKind());
         snippet.setPath("spec.volumeClaimTemplates");
         return snippet;
     }
 
-    private List<V1PersistentVolumeClaim> getVolumeClaims(List<Volume> volumes, ServiceMetadata serviceMetadata)
-            throws HyscaleException {
+    private List<V1PersistentVolumeClaim> getVolumeClaims(List<Volume> volumes, ServiceMetadata serviceMetadata,
+            Map<String, String> customLabels) throws HyscaleException {
         List<V1PersistentVolumeClaim> volumeClaims = new LinkedList<>();
         for (Volume volume : volumes) {
             String size = volume.getSize();
@@ -117,11 +116,12 @@ public class VolumeTemplatesHandler implements ManifestHandler {
             V1PersistentVolumeClaim v1PersistentVolumeClaim = new V1PersistentVolumeClaim();
             V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
             v1ObjectMeta.setName(volume.getName());
-            v1ObjectMeta.setLabels(ManifestResource.STATEFUL_SET.getLabels(serviceMetadata));
+            
+            v1ObjectMeta.setLabels(getLabels(volume, serviceMetadata, customLabels));
 
             V1PersistentVolumeClaimSpec claimSpec = new V1PersistentVolumeClaimSpec();
             claimSpec.setAccessModes(Arrays.asList(VolumeAccessMode.READ_WRITE_ONCE.getAccessMode()));
-            if(volume.getStorageClass()!=null) {
+            if(volume.getStorageClass() != null) {
                 claimSpec.setStorageClassName(volume.getStorageClass());
             }
             Map<String, Quantity> requests = new HashMap<>();
@@ -137,6 +137,16 @@ public class VolumeTemplatesHandler implements ManifestHandler {
 
         }
         return volumeClaims.isEmpty() ? null : volumeClaims;
+    }
+
+    private Map<String, String> getLabels(Volume volume, ServiceMetadata serviceMetadata,
+            Map<String, String> customLabels) {
+        Map<String, String> labels = ManifestResource.STATEFUL_SET.getLabels(serviceMetadata);
+        labels.put(ResourceLabelKey.VOLUME_NAME.getLabel(), volume.getName());
+        if (customLabels != null && !customLabels.isEmpty()) {
+            labels.putAll(customLabels);
+        }
+        return labels;
     }
 
     private void parseSize(String size) throws HyscaleException {

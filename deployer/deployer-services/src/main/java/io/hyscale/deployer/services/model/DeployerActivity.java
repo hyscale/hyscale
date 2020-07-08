@@ -47,7 +47,11 @@ public enum DeployerActivity implements Activity {
 			"Volumes {} seems to have been removed in your hspec. These volumes are retained in your namespace {} as pvc {} for review and manual deletion"),
 	STALE_VOLUME_REUSE(
 			"These volumes {} are no longer in use. They are retained in your namespace {} as pvc {} for review and manual deletion. To reattach them to service {}, use the same volume name."),
-	IGNORING_VOLUME_MODIFICATION("Detected change in hspec for volumes {}. Changes to storage class or size is currently not supported");
+	IGNORING_VOLUME_MODIFICATION("Detected change in \"{}\" hspec for volumes \"{}\". Changes to storage class or size is currently not supported"),
+	SERVICE_WITH_ZERO_REPLICAS("Service has zero replicas"),
+	SCALING_SERVICE("Scaling service "),
+	SCALE_DOWN_VOLUME("The scale operation would leave stale replica volumes [{}] in your namespace {} and are meant for review and manual deletion. If not deleted, when you scale up the service the same volumes are reattached to the new replicas"),
+	DESIRED_STATE("Service is already with desired state of replicas {} ");
 
 	private String message;
 

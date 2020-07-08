@@ -1,63 +1,66 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<parent>
-		<artifactId>service-spec</artifactId>
-		<groupId>io.hyscale</groupId>
-		<version>0.9.5</version>
-	</parent>
-	
-	<modelVersion>4.0.0</modelVersion>
-	<artifactId>schema-validator</artifactId>
-	<name>schema-validator</name>
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>service-spec</artifactId>
+        <groupId>io.hyscale</groupId>
+        <version>0.9.6.0</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>schema-validator</artifactId>
+    <name>schema-validator</name>
 
     <properties>
         <main.basedir>../../</main.basedir>
     </properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.github.java-json-tools</groupId>
-			<artifactId>json-schema-validator</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.hyscale</groupId>
-			<artifactId>commons</artifactId>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>com.github.java-json-tools</groupId>
+            <artifactId>json-schema-validator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.hyscale</groupId>
+            <artifactId>commons</artifactId>
+        </dependency>
     </dependencies>
-    
+
     <build>
-    <plugins>
+        <plugins>
             <plugin>
                 <groupId>com.googlecode.maven-download-plugin</groupId>
                 <artifactId>download-maven-plugin</artifactId>
                 <version>1.5.0</version>
                 <executions>
-                    <execution >
-                     <id>hspec-service-json</id>
+                    <execution>
+                        <phase>process-sources</phase>
+                        <id>hspec-service-json</id>
                         <goals>
                             <goal>wget</goal>
                         </goals>
                         <configuration>
-                                <mkdir dir="src/main/resources/hspec/${hspec.supported.version}"/>
-                                <url>https://raw.githubusercontent.com/hyscale/hspec/release/HSpec${hspec.supported.version}/schema/service-spec.json</url>
-                                <outputDirectory>src/main/resources/hspec/${hspec.supported.version}</outputDirectory>
+                            <mkdir
+                                dir="src/main/resources/hspec/${hspec.supported.version}" />
+                            <url>https://raw.githubusercontent.com/hyscale/hspec/release/HSpec${hspec.supported.version}/schema/service-spec.json</url>
+                            <outputDirectory>src/main/resources/hspec/${hspec.supported.version}</outputDirectory>
                         </configuration>
-                 </execution> 
-                 <execution>
-                         <id>hprof-service-json</id>
+                    </execution>
+                    <execution>
+                        <phase>process-sources</phase>
+                        <id>hprof-service-json</id>
                         <goals>
                             <goal>wget</goal>
                         </goals>
                         <configuration>
-                                <mkdir dir="src/main/resources/hprof/${hprof.supported.version}"/>
-                                <url>https://raw.githubusercontent.com/hyscale/hspec/release/HSpec${hspec.supported.version}/schema/profile-spec.json</url>
-                                <outputDirectory>src/main/resources/hprof/${hspec.supported.version}</outputDirectory>
+                            <mkdir
+                                dir="src/main/resources/hprof/${hprof.supported.version}" />
+                            <url>https://raw.githubusercontent.com/hyscale/hspec/release/HSpec${hspec.supported.version}/schema/profile-spec.json</url>
+                            <outputDirectory>src/main/resources/hprof/${hspec.supported.version}</outputDirectory>
                         </configuration>
-                 </execution> 
+                    </execution>
                 </executions>
             </plugin>
-
         </plugins>
-        </build>
+    </build>
 </project>

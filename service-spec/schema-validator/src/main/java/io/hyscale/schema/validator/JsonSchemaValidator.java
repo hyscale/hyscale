@@ -87,12 +87,12 @@ public class JsonSchemaValidator {
      */
     public static ProcessingReport validate(JsonNode inputSpecNode,JsonNode referenceSchema) throws HyscaleException{
         if(referenceSchema==null || referenceSchema.isNull()){
-            LOGGER.error(CommonErrorCode.EMPTY_REFERENCE_SCHEMA_FOUND.getErrorMessage());
+            LOGGER.error(CommonErrorCode.EMPTY_REFERENCE_SCHEMA_FOUND.getMessage());
             throw new HyscaleException(CommonErrorCode.EMPTY_REFERENCE_SCHEMA_FOUND);
         }
         try {
             JsonSchema schema = factory.getJsonSchema(referenceSchema);
-            return schema.validate(inputSpecNode);
+            return schema.validate(inputSpecNode, true);
         }catch (ProcessingException p){
             LOGGER.error(p.getMessage());
             throw new HyscaleException(p,CommonErrorCode.SCHEMA_PROCESSING_ERROR);

@@ -123,7 +123,7 @@ public class HyscaleFilesUtilTests {
     
     
     @Test
-    public void ListFileInDirTest() {
+    public void listFileInDirTest() {
         File file = createFile(testFilePath);
         List<File> foundFiles = HyscaleFilesUtil.listFilesWithPattern(file.getParent(), TEST_FILE_PATTERN);
         assertEquals(file.getAbsolutePath(), foundFiles.get(0).getAbsolutePath());

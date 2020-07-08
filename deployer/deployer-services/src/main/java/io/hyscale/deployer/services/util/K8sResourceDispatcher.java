@@ -93,28 +93,37 @@ public class K8sResourceDispatcher {
             throw new HyscaleException(DeployerErrorCodes.MANIFEST_REQUIRED);
         }
         createNamespaceIfNotExists();
+        
+        List<KubernetesResource> k8sResources = new ArrayList<KubernetesResource>();
+        
         for (Manifest manifest : manifests) {
             try {
-                KubernetesResource k8sResource = KubernetesResourceUtil.getKubernetesResource(manifest, namespace);
-                AnnotationsUpdateManager.update(k8sResource, AnnotationKey.LAST_UPDATED_AT,
-                        DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
-                ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(k8sResource.getKind());
-                if (lifeCycleHandler != null && k8sResource != null && k8sResource.getResource() != null && k8sResource.getV1ObjectMeta() != null) {
-                    try {
-                        String name = k8sResource.getV1ObjectMeta().getName();
-                        if (resourceBroker.get(lifeCycleHandler, name) != null) {
-                            resourceBroker.update(lifeCycleHandler, k8sResource, lifeCycleHandler.getUpdatePolicy());
-                        } else {
-                            resourceBroker.create(lifeCycleHandler, k8sResource.getResource());
-                        }
-                    } catch (HyscaleException ex) {
-                        logger.error("Failed to apply resource :{} Reason :: {}", k8sResource.getKind(), ex.getMessage(), ex);
-                    }
-                }
+                k8sResources.add(KubernetesResourceUtil.getKubernetesResource(manifest, namespace));
             } catch (Exception e) {
                 HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST);
                 logger.error("Error while applying manifests to kubernetes", ex);
                 throw ex;
+            }
+        }
+        // Sort resources to deploy secrets and configmaps before Pod Controller
+        k8sResources.sort((resource1, resource2) -> ResourceKind.fromString(resource1.getKind()).getWeight()
+                - ResourceKind.fromString(resource2.getKind()).getWeight());
+        
+        for (KubernetesResource k8sResource : k8sResources) {
+            AnnotationsUpdateManager.update(k8sResource, AnnotationKey.LAST_UPDATED_AT,
+                    DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+            ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(k8sResource.getKind());
+            if (lifeCycleHandler != null && k8sResource != null && k8sResource.getResource() != null && k8sResource.getV1ObjectMeta() != null) {
+                try {
+                    String name = k8sResource.getV1ObjectMeta().getName();
+                    if (resourceBroker.get(lifeCycleHandler, name) != null) {
+                        resourceBroker.update(lifeCycleHandler, k8sResource, lifeCycleHandler.getUpdatePolicy());
+                    } else {
+                        resourceBroker.create(lifeCycleHandler, k8sResource.getResource());
+                    }
+                } catch (HyscaleException ex) {
+                    logger.error("Failed to apply resource :{} Reason :: {}", k8sResource.getKind(), ex.getMessage(), ex);
+                }
             }
         }
     }
@@ -159,7 +168,7 @@ public class K8sResourceDispatcher {
         List<String> failedResources = new ArrayList<String>();
 
         String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
-        List<ResourceLifeCycleHandler> handlersList = ResourceHandlers.getHandlersList();
+        List<ResourceLifeCycleHandler> handlersList = ResourceHandlers.getAllHandlers();
         if (handlersList == null) {
             return;
         }

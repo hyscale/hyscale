@@ -20,14 +20,12 @@ import java.util.List;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.AuthConfig;
+import io.hyscale.commons.models.ClusterVersionInfo;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.deployer.core.model.AppMetadata;
 import io.hyscale.deployer.core.model.DeploymentStatus;
-import io.hyscale.deployer.services.model.Pod;
-import io.hyscale.deployer.services.model.ReplicaInfo;
-import io.hyscale.deployer.services.model.ResourceStatus;
-import io.hyscale.deployer.services.model.ServiceAddress;
+import io.hyscale.deployer.services.model.*;
 import io.hyscale.deployer.services.progress.ProgressHandler;
 
 /**
@@ -73,7 +71,7 @@ public interface Deployer<T extends AuthConfig> {
      * Check if User can access cluster
      *
      * @param authConfig
-     * @return true if user can access cluster
+     * @return true if user can access cluster else false
      * @throws HyscaleException
      */
     public boolean authenticate(T authConfig) throws HyscaleException;
@@ -152,19 +150,33 @@ public interface Deployer<T extends AuthConfig> {
     }
 
 
-
     List<Pod> getPods(String namespace, String appName, String serviceName, T k8sAuthorisation) throws Exception;
 
-	/**
-	 * Fetches the replicas of the latest deployment of a service
-	 * @param authConfig Auth of connecting to the cluster
-	 * @param appName  Name of the application
-	 * @param serviceName service name
-	 * @param namespace namespace of the deployed application
-	 * @return
-	 * @throws HyscaleException
-	 */
+    /**
+     * Fetches the replicas of the latest deployment of a service
+     *
+     * @param authConfig  Auth of connecting to the cluster
+     * @param appName     Name of the application
+     * @param serviceName service name
+     * @param namespace   namespace of the deployed application
+     * @return
+     * @throws HyscaleException
+     */
 
-	public List<ReplicaInfo> getLatestReplicas(T authConfig, String appName, String serviceName, String namespace) throws HyscaleException ;
+    public List<ReplicaInfo> getLatestReplicas(T authConfig, String appName, String serviceName, String namespace) throws HyscaleException;
 
+    /**
+     * Scales a service by its operation
+     * @param authConfig Auth of cluster
+     * @param appName Name of the application
+     * @param serviceName Name of the service to be scaled
+     * @param namespace namespace of the deployed application
+     * @param scaleSpec the spec to scale the service
+     * @return ScaleStatus
+     * @throws HyscaleException
+     */
+
+    public ScaleStatus scale(T authConfig, String appName, String serviceName, String namespace, ScaleSpec scaleSpec) throws HyscaleException;
+    
+    public ClusterVersionInfo getVersion(T authConfig) throws HyscaleException;
 }

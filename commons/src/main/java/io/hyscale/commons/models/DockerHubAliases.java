@@ -31,10 +31,13 @@ public class DockerHubAliases {
      * @return list of registry aliases
      */
     public static List<String> getDockerRegistryAliases(String registry) {
-        if (DOCKER_REGISTRY_ALIASES.contains(registry)) {
-            return REGISTRY_HOST_LIST;
-        }
+		if (DOCKER_REGISTRY_ALIASES.contains(registry)) {
+			return REGISTRY_HOST_LIST;
+		}
         return List.of(registry);
     }
-
+    
+    public static List<String> getDefaultDockerRegistryAlias() {
+    	return REGISTRY_HOST_LIST;
+    }
 }

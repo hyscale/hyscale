@@ -16,9 +16,7 @@
 package io.hyscale.controller.commands.deploy;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 import io.hyscale.commons.component.ComponentInvoker;
@@ -26,17 +24,15 @@ import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.validator.Validator;
+import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.invoker.DockerfileGeneratorComponentInvoker;
-import io.hyscale.controller.model.EffectiveServiceSpec;
-import io.hyscale.controller.model.HyscaleCommandSpec;
-import io.hyscale.controller.model.HyscaleInputSpec;
-import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.controller.processor.HyscaleInputSpecProcessor;
-import io.hyscale.controller.processor.ServiceSpecProcessor;
+import io.hyscale.controller.model.*;
+import io.hyscale.controller.profile.ServiceSpecProcessor;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.ServiceSpecUtil;
-import io.hyscale.controller.validator.impl.InputSpecPostValidator;
+import io.hyscale.controller.validator.impl.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +41,7 @@ import org.springframework.stereotype.Component;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.builder.WorkflowContextBuilder;
+import io.hyscale.controller.model.WorkflowContextBuilder;
 import io.hyscale.controller.commands.input.ProfileArg;
 import io.hyscale.controller.invoker.DeployComponentInvoker;
 import io.hyscale.controller.invoker.ImageBuildComponentInvoker;
@@ -53,33 +49,37 @@ import io.hyscale.controller.invoker.ManifestGeneratorComponentInvoker;
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.validation.constraints.Pattern;
+
 /**
- *  This class executes 'hyscale deploy service' command
- *  It is a sub-command of the 'hyscale deploy' command
- *  @see HyscaleDeployCommand
- *  Every command/sub-command has to implement the {@link Callable} so that
- *  whenever the command is executed the {@link #call()}
- *  method will be invoked
+ * This class executes 'hyscale deploy service' command
+ * It is a sub-command of the 'hyscale deploy' command
  *
  * @option namespace  name of the namespace in which the service to be deployed
  * @option appName   name of the app to logically group your services
  * @option serviceSpecs   list of service specs that are to be deployed
  * @option profiles list of profiles for services
+ * @option profile profile name to look for. Profile file should be present for all services in service spec
+ * (profiles and profile are mutually exclusive)
  * @option verbose  prints the verbose output of the deployment
- *
- *  Eg: hyscale deploy service -f svca.hspec -f svcb.hspec -p dev-svca.hprof -n dev -a sample
- *
- *
- *  Responsible for deploying a service with the given 'hspec' to
- *  the configured kubernetes cluster ,starting from image building to manifest generation
- *  to deployment. Creates a WorkflowContext to communicate across
- *  all deployment stages.
- *
+ * <p>
+ * Eg 1: hyscale deploy service -f svca.hspec -f svcb.hspec -p dev-svca.hprof -n dev -a sample
+ * Eg 2: hyscale deploy service -f svca.hspec -f svcb.hspec -P dev -n dev -a sample
+ * <p>
+ * Responsible for deploying a service with the given 'hspec' to
+ * the configured kubernetes cluster.
+ * performs a validation of input before starting deployment.
+ * Performs functions ranging from image building to manifest generation to deployment.
+ * Creates a WorkflowContext to communicate across all deployment stages.
+ * @see HyscaleDeployCommand
+ * Every command/sub-command has to implement the {@link Callable} so that
+ * whenever the command is executed the {@link #call()}
+ * method will be invoked
  */
 @CommandLine.Command(name = "service", aliases = {"services"},
-        description = "Deploys the service to kubernetes cluster",exitCodeOnInvalidInput = 223,exitCodeOnExecutionException = 123)
+        description = "Deploys the service to kubernetes cluster", exitCodeOnInvalidInput = 223, exitCodeOnExecutionException = 123)
 @Component
 public class HyscaleDeployServiceCommand implements Callable<Integer> {
 
@@ -100,16 +100,13 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
     private boolean verbose = false;
 
     @CommandLine.Option(names = {"-f", "--files"}, required = true, description = "Service specs files.", split = ",")
-    private List<File> serviceSpecs;
-    
-    @ArgGroup(exclusive = true)
+    private List<File> serviceSpecsFiles;
+
+    @ArgGroup(exclusive = true, heading = "Profile options", order = 10)
     private ProfileArg profileArg;
-    
+
     @Autowired
     private InputSpecPostValidator inputSpecPostValidator;
-    
-    @Autowired
-    private ServiceSpecProcessor serviceSpecProcessor;
 
     @Autowired
     private ImageBuildComponentInvoker imageBuildComponentInvoker;
@@ -122,50 +119,87 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
 
     @Autowired
     private DeployComponentInvoker deployComponentInvoker;
-    
+
     @Autowired
-    private HyscaleInputSpecProcessor hyscaleInputSpecProcessor;
-    
+    private ServiceSpecInputValidator serviceSpecInputValidator;
+
     @Autowired
-    private WorkflowContextBuilder workflowContextBuilder;
-    
+    private ServiceSpecProcessor serviceSpecProcessor;
+
+    @Autowired
+    private K8sAuthConfigBuilder authConfigBuilder;
+
+    @Autowired
+    private DockerDaemonValidator dockerValidator;
+
+    @Autowired
+    private RegistryValidator registryValidator;
+
+    @Autowired
+    private ManifestValidator manifestValidator;
+
+    @Autowired
+    private ClusterValidator clusterValidator;
+
+    @Autowired
+    private VolumeValidator volumeValidator;
+
+    private List<Validator<WorkflowContext>> postValidators;
+
+    @PostConstruct
+    public void init() {
+        this.postValidators = new LinkedList<>();
+        this.postValidators.add(dockerValidator);
+        this.postValidators.add(registryValidator);
+        this.postValidators.add(manifestValidator);
+        this.postValidators.add(clusterValidator);
+        this.postValidators.add(volumeValidator);
+    }
+
     @Override
     public Integer call() throws Exception {
-        WorkflowLogger.header(ControllerActivity.PROCESSING_INPUT);
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        HyscaleCommandSpec commandSpec = new HyscaleCommandSpec();
-        commandSpec.setAppName(appName);
-        commandSpec.setServiceSpecFiles(serviceSpecs);
-        
-        if (profileArg != null) {
-            commandSpec.setProfileFiles(profileArg.getProfiles());
-            commandSpec.setProfileName(profileArg.getProfileName());
-        }
-        // Handles input preprocessing
-        HyscaleInputSpec hyscaleInput = hyscaleInputSpecProcessor.process(commandSpec);
-        if (hyscaleInput == null) {
+
+        // Validate Service specs with schema
+        if (!serviceSpecInputValidator.validate(serviceSpecsFiles)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        
+
         Map<String, File> serviceVsSpecFile = new HashMap<String, File>();
-        for (File serviceSpec : serviceSpecs) {
+        for (File serviceSpec : serviceSpecsFiles) {
             serviceVsSpecFile.put(ServiceSpecUtil.getServiceName(serviceSpec), serviceSpec);
         }
-        List<EffectiveServiceSpec> effectiveServiceSpecList = serviceSpecProcessor.getEffectiveServiceSpec(hyscaleInput);
-        
-        List<WorkflowContext> contextList = workflowContextBuilder.buildContextList(effectiveServiceSpecList, appName, namespace);
-        
-        contextList = workflowContextBuilder.updateAuthConfig(contextList);
-        
-        hyscaleInputSpecProcessor.getDeployPostValidators().forEach( each -> inputSpecPostValidator.addValidator(each)); 
-        
+
+        // Process servicespecs to form EffectiveServiceSpec from ProfileArg & ServiceSpecFiles
+        List<EffectiveServiceSpec> effectiveServiceSpecs = serviceSpecProcessor.process(profileArg, serviceSpecsFiles);
+
+        // Construct WorkflowContext
+        List<WorkflowContext> contextList = new ArrayList<>();
+        for (EffectiveServiceSpec each : effectiveServiceSpecs) {
+            if (each != null && each.getServiceSpec() != null && each.getServiceMetadata() != null) {
+                WorkflowContextBuilder builder = new WorkflowContextBuilder(appName);
+                try {
+                    builder.withProfile(each.getServiceMetadata().getEnvName());
+                    builder.withAuthConfig(authConfigBuilder.getAuthConfig());
+                    builder.withService(each.getServiceSpec());
+                    builder.withNamespace(namespace);
+                    contextList.add(builder.get());
+                } catch (HyscaleException e) {
+                    logger.error("Error while preparing workflow context ", e);
+                    throw e;
+                }
+            }
+        }
+
+        postValidators.forEach(each -> inputSpecPostValidator.addValidator(each));
+
         if (!inputSpecPostValidator.validate(contextList)) {
             WorkflowLogger.logPersistedActivities();
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        
+
         boolean isCommandFailed = false;
         for (WorkflowContext workflowContext : contextList) {
             String serviceName = workflowContext.getServiceName();
@@ -180,11 +214,11 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
             workflowContext.addAttribute(WorkflowConstants.CLEAN_UP_SERVICE_DIR, true);
 
             executeInvoker(dockerfileGeneratorComponentInvoker, workflowContext);
-            
+
             executeInvoker(imageBuildComponentInvoker, workflowContext);
-            
+
             executeInvoker(manifestGeneratorComponentInvoker, workflowContext);
-            
+
             if (!workflowContext.isFailed()) {
                 List<Manifest> manifestList = (List<Manifest>) workflowContext.getAttribute(WorkflowConstants.OUTPUT);
                 workflowContext.addAttribute(WorkflowConstants.GENERATED_MANIFESTS, manifestList);
@@ -194,10 +228,10 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
             logWorkflowInfo(workflowContext);
             isCommandFailed = isCommandFailed ? isCommandFailed : workflowContext.isFailed();
         }
-        
+
         return isCommandFailed ? ToolConstants.HYSCALE_ERROR_CODE : 0;
     }
-    
+
     private boolean executeInvoker(ComponentInvoker<WorkflowContext> invoker, WorkflowContext context) {
         if (context.isFailed()) {
             return false;
@@ -205,7 +239,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
         try {
             invoker.execute(context);
         } catch (HyscaleException e) {
-            logger.error("Error while executing component invoker: {}, for app: {}, service: {}", 
+            logger.error("Error while executing component invoker: {}, for app: {}, service: {}",
                     invoker.getClass(), appName, context.getServiceName(), e);
             context.setFailed(true);
         }
@@ -233,7 +267,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
         CommandUtil.logMetaInfo((String) workflowContext.getAttribute(WorkflowConstants.SERVICE_IP),
                 ControllerActivity.SERVICE_URL);
     }
-    
+
     @PreDestroy
     public void clear() {
         SetupConfig.clearAbsolutePath();

@@ -21,25 +21,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.builder.core.models.ImageBuilderActivity;
-import io.hyscale.commons.commands.CommandExecutor;
-import io.hyscale.commons.commands.provider.ImageCommandProvider;
+import io.hyscale.builder.services.docker.HyscaleDockerClient;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.LoggerTags;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.Status;
 import io.hyscale.commons.validator.Validator;
-import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.servicespec.commons.util.ImageUtil;
 
+/**
+ * Validates if docker is installed as well as running
+ * In case docker is not required,
+ * skips validation and returns true
+ */
 @Component
 public class DockerDaemonValidator implements Validator<WorkflowContext> {
     private static final Logger logger = LoggerFactory.getLogger(DockerDaemonValidator.class);
 
     @Autowired
-    private ImageCommandProvider commandProvider;
+    private HyscaleDockerClient hyscaleDockerClient;
 
     private boolean isDockerAvailable = false;
+    
+    private boolean isDockerUnavailable = false;
 
     /**
      * 1. It will check that spec has buildspec or dockerfile 
@@ -54,29 +58,29 @@ public class DockerDaemonValidator implements Validator<WorkflowContext> {
         if (isDockerAvailable) {
             return isDockerAvailable;
         }
-        WorkflowLogger.startActivity(ValidatorActivity.VALIDATING_DOCKER);
+        if (isDockerUnavailable) {
+            return false;
+        }
+
         if (!ImageUtil.isImageBuildPushRequired(context.getServiceSpec())) {
-            WorkflowLogger.endActivity(Status.SKIPPING);
             return true;
         }
-        String command = commandProvider.dockerVersion();
-        logger.debug("Docker Installed check command: {}", command);
-        boolean success = CommandExecutor.execute(command);
-        if (!success) {
+        
+        if (!hyscaleDockerClient.checkForDocker()) {
+            logger.error("Docker not installed, validation failed");
             WorkflowLogger.persist(ImageBuilderActivity.DOCKER_NOT_INSTALLED, LoggerTags.ERROR);
-            WorkflowLogger.endActivity(Status.FAILED);
+            isDockerUnavailable = true;
             return false;
         }
-        command = commandProvider.dockerImages();
-        logger.debug("Docker Daemon running check command: {}", command);
-        success = CommandExecutor.execute(command);
-        if (!success) {
+        
+        if (!hyscaleDockerClient.isDockerRunning()) {
+            logger.error("Docker not running, validation failed");
             WorkflowLogger.persist(ImageBuilderActivity.DOCKER_DAEMON_NOT_RUNNING, LoggerTags.ERROR);
-            WorkflowLogger.endActivity(Status.FAILED);
+            isDockerUnavailable = true;
             return false;
         }
+        
         isDockerAvailable = true;
-        WorkflowLogger.endActivity(Status.DONE);
         return isDockerAvailable;
     }
 }

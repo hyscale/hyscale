@@ -1,1 +1,2 @@
 hyscale.ctl.k8s.pod.log.tail.lines=100
+hyscale.ctl.k8s.pod.max.restart.count=3

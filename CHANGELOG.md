@@ -1,3 +1,31 @@
+# v0.9.6 Release
+
+### Features:
+
+* Support for imperative scaling 
+* Deployment wait time tuning proportional to replicas  
+
+### Fixes
+
+* Reduced API calls to improve performance for service and app status commands
+* Fix for handling zero replicas for logs and status commands
+* Performance improvements with lazy loading   
+
+# v0.9.5 Release
+
+ ### Features:
+
+* Support for multi-stage dockerfiles in hspec   
+* Support for profiles with ProfileName(-P) option
+* Get Apps include profile column
+* Get replica status of a particular service 
+
+### Fixes
+
+* Fix for fetching schema from remote repository
+* Fix for validating for cluster,registry etc. entities upfront
+* Fix for using TLS 1.2 as default protocol while communcicating with kubernetes cluster as temporary workaround for [OpenJDK bug](https://bugs.openjdk.java.net/browse/JDK-8236039) 
+
 # v0.9.4.1 Release
 
 This is a minor release to support listing applications in a cluster,https healthcheck for services,troubleshooting failures with pod exitcodes, 

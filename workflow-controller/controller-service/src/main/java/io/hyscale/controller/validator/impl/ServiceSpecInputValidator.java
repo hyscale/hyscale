@@ -17,6 +17,8 @@ package io.hyscale.controller.validator.impl;
 
 import java.io.File;
 
+import io.hyscale.commons.constants.ValidationConstants;
+import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,27 +27,29 @@ import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.validator.InputSpecValidator;
 
+/**
+ * Provides Service spec related details to {@link InputSpecValidator}
+ *
+ */
 @Component
-public class ServiceSpecInputValidator extends InputSpecValidator{
+public class ServiceSpecInputValidator extends InputSpecValidator {
 
     @Autowired
-    private ServiceSpecFileValidator serviceSpecFileValidator;
-
-    @Autowired
-    private ServiceSpecSchemaValidator serviceSpecSchemaValidator;
+    private HSpecSchemaValidator hSpecSchemaValidator;
 
     @Override
-    protected Validator<File> getFileValidator() {
-        return serviceSpecFileValidator;
+    public String getFilePattern() {
+        return ValidationConstants.SERVICE_SPEC_NAME_REGEX;
+    }
+
+    @Override
+    public ServiceSpecActivity getWarnMessage() {
+        return ServiceSpecActivity.IMPROPER_SERVICE_FILE_NAME;
     }
 
     @Override
     protected Validator<File> getSchemaValidator() {
-        return serviceSpecSchemaValidator;
+        return hSpecSchemaValidator;
     }
-    
-    @Override
-    protected Activity getValidatorActivity() {
-        return ValidatorActivity.VALIDATING_SERVICE_SPEC;
-    }
+
 }

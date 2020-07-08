@@ -63,11 +63,11 @@ public class ServiceLogsInputHandler {
                     ReplicaInfo replicaInfo = replicaInfoMap.get(replicaIndex);
                     replicaName = replicaInfo != null ? replicaInfo.getName() : null;
                 } else {
-                    replicaName = input;
+                    replicaName = replicaProcessingService.doesReplicaExist(input, replicaInfoList) ? input : null;
                 }
             } catch (NumberFormatException | IndexOutOfBoundsException e) {
             }
-            if (replicaName == null) {
+            if (replicaName == null && inputAttempt < MAX_RETRIES) {
                 WorkflowLogger.action(ControllerActivity.INVALID_INPUT_RETRY, input);
             }
         } while (inputAttempt < MAX_RETRIES && replicaName == null);

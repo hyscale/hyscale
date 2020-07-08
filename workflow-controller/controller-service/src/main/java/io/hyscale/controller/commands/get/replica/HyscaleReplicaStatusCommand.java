@@ -19,17 +19,23 @@ import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.builder.WorkflowContextBuilder;
+import io.hyscale.controller.builder.K8sAuthConfigBuilder;
+import io.hyscale.controller.model.WorkflowContextBuilder;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.service.ReplicaProcessingService;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.validator.impl.ClusterValidator;
 import io.hyscale.deployer.core.model.DeploymentStatus;
+import io.hyscale.deployer.services.model.DeployerActivity;
+import io.hyscale.deployer.services.model.ReplicaInfo;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 
 import javax.validation.constraints.Pattern;
+
+import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -65,35 +71,47 @@ public class HyscaleReplicaStatusCommand implements Callable<Integer> {
     private String namespace;
 
     @Pattern(regexp = ValidationConstants.APP_NAME_REGEX, message = ValidationConstants.INVALID_APP_NAME_MSG)
-    @CommandLine.Option(names = {"-a", "--app"}, required = true, description = "Application name")
+    @CommandLine.Option(names = {"-a", "--app","--application"}, required = true, description = "Application name")
     private String appName;
 
     @Pattern(regexp = ValidationConstants.SERVICE_NAME_REGEX, message = ValidationConstants.INVALID_SERVICE_NAME_MSG)
     @CommandLine.Option(names = {"-s", "--service"}, required = true, description = "Service name")
     private String serviceName;
-    
+
     @Autowired
     private ClusterValidator clusterValidator;
 
     @Autowired
     private ReplicaProcessingService replicaProcessingService;
-    
+
     @Autowired
-    private WorkflowContextBuilder workflowContextBuilder;
+    private K8sAuthConfigBuilder authConfigBuilder;
 
     @Override
     public Integer call() throws Exception {
-        WorkflowLogger.header(ControllerActivity.PROCESSING_INPUT);
         if (!CommandUtil.isInputValid(this)) {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        WorkflowContext context = workflowContextBuilder.updateAuthConfig(new WorkflowContext());
-        if (!clusterValidator.validate(context )) {
+        WorkflowContext context = new WorkflowContextBuilder(appName)
+                .withNamespace(namespace).withServiceName(serviceName).withAuthConfig(authConfigBuilder.getAuthConfig()).get();
+        if (!clusterValidator.validate(context)) {
             WorkflowLogger.logPersistedActivities();
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
-        
-        replicaProcessingService.logReplicas(replicaProcessingService.getReplicas(appName, serviceName, namespace, true), false);
+
+        WorkflowLogger.header(ControllerActivity.SERVICE_NAME, serviceName);
+
+        List<ReplicaInfo> replicas = replicaProcessingService.getReplicas(appName, serviceName, namespace, true);
+        if (replicas != null && !replicas.isEmpty()) {
+            replicaProcessingService.logReplicas(replicas, false);
+        } else if (replicaProcessingService.hasService(context.getAuthConfig(), appName, serviceName, namespace)){
+            WorkflowLogger.error(DeployerActivity.SERVICE_WITH_ZERO_REPLICAS);
+            WorkflowLogger.footer();
+        } else {
+            WorkflowLogger.error(ControllerActivity.SERVICE_NOT_CREATED);
+            WorkflowLogger.error(ControllerActivity.CHECK_SERVICE_STATUS);
+            WorkflowLogger.footer();
+        }
 
         return ToolConstants.HYSCALE_SUCCESS_CODE;
     }

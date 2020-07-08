@@ -41,12 +41,13 @@ public class TroubleshootUtil {
             String reason = each.getReason();
             if (StringUtils.isNotBlank(reason)) {
                 message.append(reason);
+                message.append(ToolConstants.DOT);
                 message.append(ToolConstants.SPACE);
             }
             message.append(each.getRecommendedFix());
             message.append(ToolConstants.NEW_LINE);
         });
-        return message.toString();
+        return message.toString().trim();
     }
 
 }

@@ -15,15 +15,18 @@
  */
 package io.hyscale.controller.validator.impl;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
+import io.hyscale.controller.model.WorkflowContextBuilder;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,6 +39,7 @@ import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.ServiceSpecTestUtil;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Image;
+import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @SpringBootTest
 public class RegistryValidatorTest {
@@ -46,35 +50,40 @@ public class RegistryValidatorTest {
     @MockBean
     private RegistryManager registryManager;
 
-    private static WorkflowContext context = new WorkflowContext();
+    private static ServiceSpec validServiceSpec = null;
+
+    private static ServiceSpec invalidServiceSpec = null;
 
     @BeforeAll
     public static void setUp() throws IOException {
-        context.setServiceSpec(ServiceSpecTestUtil.getServiceSpec("/servicespecs/validator/registry_validation.hspec"));
+        validServiceSpec = ServiceSpecTestUtil.getServiceSpec("/servicespecs/validator/registry_validation.hspec");
+        invalidServiceSpec = ServiceSpecTestUtil.getServiceSpec("/servicespecs/validator/invalid-registry.hspec");
+
     }
 
-    @Test
-    @Order(0)
-    public void testInvalidCase() {
-        try {
-            Mockito.when(registryManager
-                    .getImageRegistry(context.getServiceSpec().get(HyscaleSpecFields.image, Image.class).getRegistry()))
-                    .thenReturn(null);
-            assertFalse(registryValidator.validate(context));
-        } catch (HyscaleException e) {
-            fail(e);
-        }
+    @BeforeEach
+    public void initMocks() throws HyscaleException {
+        Mockito.when(registryManager
+                .getImageRegistry(validServiceSpec.get(HyscaleSpecFields.image, Image.class).getRegistry()))
+                .thenReturn(new ImageRegistry());
+
+        Mockito.when(registryManager
+                .getImageRegistry(invalidServiceSpec.get(HyscaleSpecFields.image, Image.class).getRegistry()))
+                .thenReturn(null);
     }
 
-    @Test
-    public void testValidCase() {
+    public static Stream<Arguments> input() {
+        return Stream.of(Arguments.of(validServiceSpec, true), Arguments.of(invalidServiceSpec, false));
+    }
+
+    @ParameterizedTest
+    @MethodSource("input")
+    public void validateRegistry(ServiceSpec serviceSpec, boolean expectedResult) {
         try {
-            Mockito.when(registryManager
-                    .getImageRegistry(context.getServiceSpec().get(HyscaleSpecFields.image, Image.class).getRegistry()))
-                    .thenReturn(new ImageRegistry());
-            assertTrue(registryValidator.validate(context));
-        } catch (HyscaleException e) {
-            fail(e);
+            WorkflowContext context = new WorkflowContextBuilder(null).withService(serviceSpec).get();
+            assertEquals(expectedResult, registryValidator.validate(context));
+        } catch (HyscaleException ex) {
+            fail(ex);
         }
     }
 

@@ -17,6 +17,14 @@ package io.hyscale.commons.validator;
 
 import io.hyscale.commons.exception.HyscaleException;
 
+/**
+ * Provides methods to be implemented by validators
+ * These validators are used to validate information related to
+ * service spec, cluster among others
+ * @author tushar
+ *
+ * @param <T>
+ */
 public interface Validator<T> {
     
     public boolean validate(T t) throws HyscaleException;

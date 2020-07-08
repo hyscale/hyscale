@@ -15,9 +15,9 @@
  */
 package io.hyscale.troubleshooting.integration.errors;
 
-import io.hyscale.commons.exception.HyscaleErrorCode;
+import io.hyscale.commons.exception.HyscaleError;
 
-public enum TroubleshootErrorCodes implements HyscaleErrorCode {
+public enum TroubleshootErrorCodes implements HyscaleError {
 
     ERROR_WHILE_BUILDING_RESOURCES("Error while building resources for troubleshooting service {}"),
     INVALID_ACTION("Action is not applicable for this resource"),
@@ -25,13 +25,23 @@ public enum TroubleshootErrorCodes implements HyscaleErrorCode {
     CANNOT_DETERMINE_CAUSE_OF_THE_ERROR("Cannot determine the cause of the problem");
 
     private String message;
-
+    private int code;
     TroubleshootErrorCodes(String message) {
         this.message = message;
     }
 
+    TroubleshootErrorCodes(String message,Integer code){
+        this.message=message;
+        this.code=code;
+    }
+
     @Override
-    public String getErrorMessage() {
-        return null;
+    public String getMessage() {
+        return message;
+    }
+
+    @Override
+    public int getCode() {
+        return this.code;
     }
 }

@@ -18,6 +18,6 @@ package io.hyscale.deployer.services.handler;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.AuthConfig;
 
-public interface AuthenticationHandler {
-	public boolean authenticate(AuthConfig authConfig) throws HyscaleException;
+public interface AuthenticationHandler<T extends AuthConfig> {
+	public boolean authenticate(T authConfig) throws HyscaleException;
 }

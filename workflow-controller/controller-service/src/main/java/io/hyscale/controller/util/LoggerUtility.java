@@ -36,6 +36,7 @@ import io.hyscale.commons.utils.HyscaleStringUtil;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.model.ReplicaInfo;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.util.DeployerLogUtil;
@@ -92,6 +93,7 @@ public class LoggerUtility {
         } catch (HyscaleException e) {
             context.setFailed(true);
             WorkflowLogger.error(ControllerActivity.CAUSE, e.getMessage());
+            WorkflowLogger.footer();
             throw e;
         }
         if (StringUtils.isBlank(selectedPod)) {
@@ -103,13 +105,14 @@ public class LoggerUtility {
         } catch (HyscaleException ex) {
             logger.error("Error while getting deployment logs for service: {}, in namespace: {}", serviceName,
                     namespace, ex);
-            if (ex.getHyscaleErrorCode() == DeployerErrorCodes.FAILED_TO_RETRIEVE_POD) {
+            if (ex.getHyscaleError() == DeployerErrorCodes.FAILED_TO_RETRIEVE_POD) {
                 WorkflowLogger.error(ControllerActivity.SERVICE_NOT_CREATED);
             } else {
                 context.setFailed(true);
                 WorkflowLogger.error(ControllerActivity.FAILED_TO_STREAM_SERVICE_LOGS, ex.getMessage());
             }
             WorkflowLogger.error(ControllerActivity.CHECK_SERVICE_STATUS);
+            throw ex;
         } finally {
             WorkflowLogger.footer();
         }
@@ -140,8 +143,12 @@ public class LoggerUtility {
         // if replica is provides by the user, validation happens only on the latest replicas of the service
         List<ReplicaInfo> replicaInfoList = replicaProcessingService.getReplicas(appName, serviceName, namespace, replicaName != null ? false : true);
         if (replicaInfoList == null || replicaInfoList.isEmpty()) {
-            WorkflowLogger.error(ControllerActivity.SERVICE_NOT_CREATED);
-            WorkflowLogger.error(ControllerActivity.CHECK_SERVICE_STATUS);
+            if (replicaProcessingService.hasService(authConfig, appName, serviceName, namespace)) {
+                WorkflowLogger.error(DeployerActivity.SERVICE_WITH_ZERO_REPLICAS);
+            } else {
+                WorkflowLogger.error(ControllerActivity.SERVICE_NOT_CREATED);
+                WorkflowLogger.error(ControllerActivity.CHECK_SERVICE_STATUS);
+            }
             WorkflowLogger.footer();
             return null;
         }
@@ -154,7 +161,7 @@ public class LoggerUtility {
                 replicaInfo = replicaInfoList.get(0);
             }
             // interactively consume the replica name from the user if replicaInfo is null
-            replicaName = replicaInfo != null ? replicaInfo.getName() : serviceLogsInputHandler.getPodFromUser(replicaInfoList);
+            return replicaInfo != null ? replicaInfo.getName() : serviceLogsInputHandler.getPodFromUser(replicaInfoList);
         }
 
         if (!replicaProcessingService.doesReplicaExist(replicaName, replicaInfoList)) {

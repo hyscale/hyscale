@@ -28,6 +28,7 @@ import io.hyscale.commons.logger.ActivityContext;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Status;
 import io.hyscale.commons.utils.ThreadPoolUtil;
+import io.hyscale.deployer.core.model.ResourceOperation;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.model.ResourceStatus;
 import io.hyscale.deployer.services.model.ResourceUpdatePolicy;
@@ -95,6 +96,19 @@ public interface ResourceLifeCycleHandler<T> {
     public List<T> getBySelector(ApiClient apiClient, String selector, boolean label, String namespace)
             throws HyscaleException;
 
+    /**
+     * Get all resources irrespective of namespace
+     * @param apiClient
+     * @param selector
+     * @param label
+     * @return List of resource
+     * @throws HyscaleException
+     */
+    default List<T> listForAllNamespaces(ApiClient apiClient, String selector, boolean label)
+            throws HyscaleException {
+        throw new HyscaleException(DeployerErrorCodes.OPERATION_NOT_SUPPORTED,
+                ResourceOperation.GET_ALL.getOperation(), getKind());
+    }
     /**
      * Patch resource
      * 1. Fetch resource from cluster, if not found create
@@ -190,7 +204,7 @@ public interface ResourceLifeCycleHandler<T> {
                     get(apiClient, pendingResource, namespace);
                     logger.debug("Resource {} found to be existing, waiting for resource deletion", pendingResource);
                 } catch (HyscaleException e) {
-                    if (e.getHyscaleErrorCode() == DeployerErrorCodes.RESOURCE_NOT_FOUND) {
+                    if (e.getHyscaleError() == DeployerErrorCodes.RESOURCE_NOT_FOUND) {
                         deletePendingResourceIterator.remove();
                     }
                 }

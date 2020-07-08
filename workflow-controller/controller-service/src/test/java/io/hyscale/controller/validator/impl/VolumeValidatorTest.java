@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.util.stream.Stream;
 
+import io.hyscale.controller.model.WorkflowContextBuilder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -40,17 +41,17 @@ public class VolumeValidatorTest {
 
     public static Stream<Arguments> input() throws IOException {
         return Stream.of(Arguments
-                .of(ServiceSpecTestUtil.getServiceSpec("/servicespecs/validator/registry_validation.hspec"), true),
+                        .of(ServiceSpecTestUtil.getServiceSpec("/servicespecs/validator/registry_validation.hspec"), true),
                 Arguments.of(null, false));
     }
 
     @ParameterizedTest
     @MethodSource(value = "input")
     void testValidate(ServiceSpec serviceSpec, boolean expectedValue) {
-        WorkflowContext context = new WorkflowContext();
-        context.setServiceSpec(serviceSpec);
         try {
-            assertEquals(expectedValue, volumeValidator.validate(context));
+            WorkflowContextBuilder builder = new WorkflowContextBuilder(null);
+            builder.withService(serviceSpec);
+            assertEquals(expectedValue, volumeValidator.validate(builder.get()));
         } catch (HyscaleException e) {
             fail(e);
         }

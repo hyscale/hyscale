@@ -49,7 +49,7 @@ public class WorkflowLogger {
     public static void info(Activity activity, String... args) {
         logActivity(activity, LoggerTags.USER_INFO_TAG, args);
     }
-    
+
     public static void debug(Activity activity, String... args) {
         logActivity(activity, LoggerTags.DEBUG, args);
     }
@@ -65,7 +65,7 @@ public class WorkflowLogger {
     public static void warn(Activity activity, String... args) {
         logActivity(activity, LoggerTags.WARN, args);
     }
-    
+
     public static void action(Activity activity, String... args) {
         logActivity(activity, LoggerTags.ACTION, args);
     }
@@ -203,7 +203,7 @@ public class WorkflowLogger {
     public static void persist(Activity activity, String... args) {
         persist(activity, LoggerTags.WARN, args);
     }
-    
+
     public static void persist(Activity activity, LoggerTags loggerTags, String... args) {
         if (activity != null) {
             persistedActivities.add(getActivityMessage(activity, loggerTags, args));
@@ -221,8 +221,9 @@ public class WorkflowLogger {
         }
         persistedActivities.clear();
     }
-    
-    public static void printLine() {
-        System.out.println();
+
+    public static void log(String message) {
+        System.out.println(message);
     }
+
 }

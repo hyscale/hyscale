@@ -36,6 +36,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.component.ComponentInvoker;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.io.LogProcessor;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.Manifest;
@@ -75,7 +76,7 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
     private DeployerConfig deployerConfig;
 
     @Autowired
-    private io.hyscale.commons.io.LogProcessor logProcessor;
+    private LogProcessor logProcessor;
 
     @Autowired
     private K8SResourcesCleanUpHook k8sResourcesCleanUpHook;
@@ -202,7 +203,7 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
         WorkflowLogger.header(ControllerActivity.ERROR);
         Object troubleshootMsgObj = context.getAttribute(WorkflowConstants.TROUBLESHOOT_MESSAGE);
         StringBuilder errorMessage = new StringBuilder();
-        errorMessage.append(he != null ? he.getMessage() : DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST.getErrorMessage());
+        errorMessage.append(he != null ? he.getMessage() : DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST.getMessage());
         if (troubleshootMsgObj != null) {
             String troubleshootMessage = (String) troubleshootMsgObj;
             logger.error("Troubleshoot message: {}", troubleshootMessage);

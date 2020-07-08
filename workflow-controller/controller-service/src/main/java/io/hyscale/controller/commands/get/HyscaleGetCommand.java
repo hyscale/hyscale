@@ -53,7 +53,7 @@ public class HyscaleGetCommand implements Callable<Integer> {
      */
     @Override
     public Integer call() throws Exception {
-        new CommandLine(new HyscaleGetCommand()).usage(System.out);
+        new CommandLine(this).usage(System.out);
         return ToolConstants.INVALID_INPUT_ERROR_CODE;
     }
 
