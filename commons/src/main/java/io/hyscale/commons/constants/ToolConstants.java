@@ -20,7 +20,7 @@ public class ToolConstants {
     public static final String CHARACTER_ENCODING = "UTF-8";
 
     public static final String AT_SIGN = "@";
-    
+
     public static final String COMMAND_SEPARATOR = "&&";
 
     public static final String COLON = ":";
@@ -28,7 +28,7 @@ public class ToolConstants {
     public static final String DOUBLE_COLON = "::";
 
     public static final String COMMA = ",";
-    
+
     public static final String DOT = ".";
 
     public static final String DASH = "-";
@@ -36,15 +36,15 @@ public class ToolConstants {
     public static final String HYSCALECTL_LOGS_DIR_PROPERTY = "HYSCALECTL_LOGS_DIR";
 
     public static final String EMPTY_STRING = "";
-    
+
 	public static final String EQUALS="=";
 
     public static final String QUOTES = "\"";
 
     public static final String SPACE = " ";
-    
+
     public static final String NEW_LINE = "\n";
-    
+
     public static final String LINUX_FILE_SEPARATOR = "/";
 
     public static final String HYSCALE = "HyScale";
@@ -56,7 +56,7 @@ public class ToolConstants {
     public static final String BUILDDATE_KEY = "BuildDate : ";
 
     public static final String RELEASE_NAME_KEY = "ReleaseName: ";
-    
+
     public static final String HYSCALE_HOST_FS_PROPERTY = "HYSCALE_HOST_FS";
 
     public static final String HYSCALE_BUILD_TIME = "hyscale.build.time";
@@ -64,9 +64,9 @@ public class ToolConstants {
     public static final String HYSCALE_RELEASE_NAME = "hyscale.release.name";
 
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
-    
+
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
-    
+
     public static final Integer HYSCALE_ERROR_CODE = 11;
 
     public static final Integer SCHEMA_VALIDATION_FAILURE_ERROR_CODE = 22;
@@ -82,15 +82,17 @@ public class ToolConstants {
     public static final String NASHORNS_ARGS = "nashorn.args";
 
     public static final String NASHORNS_DEPRECATION_WARNING_FLAG = "--no-deprecation-warning";
-    
+
     public static final String JDK_TLS_CLIENT_PROTOCOLS_ARGS = "jdk.tls.client.protocols";
 
     public static final String JDK_TLS_CLIENT_VERSION = "TLSv1.2";
 
     public static final String HSPEC_EXTENSION = ".hspec";
-    
+
     public static final String HPROF_EXTENSION = ".hprof";
-    
+
     public static final String PROFILES_DIR_NAME = "profiles";
+
+    public static final String WORKFLOW_LOGGER_DISABLED = "WORKFLOW_LOGGER_DISABLED";
 
 }

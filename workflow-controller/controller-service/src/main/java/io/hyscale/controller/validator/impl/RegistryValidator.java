@@ -18,6 +18,8 @@ package io.hyscale.controller.validator.impl;
 import java.util.HashSet;
 import java.util.Set;
 
+import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
+import io.hyscale.commons.io.StructuredOutputHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,14 +44,17 @@ import io.hyscale.servicespec.commons.util.ImageUtil;
  */
 @Component
 public class RegistryValidator implements Validator<WorkflowContext> {
-	private static final Logger logger = LoggerFactory.getLogger(ClusterValidator.class);
+	private static final Logger logger = LoggerFactory.getLogger(RegistryValidator.class);
 
 	@Autowired
 	private RegistryManager registryManager;
+
+	@Autowired
+	private StructuredOutputHandler outputHandler;
 	
-	private Set<String> validRegistries = new HashSet<String>();
+	private Set<String> validRegistries = new HashSet<>();
 	
-	private Set<String> inValidRegistries = new HashSet<String>();
+	private Set<String> inValidRegistries = new HashSet<>();
 
 	/**
 	 * 1. It will check that spec has buildspec or dockerfile 
@@ -84,6 +89,9 @@ public class RegistryValidator implements Validator<WorkflowContext> {
 		}
 		registry=registry!=null?registry:"";
 		WorkflowLogger.persist(ValidatorActivity.MISSING_DOCKER_REGISTRY_CREDENTIALS, LoggerTags.ERROR, registry, registry);
+		if(WorkflowLogger.isDisabled()){
+			outputHandler.addErrorMessage(ImageBuilderErrorCodes.MISSING_DOCKER_REGISTRY_CREDENTIALS.getMessage(),registry, registry);
+		}
 		return false;
 	}
 }

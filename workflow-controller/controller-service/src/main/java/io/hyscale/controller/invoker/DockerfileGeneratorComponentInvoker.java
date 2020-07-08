@@ -99,6 +99,7 @@ public class DockerfileGeneratorComponentInvoker extends ComponentInvoker<Workfl
         WorkflowLogger.error(ControllerActivity.CAUSE, he != null ?
                 he.getMessage() : DockerfileErrorCodes.FAILED_TO_GENERATE_DOCKERFILE.getMessage());
         context.setFailed(true);
+        context.addAttribute(WorkflowConstants.ERROR_MESSAGE, (he != null) ? he.getMessage() : DockerfileErrorCodes.FAILED_TO_GENERATE_DOCKERFILE.getMessage());
         if (he != null) {
             throw he;
         }
