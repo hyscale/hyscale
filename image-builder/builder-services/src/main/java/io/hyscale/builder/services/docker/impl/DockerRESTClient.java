@@ -59,7 +59,6 @@ import io.hyscale.builder.services.docker.HyscaleDockerClient;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
 import io.hyscale.builder.services.spring.DockerClientCondition;
 import io.hyscale.commons.constants.ToolConstants;
-import io.hyscale.commons.exception.HyscaleError;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.io.HyscaleFilesUtil;
 import io.hyscale.commons.logger.ActivityContext;
@@ -238,7 +237,7 @@ public class DockerRESTClient implements HyscaleDockerClient {
                 .withTags(tags)
                 .withTarget(dockerfile.getTarget());
         if (dockerfile.getPath() != null) {
-            buildImageCmd.withDockerfilePath(dockerfile.getPath());
+            buildImageCmd.withBaseDirectory(new File(dockerfile.getPath()));
         }
         if (dockerfile.getArgs() != null && !dockerfile.getArgs().isEmpty()) {
             dockerfile.getArgs().entrySet().stream().forEach(each -> buildImageCmd.withBuildArg(each.getKey(), each.getValue()));
@@ -249,7 +248,7 @@ public class DockerRESTClient implements HyscaleDockerClient {
     private File getDockerFile(String dockerFilePath) {
         return new File(dockerFilePath + ToolConstants.LINUX_FILE_SEPARATOR + DockerImageConstants.DOCKERFILE_NAME);
     }
-
+    
     @Override
     public void pull(String image, BuildContext context) throws HyscaleException {
         ActivityContext pullActivity = new ActivityContext(ImageBuilderActivity.IMAGE_PULL);
