@@ -63,7 +63,7 @@ public class MustacheTemplateResolver {
 					out.close();
 				} catch (IOException e) {
 					HyscaleException ex = new HyscaleException(CommonErrorCode.FAILED_TO_RESOLVE_TEMPLATE, templateFile);
-					logger.error("Error while closing the output stream {}", ex);
+					logger.error("Error while closing the output stream {}", ex.getMessage());
 				}
 			}
 			String populatedTemplate = new String(outputStream.toByteArray(),

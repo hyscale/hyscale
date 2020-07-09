@@ -18,12 +18,10 @@ package io.hyscale.deployer.services.handler;
 import java.util.List;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.utils.ResourceLabelUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.model.ScaleOperation;
-import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
@@ -95,9 +93,6 @@ public abstract class PodParentHandler<T> {
     }
 
     public int getDesiredReplicas(ScaleOperation scaleOp, int scaleValue, int currentReplicas) throws HyscaleException {
-        V1Scale exisiting = new V1ScaleBuilder()
-                .withSpec(new V1ScaleSpec().replicas(currentReplicas))
-                .build();
         int desiredReplicas = currentReplicas;
         switch (scaleOp) {
             case SCALE_TO:
@@ -114,6 +109,8 @@ public abstract class PodParentHandler<T> {
                     desiredReplicas = currentReplicas - scaleValue;
                 }
                 break;
+            default:
+                logger.debug("Scale op not supported: {}", scaleOp);
         }
         desiredReplicas = desiredReplicas < 0 ? 0 : desiredReplicas;
         logger.debug("Preparing the scale patch , desired replicas {} ", desiredReplicas);

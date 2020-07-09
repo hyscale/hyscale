@@ -24,13 +24,9 @@ public class HyscaleContextUtil {
 
     private static ApplicationContext applicationContext;
 
-    public static void setContext(ApplicationContext appContext) {
+    public static synchronized void setContext(ApplicationContext appContext) {
         if (applicationContext == null) {
-            synchronized (HyscaleContextUtil.class) {
-                if (applicationContext == null) {
-                    applicationContext = appContext;
-                }
-            }
+            applicationContext = appContext;
         }
     }
 

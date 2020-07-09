@@ -58,15 +58,14 @@ public class K8sAuthenticationHandler implements AuthenticationHandler<K8sAuthor
 		AuthenticationV1Api apiInstance = new AuthenticationV1Api(apiClient);
 		try {
 			V1APIResourceList result = apiInstance.getAPIResources();
-			return result != null ? true : false;
+			return result != null;
 		} catch (ApiException e) {
 			logger.error("Exception when calling k8s authentication {} {} ", e.getCode(), e.getResponseBody(), e);
 		    if (UNAUTHORISED_ERROR_CODE == e.getCode()) {
 		        return false;
 		    }
-			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_CONNECT_TO_CLUSTER,
+			throw new HyscaleException(e, CommonErrorCode.FAILED_TO_CONNECT_TO_CLUSTER,
 					ExceptionHelper.getExceptionMessage(KUBERNETES_AUTHENTICATION, e, ResourceOperation.GET));
-			throw ex; 
 		}
 	}
 

@@ -80,7 +80,6 @@ public class ResourceLabelBuilderTests {
         assertEquals(SVC_NAME, label.get(ResourceLabelKey.SERVICE_NAME));
     }
 
-    @Test
     public static Stream<Arguments> input() {
         return Stream.of(Arguments.of("normaLize", "normaLize"),
                 Arguments.of("normalize@1", "normalize1"),
