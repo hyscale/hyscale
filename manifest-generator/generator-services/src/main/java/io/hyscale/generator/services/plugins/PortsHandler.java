@@ -100,7 +100,7 @@ public class PortsHandler implements ManifestHandler {
                 manifestSnippetList.add(buildServicePortsSnippet(v1ServicePorts, podSpecOwner));
                 manifestSnippetList.add(buildContainerPortsSnippet(v1ContainerPorts, podSpecOwner));
             } catch (JsonProcessingException e) {
-                logger.error("Error while building ports snippet {}", e);
+                logger.error("Error while building ports snippet", e);
             }
         }
         return manifestSnippetList;

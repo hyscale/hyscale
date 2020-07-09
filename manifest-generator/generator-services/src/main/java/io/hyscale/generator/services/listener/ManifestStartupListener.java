@@ -35,7 +35,7 @@ public class ManifestStartupListener {
 	@EventListener
 	public void onApplicationEvent(Object event) throws HyscaleException {
 		if (event instanceof ContextRefreshedEvent) {
-			logger.debug("Registering Manifest handlers {}");
+			logger.debug("Registering Manifest handlers");
 			pluginHandlers.registerHandlers();
 		}
 	}
