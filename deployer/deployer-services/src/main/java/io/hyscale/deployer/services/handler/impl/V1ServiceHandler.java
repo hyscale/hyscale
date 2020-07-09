@@ -18,6 +18,8 @@ package io.hyscale.deployer.services.handler.impl;
 import java.util.List;
 
 import io.hyscale.deployer.services.config.DeployerEnvConfig;
+import io.hyscale.deployer.services.constants.DeployerConstants;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +31,7 @@ import io.hyscale.commons.logger.ActivityContext;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.Status;
+import io.hyscale.commons.utils.GsonProviderUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
@@ -66,8 +69,8 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
         V1Service v1Service = null;
         try {
             resource.getMetadata().putAnnotationsItem(
-                    AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
-            v1Service = coreV1Api.createNamespacedService(namespace, resource, TRUE, null, null);
+                    AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), GsonProviderUtil.getPrettyGsonBuilder().toJson(resource));
+            v1Service = coreV1Api.createNamespacedService(namespace, resource, DeployerConstants.TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
                     ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.CREATE));
@@ -102,7 +105,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
             String clusterIP = existingService.getSpec().getClusterIP();
             resource.getMetadata().setResourceVersion(resourceVersion);
             resource.getSpec().setClusterIP(clusterIP);
-            coreV1Api.replaceNamespacedService(name, namespace, resource, TRUE, null, null);
+            coreV1Api.replaceNamespacedService(name, namespace, resource, DeployerConstants.TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
                     ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.UPDATE));
@@ -120,7 +123,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
         CoreV1Api coreV1Api = new CoreV1Api(apiClient);
         V1Service v1Service = null;
         try {
-            v1Service = coreV1Api.readNamespacedService(name, namespace, TRUE, null, null);
+            v1Service = coreV1Api.readNamespacedService(name, namespace, DeployerConstants.TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET);
             LOGGER.error("Error while fetching Service {} in namespace {}, error {} ", name, namespace, ex.toString());
@@ -137,7 +140,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
         try {
             String labelSelector = label ? selector : null;
             String fieldSelector = label ? null : selector;
-            V1ServiceList v1ServiceList = coreV1Api.listNamespacedService(namespace, TRUE, null, null, fieldSelector,
+            V1ServiceList v1ServiceList = coreV1Api.listNamespacedService(namespace, DeployerConstants.TRUE, null, null, fieldSelector,
                     labelSelector, null, null, null, null);
             v1Services = v1ServiceList != null ? v1ServiceList.getItems() : null;
         } catch (ApiException e) {
@@ -157,7 +160,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
         }
         CoreV1Api coreV1Api = new CoreV1Api(apiClient);
         target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
-                gson.toJson(target));
+                GsonProviderUtil.getPrettyGsonBuilder().toJson(target));
         V1Service sourceService = null;
         try {
             sourceService = get(apiClient, name, namespace);
@@ -171,10 +174,10 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
         String lastAppliedConfig = sourceService.getMetadata().getAnnotations()
                 .get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
         try {
-            patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1Service.class), target,
+            patchObject = K8sResourcePatchUtil.getJsonPatch(GsonProviderUtil.getPrettyGsonBuilder().fromJson(lastAppliedConfig, V1Service.class), target,
                     V1Service.class);
             V1Patch v1Patch = new V1Patch(patchObject.toString());
-            coreV1Api.patchNamespacedService(name, namespace, v1Patch, TRUE, null, null, null);
+            coreV1Api.patchNamespacedService(name, namespace, v1Patch, DeployerConstants.TRUE, null, null, null);
         } catch (HyscaleException ex) {
             LOGGER.error("Error while creating patch for Service {}, source {}, target {}, error", name, sourceService,
                     target, ex.toString());
@@ -200,7 +203,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
         WorkflowLogger.startActivity(activityContext);
         try {
             try {
-                coreV1Api.deleteNamespacedService(name, namespace, TRUE, null, null, null, null, deleteOptions);
+                coreV1Api.deleteNamespacedService(name, namespace, DeployerConstants.TRUE, null, null, null, null, deleteOptions);
             } catch (JsonSyntaxException e) {
                 // K8s end exception ignore
             }
@@ -301,7 +304,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
         V1Service service = v1ServiceList != null && !v1ServiceList.isEmpty() ? v1ServiceList.get(0) : null;
 
         if (service == null) {
-            logger.debug("No service found for selector {} in namespace {}, returning null", selector, namespace);
+            LOGGER.debug("No service found for selector {} in namespace {}, returning null", selector, namespace);
             return null;
         }
         return K8sServiceUtil.getServiceAddress(service);
