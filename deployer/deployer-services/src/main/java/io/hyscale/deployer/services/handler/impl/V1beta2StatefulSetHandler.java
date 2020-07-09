@@ -106,7 +106,7 @@ public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1bet
 			LOGGER.debug("Error while getting StatefulSet {} in namespace {} for Update, creating new", name,
 					namespace);
 			V1beta2StatefulSet statefulSet = create(apiClient, resource, namespace);
-			return statefulSet != null ? true : false;
+			return statefulSet != null;
 		}
 
 		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_STATEFULSET);
@@ -180,7 +180,7 @@ public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1bet
 		} catch (HyscaleException e) {
 			LOGGER.debug("Error while getting StatefulSet {} in namespace {} for Patch, creating new", name, namespace);
 			V1beta2StatefulSet statefulSet = create(apiClient, target, namespace);
-			return statefulSet != null ? true : false;
+			return statefulSet != null;
 		}
 		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_STATEFULSET);
 		Object patchObject = null;
@@ -230,30 +230,20 @@ public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1bet
 		List<V1Pod> v1PodList = podHandler.getBySelector(apiClient, getPodSelector(name), true, namespace);
 		boolean isPodInErrorState = false;
 		if (v1PodList != null && !v1PodList.isEmpty()) {
-			isPodInErrorState = v1PodList.stream().anyMatch(each -> {
-				boolean podErrorState = !K8sPodUtil.getAggregatedStatusOfContainersForPod(each)
-						.equalsIgnoreCase(K8SRuntimeConstants.POD_RUNING_STATE_CONDITION)
-						|| !K8sPodUtil.checkForPodCondition(each, PodCondition.READY);
-				return podErrorState;
-			});
+            isPodInErrorState = v1PodList.stream()
+                    .anyMatch(each -> !K8sPodUtil.getAggregatedStatusOfContainersForPod(each)
+                            .equalsIgnoreCase(K8SRuntimeConstants.POD_RUNING_STATE_CONDITION)
+                            || !K8sPodUtil.checkForPodCondition(each, PodCondition.READY));
 		}
 		return isPodInErrorState;
 	}
 
 	@Override
 	public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
-
-		V1DeleteOptions deleteOptions = getDeleteOptions();
-		deleteOptions.setApiVersion("apps/v1beta2");
 		ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_STATEFULSET);
 		WorkflowLogger.startActivity(activityContext);
 		try {
-			try {
-			    appsV1beta2Api.deleteNamespacedStatefulSet(name, namespace, DeployerConstants.TRUE, null, null, null, null, deleteOptions);
-			} catch (JsonSyntaxException e) {
-			    // K8s end exception ignore
-			}
+			delete(apiClient, name, namespace);
 			if (wait) {
 			    List<String> pendingStatefulSets = Lists.newArrayList();
 			    pendingStatefulSets.add(name);
@@ -275,6 +265,19 @@ public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1bet
 		WorkflowLogger.endActivity(activityContext, Status.DONE);
 		return true;
 	}
+
+    private void delete(ApiClient apiClient, String name, String namespace) throws ApiException {
+        AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
+        V1DeleteOptions deleteOptions = getDeleteOptions();
+        deleteOptions.setApiVersion("apps/v1beta2");
+        try {
+            appsV1beta2Api.deleteNamespacedStatefulSet(name, namespace, DeployerConstants.TRUE, null, null, null, null,
+                    deleteOptions);
+        } catch (JsonSyntaxException e) {
+            // K8s end exception ignore
+        }
+    }
+	
 
 	@Override
 	public boolean deleteBySelector(ApiClient apiClient, String selector, boolean label, String namespace, boolean wait)
@@ -305,8 +308,7 @@ public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1bet
 	}
 
 	private String getPodSelector(String serviceName) {
-		String podSelector = ResourceSelectorUtil.getServiceSelector(null, serviceName);
-		return podSelector;
+		return ResourceSelectorUtil.getServiceSelector(null, serviceName);
 	}
 
 	@Override
@@ -328,7 +330,7 @@ public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1bet
 			Integer intendedReplicas = statefulSet.getSpec().getReplicas();
 			// Success case update remaining pods status and return
 			if (updateRevision != null && updateRevision.equals(currentRevision) && intendedReplicas != null
-					&& intendedReplicas == currentReplicas && intendedReplicas == readyReplicas) {
+					&& intendedReplicas.equals(currentReplicas) && intendedReplicas.equals(readyReplicas)) {
 				return ResourceStatus.STABLE;
 			}
 			return ResourceStatus.PENDING;

@@ -62,7 +62,7 @@ public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
             if (e.getCode() != 409) {
                 HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
                         ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.CREATE));
-                LOGGER.error("Error while creating namespace {}, error {}", name, ex);
+                LOGGER.error("Error while creating namespace {}", name, ex);
                 throw ex;
             }
         }
@@ -92,16 +92,10 @@ public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
 
     @Override
     public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-        V1DeleteOptions deleteOptions = getDeleteOptions();
         ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_NAMESPACE);
         try {
             WorkflowLogger.startActivity(activityContext);
-            try {
-                coreV1Api.deleteNamespace(name, DeployerConstants.TRUE, null, null, null, null, deleteOptions);
-            } catch (JsonSyntaxException e) {
-                // K8s end exception ignore
-            }
+            delete(apiClient, namespace);
             List<String> namespaceList = Lists.newArrayList();
             namespaceList.add(name);
             if (wait) {
@@ -120,6 +114,16 @@ public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
         }
         WorkflowLogger.endActivity(activityContext, Status.DONE);
         return true;
+    }
+    
+    private void delete(ApiClient apiClient, String name) throws ApiException {
+        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+        V1DeleteOptions deleteOptions = getDeleteOptions();
+        try {
+            coreV1Api.deleteNamespace(name, DeployerConstants.TRUE, null, null, null, null, deleteOptions);
+        } catch (JsonSyntaxException e) {
+            // K8s end exception ignore
+        }
     }
 
     @Override

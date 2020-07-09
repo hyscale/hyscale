@@ -90,7 +90,7 @@ public class V1beta2DeploymentHandler implements ResourceLifeCycleHandler<V1beta
 		} catch (HyscaleException ex) {
 			LOGGER.debug("Error while getting Deployment {} in namespace {} for Update, creating new", name, namespace);
 			V1beta2Deployment deployment = create(apiClient, resource, namespace);
-			return deployment != null ? true : false;
+			return deployment != null;
 		}
 		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_DEPLOYMENT);
 		try {
@@ -162,7 +162,7 @@ public class V1beta2DeploymentHandler implements ResourceLifeCycleHandler<V1beta
 		} catch (HyscaleException e) {
 			LOGGER.debug("Error while getting Deployment {} in namespace {} for Patch, creating new", name, namespace);
 			V1beta2Deployment deployment = create(apiClient, target, namespace);
-			return deployment != null ? true : false;
+			return deployment != null;
 		}
 		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_DEPLOYMENT);
 		Object patchObject = null;
@@ -192,17 +192,10 @@ public class V1beta2DeploymentHandler implements ResourceLifeCycleHandler<V1beta
 
 	@Override
 	public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
-		V1DeleteOptions deleteOptions = getDeleteOptions();
-		deleteOptions.setApiVersion("apps/v1beta2");
 		ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_DEPLOYMENT);
 		WorkflowLogger.startActivity(activityContext);
 		try {
-			try {
-			    appsV1beta2Api.deleteNamespacedDeployment(name, namespace, DeployerConstants.TRUE, null, null, null, null, deleteOptions);
-			} catch (JsonSyntaxException e) {
-			    // K8s end exception ignore
-			}
+		    delete(apiClient, name, namespace);
 			List<String> pendingDeployments = Lists.newArrayList();
 			pendingDeployments.add(name);
 			if (wait) {
@@ -223,6 +216,17 @@ public class V1beta2DeploymentHandler implements ResourceLifeCycleHandler<V1beta
 		WorkflowLogger.endActivity(activityContext, Status.DONE);
 		return true;
 	}
+	
+	private void delete(ApiClient apiClient, String name, String namespace) throws ApiException {
+	    AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
+        V1DeleteOptions deleteOptions = getDeleteOptions();
+        deleteOptions.setApiVersion("apps/v1beta2");
+        try {
+            appsV1beta2Api.deleteNamespacedDeployment(name, namespace, DeployerConstants.TRUE, null, null, null, null, deleteOptions);
+        } catch (JsonSyntaxException e) {
+            // K8s end exception ignore
+        }
+    }
 
 	@Override
 	public boolean deleteBySelector(ApiClient apiClient, String selector, boolean label, String namespace, boolean wait)

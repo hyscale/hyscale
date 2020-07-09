@@ -16,6 +16,7 @@
 package io.hyscale.deployer.services.handler.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -95,7 +96,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         } catch (HyscaleException ex) {
             LOGGER.debug("Error while getting Deployment {} in namespace {} for Update, creating new", name, namespace);
             V1Deployment deployment = create(apiClient, resource, namespace);
-            return deployment != null ? true : false;
+            return deployment != null;
         }
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_DEPLOYMENT);
         try {
@@ -187,7 +188,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         } catch (HyscaleException e) {
             LOGGER.debug("Error while getting Deployment {} in namespace {} for Patch, creating new", name, namespace);
             V1Deployment deployment = create(apiClient, target, namespace);
-            return deployment != null ? true : false;
+            return deployment != null;
         }
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_DEPLOYMENT);
         Object patchObject = null;
@@ -217,17 +218,10 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
 
     @Override
     public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-        AppsV1Api appsV1Api = new AppsV1Api(apiClient);
-        V1DeleteOptions deleteOptions = getDeleteOptions();
-        deleteOptions.setApiVersion("apps/v1");
         ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_DEPLOYMENT);
         WorkflowLogger.startActivity(activityContext);
         try {
-            try {
-                appsV1Api.deleteNamespacedDeployment(name, namespace, DeployerConstants.TRUE, null, null, null, null, deleteOptions);
-            } catch (JsonSyntaxException e) {
-                // K8s end exception ignore
-            }
+            delete(apiClient, name, namespace);
             List<String> pendingDeployments = Lists.newArrayList();
             pendingDeployments.add(name);
             if (wait) {
@@ -247,6 +241,17 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         }
         WorkflowLogger.endActivity(activityContext, Status.DONE);
         return true;
+    }
+    
+    private void delete(ApiClient apiClient, String name, String namespace) throws ApiException {
+        AppsV1Api appsV1Api = new AppsV1Api(apiClient);
+        V1DeleteOptions deleteOptions = getDeleteOptions();
+        deleteOptions.setApiVersion("apps/v1");
+        try {
+            appsV1Api.deleteNamespacedDeployment(name, namespace, DeployerConstants.TRUE, null, null, null, null, deleteOptions);
+        } catch (JsonSyntaxException e) {
+            // K8s end exception ignore
+        }
     }
 
     @Override
@@ -336,11 +341,11 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
      */
     public List<String> getServiceNames(List<V1Deployment> deploymentList) {
         if (deploymentList == null) {
-            return null;
+            return Collections.emptyList();
         }
-        return deploymentList.stream().filter(each -> {
-            return each != null && each.getMetadata() != null;
-        }).map(each -> ResourceLabelUtil.getServiceName(each.getMetadata().getLabels())).collect(Collectors.toList());
+        return deploymentList.stream().filter(each -> each != null && each.getMetadata() != null)
+                .map(each -> ResourceLabelUtil.getServiceName(each.getMetadata().getLabels()))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -351,7 +356,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
             LOGGER.error("Error while fetching Deployment with selector {} in namespace {}, error {}", selector,
                     namespace, e.getMessage());
         }
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -365,9 +370,9 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
     @Override
     public List<DeploymentStatus> buildStatus(List<V1Deployment> deploymentList) {
         if (deploymentList == null) {
-            return null;
+            return Collections.emptyList();
         }
-        List<DeploymentStatus> statuses = new ArrayList<DeploymentStatus>();
+        List<DeploymentStatus> statuses = new ArrayList<>();
         deploymentList.stream().forEach(each -> {
             DeploymentStatus deployStatus = buildStatus(each);
             if (deployStatus != null) {
@@ -425,7 +430,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         }
         String revision = getDeploymentRevision(deployment);
         String selector = deployment.getSpec().getSelector().getMatchLabels().entrySet().stream()
-                .map((entry) -> entry.getKey() + "=" + entry.getValue()).collect(Collectors.joining(","));
+                .map(entry -> entry.getKey() + "=" + entry.getValue()).collect(Collectors.joining(","));
         return getPodTemplateHash(apiClient, deployment.getMetadata().getNamespace(), selector, revision);
     }
 
@@ -463,8 +468,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
             status = waitForDesiredState(apiClient, name, namespace, activityContext);
         } catch (ApiException e) {
             LOGGER.error("Error while applying PATCH scale to {} due to : {} code :{}", name, e.getResponseBody(), e.getCode(), e);
-            HyscaleException ex = new HyscaleException(DeployerErrorCodes.ERROR_WHILE_SCALING, e.getResponseBody());
-            throw ex;
+            throw new HyscaleException(DeployerErrorCodes.ERROR_WHILE_SCALING, e.getResponseBody());
         } finally {
             if (status) {
                 WorkflowLogger.endActivity(activityContext, Status.DONE);
@@ -496,10 +500,11 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
                     rotations = 0;
                 }
                 WorkflowLogger.continueActivity(activityContext);
-                Thread.currentThread().sleep(sleep * 1000);
+                Thread.sleep(sleep * 1000L);
             }
         } catch (InterruptedException e) {
             LOGGER.error("Sleep Thread interrupted ", e);
+            Thread.currentThread().interrupt();
         } catch (HyscaleException ex){
             LOGGER.error("Error while fetching deployment {}", ex.getHyscaleError(), ex);
         }
