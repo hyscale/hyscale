@@ -58,7 +58,7 @@ public class VolumeMountsHandler implements ManifestHandler {
         try {
             snippetList.add(buildVolumeMountSnippet(serviceSpec, serviceMetadata, podSpecOwner));
         } catch (JsonProcessingException e) {
-            logger.error("Error while generating volume mounts manifest for service {}", e);
+            logger.error("Error while generating volume mounts manifest for service {}", serviceMetadata.getServiceName(), e);
         }
         return snippetList;
     }

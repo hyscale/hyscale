@@ -75,7 +75,7 @@ public class ResourceLimitsHandler implements ManifestHandler {
         try {
             manifestSnippetList.add(getResourceRequirements(memoryRange, cpuRange, podSpecOwner));
         } catch (JsonProcessingException e) {
-            logger.error("Error while building manifest snippet for resource limits {}", e);
+            logger.error("Error while building manifest snippet for resource limits", e);
         }
         return manifestSnippetList;
     }

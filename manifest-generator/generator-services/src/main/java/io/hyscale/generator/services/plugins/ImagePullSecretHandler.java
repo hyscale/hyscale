@@ -100,7 +100,7 @@ public class ImagePullSecretHandler implements ManifestHandler {
             manifestContext.addGenerationAttribute(ManifestGenConstants.IMAGE_PULL_SECRET_NAME, NormalizationUtil.normalize(name));
 
         } catch (JsonProcessingException e) {
-            logger.error("Error while generating image pull secret manifest {}", e);
+            logger.error("Error while generating image pull secret manifest", e);
         }
         return manifestSnippetList;
     }
