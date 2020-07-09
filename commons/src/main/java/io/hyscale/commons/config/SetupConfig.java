@@ -39,7 +39,7 @@ public class SetupConfig {
     private static final String GENERATED_FILES_DIR = "generated-files";
     private static final String LOGS_DIR = "logs";
     private static final String APPS_DIR = "apps";
-    private static final String HYSCALE = "hyscale";
+    private static final String HYSCALE_DIR = "hyscale";
 
     private static final ThreadLocal<String> absolutePathTL = new ThreadLocal<String>();
 
@@ -50,7 +50,7 @@ public class SetupConfig {
     }
 
     public static String getToolLogDir() {
-        return INSTALLATION_DIR + FILE_SEPARATOR + HYSCALE + FILE_SEPARATOR + LOGS_DIR;
+        return INSTALLATION_DIR + FILE_SEPARATOR + HYSCALE_DIR + FILE_SEPARATOR + LOGS_DIR;
     }
 
     private static String getAbsolutePath() {
@@ -61,9 +61,7 @@ public class SetupConfig {
     }
 
     public static void clearAbsolutePath() {
-        if (absolutePathTL != null) {
-            absolutePathTL.remove();
-        }
+        absolutePathTL.remove();
     }
 
     /*
@@ -92,7 +90,7 @@ public class SetupConfig {
     }
 
     public String getAppsDir() {
-        return getInstallationDir() + HYSCALE + FILE_SEPARATOR + APPS_DIR + FILE_SEPARATOR;
+        return getInstallationDir() + HYSCALE_DIR + FILE_SEPARATOR + APPS_DIR + FILE_SEPARATOR;
     }
 
     public String getServiceDir(String appName, String serviceName) {

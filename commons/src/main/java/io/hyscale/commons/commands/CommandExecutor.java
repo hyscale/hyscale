@@ -90,7 +90,7 @@ public class CommandExecutor {
             logger.error("Failed while executing command, error {}", ex.toString());
             return false;
         }
-        return commandResult == null || commandResult.getExitCode() != 0 ? false : true;
+        return commandResult.getExitCode() != 0 ? false : true;
     }
 
     /**
@@ -117,7 +117,7 @@ public class CommandExecutor {
             logger.error("Failed while executing command, error {}", ex.toString());
             return false;
         }
-        return commandResult == null || commandResult.getExitCode() != 0 ? false : true;
+        return commandResult.getExitCode() != 0 ? false : true;
     }
 
     /**
