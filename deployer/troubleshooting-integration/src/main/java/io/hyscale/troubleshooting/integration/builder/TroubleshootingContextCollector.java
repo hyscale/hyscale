@@ -109,7 +109,7 @@ public class TroubleshootingContextCollector {
                 if (StringUtils.isNotBlank(deploymentRevision)) {
                     V1ReplicaSet replicaSet = filterReplicaSetByrevision(replicaSetResourceInfos, deploymentRevision);
                     if (replicaSet != null) {
-                        String podTemplateHash = replicaSet.getMetadata().getLabels().get(K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH);
+                        String podTemplateHash = replicaSet.getMetadata().getLabels().get(K8SRuntimeConstants.K8S_DEPLOYMENT_POD_TEMPLATE_HASH);
                         filteredPodResourceInfos.addAll(filterPodsByHash(podResourceInfos, podTemplateHash));
                     }
                 }
@@ -129,7 +129,7 @@ public class TroubleshootingContextCollector {
         for (TroubleshootingContext.ResourceInfo podResource : podResourceInfos) {
             if (podResource != null && podResource.getResource() != null) {
                 V1Pod pod = (V1Pod) podResource.getResource();
-                if (pod.getMetadata().getLabels().get(K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH).equals(podTemplateHash)) {
+                if (pod.getMetadata().getLabels().get(K8SRuntimeConstants.K8S_DEPLOYMENT_POD_TEMPLATE_HASH).equals(podTemplateHash)) {
                     result.add(podResource);
                 }
             }

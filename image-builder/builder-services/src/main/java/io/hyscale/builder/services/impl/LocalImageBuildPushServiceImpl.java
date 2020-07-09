@@ -27,7 +27,6 @@ import io.hyscale.builder.core.models.BuildContext;
 import io.hyscale.builder.core.models.DockerImage;
 import io.hyscale.builder.core.models.ImageBuilderActivity;
 import io.hyscale.builder.services.cleanup.ImageCleanUpProcessor;
-import io.hyscale.builder.services.config.ImageBuilderConfig;
 import io.hyscale.builder.services.constants.DockerImageConstants;
 import io.hyscale.builder.services.docker.HyscaleDockerClient;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
@@ -69,7 +68,6 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
         
         //TEST without error message
         if (!hyscaleDockerClient.isDockerRunning()) {
-            //WorkflowLogger.error(ImageBuilderActivity.DOCKER_DAEMON_NOT_RUNNING);
             throw new HyscaleException(ImageBuilderErrorCodes.DOCKER_DAEMON_NOT_RUNNING);
         }
         Dockerfile userDockerfile = serviceSpec.get(
@@ -83,13 +81,7 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
             String tag = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.tag),
                     String.class);
             //Prepare Dockerfile for Image build
-            Dockerfile dockerfile = new Dockerfile();
-            String dockerfilePath = getDockerfilePath(userDockerfile, context);
-            validateDockerfilePath(dockerfilePath);
-            dockerfile.setDockerfilePath(dockerfilePath);
-            dockerfile.setArgs(userDockerfile != null ? userDockerfile.getArgs() : null);
-            dockerfile.setTarget(userDockerfile != null ? userDockerfile.getTarget() : null);
-            dockerfile.setPath(userDockerfile != null ? userDockerfile.getPath() : null);
+            Dockerfile dockerfile = getDockerfile(userDockerfile, context);
             dockerImage = hyscaleDockerClient.build(dockerfile, tag, context);
             context.setDockerImage(dockerImage);
         }
@@ -114,6 +106,17 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
         imageCleanUp.cleanUp(serviceSpec, context);
     }
     
+    private Dockerfile getDockerfile(Dockerfile userDockerfile, BuildContext context) throws HyscaleException {
+        Dockerfile dockerfile = new Dockerfile();
+        String dockerfilePath = getDockerfilePath(userDockerfile, context);
+        validateDockerfilePath(dockerfilePath);
+        dockerfile.setDockerfilePath(dockerfilePath);
+        dockerfile.setArgs(userDockerfile != null ? userDockerfile.getArgs() : null);
+        dockerfile.setTarget(userDockerfile != null ? userDockerfile.getTarget() : null);
+        dockerfile.setPath(userDockerfile != null ? SetupConfig.getAbsolutePath(userDockerfile.getPath()) : null);
+        return dockerfile;
+    }
+    
     /**
      * Get docker file path either:
      * User docker file based on dockerfile in spec or
@@ -123,27 +126,31 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
      * @param context
      * @return docker file path
      */
-    public String getDockerfilePath(Dockerfile userDockerfile, BuildContext context) {
+    private String getDockerfilePath(Dockerfile userDockerfile, BuildContext context) {
         String dockerfilePath;
         if (userDockerfile != null) {
             StringBuilder sb = new StringBuilder();
             String path = userDockerfile.getPath();
             if (StringUtils.isNotBlank(path)) {
-                sb.append(path).append(ToolConstants.FILE_SEPARATOR);
+                sb.append(path);
+                if (!path.endsWith(ToolConstants.FILE_SEPARATOR)) {
+                    sb.append(ToolConstants.FILE_SEPARATOR);
+                }
             }
             String dockerfileDir = userDockerfile.getDockerfilePath();
             if (StringUtils.isNotBlank(dockerfileDir)) {
                 sb.append(dockerfileDir);
             }
             dockerfilePath = sb.toString();
-            dockerfilePath = StringUtils.isNotBlank(dockerfilePath) ? dockerfilePath : SetupConfig.getAbsolutePath(".");
+            dockerfilePath = StringUtils.isNotBlank(dockerfilePath) ? SetupConfig.getAbsolutePath(dockerfilePath)
+                    : SetupConfig.getAbsolutePath(".");
         } else {
             dockerfilePath = context.getDockerfileEntity().getDockerfile().getParent();
         }
 
         return dockerfilePath;
     }
-
+    
     /**
      * Not required if dockerSpec and dockerfile are not available.
      * In case its just a stack image, need to push only
@@ -158,14 +165,11 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
         if (context.isStackAsServiceImage()) {
             return true;
         }
+        
         // No dockerfile
-        if ((context.getDockerfileEntity() == null || context.getDockerfileEntity().getDockerfile() == null)
-                && (serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.dockerfile),
-                Dockerfile.class) == null)) {
-            return false;
-        }
-
-        return true;
+        return (serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.dockerfile),
+                Dockerfile.class) != null)
+                || (context.getDockerfileEntity() != null && context.getDockerfileEntity().getDockerfile() != null);
     }
     
     /**
@@ -189,12 +193,9 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
                 : dockerImage.getName();
     }
 
-    public boolean skipBuild(Dockerfile userDockerfile, BuildContext context) throws HyscaleException {
-        if ((context.getDockerfileEntity() == null || context.getDockerfileEntity().getDockerfile() == null)
-                && (userDockerfile == null)) {
-            return true;
-        }
-        return false;
+    public boolean skipBuild(Dockerfile userDockerfile, BuildContext context) {
+        return ((context.getDockerfileEntity() == null || context.getDockerfileEntity().getDockerfile() == null)
+                && (userDockerfile == null));
     }
       
 
@@ -216,7 +217,7 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
     private void validateDockerfilePath(String dockerfilePath) throws HyscaleException {
         File dockerfile = new File(
                 dockerfilePath + ToolConstants.LINUX_FILE_SEPARATOR + DockerImageConstants.DOCKERFILE_NAME);
-        if (dockerfile == null || !dockerfile.exists() || dockerfile.isDirectory()) {
+        if (!dockerfile.exists() || dockerfile.isDirectory()) {
             WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_BUILD);
             WorkflowLogger.endActivity(Status.FAILED);
             throw new HyscaleException(ImageBuilderErrorCodes.DOCKERFILE_NOT_FOUND, dockerfile.getAbsolutePath());

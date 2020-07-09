@@ -119,7 +119,6 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 
 		// Validate volume edit
 		checkForVolumeEdit(apiClient, context, volumeList);
-
 		return isValid(false, startTime);
 	}
 	

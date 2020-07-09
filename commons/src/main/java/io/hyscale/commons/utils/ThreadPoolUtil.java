@@ -35,7 +35,7 @@ public class ThreadPoolUtil {
 	}
 
 	private ThreadPoolUtil() {
-		executor = new ThreadPoolExecutor(CORE_POOL_SIZE, MAX_POOL_SIZE, 60 * 1000, TimeUnit.MILLISECONDS,
+		executor = new ThreadPoolExecutor(CORE_POOL_SIZE, MAX_POOL_SIZE, (long) 60 * 1000, TimeUnit.MILLISECONDS,
 				new LinkedBlockingQueue(BLOCKING_QUEUE_SIZE));
 	}
 
@@ -71,7 +71,7 @@ public class ThreadPoolUtil {
 		try {
 			Thread.sleep(time);
 		} catch (InterruptedException e) {
-			//
+			Thread.currentThread().interrupt();
 		}
 	}
 

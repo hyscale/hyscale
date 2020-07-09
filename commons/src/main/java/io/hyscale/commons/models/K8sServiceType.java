@@ -15,8 +15,19 @@
  */
 package io.hyscale.commons.models;
 
-public enum  K8sServiceType {
+public enum K8sServiceType {
 
-	NodePort, LoadBalancer, ClusterIP;
+	NODE_PORT("NodePort"),
+	LOAD_BALANCER("LoadBalancer"),
+	CLUSTER_IP("ClusterIP");
 
+	private String name;
+
+	K8sServiceType(String name) {
+		this.name = name;
+	}
+
+	public String getName() {
+		return name;
+	}
 }

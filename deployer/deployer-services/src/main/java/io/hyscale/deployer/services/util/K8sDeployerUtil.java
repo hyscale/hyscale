@@ -144,11 +144,11 @@ public class K8sDeployerUtil {
 
         Map<String, String> replicaLabels = replicaSet.getMetadata().getLabels();
         String podTemplateHash = replicaLabels != null
-                ? replicaLabels.get(K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH)
+                ? replicaLabels.get(K8SRuntimeConstants.K8S_DEPLOYMENT_POD_TEMPLATE_HASH)
                 : null;
 
         Map<String, String> searchLabel = new HashMap<String, String>();
-        searchLabel.put(K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH, podTemplateHash);
+        searchLabel.put(K8SRuntimeConstants.K8S_DEPLOYMENT_POD_TEMPLATE_HASH, podTemplateHash);
 
         return K8sPodUtil.filterPods(podList, PodPredicates.podContainsLabel(), searchLabel);
 
