@@ -35,6 +35,7 @@ import io.hyscale.commons.logger.ActivityContext;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.Status;
+import io.hyscale.commons.utils.GsonProviderUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
 import io.kubernetes.client.openapi.ApiClient;
@@ -61,7 +62,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         V1ConfigMap configMap = null;
         try {
             resource.getMetadata().putAnnotationsItem(
-                    AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), DeployerConstants.gson.toJson(resource));
+                    AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), GsonProviderUtil.getPrettyGsonBuilder().toJson(resource));
             configMap = coreV1Api.createNamespacedConfigMap(namespace, resource, DeployerConstants.TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
@@ -157,7 +158,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         }
         CoreV1Api coreV1Api = new CoreV1Api(apiClient);
         target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
-                DeployerConstants.gson.toJson(target));
+                GsonProviderUtil.getPrettyGsonBuilder().toJson(target));
         V1ConfigMap sourceConfigMap = null;
         try {
             sourceConfigMap = get(apiClient, name, namespace);
@@ -171,7 +172,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
                 .get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
         Object patchObject = null;
         try {
-            patchObject = K8sResourcePatchUtil.getJsonPatch(DeployerConstants.gson.fromJson(lastAppliedConfig, V1ConfigMap.class), target,
+            patchObject = K8sResourcePatchUtil.getJsonPatch(GsonProviderUtil.getPrettyGsonBuilder().fromJson(lastAppliedConfig, V1ConfigMap.class), target,
                     V1ConfigMap.class);
             V1Patch v1Patch = new V1Patch(patchObject.toString());
             coreV1Api.patchNamespacedConfigMap(name, namespace, v1Patch, DeployerConstants.TRUE, null, null, null);

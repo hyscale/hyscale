@@ -28,6 +28,7 @@ import io.hyscale.commons.logger.ActivityContext;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.Status;
+import io.hyscale.commons.utils.GsonProviderUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
 import io.hyscale.deployer.services.constants.DeployerConstants;
@@ -62,7 +63,7 @@ public class V1beta2DeploymentHandler implements ResourceLifeCycleHandler<V1beta
 		V1beta2Deployment v1beta2Deployment = null;
 		try {
 			resource.getMetadata().putAnnotationsItem(
-					AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), DeployerConstants.gson.toJson(resource));
+					AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), GsonProviderUtil.getPrettyGsonBuilder().toJson(resource));
 			v1beta2Deployment = appsV1beta2Api.createNamespacedDeployment(namespace, resource, DeployerConstants.TRUE, null, null);
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
@@ -155,7 +156,7 @@ public class V1beta2DeploymentHandler implements ResourceLifeCycleHandler<V1beta
 		}
 		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
 		target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
-		        DeployerConstants.gson.toJson(target));
+		        GsonProviderUtil.getPrettyGsonBuilder().toJson(target));
 		V1beta2Deployment sourceDeployment = null;
 		try {
 			sourceDeployment = get(apiClient, name, namespace);
@@ -169,7 +170,7 @@ public class V1beta2DeploymentHandler implements ResourceLifeCycleHandler<V1beta
 		String lastAppliedConfig = sourceDeployment.getMetadata().getAnnotations()
 				.get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
 		try {
-			patchObject = K8sResourcePatchUtil.getJsonPatch(DeployerConstants.gson.fromJson(lastAppliedConfig, V1beta2Deployment.class),
+			patchObject = K8sResourcePatchUtil.getJsonPatch(GsonProviderUtil.getPrettyGsonBuilder().fromJson(lastAppliedConfig, V1beta2Deployment.class),
 					target, V1beta2Deployment.class);
 			V1Patch v1Patch = new V1Patch(patchObject.toString());
 			appsV1beta2Api.patchNamespacedDeployment(name, namespace, v1Patch, DeployerConstants.TRUE, null, null, null);

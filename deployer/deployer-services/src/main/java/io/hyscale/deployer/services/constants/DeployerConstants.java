@@ -15,8 +15,6 @@
  */
 package io.hyscale.deployer.services.constants;
 
-import com.google.gson.Gson;
-
 public class DeployerConstants {
     
     private DeployerConstants() {}
@@ -35,5 +33,4 @@ public class DeployerConstants {
     
     public static final long MAX_WAIT_TIME_IN_MILLISECONDS = 120000;
 
-    public static final Gson gson = new Gson();
 }

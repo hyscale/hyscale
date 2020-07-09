@@ -35,6 +35,7 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.ResourceLabelKey;
 import io.hyscale.commons.models.Status;
+import io.hyscale.commons.utils.GsonProviderUtil;
 import io.hyscale.commons.utils.ResourceLabelUtil;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
@@ -75,7 +76,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         V1StatefulSet statefulSet = null;
         try {
             resource.getMetadata().putAnnotationsItem(
-                    AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), DeployerConstants.gson.toJson(resource));
+                    AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), GsonProviderUtil.getPrettyGsonBuilder().toJson(resource));
             statefulSet = appsV1Api.createNamespacedStatefulSet(namespace, resource, DeployerConstants.TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
@@ -186,7 +187,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         }
         AppsV1Api appsV1Api = new AppsV1Api(apiClient);
         target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
-                DeployerConstants.gson.toJson(target));
+                GsonProviderUtil.getPrettyGsonBuilder().toJson(target));
         V1StatefulSet sourceStatefulSet = null;
         try {
             sourceStatefulSet = get(apiClient, name, namespace);
@@ -202,7 +203,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         boolean deleteRequired = false;
         String serviceName = sourceStatefulSet.getMetadata().getLabels().get(ResourceLabelKey.SERVICE_NAME.getLabel());
         try {
-            patchObject = K8sResourcePatchUtil.getJsonPatch(DeployerConstants.gson.fromJson(lastAppliedConfig, V1StatefulSet.class),
+            patchObject = K8sResourcePatchUtil.getJsonPatch(GsonProviderUtil.getPrettyGsonBuilder().fromJson(lastAppliedConfig, V1StatefulSet.class),
                     target, V1StatefulSet.class);
             deleteRequired = isDeletePodRequired(apiClient, serviceName, namespace);
             LOGGER.debug("Deleting existing pods for updating StatefulSet patch required :{}", deleteRequired);
