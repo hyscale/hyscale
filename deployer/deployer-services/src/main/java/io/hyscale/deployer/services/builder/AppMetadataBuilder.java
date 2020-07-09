@@ -41,7 +41,7 @@ public class AppMetadataBuilder {
      * @return List of {@link AppMetadata} containing details of deployed apps
      */
     public List<AppMetadata> build(List<PodParent> podParentList) {
-        Map<String, AppMetadata> mapping = new HashMap<String, AppMetadata>();
+        Map<String, AppMetadata> mapping = new HashMap<>();
 
         podParentList.forEach(podParent -> {
             V1ObjectMeta metadata = null;
