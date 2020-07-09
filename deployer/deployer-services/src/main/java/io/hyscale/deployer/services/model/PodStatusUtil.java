@@ -22,6 +22,8 @@ import io.kubernetes.client.openapi.models.V1ContainerStatus;
 import io.kubernetes.client.openapi.models.V1Pod;
 
 public class PodStatusUtil {
+    
+    private PodStatusUtil() {}
 
     public static String currentStatusOf(V1Pod v1Pod) {
         if (v1Pod == null) {
@@ -55,15 +57,13 @@ public class PodStatusUtil {
         }
         String aggregateStatus = null;
         for (V1ContainerStatus each : containerStatuses) {
-            if (withLastState) {
-                if (!each.getReady() && each.getLastState() != null) {
-                    if (each.getLastState().getTerminated() != null) {
-                        aggregateStatus = each.getLastState().getTerminated().getReason();
-                        break;
-                    } else if (each.getLastState().getWaiting() != null) {
-                        aggregateStatus = each.getLastState().getWaiting().getReason();
-                        break;
-                    }
+            if (withLastState && !each.getReady() && each.getLastState() != null) {
+                if (each.getLastState().getTerminated() != null) {
+                    aggregateStatus = each.getLastState().getTerminated().getReason();
+                    break;
+                } else if (each.getLastState().getWaiting() != null) {
+                    aggregateStatus = each.getLastState().getWaiting().getReason();
+                    break;
                 }
             }
             if (each.getState().getRunning() == null) {
@@ -90,7 +90,7 @@ public class PodStatusUtil {
         String initContainerStatus = null;
         for (V1ContainerStatus each : initContainerStatuses) {
             if (each.getState().getTerminated() != null && each.getReady()) {
-                continue;
+                // do nothing
             } else if (each.getState().getWaiting() != null) {
                 initContainerStatus = each.getState().getWaiting().getReason();
                 break;

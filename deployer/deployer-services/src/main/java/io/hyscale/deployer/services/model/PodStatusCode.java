@@ -19,8 +19,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PodStatusCode {
+    
+    private PodStatusCode() {}
 
-	public static Map<Integer, Signals> statusCodeVsMessage = new HashMap<>();
+	private static final Map<Integer, Signals> statusCodeVsMessage = new HashMap<>();
 
 	static {
 		for (Signals each : Signals.values()) {
@@ -29,7 +31,7 @@ public class PodStatusCode {
 	}
 
 	// System Signals
-	public static enum Signals {
+	public enum Signals {
 		SIGKILL(137, "SIGKILL"), SIGTERM(143, "SIGTERM"), FAILURE(1, "FAILURE");
 
 		private Integer code = null;

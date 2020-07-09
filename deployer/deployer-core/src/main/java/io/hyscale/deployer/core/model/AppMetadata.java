@@ -51,7 +51,7 @@ public class AppMetadata {
     
     public void addServices(String service) {
         if (this.services == null) {
-            this.services = new ArrayList<String>();
+            this.services = new ArrayList<>();
         }
         services.add(service);
     }
