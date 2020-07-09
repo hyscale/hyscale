@@ -13,31 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.commons.models;
+package io.hyscale.dockerfile.gen;
 
-public class ConfigTemplate {
+import org.springframework.boot.test.context.SpringBootTest;
 
-	private String rootPath;
-	private String templateName;
-
-	public String getTemplateName() {
-		return templateName;
-	}
-
-	public void setTemplateName(String templateName) {
-		this.templateName = templateName;
-	}
-
-	public String getRootPath() {
-		return rootPath;
-	}
-
-	public void setRootPath(String rootPath) {
-		this.rootPath = rootPath;
-	}
-
-	public String getTemplatePath() {
-		return rootPath + "/" + templateName;
-	}
+@SpringBootTest(classes = DockerfileGenTestConfiguration.class)
+public class DockerfileGenTestInitializer {
 
 }

@@ -13,43 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.controller.util;
+package io.hyscale.dockerfile.gen.services.util;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 public class ServiceSpecTestUtil {
-
-    public static JsonNode getServiceSpecJsonNode(String filepath) throws IOException {
-        if (StringUtils.isBlank(filepath)) {
+    
+    public static ServiceSpec getServiceSpec(String serviceSpecPath, boolean updateAbsPath) throws HyscaleException {
+        if (StringUtils.isBlank(serviceSpecPath)) {
             return null;
         }
-        ObjectMapper objectMapper = ObjectMapperFactory.yamlMapper();
-        InputStream resourceAsStream = ServiceSpecTestUtil.class.getResourceAsStream(filepath);
-        String testData = IOUtils.toString(resourceAsStream, StandardCharsets.UTF_8);
-        return objectMapper.readTree(testData);
+        File serviceSpecFile = getServiceSpecFile(serviceSpecPath);
+        if (updateAbsPath) {
+            updateAbsolutePath(serviceSpecFile);
+        }
+        return new ServiceSpec(serviceSpecFile);
     }
-    
+
     public static ServiceSpec getServiceSpec(String serviceSpecPath) throws HyscaleException {
         if (StringUtils.isBlank(serviceSpecPath)) {
             return null;
         }
-        return new ServiceSpec(getServiceSpecFile(serviceSpecPath));
+        return getServiceSpec(serviceSpecPath, false);
     }
     
+    public static void updateAbsolutePath(File serviceSpecFile) {
+        SetupConfig.clearAbsolutePath();
+        SetupConfig.setAbsolutePath(serviceSpecFile.getAbsoluteFile().getParent());
+    }
+
     private static File getServiceSpecFile(String serviceSpecPath) {
         URL urlPath = ServiceSpecTestUtil.class.getResource(serviceSpecPath);
         return new File(urlPath.getFile());
