@@ -15,6 +15,7 @@
  */
 package io.hyscale.deployer.services.processor;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,7 +63,7 @@ public class ServiceStatusProcessor {
             ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
             podParent = podParentProvider.getPodParent(apiClient, appname, serviceName, namespace);
         } catch (HyscaleException e) {
-            logger.error("Error while fetching status {} ", e);
+            logger.error("Error while fetching status for app: {} service: {} in namespace: {} ", appname, serviceName, namespace, e);
             throw e;
         }
 
@@ -81,12 +82,12 @@ public class ServiceStatusProcessor {
             ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
             podParentList = podParentProvider.getPodParents(apiClient, appname, namespace);
         } catch (HyscaleException e) {
-            logger.error("Error while fetching status {} ", e);
+            logger.error("Error while fetching status for app: {} in namespace: {} ", appname, namespace, e);
             throw e;
 
         }
         if (podParentList == null || podParentList.isEmpty()) {
-            return null;
+            return Collections.emptyList();
         }
         List<DeploymentStatus> deploymentStatusList = podParentList.stream().map(each -> {
             PodParentHandler podParentHandler = PodParentFactory.getHandler(each.getKind());
