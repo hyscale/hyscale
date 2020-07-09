@@ -22,6 +22,8 @@ import org.slf4j.LoggerFactory;
 public class DeployerEnvConfig {
 
     private static Logger logger = LoggerFactory.getLogger(DeployerEnvConfig.class);
+    
+    private DeployerEnvConfig() {}
 
     public static long getLBReadyTimeout() {
         try {

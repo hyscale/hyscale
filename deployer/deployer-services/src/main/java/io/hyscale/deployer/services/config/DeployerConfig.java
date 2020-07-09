@@ -16,14 +16,12 @@
 package io.hyscale.deployer.services.config;
 
 import io.hyscale.commons.config.SetupConfig;
-import io.hyscale.deployer.services.model.ResourceUpdatePolicy;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 
 /**
  * Deployment related config properties
