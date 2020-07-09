@@ -21,14 +21,13 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.ActivityContext;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Status;
 import io.hyscale.commons.utils.ThreadPoolUtil;
 import io.hyscale.deployer.core.model.ResourceOperation;
+import io.hyscale.deployer.services.constants.DeployerConstants;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.model.ResourceStatus;
 import io.hyscale.deployer.services.model.ResourceUpdatePolicy;
@@ -42,14 +41,6 @@ import io.kubernetes.client.openapi.models.V1DeleteOptions;
  * @param <T>
  */
 public interface ResourceLifeCycleHandler<T> {
-
-    Logger logger = LoggerFactory.getLogger(ResourceLifeCycleHandler.class);
-    
-    public static final String TRUE = "true";
-    public static final long DELETE_SLEEP_INTERVAL_IN_MILLIS = 3000;
-    public static final long MAX_WAIT_TIME_IN_MILLISECONDS = 120000;
-
-    static final Gson gson = new Gson();
 
     /**
      * Create resource on cluster
@@ -195,28 +186,28 @@ public interface ResourceLifeCycleHandler<T> {
         }
         long startTime = System.currentTimeMillis();
         while (!pendingResources.isEmpty()
-                && (System.currentTimeMillis() - startTime < MAX_WAIT_TIME_IN_MILLISECONDS)) {
+                && (System.currentTimeMillis() - startTime < DeployerConstants.MAX_WAIT_TIME_IN_MILLISECONDS)) {
             Iterator<String> deletePendingResourceIterator = pendingResources.iterator();
             WorkflowLogger.continueActivity(activityContext);
             while (deletePendingResourceIterator.hasNext()) {
                 String pendingResource = deletePendingResourceIterator.next();
                 try {
                     get(apiClient, pendingResource, namespace);
-                    logger.debug("Resource {} found to be existing, waiting for resource deletion", pendingResource);
+                    getLogger().debug("Resource {} found to be existing, waiting for resource deletion", pendingResource);
                 } catch (HyscaleException e) {
                     if (e.getHyscaleError() == DeployerErrorCodes.RESOURCE_NOT_FOUND) {
                         deletePendingResourceIterator.remove();
                     }
                 }
             }
-            ThreadPoolUtil.sleepSilently(DELETE_SLEEP_INTERVAL_IN_MILLIS);
+            ThreadPoolUtil.sleepSilently(DeployerConstants.DELETE_SLEEP_INTERVAL_IN_MILLIS);
         }
         // Fail case
         if (!pendingResources.isEmpty()) {
             if (activityContext != null) {
                 WorkflowLogger.endActivity(activityContext, Status.FAILED);
             }
-            logger.error("Resource deletion failed for: {}", pendingResources.toString());
+            getLogger().error("Resource deletion failed for: {}", pendingResources);
             throw new HyscaleException(DeployerErrorCodes.FAILED_TO_DELETE_RESOURCE, pendingResources.toString());
         }
 
@@ -230,6 +221,10 @@ public interface ResourceLifeCycleHandler<T> {
      */
     default ResourceStatus status(T liveObject) {
         return ResourceStatus.STABLE;
+    }
+    
+    default Logger getLogger() {
+        return LoggerFactory.getLogger(ResourceLifeCycleHandler.class);
     }
 
     /**
