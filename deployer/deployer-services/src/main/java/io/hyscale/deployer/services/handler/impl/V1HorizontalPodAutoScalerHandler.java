@@ -24,6 +24,7 @@ import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.Status;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
+import io.hyscale.deployer.services.constants.DeployerConstants;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.model.DeployerActivity;
@@ -61,8 +62,8 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
         V1HorizontalPodAutoscaler v1HorizontalPodAutoscaler = null;
         try {
             resource.getMetadata().putAnnotationsItem(
-                    AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
-            v1HorizontalPodAutoscaler = autoscalingV1Api.createNamespacedHorizontalPodAutoscaler(namespace, resource, TRUE, null, null);
+                    AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), DeployerConstants.gson.toJson(resource));
+            v1HorizontalPodAutoscaler = autoscalingV1Api.createNamespacedHorizontalPodAutoscaler(namespace, resource, DeployerConstants.TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
                     ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.CREATE));
@@ -95,7 +96,7 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
         try {
             String resourceVersion = existingHorizontalPodAutoscaler.getMetadata().getResourceVersion();
             resource.getMetadata().setResourceVersion(resourceVersion);
-            autoscalingV1Api.replaceNamespacedHorizontalPodAutoscaler(name, namespace, resource, TRUE, null, null);
+            autoscalingV1Api.replaceNamespacedHorizontalPodAutoscaler(name, namespace, resource, DeployerConstants.TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
                     ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.UPDATE));
@@ -113,7 +114,7 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
         AutoscalingV1Api autoscalingV1Api = new AutoscalingV1Api(apiClient);
         V1HorizontalPodAutoscaler horizontalPodAutoscaler = null;
         try {
-            horizontalPodAutoscaler = autoscalingV1Api.readNamespacedHorizontalPodAutoscaler(name, namespace, TRUE, false, false);
+            horizontalPodAutoscaler = autoscalingV1Api.readNamespacedHorizontalPodAutoscaler(name, namespace, DeployerConstants.TRUE, false, false);
         } catch (ApiException e) {
             HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET);
             logger.error("Error while fetching HorizontalPodAutoScaler {} in namespace {}, error {} ", name, namespace,
@@ -131,7 +132,7 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
             String labelSelector = label ? selector : null;
             String fieldSelector = label ? null : selector;
 
-            V1HorizontalPodAutoscalerList v1HorizontalPodAutoscalerList = autoscalingV1Api.listNamespacedHorizontalPodAutoscaler(namespace, TRUE,
+            V1HorizontalPodAutoscalerList v1HorizontalPodAutoscalerList = autoscalingV1Api.listNamespacedHorizontalPodAutoscaler(namespace, DeployerConstants.TRUE,
                     null, null, fieldSelector, labelSelector, null, null, null, null);
 
             v1HorizontalPodAutoscalers = v1HorizontalPodAutoscalerList != null ? v1HorizontalPodAutoscalerList.getItems() : null;
@@ -152,7 +153,7 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
         }
         AutoscalingV1Api autoscalingV1Api = new AutoscalingV1Api(apiClient);
         target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
-                gson.toJson(target));
+                DeployerConstants.gson.toJson(target));
         V1HorizontalPodAutoscaler sourceHorizontalPodAutoScaler = null;
         try {
             sourceHorizontalPodAutoScaler = get(apiClient, name, namespace);
@@ -166,10 +167,10 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
         String lastAppliedConfig = sourceHorizontalPodAutoScaler.getMetadata().getAnnotations()
                 .get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
         try {
-            patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1HorizontalPodAutoscaler.class),
+            patchObject = K8sResourcePatchUtil.getJsonPatch(DeployerConstants.gson.fromJson(lastAppliedConfig, V1HorizontalPodAutoscaler.class),
                     target, V1HorizontalPodAutoscaler.class);
             V1Patch v1Patch = new V1Patch(patchObject.toString());
-            autoscalingV1Api.patchNamespacedHorizontalPodAutoscaler(name, namespace, v1Patch, TRUE, null, null, null);
+            autoscalingV1Api.patchNamespacedHorizontalPodAutoscaler(name, namespace, v1Patch, DeployerConstants.TRUE, null, null, null);
         } catch (HyscaleException e) {
             logger.error("Error while creating patch for HorizontalPodAutoScaler {}, source {}, target {}", name, sourceHorizontalPodAutoScaler,
                     target);
@@ -196,7 +197,7 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
         WorkflowLogger.startActivity(activityContext);
         try {
             try {
-                autoscalingV1Api.deleteNamespacedHorizontalPodAutoscaler(name, namespace, TRUE, null, null, null, null, deleteOptions);
+                autoscalingV1Api.deleteNamespacedHorizontalPodAutoscaler(name, namespace, DeployerConstants.TRUE, null, null, null, null, deleteOptions);
             } catch (JsonSyntaxException e) {
                 logger.debug("Ignoring delete HorizontalPodAutoScaler exception");
             }

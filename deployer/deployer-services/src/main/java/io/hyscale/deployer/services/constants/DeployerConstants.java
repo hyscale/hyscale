@@ -15,13 +15,25 @@
  */
 package io.hyscale.deployer.services.constants;
 
+import com.google.gson.Gson;
+
 public class DeployerConstants {
+    
+    private DeployerConstants() {}
 
     public static final String LB_READY_TIMEOUT = "HYS_LB_READY_TIMEOUT";
     
     public static final String POD_RESTART_COUNT="HYS_POD_RESTART_COUNT";
 
+    public static final String TRUE = "true";
+    
     public static final long DEFAULT_LB_READY_TIMEOUT = 90000;
     
     public static final long DEFAULT_POD_RESTART_COUNT = 3;
+    
+    public static final long DELETE_SLEEP_INTERVAL_IN_MILLIS = 3000;
+    
+    public static final long MAX_WAIT_TIME_IN_MILLISECONDS = 120000;
+
+    public static final Gson gson = new Gson();
 }

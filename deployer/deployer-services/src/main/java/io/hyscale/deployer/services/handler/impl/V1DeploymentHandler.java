@@ -38,6 +38,7 @@ import io.hyscale.commons.utils.ResourceLabelUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
+import io.hyscale.deployer.services.constants.DeployerConstants;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.PodParentHandler;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
@@ -52,6 +53,7 @@ import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.apis.AppsV1Api;
 
 public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implements ResourceLifeCycleHandler<V1Deployment> {
+    
     private static final Logger LOGGER = LoggerFactory.getLogger(V1DeploymentHandler.class);
 
     public V1Deployment create(ApiClient apiClient, V1Deployment resource, String namespace) throws HyscaleException {
@@ -64,9 +66,9 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         V1Deployment v1Deployment = null;
         try {
             resource.getMetadata().putAnnotationsItem(
-                    AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
+                    AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), DeployerConstants.gson.toJson(resource));
 
-            v1Deployment = appsV1Api.createNamespacedDeployment(namespace, resource, TRUE, null, null);
+            v1Deployment = appsV1Api.createNamespacedDeployment(namespace, resource, DeployerConstants.TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
                     ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.CREATE));
@@ -99,7 +101,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         try {
             String resourceVersion = existingDeployment.getMetadata().getResourceVersion();
             resource.getMetadata().setResourceVersion(resourceVersion);
-            appsV1Api.replaceNamespacedDeployment(name, namespace, existingDeployment, TRUE, null, null);
+            appsV1Api.replaceNamespacedDeployment(name, namespace, existingDeployment, DeployerConstants.TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
                     ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.UPDATE));
@@ -117,7 +119,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         AppsV1Api appsV1Api = new AppsV1Api(apiClient);
         V1Deployment v1Deployment = null;
         try {
-            v1Deployment = appsV1Api.readNamespacedDeployment(name, namespace, TRUE, false, false);
+            v1Deployment = appsV1Api.readNamespacedDeployment(name, namespace, DeployerConstants.TRUE, false, false);
         } catch (ApiException e) {
             HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET);
             LOGGER.error("Error while fetching Deployment {} in namespace {}, error {} ", name, namespace,
@@ -135,7 +137,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
             String labelSelector = label ? selector : null;
             String fieldSelector = label ? null : selector;
 
-            V1DeploymentList v1DeploymentList = appsV1Api.listNamespacedDeployment(namespace, TRUE, null,
+            V1DeploymentList v1DeploymentList = appsV1Api.listNamespacedDeployment(namespace, DeployerConstants.TRUE, null,
                     null, fieldSelector, labelSelector, null, null, null, null);
 
             v1Deployments = v1DeploymentList != null ? v1DeploymentList.getItems() : null;
@@ -158,7 +160,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
             String fieldSelector = label ? null : selector;
 
             V1DeploymentList v1DeploymentList = appsV1Api.listDeploymentForAllNamespaces(null, null, fieldSelector,
-                    labelSelector, null, TRUE, null, null, null);
+                    labelSelector, null, DeployerConstants.TRUE, null, null, null);
 
             v1Deployments = v1DeploymentList != null ? v1DeploymentList.getItems() : null;
         } catch (ApiException e) {
@@ -178,7 +180,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         }
         AppsV1Api appsV1Api = new AppsV1Api(apiClient);
         target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
-                gson.toJson(target));
+                DeployerConstants.gson.toJson(target));
         V1Deployment sourceDeployment = null;
         try {
             sourceDeployment = get(apiClient, name, namespace);
@@ -192,10 +194,10 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         String lastAppliedConfig = sourceDeployment.getMetadata().getAnnotations()
                 .get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
         try {
-            patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1Deployment.class),
+            patchObject = K8sResourcePatchUtil.getJsonPatch(DeployerConstants.gson.fromJson(lastAppliedConfig, V1Deployment.class),
                     target, V1Deployment.class);
             V1Patch v1Patch = new V1Patch(patchObject.toString());
-            appsV1Api.patchNamespacedDeployment(name, namespace, v1Patch, TRUE, null, null, null);
+            appsV1Api.patchNamespacedDeployment(name, namespace, v1Patch, DeployerConstants.TRUE, null, null, null);
         } catch (HyscaleException e) {
             LOGGER.error("Error while creating patch for Deployment {}, source {}, target {}", name, sourceDeployment,
                     target);
@@ -222,7 +224,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         WorkflowLogger.startActivity(activityContext);
         try {
             try {
-                appsV1Api.deleteNamespacedDeployment(name, namespace, TRUE, null, null, null, null, deleteOptions);
+                appsV1Api.deleteNamespacedDeployment(name, namespace, DeployerConstants.TRUE, null, null, null, null, deleteOptions);
             } catch (JsonSyntaxException e) {
                 // K8s end exception ignore
             }
@@ -346,7 +348,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         try {
             return buildStatus(getBySelector(apiClient, selector, label, namespace));
         } catch (HyscaleException e) {
-            logger.error("Error while fetching Deployment with selector {} in namespace {}, error {}", selector,
+            LOGGER.error("Error while fetching Deployment with selector {} in namespace {}, error {}", selector,
                     namespace, e.getMessage());
         }
         return null;
@@ -381,7 +383,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         try {
             deploymentList = getBySelector(apiClient, selector, label, namespace);
         } catch (HyscaleException e) {
-            logger.error("Error fetching deployment for pod selection, ignoring", e);
+            LOGGER.error("Error fetching deployment for pod selection, ignoring", e);
             return null;
         }
         if (deploymentList == null || deploymentList.isEmpty()) {
@@ -402,17 +404,17 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         try {
             replicaSet = v1ReplicaSetHandler.getReplicaSetByRevision(apiClient, namespace, selector, true, revision);
         } catch (HyscaleException e) {
-            logger.error("Error fetching replica set with revision {} for pod filtering, ignoring", revision, e);
+            LOGGER.error("Error fetching replica set with revision {} for pod filtering, ignoring", revision, e);
             return null;
         }
         if (replicaSet == null) {
-            logger.debug("No Replica set found with revision: {} for filtering pods, returning empty list", revision);
+            LOGGER.debug("No Replica set found with revision: {} for filtering pods, returning empty list", revision);
             return null;
         }
         String podTemplateHash = replicaSet.getMetadata().getLabels()
                 .get(K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH);
 
-        logger.debug("pod-template-hash: {}", podTemplateHash);
+        LOGGER.debug("pod-template-hash: {}", podTemplateHash);
         return K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH + "=" + podTemplateHash;
     }
 
@@ -435,7 +437,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
     @Override
     public boolean scale(ApiClient apiClient, V1Deployment v1Deployment, String namespace, int value) throws HyscaleException {
         if (v1Deployment == null) {
-            logger.error("Cannot scale 'null' deployment");
+            LOGGER.error("Cannot scale 'null' deployment");
             return false;
         }
         String name = v1Deployment.getMetadata().getName();
@@ -457,10 +459,10 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
                     .build();
             Object jsonPatch = K8sResourcePatchUtil.getJsonPatch(exisiting, scale, V1Scale.class);
             V1Patch patch = new V1Patch(jsonPatch.toString());
-            appsV1Api.patchNamespacedDeploymentScale(name, namespace, patch, TRUE, null, null, null);
+            appsV1Api.patchNamespacedDeploymentScale(name, namespace, patch, DeployerConstants.TRUE, null, null, null);
             status = waitForDesiredState(apiClient, name, namespace, activityContext);
         } catch (ApiException e) {
-            logger.error("Error while applying PATCH scale to {} due to : {} code :{}", name, e.getResponseBody(), e.getCode(), e);
+            LOGGER.error("Error while applying PATCH scale to {} due to : {} code :{}", name, e.getResponseBody(), e.getCode(), e);
             HyscaleException ex = new HyscaleException(DeployerErrorCodes.ERROR_WHILE_SCALING, e.getResponseBody());
             throw ex;
         } finally {
@@ -480,11 +482,11 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         int sleep = 3;
         try {
             int rotations = 0;
-            while (System.currentTimeMillis() - startTime < MAX_WAIT_TIME_IN_MILLISECONDS) {
+            while (System.currentTimeMillis() - startTime < DeployerConstants.MAX_WAIT_TIME_IN_MILLISECONDS) {
                 rotations++;
                 V1Deployment updatedDeployment = null;
                 updatedDeployment = get(apiClient, name, namespace);
-                logger.debug("Patched deployment status :{} ", updatedDeployment.getStatus());
+                LOGGER.debug("Patched deployment status :{} ", updatedDeployment.getStatus());
                 if (status(updatedDeployment) == ResourceStatus.STABLE) {
                     stable = true;
                     break;
@@ -497,9 +499,9 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
                 Thread.currentThread().sleep(sleep * 1000);
             }
         } catch (InterruptedException e) {
-            logger.error("Sleep Thread interrupted ", e);
+            LOGGER.error("Sleep Thread interrupted ", e);
         } catch (HyscaleException ex){
-            logger.error("Error while fetching deployment {}", ex.getHyscaleError(), ex);
+            LOGGER.error("Error while fetching deployment {}", ex.getHyscaleError(), ex);
         }
         return stable;
     }

@@ -20,6 +20,7 @@ package io.hyscale.deployer.services.handler.impl;
 
 import java.util.List;
 
+import io.hyscale.deployer.services.constants.DeployerConstants;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
@@ -76,8 +77,8 @@ public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1bet
 		V1beta2StatefulSet statefulSet = null;
 		try {
 			resource.getMetadata().putAnnotationsItem(
-					AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
-			statefulSet = appsV1beta2Api.createNamespacedStatefulSet(namespace, resource, TRUE, null, null);
+					AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), DeployerConstants.gson.toJson(resource));
+			statefulSet = appsV1beta2Api.createNamespacedStatefulSet(namespace, resource, DeployerConstants.TRUE, null, null);
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
 					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.CREATE));
@@ -112,7 +113,7 @@ public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1bet
 		try {
 			String resourceVersion = existingStatefulSet.getMetadata().getResourceVersion();
 			resource.getMetadata().setResourceVersion(resourceVersion);
-			appsV1beta2Api.replaceNamespacedStatefulSet(name, namespace, resource, TRUE, null, null);
+			appsV1beta2Api.replaceNamespacedStatefulSet(name, namespace, resource, DeployerConstants.TRUE, null, null);
 		} catch (ApiException e) {
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
 					ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.UPDATE));
@@ -130,7 +131,7 @@ public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1bet
 		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
 		V1beta2StatefulSet v1StatefulSet = null;
 		try {
-			v1StatefulSet = appsV1beta2Api.readNamespacedStatefulSet(name, namespace, TRUE, null, null);
+			v1StatefulSet = appsV1beta2Api.readNamespacedStatefulSet(name, namespace, DeployerConstants.TRUE, null, null);
 		} catch (ApiException e) {
 			HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET);
 			LOGGER.error("Error while fetching StatefulSet {} in namespace {}, error {}", name, namespace,
@@ -148,7 +149,7 @@ public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1bet
 		String fieldSelector = label ? null : selector;
 		List<V1beta2StatefulSet> statefulSets = null;
 		try {
-			V1beta2StatefulSetList statefulSetList = appsV1beta2Api.listNamespacedStatefulSet(namespace, TRUE, null, 
+			V1beta2StatefulSetList statefulSetList = appsV1beta2Api.listNamespacedStatefulSet(namespace, DeployerConstants.TRUE, null, 
 					null, fieldSelector, labelSelector, null, null, null, null);
 			statefulSets = statefulSetList != null ? statefulSetList.getItems() : null;
 		} catch (ApiException e) {
@@ -172,7 +173,7 @@ public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1bet
 		}
 		AppsV1beta2Api appsV1beta2Api = new AppsV1beta2Api(apiClient);
 		target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
-				gson.toJson(target));
+				DeployerConstants.gson.toJson(target));
 		V1beta2StatefulSet sourceStatefulSet = null;
 		try {
 			sourceStatefulSet = get(apiClient, name, namespace);
@@ -188,12 +189,12 @@ public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1bet
 		boolean deleteRequired = false;
 		String serviceName = sourceStatefulSet.getMetadata().getLabels().get(ResourceLabelKey.SERVICE_NAME.getLabel());
 		try {
-			patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1beta2StatefulSet.class),
+			patchObject = K8sResourcePatchUtil.getJsonPatch(DeployerConstants.gson.fromJson(lastAppliedConfig, V1beta2StatefulSet.class),
 					target, V1beta2StatefulSet.class);
 			deleteRequired = isDeletePodRequired(apiClient, serviceName, namespace);
 			LOGGER.debug("Deleting existing pods for updating StatefulSet patch required :{}", deleteRequired);
 			V1Patch v1Patch = new V1Patch(patchObject.toString());
-			appsV1beta2Api.patchNamespacedStatefulSet(name, namespace, v1Patch, TRUE, null, null, null);
+			appsV1beta2Api.patchNamespacedStatefulSet(name, namespace, v1Patch, DeployerConstants.TRUE, null, null, null);
 		} catch (HyscaleException ex) {
 			LOGGER.error("Error while creating patch for StatefulSet {}, source {}, target {}, error {}", name,
 					sourceStatefulSet, target, ex.toString());
@@ -249,7 +250,7 @@ public class V1beta2StatefulSetHandler implements ResourceLifeCycleHandler<V1bet
 		WorkflowLogger.startActivity(activityContext);
 		try {
 			try {
-			    appsV1beta2Api.deleteNamespacedStatefulSet(name, namespace, TRUE, null, null, null, null, deleteOptions);
+			    appsV1beta2Api.deleteNamespacedStatefulSet(name, namespace, DeployerConstants.TRUE, null, null, null, null, deleteOptions);
 			} catch (JsonSyntaxException e) {
 			    // K8s end exception ignore
 			}
