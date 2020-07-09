@@ -31,6 +31,8 @@ import io.kubernetes.client.openapi.models.V1Pod;
  *	Utility for Service Deployment status
  */
 public class DeploymentStatusUtil {
+    
+    private DeploymentStatusUtil() {}
 
 	/**
 	 *Status for service not deployed on cluster

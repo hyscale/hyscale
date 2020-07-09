@@ -16,6 +16,7 @@
 package io.hyscale.deployer.services.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import io.hyscale.deployer.services.model.ServiceAddress;
@@ -28,6 +29,8 @@ import io.kubernetes.client.openapi.models.V1ServicePort;
  *
  */
 public class K8sServiceUtil {
+    
+    private K8sServiceUtil() {}
 
 	public static ServiceAddress getServiceAddress(V1Service service) {
 		if (service == null) {
@@ -60,13 +63,13 @@ public class K8sServiceUtil {
 
     public static List<Integer> getPorts(V1Service service) {
 	if (service == null || service.getSpec() == null) {
-	    return null;
+	    return Collections.emptyList();
 	}
 	List<V1ServicePort> v1ServicePorts = service.getSpec().getPorts();
 	if (v1ServicePorts == null || v1ServicePorts.isEmpty()) {
-	    return null;
+	    return Collections.emptyList();
 	}
-	List<Integer> portsList = new ArrayList<Integer>();
+	List<Integer> portsList = new ArrayList<>();
 
 	v1ServicePorts.forEach(each -> {
 	    if (each != null && each.getPort() != null) {

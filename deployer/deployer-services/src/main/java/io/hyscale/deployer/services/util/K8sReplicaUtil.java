@@ -15,6 +15,7 @@
  */
 package io.hyscale.deployer.services.util;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,16 +24,16 @@ import io.kubernetes.client.openapi.models.V1Pod;
 
 public class K8sReplicaUtil {
 
-
+    private K8sReplicaUtil() {}
     /**
      * @param podList
      * @return list of {@link ReplicaInfo} for each pod
      */
     public static List<ReplicaInfo> getReplicaInfo(List<V1Pod> podList) {
         if (podList == null) {
-            return null;
+            return Collections.emptyList();
         }
-        return podList.stream().map(each -> getReplicaInfo(each)).collect(Collectors.toList());
+        return podList.stream().map(K8sReplicaUtil::getReplicaInfo).collect(Collectors.toList());
     }
 
 
