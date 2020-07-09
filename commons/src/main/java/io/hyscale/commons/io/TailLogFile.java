@@ -75,6 +75,7 @@ public class TailLogFile implements Runnable {
 		try {
 			Thread.sleep(delayMillis);
 		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 		}
 	}
 
