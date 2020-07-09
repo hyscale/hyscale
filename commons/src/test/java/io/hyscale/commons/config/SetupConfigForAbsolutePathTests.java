@@ -28,12 +28,13 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SetupConfigForAbsolutePathTests {
+class SetupConfigForAbsolutePathTests {
     private static String absolutePath;
 
     @BeforeAll
     public static void setAbsolutePath() {
-        absolutePath = ToolConstants.FILE_SEPARATOR + "absolute" + ToolConstants.FILE_SEPARATOR + "path" + ToolConstants.FILE_SEPARATOR + "test";
+        absolutePath = ToolConstants.FILE_SEPARATOR + "absolute" + ToolConstants.FILE_SEPARATOR + "path"
+                + ToolConstants.FILE_SEPARATOR + "test";
         SetupConfig.setAbsolutePath(absolutePath);
     }
 
@@ -43,14 +44,14 @@ public class SetupConfigForAbsolutePathTests {
         String sample_path = resourceAsUrl.getPath();
         File f = new File(sample_path);
         return Stream.of(Arguments.of("notBlank", absolutePath + ToolConstants.FILE_SEPARATOR + "notBlank"),
-                Arguments.of(" ", SetupConfig.CURRENT_WORKING_DIR),
-                Arguments.of(f.getAbsolutePath(), f.getAbsolutePath()));
+                Arguments.of(" ", absolutePath + ToolConstants.FILE_SEPARATOR),
+                Arguments.of(f.getAbsolutePath(), absolutePath + ToolConstants.FILE_SEPARATOR + f.getAbsolutePath()));
 
     }
 
     @ParameterizedTest
     @MethodSource(value = "input")
-    public void testGetAbsolutePath(String inputGiven, String expected) {
+    void testGetAbsolutePath(String inputGiven, String expected) {
         String absPath = SetupConfig.getAbsolutePath(inputGiven);
         assertEquals(expected, absPath);
     }
