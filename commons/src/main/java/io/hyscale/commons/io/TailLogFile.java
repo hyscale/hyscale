@@ -62,27 +62,27 @@ public class TailLogFile implements Runnable {
 				if (fileLength > lastKnownPosition) {
 
 					// Reading
-					RandomAccessFile readWriteFileAccess = new RandomAccessFile(logFile, READ_ONLY);
-					readWriteFileAccess.seek(lastKnownPosition);
-					String fileLine = null;
-					while ((fileLine = readWriteFileAccess.readLine()) != null) {
-						if (handler == null) {
-							handle(fileLine);
-							continue;
-						}
-						handler.handleLine(fileLine);
-						if (handler.handleEOF(fileLine)) {
-							stopRunning();
-						}
+					try (RandomAccessFile readWriteFileAccess = new RandomAccessFile(logFile, READ_ONLY)){
+						readWriteFileAccess.seek(lastKnownPosition);
+						String fileLine = null;
+						while ((fileLine = readWriteFileAccess.readLine()) != null) {
+							if (handler == null) {
+								handle(fileLine);
+								continue;
+							}
+							handler.handleLine(fileLine);
+							if (handler.handleEOF(fileLine)) {
+								stopRunning();
+							}
 
+						}
+						lastKnownPosition = readWriteFileAccess.getFilePointer();
+					} catch (FileNotFoundException ex) {
+						sleep();
 					}
-					lastKnownPosition = readWriteFileAccess.getFilePointer();
-					readWriteFileAccess.close();
 				}
 				sleep();
 			}
-		} catch (FileNotFoundException ex) {
-			sleep();
 		} catch (Exception e) {
 			stopRunning();
 		}

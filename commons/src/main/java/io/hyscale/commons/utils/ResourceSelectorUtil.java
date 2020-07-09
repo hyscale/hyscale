@@ -55,7 +55,7 @@ public class ResourceSelectorUtil {
 	 */
     public static String getNamespaceSelector(String namespace) {
     	StringBuilder fieldSelector = new StringBuilder();
-		fieldSelector.append(MetadataFieldSelector.METADATA_NAMESPACE.getFieldName()).append(ToolConstants.EQUALS).append(namespace);
+		fieldSelector.append(MetadataFieldSelector.METADATA_NAMESPACE.getFieldName()).append(ToolConstants.EQUALS_SYMBOL).append(namespace);
 		return fieldSelector.toString();
     }
 }

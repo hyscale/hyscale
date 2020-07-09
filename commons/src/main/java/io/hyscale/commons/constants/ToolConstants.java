@@ -37,7 +37,7 @@ public class ToolConstants {
 
     public static final String EMPTY_STRING = "";
 
-	public static final String EQUALS="=";
+	public static final String EQUALS_SYMBOL="=";
 
     public static final String QUOTES = "\"";
 
