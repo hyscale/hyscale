@@ -40,4 +40,5 @@ module commons {
 	requires java.annotation;
 	requires java.json;
 	requires commons.exec;
+    requires gson;
 }

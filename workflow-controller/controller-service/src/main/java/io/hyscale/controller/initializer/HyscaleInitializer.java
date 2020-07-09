@@ -19,6 +19,7 @@ import io.hyscale.controller.exception.ParameterExceptionHandler;
 import io.hyscale.controller.piccoli.ProfileArgsManipulator;
 
 import java.util.Map;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,6 +81,11 @@ public class HyscaleInitializer implements CommandLineRunner {
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(HyscaleInitializer.class);
+        if(System.getenv(ToolConstants.WORKFLOW_LOGGER_DISABLED)!=null && System.getenv(ToolConstants.WORKFLOW_LOGGER_DISABLED).equalsIgnoreCase("true")){
+            Properties properties = new Properties();
+            properties.setProperty("spring.main.banner-mode", "off");
+            app.setDefaultProperties(properties);
+        }
         app.setLazyInitialization(IS_LAZY_INITIALIZATION);
         app.run(args);
     }

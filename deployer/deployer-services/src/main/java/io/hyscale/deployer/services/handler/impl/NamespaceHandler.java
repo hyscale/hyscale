@@ -18,6 +18,7 @@ package io.hyscale.deployer.services.handler.impl;
 import java.util.List;
 
 import io.hyscale.deployer.services.model.DeployerActivity;
+import io.hyscale.deployer.services.constants.DeployerConstants;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.util.ExceptionHelper;
@@ -56,12 +57,12 @@ public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
         String name = resource.getMetadata().getName();
         V1Namespace createdNamespace = null;
         try {
-            createdNamespace = coreV1Api.createNamespace(resource, TRUE, null, null);
+            createdNamespace = coreV1Api.createNamespace(resource, DeployerConstants.TRUE, null, null);
         } catch (ApiException e) {
             if (e.getCode() != 409) {
                 HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
                         ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.CREATE));
-                LOGGER.error("Error while creating namespace {}, error {}", name, ex);
+                LOGGER.error("Error while creating namespace {}", name, ex);
                 throw ex;
             }
         }
@@ -73,7 +74,7 @@ public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
         CoreV1Api coreV1Api = new CoreV1Api(apiClient);
         V1Namespace v1Namespace = null;
         try {
-            v1Namespace = coreV1Api.readNamespace(name, TRUE, true, true);
+            v1Namespace = coreV1Api.readNamespace(name, DeployerConstants.TRUE, true, true);
         } catch (ApiException e) {
             HyscaleException ex = null;
             if (e.getCode() != 404) {
@@ -91,16 +92,10 @@ public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
 
     @Override
     public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-        V1DeleteOptions deleteOptions = getDeleteOptions();
         ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_NAMESPACE);
         try {
             WorkflowLogger.startActivity(activityContext);
-            try {
-                coreV1Api.deleteNamespace(name, TRUE, null, null, null, null, deleteOptions);
-            } catch (JsonSyntaxException e) {
-                // K8s end exception ignore
-            }
+            delete(apiClient, namespace);
             List<String> namespaceList = Lists.newArrayList();
             namespaceList.add(name);
             if (wait) {
@@ -119,6 +114,16 @@ public class NamespaceHandler implements ResourceLifeCycleHandler<V1Namespace> {
         }
         WorkflowLogger.endActivity(activityContext, Status.DONE);
         return true;
+    }
+    
+    private void delete(ApiClient apiClient, String name) throws ApiException {
+        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+        V1DeleteOptions deleteOptions = getDeleteOptions();
+        try {
+            coreV1Api.deleteNamespace(name, DeployerConstants.TRUE, null, null, null, null, deleteOptions);
+        } catch (JsonSyntaxException e) {
+            // K8s end exception ignore
+        }
     }
 
     @Override

@@ -18,6 +18,7 @@ package io.hyscale.controller.validator;
 import java.io.File;
 import java.util.Iterator;
 
+import io.hyscale.commons.io.StructuredOutputHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,9 @@ public abstract class SpecSchemaValidator implements Validator<File> {
     @Autowired
     private SchemaValidator schemaValidator;
 
+    @Autowired
+    private StructuredOutputHandler outputHandler;
+
     @Override
     public boolean validate(File specFile) throws HyscaleException {
         String fileName = specFile.getName();
@@ -83,7 +87,9 @@ public abstract class SpecSchemaValidator implements Validator<File> {
         
         WorkflowLogger.persist(getActivity(), LoggerTags.ERROR, fileName, errorMessage);
         logger.error(errorMessage);
-        
+        if(WorkflowLogger.isDisabled()){
+            outputHandler.addErrorMessage(errorMessage);
+        }
         return false;
     }
     
@@ -101,13 +107,13 @@ public abstract class SpecSchemaValidator implements Validator<File> {
                 messageBuilder.append(message.getMessage());
                 JsonNode jsonNode = message.asJson();
                 String location = getLocation(jsonNode);
-                if (location != null) {
+                if (StringUtils.isNotBlank(location)) {
                     messageBuilder.append(" at ").append(location);
                 }
             } else {
                 messageBuilder.append(message.toString());
             }
-            messageBuilder.append("\n");
+            messageBuilder.append(ToolConstants.NEW_LINE);
         }
         return messageBuilder.toString();
     }

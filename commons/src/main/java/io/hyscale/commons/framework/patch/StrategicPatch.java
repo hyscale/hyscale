@@ -24,12 +24,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import javax.json.*;
 import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonParsingException;
 
@@ -77,10 +72,10 @@ public class StrategicPatch {
             return source;
         }
         JsonObject mergedJsonObject = null;
-        try {
+        try (JsonReader sourceJsonReader = Json.createReader(new StringReader(source)); JsonReader patchJsonReader = Json.createReader(new StringReader(patch));) {
             // Convert String to Json Object
-            JsonObject sourceJson = Json.createReader(new StringReader(source)).readObject();
-            JsonObject patchJson = Json.createReader(new StringReader(patch)).readObject();
+            JsonObject sourceJson = sourceJsonReader.readObject();
+            JsonObject patchJson = patchJsonReader.readObject();
 
             // Convert JSON Object to String
             mergedJsonObject = mergeJsonObjects(sourceJson, patchJson, fieldDataProvider);

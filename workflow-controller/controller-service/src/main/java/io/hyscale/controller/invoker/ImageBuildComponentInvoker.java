@@ -48,7 +48,7 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
  */
 @Component
 public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext> {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(ImageBuildComponentInvoker.class);
 
     @Autowired
@@ -136,7 +136,7 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
         }
         return stackImage != null ? stackImage.split("/")[0] : stackImage;
     }
-    
+
     private boolean isStackImage(WorkflowContext context) {
         Boolean stackAsServiceImage = (Boolean) context.getAttribute(WorkflowConstants.STACK_AS_SERVICE_IMAGE);
         return stackAsServiceImage == null ? false : stackAsServiceImage;
@@ -146,6 +146,7 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
     protected void onError(WorkflowContext context, HyscaleException he) throws HyscaleException {
         WorkflowLogger.header(ControllerActivity.ERROR);
         WorkflowLogger.error(ControllerActivity.CAUSE, he != null ? he.getMessage() : ImageBuilderErrorCodes.FAILED_TO_BUILD_AND_PUSH_IMAGE.getMessage());
+        context.addAttribute(WorkflowConstants.ERROR_MESSAGE, (he != null) ? he.getMessage() : ImageBuilderErrorCodes.FAILED_TO_BUILD_AND_PUSH_IMAGE.getMessage());
         context.setFailed(true);
         if (he != null) {
             throw he;
