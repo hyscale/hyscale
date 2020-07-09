@@ -19,20 +19,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PodStatusCode {
-    
     private PodStatusCode() {}
-
-	private static final Map<Integer, Signals> statusCodeVsMessage = new HashMap<>();
-
-	static {
-		for (Signals each : Signals.values()) {
-			statusCodeVsMessage.put(each.getCode(), each);
-		}
-	}
-
+    
 	// System Signals
 	public enum Signals {
 		SIGKILL(137, "SIGKILL"), SIGTERM(143, "SIGTERM"), FAILURE(1, "FAILURE");
+	    
+	    private static final Map<Integer, Signals> statusCodeVsMessage = new HashMap<>();
+
+	    static {
+	        for (Signals each : Signals.values()) {
+	            statusCodeVsMessage.put(each.getCode(), each);
+	        }
+	    }
 
 		private Integer code = null;
 		private String signal;
