@@ -410,10 +410,10 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
             return null;
         }
         String podTemplateHash = replicaSet.getMetadata().getLabels()
-                .get(K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH);
+                .get(K8SRuntimeConstants.K8S_DEPLOYMENT_POD_TEMPLATE_HASH);
 
         logger.debug("pod-template-hash: {}", podTemplateHash);
-        return K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH + "=" + podTemplateHash;
+        return K8SRuntimeConstants.K8S_DEPLOYMENT_POD_TEMPLATE_HASH + "=" + podTemplateHash;
     }
 
     @Override
