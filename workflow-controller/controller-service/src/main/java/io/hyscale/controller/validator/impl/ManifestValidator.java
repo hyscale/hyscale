@@ -18,9 +18,12 @@ package io.hyscale.controller.validator.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import io.hyscale.commons.io.StructuredOutputHandler;
+import io.hyscale.controller.exception.ControllerErrorCodes;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -39,6 +42,9 @@ import io.hyscale.servicespec.commons.model.service.Volume;
 public class ManifestValidator implements Validator<WorkflowContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(ManifestValidator.class);
+
+    @Autowired
+    private StructuredOutputHandler outputHandler;
 
     @Override
     public boolean validate(WorkflowContext context) throws HyscaleException {
@@ -62,8 +68,11 @@ public class ManifestValidator implements Validator<WorkflowContext> {
         if (invalidVolumes == null || invalidVolumes.isEmpty()) {
             return true;
         }
-        StringBuilder messageBuilder = new StringBuilder("Invalid volumes ").append(invalidVolumes);
+        StringBuilder messageBuilder = new StringBuilder(" Invalid volumes ").append(invalidVolumes);
         WorkflowLogger.persist(ValidatorActivity.MANIFEST_VALIDATION_FAILED, LoggerTags.ERROR, messageBuilder.toString());
+        if(WorkflowLogger.isDisabled()){
+            outputHandler.addErrorMessage(ControllerErrorCodes.MANIFEST_VALIDATION_FAILED.getMessage(),messageBuilder.toString());
+        }
         return false;
         
     }

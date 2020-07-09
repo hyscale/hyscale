@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.models.ClusterVersionInfo;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.deployer.services.handler.impl.K8sVersionHandler;

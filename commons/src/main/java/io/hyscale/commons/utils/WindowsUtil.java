@@ -58,7 +58,7 @@ public class WindowsUtil {
 			return filepath;
 		}
 		if (isHostWindows()) {
-		    return filepath.replaceAll(ToolConstants.LINUX_FILE_SEPARATOR, WINDOWS_FS_MATCHER);
+		    return filepath.replace(ToolConstants.LINUX_FILE_SEPARATOR, WINDOWS_FS_MATCHER);
 		}
 		return filepath;
 	}

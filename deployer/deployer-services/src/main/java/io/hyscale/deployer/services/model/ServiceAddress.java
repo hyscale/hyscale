@@ -56,7 +56,7 @@ public class ServiceAddress {
     @Override
     public String toString() {
 	if (StringUtils.isBlank(serviceIP)) {
-	    return null;
+	    return StringUtils.EMPTY;
 	}
 
 	StringBuilder address = new StringBuilder(serviceIP);

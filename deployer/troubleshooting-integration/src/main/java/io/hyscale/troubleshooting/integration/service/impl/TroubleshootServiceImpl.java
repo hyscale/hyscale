@@ -56,15 +56,17 @@ public class TroubleshootServiceImpl implements TroubleshootService {
 
     private void executeTroubleshootFlow(TroubleshootingContext troubleshootingContext) throws HyscaleException {
         Node current = podStatusCondition;
+        String nodeDescription = current.describe();
         try {
             do {
+                nodeDescription = current.describe();
                 if (troubleshootingContext.isTrace()) {
-                    logger.debug("Executing troubleshooting node {}", current.describe());
+                    logger.debug("Executing troubleshooting node {}", nodeDescription);
                 }
                 current = current.next(troubleshootingContext);
             } while (current != null);
         } catch (HyscaleException e) {
-            logger.error("Error while troubleshooting workflow {}", e);
+            logger.error("Error while troubleshooting workflow {}", nodeDescription, e);
             throw e;
         }
     }

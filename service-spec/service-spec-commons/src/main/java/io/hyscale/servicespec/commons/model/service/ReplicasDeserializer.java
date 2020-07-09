@@ -82,7 +82,7 @@ public class ReplicasDeserializer extends JsonDeserializer {
                 }
             }
         } catch (Exception e) {
-            logger.debug("Returning default replicas from deserializer, Error {}", e);
+            logger.error("Returning default replicas from deserializer", e);
             replicas = defaultReplicas();
         }
         return replicas;

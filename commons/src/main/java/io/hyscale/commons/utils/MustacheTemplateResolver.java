@@ -57,14 +57,12 @@ public class MustacheTemplateResolver {
 					Charset.forName(ToolConstants.CHARACTER_ENCODING).newEncoder());
 			Mustache m = mustacheFactory.compile(templateFile);
 			m.execute(out, context);
-			if (out != null) {
-				try {
-					out.flush();
-					out.close();
-				} catch (IOException e) {
-					HyscaleException ex = new HyscaleException(CommonErrorCode.FAILED_TO_RESOLVE_TEMPLATE, templateFile);
-					logger.error("Error while closing the output stream {}", ex);
-				}
+			try {
+				out.flush();
+				out.close();
+			} catch (IOException e) {
+				HyscaleException ex = new HyscaleException(CommonErrorCode.FAILED_TO_RESOLVE_TEMPLATE, templateFile);
+				logger.error("Error while closing the output stream {}", ex.getMessage());
 			}
 			String populatedTemplate = new String(outputStream.toByteArray(),
 					Charset.forName(ToolConstants.CHARACTER_ENCODING));

@@ -16,7 +16,6 @@
 package io.hyscale.deployer.services.manager.impl;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
@@ -35,7 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class ScaleServiceManagerImpl implements ScaleServiceManager {
@@ -83,6 +81,5 @@ public class ScaleServiceManagerImpl implements ScaleServiceManager {
             throw new HyscaleException(DeployerErrorCodes.CANNOT_SCALE_OUT_RANGE_HPA, String.valueOf(v1HorizontalPodAutoscaler.getSpec().getMinReplicas()),
                     String.valueOf(v1HorizontalPodAutoscaler.getSpec().getMaxReplicas()));
         }
-        return;
     }
 }

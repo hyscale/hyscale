@@ -63,7 +63,7 @@ public class PodParentProvider {
      */
     public List<PodParent> getPodParents(ApiClient apiClient, String appName, String namespace)
             throws HyscaleException {
-        List<PodParent> podParentList = new ArrayList<PodParent>();
+        List<PodParent> podParentList = new ArrayList<>();
         List<PodParentHandler> podParentHandlerList = PodParentFactory.getAllHandlers();
         String selector = ResourceSelectorUtil.getSelector(appName);
         for (PodParentHandler podParentHandler : podParentHandlerList) {
@@ -89,7 +89,7 @@ public class PodParentProvider {
      */
     public boolean hasPodParent(ApiClient apiClient, String appName, String serviceName, String namespace)
             throws HyscaleException {
-        return getPodParent(apiClient, appName, serviceName, namespace) != null ? true : false;
+        return getPodParent(apiClient, appName, serviceName, namespace) != null;
     }
 
     /**
@@ -100,10 +100,10 @@ public class PodParentProvider {
      * @throws HyscaleException
      */
     public List<PodParent> getAllPodParents(ApiClient apiClient) throws HyscaleException {
-        List<PodParent> podParentList = new ArrayList<PodParent>();
+        List<PodParent> podParentList = new ArrayList<>();
         List<PodParentHandler> podParentHandlerList = PodParentFactory.getAllHandlers();
         for (PodParentHandler podParentHandler : podParentHandlerList) {
-            List podParentResource = podParentHandler.listForAllNamespaces(apiClient, null, true);
+            List<?> podParentResource = podParentHandler.listForAllNamespaces(apiClient, null, true);
             if (podParentResource != null) {
                 podParentResource.stream().forEach(each -> {
                     PodParent podParent = new PodParent(podParentHandler.getKind(), each);

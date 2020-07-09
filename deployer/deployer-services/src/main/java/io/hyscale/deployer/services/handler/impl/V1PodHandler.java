@@ -35,11 +35,13 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.ResourceLabelKey;
 import io.hyscale.commons.models.Status;
+import io.hyscale.commons.utils.GsonProviderUtil;
 import io.hyscale.commons.utils.HyscaleContextUtil;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
 import io.hyscale.deployer.services.config.DeployerEnvConfig;
+import io.hyscale.deployer.services.constants.DeployerConstants;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.factory.PodParentFactory;
 import io.hyscale.deployer.services.handler.PodParentHandler;
@@ -55,7 +57,6 @@ import io.kubernetes.client.custom.V1Patch;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.apis.CoreV1Api;
-import io.kubernetes.client.openapi.models.V1ContainerStatus;
 import io.kubernetes.client.openapi.models.V1DeleteOptions;
 import io.kubernetes.client.openapi.models.V1Pod;
 import io.kubernetes.client.openapi.models.V1PodList;
@@ -68,7 +69,7 @@ import okhttp3.Response;
 public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(V1PodHandler.class);
-    private static final long MAX_TIME_TO_CONTAINER_READY = 120 * 1000;
+    private static final long MAX_TIME_TO_CONTAINER_READY = 120 * 1000L;
     private static final long POD_RESTART_COUNT = DeployerEnvConfig.getPodRestartCount();
     private static final Integer POD_WATCH_TIMEOUT_IN_SEC = 10;
 
@@ -84,8 +85,8 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
         V1Pod v1Pod = null;
         try {
             resource.getMetadata().putAnnotationsItem(
-                    AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
-            v1Pod = coreV1Api.createNamespacedPod(namespace, resource, TRUE, null, null);
+                    AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), GsonProviderUtil.getPrettyGsonBuilder().toJson(resource));
+            v1Pod = coreV1Api.createNamespacedPod(namespace, resource, DeployerConstants.TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
                     ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.CREATE));
@@ -111,12 +112,12 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
         } catch (HyscaleException ex) {
             LOGGER.debug("Error while getting Pod {} in namespace {} for Update, creating new", name, namespace);
             V1Pod pod = create(apiClient, resource, namespace);
-            return pod != null ? true : false;
+            return pod != null;
         }
         try {
             String resourceVersion = existingPod.getMetadata().getResourceVersion();
             resource.getMetadata().setResourceVersion(resourceVersion);
-            coreV1Api.replaceNamespacedPod(name, namespace, resource, TRUE, null, null);
+            coreV1Api.replaceNamespacedPod(name, namespace, resource, DeployerConstants.TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
                     ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.UPDATE));
@@ -132,7 +133,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
         CoreV1Api coreV1Api = new CoreV1Api(apiClient);
         V1Pod v1Pod = null;
         try {
-            v1Pod = coreV1Api.readNamespacedPod(name, namespace, TRUE, null, null);
+            v1Pod = coreV1Api.readNamespacedPod(name, namespace, DeployerConstants.TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET);
             LOGGER.error("Error while fetching Pod {} in namespace {}, error {}", name, namespace, ex.toString());
@@ -149,7 +150,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
         String fieldSelector = label ? null : selector;
         List<V1Pod> v1Pods = null;
         try {
-            V1PodList v1PodList = coreV1Api.listNamespacedPod(namespace, TRUE, null, null, fieldSelector, labelSelector,
+            V1PodList v1PodList = coreV1Api.listNamespacedPod(namespace, DeployerConstants.TRUE, null, null, fieldSelector, labelSelector,
                     null, null, null, null);
             v1Pods = v1PodList != null ? v1PodList.getItems() : null;
         } catch (ApiException e) {
@@ -170,7 +171,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
         List<V1Pod> v1Pods = null;
         try {
             V1PodList v1PodList = coreV1Api.listPodForAllNamespaces(null, null, fieldSelector, labelSelector, null,
-                    TRUE, null, null, null);
+                    DeployerConstants.TRUE, null, null, null);
             v1Pods = v1PodList != null ? v1PodList.getItems() : null;
         } catch (ApiException e) {
             HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_BY_SELECTOR);
@@ -189,23 +190,23 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
         }
         CoreV1Api coreV1Api = new CoreV1Api(apiClient);
         target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
-                gson.toJson(target));
+                GsonProviderUtil.getPrettyGsonBuilder().toJson(target));
         V1Pod sourcePod = null;
         try {
             sourcePod = get(apiClient, name, namespace);
         } catch (HyscaleException e) {
             LOGGER.debug("Error while getting Pod {} in namespace {} for Patch, creating new", name, namespace);
             V1Pod pod = create(apiClient, target, namespace);
-            return pod != null ? true : false;
+            return pod != null;
         }
         Object patchObject = null;
         String lastAppliedConfig = sourcePod.getMetadata().getAnnotations()
                 .get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
         try {
-            patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1Pod.class), target,
+            patchObject = K8sResourcePatchUtil.getJsonPatch(GsonProviderUtil.getPrettyGsonBuilder().fromJson(lastAppliedConfig, V1Pod.class), target,
                     V1Pod.class);
             V1Patch v1Patch = new V1Patch(patchObject.toString());
-            coreV1Api.patchNamespacedPod(name, namespace, v1Patch, TRUE, null, null, null);
+            coreV1Api.patchNamespacedPod(name, namespace, v1Patch, DeployerConstants.TRUE, null, null, null);
         } catch (HyscaleException e) {
             LOGGER.error("Error while creating patch for Pod {}, source {}, target {}", name, sourcePod, target);
             throw e;
@@ -220,16 +221,8 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
 
     @Override
     public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-
-        V1DeleteOptions deleteOptions = getDeleteOptions();
-        deleteOptions.setApiVersion("apps/v1");
         try {
-            try {
-                coreV1Api.deleteNamespacedPod(name, namespace, TRUE, null, null, null, null, deleteOptions);
-            } catch (JsonSyntaxException e) {
-                // K8s end exception ignore
-            }
+            delete(apiClient, name, namespace);
             List<String> podList = Lists.newArrayList();
             podList.add(name);
             if (wait) {
@@ -247,14 +240,27 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
         return true;
     }
 
+    private void delete(ApiClient apiClient, String name, String namespace) throws ApiException {
+        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+        V1DeleteOptions deleteOptions = getDeleteOptions();
+        deleteOptions.setApiVersion("apps/v1");
+        try {
+            coreV1Api.deleteNamespacedPod(name, namespace, DeployerConstants.TRUE, null, null, null, null,
+                    deleteOptions);
+        } catch (JsonSyntaxException e) {
+            // K8s end exception ignore
+        }
+    }
+    
     @Override
     public boolean deleteBySelector(ApiClient apiClient, String selector, boolean label, String namespace, boolean wait)
             throws HyscaleException {
         try {
-            List<V1Pod> V1PodList = getBySelector(apiClient, selector, label, namespace);
-            if (V1PodList == null || V1PodList.isEmpty()) {
+            List<V1Pod> v1PodList = getBySelector(apiClient, selector, label, namespace);
+            if (v1PodList == null || v1PodList.isEmpty()) {
+                return false;
             }
-            for (V1Pod V1Pod : V1PodList) {
+            for (V1Pod V1Pod : v1PodList) {
                 delete(apiClient, V1Pod.getMetadata().getName(), namespace, wait);
             }
         } catch (HyscaleException e) {
@@ -327,51 +333,18 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
         }
         try {
             CoreV1Api coreClient = new CoreV1Api(apiClient);
-            Call call = coreClient.readNamespacedPodLogCall(podName, namespace, containerName, false, null, TRUE, false, null,
+            Call call = coreClient.readNamespacedPodLogCall(podName, namespace, containerName, false, null, DeployerConstants.TRUE, false, null,
                     readLines, true, null);
             Response response = call.execute();
             if (!response.isSuccessful()) {
                 LOGGER.error("Failed to get Pod logs for service {} in namespace {} : {}", serviceName, namespace,
-                        response.body().string());
+                        response.body());
                 throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_LOGS, serviceName, namespace);
             }
             return response.body().byteStream();
         } catch (IOException | ApiException e) {
-            LOGGER.error("Error while fetching Pod logs for service {} in namespace {} ", serviceName, namespace,
-                    e.getMessage());
+            LOGGER.error("Error while fetching Pod logs for service {} in namespace {}", serviceName, namespace, e);
             throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_LOGS, serviceName, namespace);
-        }
-    }
-
-    // Integrate this check to K8sUtil
-    private void waitForContainerCreation(ApiClient apiClient, V1Pod v1Pod, String name, String namespace) {
-        long startTime = System.currentTimeMillis();
-        boolean containerReady = false;
-        WorkflowLogger.startActivity(DeployerActivity.WAITING_FOR_CONTAINER_CREATION);
-        while (!containerReady && System.currentTimeMillis() - startTime < MAX_TIME_TO_CONTAINER_READY) {
-            WorkflowLogger.continueActivity();
-            try {
-                v1Pod = get(apiClient, v1Pod.getMetadata().getName(), namespace);
-                List<V1ContainerStatus> containerStatuses = v1Pod.getStatus().getContainerStatuses();
-                if (containerStatuses != null && !containerStatuses.isEmpty()) {
-                    V1ContainerStatus v1ContainerStatus = v1Pod.getStatus().getContainerStatuses().stream()
-                            .filter(each -> {
-                                return each.getName().equals(name);
-                            }).findFirst().get();
-                    containerReady = v1ContainerStatus.getReady();
-                    // TODO Check if container is in error state and exit fast
-                }
-                Thread.sleep(5 * 1000);
-            } catch (InterruptedException e) {
-            } catch (HyscaleException ex) {
-
-            }
-        }
-
-        if (containerReady) {
-            WorkflowLogger.endActivity(Status.DONE);
-        } else {
-            WorkflowLogger.endActivity(Status.FAILED);
         }
     }
 
@@ -403,7 +376,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
         String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
         PodParent podParent = HyscaleContextUtil.getSpringBean(PodParentProvider.class).getPodParent(apiClient, appName, serviceName, namespace);
         if (podParent == null) {
-            logger.error("Error while fetching pod parent of service {}", serviceName);
+            LOGGER.error("Error while fetching pod parent of service {}", serviceName);
             throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_SERVICE_REPLICAS);
         }
 
@@ -433,17 +406,19 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
     }
     
     private void watchPods(ApiClient apiClient, String namespace, String latestPodSelector, Integer replicas) throws HyscaleException {
-        Set<String> readyPods = new HashSet<String>();
-        Set<String> initializedPods = new HashSet<String>();
-        Set<String> createdPods = new HashSet<String>();
+        Set<String> readyPods = new HashSet<>();
+        Set<String> initializedPods = new HashSet<>();
+        Set<String> createdPods = new HashSet<>();
 
         ActivityContext initializedActivityContext = new ActivityContext(DeployerActivity.POD_INITIALIZED);
         ActivityContext creationActivityContext = new ActivityContext(DeployerActivity.POD_CREATION);
         ActivityContext readyActivityContext = new ActivityContext(DeployerActivity.POD_READINESS);
         ActivityContext currentActivityContext = initializedActivityContext;
 
-        boolean initializationActivityDone = false, creationActivityStarted = false, creationActivityDone = false,
-                readyActivityStarted = false;
+        boolean initializationActivityDone = false;
+        boolean creationActivityStarted = false;
+        boolean creationActivityDone = false;
+        boolean readyActivityStarted = false;
         WorkflowLogger.startActivity(initializedActivityContext);
         Long startTime = System.currentTimeMillis();
         boolean isTimeout = true;
@@ -546,7 +521,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
                     new TypeToken<Watch.Response<V1Pod>>() {
                     }.getType());
         } catch (ApiException e) {
-            logger.error("Failed to watch pod events ", e);
+            LOGGER.error("Failed to watch pod events ", e);
             throw new HyscaleException(DeployerErrorCodes.FAILED_TO_RETRIEVE_POD);
         }
     }

@@ -25,6 +25,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
+import io.hyscale.deployer.services.constants.DeployerConstants;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.util.ExceptionHelper;
@@ -71,7 +72,7 @@ public class V1ReplicaSetHandler implements ResourceLifeCycleHandler<V1ReplicaSe
             String labelSelector = label ? selector : null;
             String fieldSelector = label ? null : selector;
 
-            V1ReplicaSetList v1DeploymentList = appsV1Api.listNamespacedReplicaSet(namespace, TRUE, null, 
+            V1ReplicaSetList v1DeploymentList = appsV1Api.listNamespacedReplicaSet(namespace, DeployerConstants.TRUE, null, 
                     null, fieldSelector, labelSelector, null, null, null, null);
 
             v1ReplicaSets = v1DeploymentList != null ? v1DeploymentList.getItems() : null;

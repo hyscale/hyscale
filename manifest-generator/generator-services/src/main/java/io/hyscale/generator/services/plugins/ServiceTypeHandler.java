@@ -24,6 +24,8 @@ import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+
+import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -46,8 +48,8 @@ public class ServiceTypeHandler implements ManifestHandler {
             serviceTypeSnippet.setPath("spec.type");
 
             Boolean external = serviceSpec.get(HyscaleSpecFields.external, Boolean.class);
-            K8sServiceType serviceType = getServiceType(external == null ? false : external);
-            String serviceTypeName = serviceType != null ? serviceType.name() : K8sServiceType.ClusterIP.name();
+            K8sServiceType serviceType = getServiceType(external);
+            String serviceTypeName = serviceType != null ? serviceType.getName() : K8sServiceType.CLUSTER_IP.getName();
             logger.debug("Processing Service Type {}.",serviceTypeName);
             serviceTypeSnippet.setSnippet(serviceTypeName);
             manifestSnippetList.add(serviceTypeSnippet);
@@ -56,15 +58,15 @@ public class ServiceTypeHandler implements ManifestHandler {
     }
 
     private K8sServiceType getServiceType(Boolean external) {
-
-        if (external) {
+        
+        if (BooleanUtils.toBoolean(external)) {
             if (checkForLoadBalancerType()) {
-                return K8sServiceType.LoadBalancer;
+                return K8sServiceType.LOAD_BALANCER;
             } else {
-                return K8sServiceType.NodePort;
+                return K8sServiceType.NODE_PORT;
             }
         } else {
-            return K8sServiceType.ClusterIP;
+            return K8sServiceType.CLUSTER_IP;
         }
     }
 
