@@ -253,7 +253,7 @@ public class WorkflowLogger {
         if(isDisabled()){
             return;
         }
-        if (persistedActivities != null && !persistedActivities.isEmpty()) {
+        if (!persistedActivities.isEmpty()) {
             persistedActivities.stream().filter(each -> {
                 return each != null && StringUtils.isNotBlank(each);
             }).forEach(each -> {

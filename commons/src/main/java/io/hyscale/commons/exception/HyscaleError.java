@@ -15,7 +15,9 @@
  */
 package io.hyscale.commons.exception;
 
-public interface HyscaleError {
+import java.io.Serializable;
+
+public interface HyscaleError extends Serializable {
 
 	String getMessage();
     int getCode();

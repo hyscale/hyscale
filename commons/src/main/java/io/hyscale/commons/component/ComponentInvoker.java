@@ -39,7 +39,7 @@ public abstract class ComponentInvoker<C extends ComponentInvokerContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(ComponentInvoker.class);
 
-    private List<InvokerHook> hooks = new ArrayList<InvokerHook>();
+    private List< InvokerHook> hooks = new ArrayList<>();
 
     protected void addHook(InvokerHook hook) {
         this.hooks.add(hook);
@@ -85,7 +85,7 @@ public abstract class ComponentInvoker<C extends ComponentInvokerContext> {
     private boolean operate(C context) throws HyscaleException {
         if (context == null || context.isFailed()) {
             logger.error("Cannot execute the component {}", getClass());
-            if (context.getHyscaleException() != null) {
+            if (context != null && context.getHyscaleException() != null) {
                 throw context.getHyscaleException();
             }
             return false;

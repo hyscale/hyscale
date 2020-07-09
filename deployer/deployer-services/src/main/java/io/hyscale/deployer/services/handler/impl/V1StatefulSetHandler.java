@@ -424,7 +424,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         if (annotations == null || annotations.isEmpty()) {
             return null;
         }
-        return annotations.get(K8SRuntimeConstants.K8s_STS_CONTROLLER_REVISION_HASH);
+        return annotations.get(K8SRuntimeConstants.K8S_STS_CONTROLLER_REVISION_HASH);
     }
 
     /**
@@ -446,7 +446,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         String updateRevision = stsStatus.getUpdateRevision();
         LOGGER.debug("Current Revision: {}", currentRevision);
         LOGGER.debug("Updated Revision: {}", updateRevision);
-        return K8SRuntimeConstants.K8s_STS_CONTROLLER_REVISION_HASH + "=" + updateRevision;
+        return K8SRuntimeConstants.K8S_STS_CONTROLLER_REVISION_HASH + "=" + updateRevision;
     }
 
     /**

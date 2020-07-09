@@ -20,6 +20,8 @@ import java.io.File;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import io.hyscale.commons.utils.HyscaleStringUtil;
+
 @Component
 public class SetupConfig {
 
@@ -36,23 +38,21 @@ public class SetupConfig {
     public static final String HYS_REGISTRY_CONFIG_ENV = "HYS_REGISTRY_CONFIG";
 
 
-    private static final String generatedFilesDir = "generated-files";
-    private static final String logDir = "logs";
-    private static final String appsDirectory = "apps";
-    private static final String hyscale = "hyscale";
+    private static final String GENERATED_FILES_DIR = "generated-files";
+    private static final String LOGS_DIR = "logs";
+    private static final String APPS_DIR = "apps";
+    private static final String HYSCALE_DIR = "hyscale";
 
-    private static final ThreadLocal<String> absolutePathTL = new ThreadLocal<String>();
+    private static final ThreadLocal<String> absolutePathTL = new ThreadLocal<>();
 
     public static void setAbsolutePath(String path) {
-        if (StringUtils.isNotBlank(path)) {
-            if (absolutePathTL.get() == null) {
-                absolutePathTL.set(path);
-            }
+        if (StringUtils.isNotBlank(path) && absolutePathTL.get() == null) {
+            absolutePathTL.set(path);
         }
     }
 
     public static String getToolLogDir() {
-        return INSTALLATION_DIR + FILE_SEPARATOR + hyscale + FILE_SEPARATOR + logDir;
+        return INSTALLATION_DIR + FILE_SEPARATOR + HYSCALE_DIR + FILE_SEPARATOR + LOGS_DIR;
     }
 
     private static String getAbsolutePath() {
@@ -63,9 +63,7 @@ public class SetupConfig {
     }
 
     public static void clearAbsolutePath() {
-        if (absolutePathTL != null) {
-            absolutePathTL.remove();
-        }
+        absolutePathTL.remove();
     }
 
     /*
@@ -78,15 +76,31 @@ public class SetupConfig {
 
     public static String getAbsolutePath(String source) {
         if (StringUtils.isBlank(source)) {
-            return CURRENT_WORKING_DIR;
+            return getAbsolutePath() != null ? getAbsolutePath() : CURRENT_WORKING_DIR;
         }
-        File sourceFile = new File(source);
-        if (sourceFile.isAbsolute()) {
+        if (isAbsolute(source)) {
             return source;
         } else if (StringUtils.isNotBlank(getAbsolutePath())) {
             return getAbsolutePath() + source;
         }
         return CURRENT_WORKING_DIR + FILE_SEPARATOR + source;
+    }
+    
+    /**
+     * Source path is absolute if
+     * 1. It starts with absolute path, given absolute path is fixed
+     * 2. If absolute path not fixed then {@link File#isAbsolute()}
+     * @param source
+     * @return
+     */
+    private static boolean isAbsolute(String source) {
+        if (StringUtils.isBlank(source)) {
+            return false;
+        }
+        if (getAbsolutePath() != null) {
+            return source.startsWith(HyscaleStringUtil.removeSuffixStr(getAbsolutePath(), FILE_SEPARATOR));
+        }
+        return new File(source).isAbsolute();
     }
 
     public String getInstallationDir() {
@@ -94,7 +108,7 @@ public class SetupConfig {
     }
 
     public String getAppsDir() {
-        return getInstallationDir() + hyscale + FILE_SEPARATOR + appsDirectory + FILE_SEPARATOR;
+        return getInstallationDir() + HYSCALE_DIR + FILE_SEPARATOR + APPS_DIR + FILE_SEPARATOR;
     }
 
     public String getServiceDir(String appName, String serviceName) {
@@ -104,29 +118,15 @@ public class SetupConfig {
     }
 
     public String getGeneratedFilesDir(String appName, String serviceName) {
-        return getServiceDir(appName, serviceName) + generatedFilesDir + FILE_SEPARATOR;
+        return getServiceDir(appName, serviceName) + GENERATED_FILES_DIR + FILE_SEPARATOR;
     }
 
     public String getLogsDir(String appName, String serviceName) {
-        return getServiceDir(appName, serviceName) + logDir + FILE_SEPARATOR;
+        return getServiceDir(appName, serviceName) + LOGS_DIR + FILE_SEPARATOR;
     }
 
     public static String getMountPathOf(String dir) {
-        /*if (StringUtils.isNotBlank(dir) && StringUtils.isNotBlank(HYSCALECTL_HOME_DIR)) {
-            String hyscaleCtlHomeDir = HYSCALECTL_HOME_DIR;
-            if (!hyscaleCtlHomeDir.endsWith(FILE_SEPARATOR)) {
-                hyscaleCtlHomeDir += FILE_SEPARATOR;
-            }
-            String userHomeDir = USER_HOME_DIR;
-            if (!userHomeDir.endsWith(FILE_SEPARATOR)) {
-                userHomeDir += FILE_SEPARATOR;
-            }
-            if (dir.contains(userHomeDir)) {
-                return dir.replace(userHomeDir, hyscaleCtlHomeDir);
-            }
-        }
-        return dir;*/
-        return getMountPathOf(dir, HYSCALECTL_HOME_DIR);
+       return getMountPathOf(dir, HYSCALECTL_HOME_DIR);
 
     }
 
