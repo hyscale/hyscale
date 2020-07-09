@@ -297,7 +297,7 @@ public class DockerRESTClient implements HyscaleDockerClient {
             TagImageCmd tagImageCmd = dockerClient.tagImageCmd(source, ImageUtil.getImageWithoutTag(dest), dest.getTag());
             tagImageCmd.exec();
         } catch (DockerException e) {
-            logger.error("Error while agging image",e);
+            logger.error("Error while tagging image",e);
             WorkflowLogger.endActivity(Status.FAILED);
             throw new HyscaleException(e, ImageBuilderErrorCodes.FAILED_TO_TAG_IMAGE);
         }

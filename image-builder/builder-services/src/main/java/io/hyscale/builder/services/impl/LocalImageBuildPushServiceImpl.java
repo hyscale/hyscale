@@ -109,12 +109,11 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
     private Dockerfile getDockerfile(Dockerfile userDockerfile, BuildContext context) throws HyscaleException {
         Dockerfile dockerfile = new Dockerfile();
         String dockerfilePath = getDockerfilePath(userDockerfile, context);
-        dockerfilePath = updateCurrentWorkingDir(dockerfilePath);
         validateDockerfilePath(dockerfilePath);
         dockerfile.setDockerfilePath(dockerfilePath);
         dockerfile.setArgs(userDockerfile != null ? userDockerfile.getArgs() : null);
         dockerfile.setTarget(userDockerfile != null ? userDockerfile.getTarget() : null);
-        dockerfile.setPath(userDockerfile != null ? updateCurrentWorkingDir(userDockerfile.getPath()) : null);
+        dockerfile.setPath(userDockerfile != null ? SetupConfig.getAbsolutePath(userDockerfile.getPath()) : null);
         return dockerfile;
     }
     
@@ -143,7 +142,8 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
                 sb.append(dockerfileDir);
             }
             dockerfilePath = sb.toString();
-            dockerfilePath = StringUtils.isNotBlank(dockerfilePath) ? dockerfilePath : SetupConfig.getAbsolutePath(".");
+            dockerfilePath = StringUtils.isNotBlank(dockerfilePath) ? SetupConfig.getAbsolutePath(dockerfilePath)
+                    : SetupConfig.getAbsolutePath(".");
         } else {
             dockerfilePath = context.getDockerfileEntity().getDockerfile().getParent();
         }
@@ -151,16 +151,6 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
         return dockerfilePath;
     }
     
-    private String updateCurrentWorkingDir(String path) {
-        if (StringUtils.isBlank(path)) {
-            return path;
-        }
-        if (path.startsWith(".")) {
-            path = path.replaceFirst("\\.", SetupConfig.getAbsolutePath("."));
-        }
-        return path;
-    }
-
     /**
      * Not required if dockerSpec and dockerfile are not available.
      * In case its just a stack image, need to push only
