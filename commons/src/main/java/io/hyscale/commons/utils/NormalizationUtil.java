@@ -42,7 +42,7 @@ public class NormalizationUtil {
     }
     
     public static String normalizeImageName(String imageName) {
-        imageName = imageName.replaceAll(" ", "");
+        imageName = imageName.replace(" ", "");
         imageName = imageName.toLowerCase();
         return imageName;
     }

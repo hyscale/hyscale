@@ -55,7 +55,7 @@ import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.apis.AppsV1Api;
 
 public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implements ResourceLifeCycleHandler<V1Deployment> {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(V1DeploymentHandler.class);
 
     public V1Deployment create(ApiClient apiClient, V1Deployment resource, String namespace) throws HyscaleException {
@@ -243,7 +243,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         WorkflowLogger.endActivity(activityContext, Status.DONE);
         return true;
     }
-    
+
     private void delete(ApiClient apiClient, String name, String namespace) throws ApiException {
         AppsV1Api appsV1Api = new AppsV1Api(apiClient);
         V1DeleteOptions deleteOptions = getDeleteOptions();
@@ -418,10 +418,10 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
             return null;
         }
         String podTemplateHash = replicaSet.getMetadata().getLabels()
-                .get(K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH);
+                .get(K8SRuntimeConstants.K8S_DEPLOYMENT_POD_TEMPLATE_HASH);
 
         LOGGER.debug("pod-template-hash: {}", podTemplateHash);
-        return K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH + "=" + podTemplateHash;
+        return K8SRuntimeConstants.K8S_DEPLOYMENT_POD_TEMPLATE_HASH + "=" + podTemplateHash;
     }
 
     @Override

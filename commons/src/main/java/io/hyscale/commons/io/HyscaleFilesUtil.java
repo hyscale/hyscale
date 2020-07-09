@@ -96,12 +96,14 @@ public class HyscaleFilesUtil {
 		}
 		file.getParentFile().mkdirs();
 		try {
-			file.createNewFile();
+			if(file.createNewFile()){
+				return file;
+			}
 		} catch (IOException e) {
 			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_WRITE_FILE, file.getName());
 			throw ex;
 		}
-		return file;
+		return null;
 	}
 
 	/**
