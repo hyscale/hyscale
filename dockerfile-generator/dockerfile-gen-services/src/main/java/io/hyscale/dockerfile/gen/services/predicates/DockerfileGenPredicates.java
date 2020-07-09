@@ -45,7 +45,7 @@ public class DockerfileGenPredicates {
                         HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.buildSpec),
                         BuildSpec.class);
             } catch (HyscaleException e) {
-                logger.error("Error while fetching dockerfile from  image {}", e);
+                logger.error("Error while fetching dockerfile from  image", e);
             }
 
             if (userDockerfile == null && buildSpec == null) {

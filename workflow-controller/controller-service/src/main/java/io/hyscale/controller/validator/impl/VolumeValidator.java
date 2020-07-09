@@ -104,7 +104,7 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 		
 		try {
 		    if (!initStorageClass(apiClient)) {
-		        return printMsg(true, startTime);
+		        return isValid(true, startTime);
 		    }
 		} catch (HyscaleException ex) {
 		    throw ex;
@@ -112,20 +112,20 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 		
 		// Validate Storage class
 		if (!validateStorageClass(volumeList)) {
-		    return printMsg(true, startTime);
+		    return isValid(true, startTime);
 		}
 
 		logger.debug("Storage class provided are valid");
 
 		// Validate volume edit
 		if (!validateVolumeEdit(apiClient, context, volumeList)) {
-            return printMsg(true, startTime);
+            return isValid(true, startTime);
         }
 		
-		return printMsg(false, startTime);
+		return isValid(false, startTime);
 	}
 	
-	private boolean printMsg(boolean isFailed, long startTime) {
+	private boolean isValid(boolean isFailed, long startTime) {
 	    logger.debug("Time taken: {}", System.currentTimeMillis() - startTime);
 	    if (isFailed) {
             return false;
@@ -219,49 +219,49 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 			logger.debug("Error while fetching PVCs with selector: {}, error: {}", selector, ex.getMessage());
 		}
 
-		if (pvcList == null || pvcList.isEmpty()) {
-			return true;
-		}
-		Map<String, V1PersistentVolumeClaim> volumeVsPVC = pvcList.stream().collect(
-				Collectors.toMap(pvc -> KubernetesVolumeUtil.getVolumeName(pvc), pvc -> pvc, (key1, key2) -> {
-					return key1;
-				}));
+		if (pvcList != null && !pvcList.isEmpty()) {
 
-		StringBuilder warnMsgBuilder = new StringBuilder();
-		volumeList.stream().forEach( volume -> {
-		    V1PersistentVolumeClaim pvc = volumeVsPVC.get(volume.getName());
+			Map<String, V1PersistentVolumeClaim> volumeVsPVC = pvcList.stream().collect(
+					Collectors.toMap(pvc -> KubernetesVolumeUtil.getVolumeName(pvc), pvc -> pvc, (key1, key2) -> {
+						return key1;
+					}));
 
-            if (pvc == null) {
-                // new volume does not exist on cluster
-                return;
-            }
-            String storageClass = pvc.getSpec().getStorageClassName();
-            if (StringUtils.isBlank(storageClass)) {
-                logger.debug("Storage class not found in spec, getting from annotation");
-                storageClass = pvc.getMetadata().getAnnotations().get(AnnotationKey.K8S_STORAGE_CLASS.getAnnotation());
-            }
-            Quantity existingSize = pvc.getStatus().getCapacity() != null ? pvc.getStatus().getCapacity().get(STORAGE)
-                    : null;
-            if (existingSize == null) {
-                logger.debug("Size not found in status, getting from spec");
-                V1ResourceRequirements resources = pvc.getSpec().getResources();
-                existingSize = resources != null
-                        ? (resources.getRequests() != null ? resources.getRequests().get(STORAGE) : null)
-                        : null;
-            }
-            Quantity newSize = Quantity.fromString(StringUtils.isNotBlank(volume.getSize()) ? volume.getSize()
-                    : K8SRuntimeConstants.DEFAULT_VOLUME_SIZE);
-            boolean isStorageClassSame = matchStorageClass(storageClass, volume.getStorageClass());
-            boolean isSizeSame = newSize.equals(existingSize);
-            if (!isStorageClassSame || !isSizeSame) {
-                warnMsgBuilder.append(volume.getName()).append(ToolConstants.COMMA).append(ToolConstants.SPACE);
-            }
-		});
-		String warnMsg = warnMsgBuilder.toString();
-		if (StringUtils.isNotBlank(warnMsg)) {
-			warnMsg = HyscaleStringUtil.removeSuffixStr(warnMsg, ToolConstants.COMMA + ToolConstants.SPACE);
-			logger.debug(DeployerActivity.IGNORING_VOLUME_MODIFICATION.getActivityMessage(), serviceName, warnMsg);
-			WorkflowLogger.persist(DeployerActivity.IGNORING_VOLUME_MODIFICATION, serviceName, warnMsg);
+			StringBuilder warnMsgBuilder = new StringBuilder();
+			volumeList.stream().forEach(volume -> {
+				V1PersistentVolumeClaim pvc = volumeVsPVC.get(volume.getName());
+
+				if (pvc == null) {
+					// new volume does not exist on cluster
+					return;
+				}
+				String storageClass = pvc.getSpec().getStorageClassName();
+				if (StringUtils.isBlank(storageClass)) {
+					logger.debug("Storage class not found in spec, getting from annotation");
+					storageClass = pvc.getMetadata().getAnnotations().get(AnnotationKey.K8S_STORAGE_CLASS.getAnnotation());
+				}
+				Quantity existingSize = pvc.getStatus().getCapacity() != null ? pvc.getStatus().getCapacity().get(STORAGE)
+						: null;
+				if (existingSize == null) {
+					logger.debug("Size not found in status, getting from spec");
+					V1ResourceRequirements resources = pvc.getSpec().getResources();
+					existingSize = resources != null
+							? (resources.getRequests() != null ? resources.getRequests().get(STORAGE) : null)
+							: null;
+				}
+				Quantity newSize = Quantity.fromString(StringUtils.isNotBlank(volume.getSize()) ? volume.getSize()
+						: K8SRuntimeConstants.DEFAULT_VOLUME_SIZE);
+				boolean isStorageClassSame = matchStorageClass(storageClass, volume.getStorageClass());
+				boolean isSizeSame = newSize.equals(existingSize);
+				if (!isStorageClassSame || !isSizeSame) {
+					warnMsgBuilder.append(volume.getName()).append(ToolConstants.COMMA).append(ToolConstants.SPACE);
+				}
+			});
+			String warnMsg = warnMsgBuilder.toString();
+			if (StringUtils.isNotBlank(warnMsg)) {
+				warnMsg = HyscaleStringUtil.removeSuffixStr(warnMsg, ToolConstants.COMMA + ToolConstants.SPACE);
+				logger.debug(DeployerActivity.IGNORING_VOLUME_MODIFICATION.getActivityMessage(), serviceName, warnMsg);
+				WorkflowLogger.persist(DeployerActivity.IGNORING_VOLUME_MODIFICATION, serviceName, warnMsg);
+			}
 		}
 		return true;
 	}

@@ -120,7 +120,7 @@ public class StatusComponentInvoker extends ComponentInvoker<WorkflowContext> {
             return troubleshootService.troubleshoot(serviceInfo, (K8sAuthorisation) deploymentContext.getAuthConfig(), 
                     deploymentContext.getNamespace());
         } catch (HyscaleException e) {
-            logger.error("Error while executing troubleshooot serice {}", e);
+            logger.error("Error while executing troubleshooot serice {}",deploymentContext.getServiceName(), e);
         }
         return null;
     }
