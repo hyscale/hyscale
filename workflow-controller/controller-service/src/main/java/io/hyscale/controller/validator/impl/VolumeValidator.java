@@ -118,10 +118,8 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 		logger.debug("Storage class provided are valid");
 
 		// Validate volume edit
-		if (!validateVolumeEdit(apiClient, context, volumeList)) {
-            return isValid(true, startTime);
-        }
-		
+		checkForVolumeEdit(apiClient, context, volumeList);
+
 		return isValid(false, startTime);
 	}
 	
@@ -202,7 +200,7 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 	 * @param context
 	 * @param volumeList
 	 */
-	private boolean validateVolumeEdit(ApiClient apiClient, WorkflowContext context, List<Volume> volumeList) {
+	private void checkForVolumeEdit(ApiClient apiClient, WorkflowContext context, List<Volume> volumeList) {
 
 	    V1PersistentVolumeClaimHandler pvcHandler = (V1PersistentVolumeClaimHandler) ResourceHandlers
 				.getHandlerOf(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind());
@@ -263,7 +261,6 @@ public class VolumeValidator implements Validator<WorkflowContext>{
 				WorkflowLogger.persist(DeployerActivity.IGNORING_VOLUME_MODIFICATION, serviceName, warnMsg);
 			}
 		}
-		return true;
 	}
 
 	private Predicate<V1StorageClass> isDefaultStorageClass() {

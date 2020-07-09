@@ -54,14 +54,14 @@ public class ManifestContextBuilder {
         manifestContext.setImageRegistry(registryManager.getImageRegistry(registryUrl));
         manifestContext.addGenerationAttribute(ManifestGenConstants.IMAGE_SHA_SUM,
                 workflowContext.getAttribute(WorkflowConstants.IMAGE_SHA_SUM));
-        Map<String, String> label = getLabel(workflowContext);
-        if (label != null && !label.isEmpty()) {
-            manifestContext.putCustomLabel(label);
+        Map<String, String> customLabels = getCustomLabels(workflowContext);
+        if (customLabels != null && !customLabels.isEmpty()) {
+            manifestContext.putCustomLabel(customLabels);
         }
         return manifestContext;
     }
     
-    private Map<String, String> getLabel(WorkflowContext context) throws HyscaleException {
+    private Map<String, String> getCustomLabels(WorkflowContext context) throws HyscaleException {
         // TODO Generate add on labels, ensure only K8s allowed values
         return null;
     }

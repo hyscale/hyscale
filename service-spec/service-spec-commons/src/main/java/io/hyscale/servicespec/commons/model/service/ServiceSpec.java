@@ -25,6 +25,7 @@ import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.servicespec.commons.activity.ServiceSpecActivity;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 import io.hyscale.servicespec.commons.json.parser.JsonTreeParser;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +76,7 @@ public final class ServiceSpec implements HyscaleSpec {
         try {
             return mapper.writeValueAsString(root);
         } catch (JsonProcessingException e) {
-            return null;
+            return StringUtils.EMPTY;
         }
     }
 
