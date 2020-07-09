@@ -16,6 +16,7 @@
 package io.hyscale.commons.constants;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class K8SRuntimeConstants {
@@ -52,12 +53,12 @@ public class K8SRuntimeConstants {
 
 	public static final String DEFAULT_NAMESPACE = "default";
 
-	protected static final List<String> POD_ERROR_SATES = Arrays.asList("ErrImagePull", "CrashLoopBackOff",
-			"ImagePullBackOff", "Error", "Terminating");
+	public static final List<String> POD_ERROR_SATES = Collections.unmodifiableList(Arrays.asList("ErrImagePull", "CrashLoopBackOff",
+			"ImagePullBackOff", "Error", "Terminating"));
 
 	public static final String DEFAULT_VOLUME_SIZE = "1Gi";
 
-	protected static final List<String> SYSTEM_NAMESPACE = Arrays.asList("kube-system", "kube-public", "kube-node-lease");
+	public static final List<String> SYSTEM_NAMESPACE = Collections.unmodifiableList(Arrays.asList("kube-system", "kube-public", "kube-node-lease"));
 	
 	public static final Integer DEFAULT_REPLICA_COUNT = 1;
 
