@@ -59,6 +59,9 @@ public class PodSpecEnvUtil {
             return null;
         }
         Set<String> secretKeys = getSecretKeys(secrets);
+        if (secretKeys == null) {
+            return null;
+        }
         List<V1EnvVar> envVarList = new DecoratedArrayList<V1EnvVar>();
         secretKeys.stream().forEach(each -> {
             V1EnvVar envVar = new V1EnvVar();

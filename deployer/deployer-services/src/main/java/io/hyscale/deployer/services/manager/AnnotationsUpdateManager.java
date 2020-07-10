@@ -22,6 +22,8 @@ import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import java.util.HashMap;
 
 public class AnnotationsUpdateManager {
+    
+    private AnnotationsUpdateManager() {}
 
     public static void update(KubernetesResource kubernetesResource, AnnotationKey annotationKey, String value) {
         if (kubernetesResource == null) {
@@ -33,7 +35,7 @@ public class AnnotationsUpdateManager {
             v1ObjectMeta = new V1ObjectMeta();
         }
         if (v1ObjectMeta.getAnnotations() == null) {
-            v1ObjectMeta.setAnnotations(new HashMap<String, String>());
+            v1ObjectMeta.setAnnotations(new HashMap<>());
         }
         v1ObjectMeta.getAnnotations().put(annotationKey.getAnnotation(), value);
     }

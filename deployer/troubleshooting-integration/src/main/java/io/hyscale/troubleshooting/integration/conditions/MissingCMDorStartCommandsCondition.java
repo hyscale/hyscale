@@ -47,8 +47,6 @@ public class MissingCMDorStartCommandsCondition extends ConditionNode<Troublesho
     private static final String DOCKER_INSTALLATION_NOTFOUND_MESSAGE = "Docker is not installed";
     private static final String IMAGE_NOT_FOUND_LOCALLY = "Image %s is not found locally to inspect";
 
-    private Predicate<TroubleshootingContext> containerStartCommandCheck;
-
     @Autowired
     private ImageCommandProvider commandProvider;
 
@@ -76,14 +74,14 @@ public class MissingCMDorStartCommandsCondition extends ConditionNode<Troublesho
             return (V1Pod) pod.getResource();
         }).collect(Collectors.toList());
 
-        if (podsList == null && podsList.isEmpty()) {
+        if (podsList == null || podsList.isEmpty()) {
             report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceInfo().getServiceName()));
             report.setRecommendedFix(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.getMessage());
             context.addReport(report);
             throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
         }
 
-        V1Pod pod = (V1Pod) podsList.get(0);
+        V1Pod pod = podsList.get(0);
 
         if (checkForStartCommands(pod)) {
             return false;

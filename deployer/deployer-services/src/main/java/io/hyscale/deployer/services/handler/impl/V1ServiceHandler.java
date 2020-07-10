@@ -96,7 +96,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
         } catch (HyscaleException ex) {
             LOGGER.debug("Error while getting Service {} in namespace {} for Update, creating new", name, namespace);
             V1Service service = create(apiClient, resource, namespace);
-            return service != null ? true : false;
+            return service != null;
         }
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_SERVICE);
         try {
@@ -167,7 +167,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
         } catch (HyscaleException e) {
             LOGGER.debug("Error while getting Service {} in namespace {} for Patch, creating new", name, namespace);
             V1Service service = create(apiClient, target, namespace);
-            return service != null ? true : false;
+            return service != null;
         }
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_SERVICE);
         Object patchObject = null;
@@ -179,8 +179,8 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
             V1Patch v1Patch = new V1Patch(patchObject.toString());
             coreV1Api.patchNamespacedService(name, namespace, v1Patch, DeployerConstants.TRUE, null, null, null);
         } catch (HyscaleException ex) {
-            LOGGER.error("Error while creating patch for Service {}, source {}, target {}, error", name, sourceService,
-                    target, ex.toString());
+            LOGGER.error("Error while creating patch for Service {}, source {}, target {}", name, sourceService, target,
+                    ex);
             WorkflowLogger.endActivity(Status.FAILED);
             throw ex;
         } catch (ApiException e) {
@@ -196,17 +196,10 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
 
     @Override
     public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-
-        V1DeleteOptions deleteOptions = getDeleteOptions();
         ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_SERVICE);
         WorkflowLogger.startActivity(activityContext);
         try {
-            try {
-                coreV1Api.deleteNamespacedService(name, namespace, DeployerConstants.TRUE, null, null, null, null, deleteOptions);
-            } catch (JsonSyntaxException e) {
-                // K8s end exception ignore
-            }
+            delete(apiClient, name, namespace);
             List<String> serviceList = Lists.newArrayList();
             serviceList.add(name);
             if (wait) {
@@ -227,6 +220,17 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
         return true;
     }
 
+    private void delete(ApiClient apiClient, String name, String namespace) throws ApiException {
+        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+        V1DeleteOptions deleteOptions = getDeleteOptions();
+        try {
+            coreV1Api.deleteNamespacedService(name, namespace, DeployerConstants.TRUE, null, null, null, null,
+                    deleteOptions);
+        } catch (JsonSyntaxException e) {
+            // K8s end exception ignore
+        }
+    }
+
     @Override
     public boolean deleteBySelector(ApiClient apiClient, String selector, boolean label, String namespace, boolean wait)
             throws HyscaleException {
@@ -236,7 +240,8 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
             return false;
         }
         for (V1Service v1Service : v1Services) {
-            isSuccess = delete(apiClient, v1Service.getMetadata().getName(), namespace, wait) ? isSuccess : false;
+            boolean isDeleted = delete(apiClient, v1Service.getMetadata().getName(), namespace, wait);
+            isSuccess = isSuccess && isDeleted;
         }
         return isSuccess;
     }
@@ -281,6 +286,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
                 Thread.sleep(MAX_LB_WAIT_TIME);
             }
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             LOGGER.error("Error while loadbalancer ready state condition", e);
         } catch (HyscaleException e) {
             LOGGER.error("Error while loadbalancer ready state condition", e);

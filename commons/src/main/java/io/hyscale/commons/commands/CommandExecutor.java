@@ -47,9 +47,9 @@ import io.hyscale.commons.models.CommandResult;
 public class CommandExecutor {
 
     private static final Logger logger = LoggerFactory.getLogger(CommandExecutor.class);
-    
-    private static final long DEFAULT_TIMEOUT_IN_MILLIS = 120000;
-    
+
+    private CommandExecutor(){}
+
     /**
      * @param command to be executed
      * @return {@link CommandResult} which contains command output and exit code
@@ -158,9 +158,6 @@ public class CommandExecutor {
         PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream, outputStream, inputStream);
 
         // Timeout
-        // ExecuteWatchdog watchDog = new ExecuteWatchdog(DEFAULT_TIMEOUT_IN_MILLIS);
-        // executor.setWatchdog(watchDog);
-
         executor.setStreamHandler(streamHandler);
         executor.setWorkingDirectory(new File(dir));
         int exitCode = 1;
@@ -199,5 +196,5 @@ public class CommandExecutor {
         }
         return new StringOutputStream();
     }
-    
+
 }

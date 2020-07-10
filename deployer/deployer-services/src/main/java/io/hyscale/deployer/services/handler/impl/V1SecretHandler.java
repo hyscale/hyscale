@@ -92,7 +92,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 		} catch (HyscaleException ex) {
 			LOGGER.debug("Error while getting Secret {} in namespace {} for Update, creating new", name, namespace);
 			V1Secret secret = create(apiClient, resource, namespace);
-			return secret != null ? true : false;
+			return secret != null;
 		}
 		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_SECRETS);
 		try {
@@ -160,7 +160,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 		} catch (HyscaleException e) {
 			LOGGER.debug("Error while getting Secret {} in namespace {} for Patch, creating new", name, namespace);
 			V1Secret secret = create(apiClient, target, namespace);
-			return secret != null ? true : false;
+			return secret != null;
 		}
 		WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_SECRETS);
 		Object patchObject = null;
@@ -189,16 +189,10 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 
 	@Override
 	public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-		V1DeleteOptions deleteOptions = getDeleteOptions();
 		ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_SECRETS);
 		WorkflowLogger.startActivity(activityContext);
 		try {
-		    try {
-				coreV1Api.deleteNamespacedSecret(name, namespace, DeployerConstants.TRUE, null, null, null, null, deleteOptions);
-		    } catch (JsonSyntaxException e) {
-			// K8s end exception ignore
-		    }
+		    delete(apiClient, name, namespace);
 			List<String> secretList = Lists.newArrayList();
 			secretList.add(name);
 			if (wait) {
@@ -219,15 +213,26 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 		return true;
 	}
 
+    private void delete(ApiClient apiClient, String name, String namespace) throws ApiException {
+        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+        V1DeleteOptions deleteOptions = getDeleteOptions();
+        try {
+            coreV1Api.deleteNamespacedSecret(name, namespace, DeployerConstants.TRUE, null, null, null, null,
+                    deleteOptions);
+        } catch (JsonSyntaxException e) {
+            // K8s end exception ignore
+        }
+    }
+
 	@Override
 	public boolean deleteBySelector(ApiClient apiClient, String selector, boolean label, String namespace, boolean wait)
 			throws HyscaleException {
 		try {
-			List<V1Secret> V1SecretList = getBySelector(apiClient, selector, label, namespace);
-			if (V1SecretList == null || V1SecretList.isEmpty()) {
+			List<V1Secret> v1SecretList = getBySelector(apiClient, selector, label, namespace);
+			if (v1SecretList == null || v1SecretList.isEmpty()) {
 			    return false;
 			}
-			for (V1Secret V1Secret : V1SecretList) {
+			for (V1Secret V1Secret : v1SecretList) {
 				delete(apiClient, V1Secret.getMetadata().getName(), namespace, wait);
 			}
 		} catch (HyscaleException e) {

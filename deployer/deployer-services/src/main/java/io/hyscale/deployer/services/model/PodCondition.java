@@ -24,14 +24,14 @@ public enum PodCondition {
     READY("Ready"), POD_SCHEDULED("PodScheduled"), INITIALIZED("Initialized"), CONTAINERS_READY("ContainersReady"),
     UNSCHEDULABLE("Unschedulable");
 
-    private String podCondition;
+    private String condition;
 
     PodCondition(String podCondition) {
-        this.podCondition = podCondition;
+        this.condition = podCondition;
     }
 
     public String getPodCondition() {
-        return podCondition;
+        return condition;
     }
 
     public static PodCondition fromString(String podCondition) {

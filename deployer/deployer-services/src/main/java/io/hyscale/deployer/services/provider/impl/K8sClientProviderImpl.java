@@ -41,6 +41,8 @@ public class K8sClientProviderImpl implements K8sClientProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(K8sClientProviderImpl.class);
     
+    private static final String FAILED_TO_INITIALIZE_K8S_CLIENT = "Failed to initialize k8s client ";
+    
     /*
      * Get client from K8s config file
      */
@@ -54,12 +56,12 @@ public class K8sClientProviderImpl implements K8sClientProvider {
             throw ex;
         } catch (IOException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.UNABLE_TO_READ_KUBE_CONFIG);
-            logger.error("Failed to initialize k8s client ", ex);
+            logger.error(FAILED_TO_INITIALIZE_K8S_CLIENT, ex);
             throw ex;
         } catch (Exception e) {
             // yaml parsing exception
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.INVALID_KUBE_CONFIG, mountedKubeConfigName);
-            logger.error("Failed to initialize k8s client ", ex);
+            logger.error(FAILED_TO_INITIALIZE_K8S_CLIENT, ex);
             throw ex;
         }
     }
@@ -72,12 +74,12 @@ public class K8sClientProviderImpl implements K8sClientProvider {
             return Config.fromConfig(authConfig.getK8sConfigReader());
         } catch (IOException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.UNABLE_TO_READ_KUBE_CONFIG);
-            logger.error("Failed to initialize k8s client ", ex);
+            logger.error(FAILED_TO_INITIALIZE_K8S_CLIENT, ex);
             throw ex;
         } catch (Exception e) {
             // yaml parsing exception
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.INVALID_KUBE_CONFIG, ToolConstants.EMPTY_STRING);
-            logger.error("Failed to initialize k8s client ", ex);
+            logger.error(FAILED_TO_INITIALIZE_K8S_CLIENT, ex);
             throw ex;
         }
     }
@@ -85,13 +87,13 @@ public class K8sClientProviderImpl implements K8sClientProvider {
     /*
      * Get client from K8s {@link K8sBasicAuth} object
      */
-    private ApiClient from(K8sBasicAuth authConfig) throws HyscaleException {
+    private ApiClient from(K8sBasicAuth authConfig){
         if (authConfig.getToken() == null) {
             return Config.fromUserPassword(authConfig.getMasterURL(), authConfig.getUserName(),
-                    authConfig.getPassword(), authConfig.getCaCert() != null ? true : false);
+                    authConfig.getPassword(), authConfig.getCaCert() != null);
         } else {
             return Config.fromToken(authConfig.getMasterURL(), authConfig.getToken(),
-                    authConfig.getCaCert() != null ? true : false);
+                    authConfig.getCaCert() != null);
         }
     }
 
@@ -100,7 +102,7 @@ public class K8sClientProviderImpl implements K8sClientProvider {
 			return Config.fromConfig(authConfig.getKubeConfig());
 		}catch (IOException e){
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.UNABLE_TO_READ_KUBE_CONFIG);
-			logger.error("Failed to initialize k8s client ", ex);
+			logger.error(FAILED_TO_INITIALIZE_K8S_CLIENT, ex);
 			throw ex;
 		}
 	}

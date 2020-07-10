@@ -29,12 +29,14 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.servicespec.commons.model.service.Artifact;
 import io.hyscale.commons.models.DecoratedArrayList;
 import io.hyscale.dockerfile.gen.services.model.DockerfileGenContext;
 import io.hyscale.commons.models.SupportingFile;
 import io.hyscale.dockerfile.gen.services.config.DockerfileGenConfig;
+import io.hyscale.dockerfile.gen.services.exception.DockerfileErrorCodes;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
@@ -49,7 +51,11 @@ public class ArtifactManagerImpl implements DockerfileEntityManager {
     @Override
     public List<SupportingFile> getSupportingFiles(ServiceSpec serviceSpec, DockerfileGenContext context)
             throws HyscaleException {
-        List<SupportingFile> supportingFiles = new ArrayList<SupportingFile>();
+        if (serviceSpec == null) {
+            throw new HyscaleException(CommonErrorCode.SERVICE_SPEC_REQUIRED);
+        }
+        
+        List<SupportingFile> supportingFiles = new ArrayList<>();
         TypeReference<List<Artifact>> artifactTypeRef = new TypeReference<List<Artifact>>() {
         };
         List<Artifact> artifactsList;
@@ -61,12 +67,13 @@ public class ArtifactManagerImpl implements DockerfileEntityManager {
             throw e;
         }
 
-        if (artifactsList == null) {
+        if (artifactsList == null || artifactsList.isEmpty()) {
             return supportingFiles;
         }
         /*
          * Artifacts -> Supporting file, Source -> File, Name -> relativePathDir
          */
+        validate(artifactsList);
         artifactsList.stream().forEach(each -> {
             SupportingFile supportingFile = new SupportingFile();
             File artifactFile = new File(SetupConfig.getAbsolutePath(each.getSource()));
@@ -78,12 +85,30 @@ public class ArtifactManagerImpl implements DockerfileEntityManager {
         return supportingFiles;
     }
 
+    private void validate(List<Artifact> artifactsList) throws HyscaleException {
+        if (artifactsList == null || artifactsList.isEmpty()) {
+            return;
+        }
+        // Artifacts should exist
+        List<String> artifactsNotFound = new ArrayList<>();
+        artifactsList.stream().forEach(artifact -> {
+            String artifactPath = SetupConfig.getAbsolutePath(artifact.getSource());
+            File artifactFile = new File(artifactPath);
+            if (!artifactFile.exists() || !artifactFile.isFile()) {
+                artifactsNotFound.add(artifactPath);
+            }
+        });
+        if (!artifactsNotFound.isEmpty()) {
+            throw new HyscaleException(DockerfileErrorCodes.ARTIFACTS_NOT_FOUND, artifactsNotFound.toString());
+        }
+    }
+
     // Update source for dockerfile
     public DecoratedArrayList<Artifact> getUpdatedArtifacts(List<Artifact> artifactsList) {
         if (artifactsList == null) {
             return null;
         }
-        DecoratedArrayList<Artifact> updatedArtifacts = new DecoratedArrayList<Artifact>();
+        DecoratedArrayList<Artifact> updatedArtifacts = new DecoratedArrayList<>();
         artifactsList.stream().filter(each -> {
             return StringUtils.isNotBlank(each.getName()) && StringUtils.isNotBlank(each.getSource()) && StringUtils.isNotBlank(each.getDestination());
         }).forEach(each -> {

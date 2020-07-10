@@ -33,16 +33,18 @@ public class KubernetesResourceUtil {
 
     private static final String GET_KIND = "getKind";
     private static final String GET_METADATA = "getMetadata";
+    
+    private KubernetesResourceUtil() {}
 
     public static KubernetesResource getKubernetesResource(Manifest manifest, String namespace)
-            throws NoSuchMethodException, SecurityException, IOException, IllegalAccessException,
-            IllegalArgumentException, InvocationTargetException {
+            throws NoSuchMethodException, IOException, IllegalAccessException,
+            InvocationTargetException {
         if (manifest == null) {
             return null;
         }
         KubernetesResource resource = new KubernetesResource();
         YAMLManifest yamlManifest = (YAMLManifest) manifest;
-        Object obj = Yaml.load(yamlManifest.getYamlManifest());
+        Object obj = Yaml.load(yamlManifest.getManifest());
         Method kindMethod = obj.getClass().getMethod(GET_KIND);
         String kind = (String) kindMethod.invoke(obj);
 
@@ -56,16 +58,14 @@ public class KubernetesResourceUtil {
         return resource;
     }
 
-    public static V1ObjectMeta getObjectMeta(Object object) throws NoSuchMethodException, SecurityException,
-            IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public static V1ObjectMeta getObjectMeta(Object object)
+            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         if (object == null) {
             return null;
         }
         Method metadataMethod = object.getClass().getMethod(GET_METADATA);
 
-        V1ObjectMeta v1ObjectMeta = (V1ObjectMeta) metadataMethod.invoke(object);
-
-        return v1ObjectMeta;
+        return (V1ObjectMeta) metadataMethod.invoke(object);
     }
 
 }

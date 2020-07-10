@@ -37,6 +37,8 @@ public class WorkflowLogger {
 
     private static boolean disabled;
 
+    private WorkflowLogger() {}
+
     public static void header(Activity activity, String... args) {
         if(isDisabled()){
             return;
@@ -230,13 +232,6 @@ public class WorkflowLogger {
             }
         }
         endActivity(status, args);
-		/*StringBuilder sb = new StringBuilder();
-		sb.append(ALIGNEMENT_SPACES).append(START_BRACES);
-		sb.append(String.format(status.getMessage(), args));
-		sb.append(END_BRACES);
-		sb.append(ALIGNEMENT_SPACES);
-		sb.append(START_BRACES).append(System.currentTimeMillis()-context.getStartTime()).append(END_BRACES);
-		System.out.println(sb.toString());*/
     }
 
     public static void persist(Activity activity, String... args) {

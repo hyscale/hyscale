@@ -94,7 +94,29 @@ public class K8sResourceDispatcher {
         }
         createNamespaceIfNotExists();
         
-        List<KubernetesResource> k8sResources = new ArrayList<KubernetesResource>();
+        List<KubernetesResource> k8sResources = getSortedResources(manifests);
+        
+        for (KubernetesResource k8sResource : k8sResources) {
+            AnnotationsUpdateManager.update(k8sResource, AnnotationKey.LAST_UPDATED_AT,
+                    DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+            ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(k8sResource.getKind());
+            if (lifeCycleHandler != null && k8sResource.getResource() != null && k8sResource.getV1ObjectMeta() != null) {
+                try {
+                    String name = k8sResource.getV1ObjectMeta().getName();
+                    if (resourceBroker.get(lifeCycleHandler, name) != null) {
+                        resourceBroker.update(lifeCycleHandler, k8sResource, lifeCycleHandler.getUpdatePolicy());
+                    } else {
+                        resourceBroker.create(lifeCycleHandler, k8sResource.getResource());
+                    }
+                } catch (HyscaleException ex) {
+                    logger.error("Failed to apply resource :{} Reason :: {}", k8sResource.getKind(), ex.getMessage(), ex);
+                }
+            }
+        }
+    }
+    
+    private List<KubernetesResource> getSortedResources(List<Manifest> manifests) throws HyscaleException{
+        List<KubernetesResource> k8sResources = new ArrayList<>();
         
         for (Manifest manifest : manifests) {
             try {
@@ -109,23 +131,7 @@ public class K8sResourceDispatcher {
         k8sResources.sort((resource1, resource2) -> ResourceKind.fromString(resource1.getKind()).getWeight()
                 - ResourceKind.fromString(resource2.getKind()).getWeight());
         
-        for (KubernetesResource k8sResource : k8sResources) {
-            AnnotationsUpdateManager.update(k8sResource, AnnotationKey.LAST_UPDATED_AT,
-                    DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
-            ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(k8sResource.getKind());
-            if (lifeCycleHandler != null && k8sResource != null && k8sResource.getResource() != null && k8sResource.getV1ObjectMeta() != null) {
-                try {
-                    String name = k8sResource.getV1ObjectMeta().getName();
-                    if (resourceBroker.get(lifeCycleHandler, name) != null) {
-                        resourceBroker.update(lifeCycleHandler, k8sResource, lifeCycleHandler.getUpdatePolicy());
-                    } else {
-                        resourceBroker.create(lifeCycleHandler, k8sResource.getResource());
-                    }
-                } catch (HyscaleException ex) {
-                    logger.error("Failed to apply resource :{} Reason :: {}", k8sResource.getKind(), ex.getMessage(), ex);
-                }
-            }
-        }
+        return k8sResources;
     }
 
     /**
@@ -134,11 +140,7 @@ public class K8sResourceDispatcher {
      * @throws HyscaleException
      */
     private void createNamespaceIfNotExists() throws HyscaleException {
-        ResourceLifeCycleHandler resourceHandler = ResourceHandlers.getHandlerOf(ResourceKind.NAMESPACE.getKind());
-        if (resourceHandler == null) {
-            return;
-        }
-        NamespaceHandler namespaceHandler = (NamespaceHandler) resourceHandler;
+        NamespaceHandler namespaceHandler = (NamespaceHandler) ResourceHandlers.getHandlerOf(ResourceKind.NAMESPACE.getKind());
         V1Namespace v1Namespace = null;
         try {
             v1Namespace = namespaceHandler.get(apiClient, namespace, null);
@@ -165,7 +167,7 @@ public class K8sResourceDispatcher {
             logger.error("No applicaton found for undeployment");
             throw new HyscaleException(DeployerErrorCodes.APPLICATION_REQUIRED);
         }
-        List<String> failedResources = new ArrayList<String>();
+        List<String> failedResources = new ArrayList<>();
 
         String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
         List<ResourceLifeCycleHandler> handlersList = ResourceHandlers.getAllHandlers();
@@ -173,9 +175,9 @@ public class K8sResourceDispatcher {
             return;
         }
         // Sort handlers based on weight
-        List<ResourceLifeCycleHandler> sortedHandlersList = handlersList.stream().sorted((ResourceLifeCycleHandler handler1, ResourceLifeCycleHandler handler2) -> {
-            return handler1.getWeight() - handler2.getWeight();
-        }).collect(Collectors.toList());
+        List<ResourceLifeCycleHandler> sortedHandlersList = handlersList.stream()
+                .sorted((handler1, handler2) -> handler1.getWeight() - handler2.getWeight())
+                .collect(Collectors.toList());
         boolean resourceDeleted = false;
         for (ResourceLifeCycleHandler lifeCycleHandler : sortedHandlersList) {
             if (lifeCycleHandler == null) {
@@ -186,7 +188,7 @@ public class K8sResourceDispatcher {
                 try {
                     boolean result = lifeCycleHandler.deleteBySelector(apiClient, selector, true, namespace, true);
                     logger.debug("Undeployment status for resource {} is {}", resourceKind, result);
-                    resourceDeleted = resourceDeleted ? true : result;
+                    resourceDeleted = resourceDeleted || result;
                 } catch (HyscaleException ex) {
                     logger.error("Failed to undeploy resource {}", resourceKind, ex);
                     failedResources.add(resourceKind);

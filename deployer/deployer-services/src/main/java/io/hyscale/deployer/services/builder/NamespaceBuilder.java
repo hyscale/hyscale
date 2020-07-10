@@ -24,6 +24,8 @@ import io.kubernetes.client.openapi.models.V1ObjectMeta;
  *
  */
 public class NamespaceBuilder {
+    
+    private NamespaceBuilder() {}
 
 	public static V1Namespace build(String namespace) {
 		V1Namespace v1Namespace = new V1Namespace();

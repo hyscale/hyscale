@@ -21,7 +21,9 @@ import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
 import java.util.List;
 
 public class ConditionUtil {
-
+    
+    private ConditionUtil() {}
+    
     /**
      * Pod parent can be deployment or statefulset
      * Preference is given to statefulset if both are present

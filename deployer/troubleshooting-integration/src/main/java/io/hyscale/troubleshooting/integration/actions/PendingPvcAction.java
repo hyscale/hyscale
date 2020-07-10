@@ -47,8 +47,9 @@ public class PendingPvcAction extends ActionNode<TroubleshootingContext> {
         }
 
         Object obj = context.getAttribute(FailedResourceKey.FAILED_POD);
+        String describe = describe();
         if (obj == null) {
-            logger.debug("Cannot find any failed pod for to {}", describe());
+            logger.debug("Cannot find any failed pod for to {}", describe);
             return;
         }
 
@@ -71,7 +72,7 @@ public class PendingPvcAction extends ActionNode<TroubleshootingContext> {
             }
         });
 
-        if (eventList == null || eventList.isEmpty()) {
+        if (eventList.isEmpty()) {
             report.setReason(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getReason());
             report.setRecommendedFix(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getMessage());
             context.addReport(report);
@@ -83,7 +84,7 @@ public class PendingPvcAction extends ActionNode<TroubleshootingContext> {
             return PROVISIONING_FAILED.equals(each.getReason()) && pattern.matcher(each.getMessage()).find();
         });
 
-        logger.debug(describe() + ", provisioning failed: {}", provisioningFailed);
+        logger.debug("{}, provisioning failed: {}", describe, provisioningFailed);
         
         List<TroubleshootingContext.ResourceInfo> storageClassResources = context.getResourceInfos().get(ResourceKind.STORAGE_CLASS.getKind());
         if ((storageClassResources == null || storageClassResources.isEmpty()) && provisioningFailed) {

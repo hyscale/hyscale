@@ -15,9 +15,6 @@
  */
 package io.hyscale.commons.models;
 
-import io.hyscale.commons.config.SetupConfig;
-import io.hyscale.commons.constants.ToolConstants;
-
 public class ConfigTemplate {
 
 	private String rootPath;

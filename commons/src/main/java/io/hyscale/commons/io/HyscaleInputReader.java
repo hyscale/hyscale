@@ -36,6 +36,8 @@ public class HyscaleInputReader {
 
     private static final InputStream DEFAULT_INPUT_STREAM = System.in;
 
+    private HyscaleInputReader() {}
+
     public static String readInput() throws HyscaleException {
         return readInput(null);
     }

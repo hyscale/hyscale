@@ -17,12 +17,14 @@ package io.hyscale.deployer.services.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +35,7 @@ import io.hyscale.deployer.services.model.ServiceAddress;
 import io.kubernetes.client.openapi.models.V1LoadBalancerIngress;
 import io.kubernetes.client.openapi.models.V1Service;
 
-public class ServiceUtilTest {
+class ServiceUtilTest {
 
     private static V1Service v1Service;
 
@@ -46,20 +48,20 @@ public class ServiceUtilTest {
     }
 
     @Test
-    public void nullService() {
+    void nullService() {
         assertNull(K8sServiceUtil.getServiceAddress(null));
-        assertNull(K8sServiceUtil.getPorts(null));
+        assertTrue(CollectionUtils.isEmpty(K8sServiceUtil.getPorts(null)));
         assertNull(K8sServiceUtil.getLoadBalancer(null));
     }
 
     @Test
-    public void testGetPorts() {
+    void testGetPorts() {
         List<Integer> ports = K8sServiceUtil.getPorts(v1Service);
         assertEquals(getPorts(), ports);
     }
     
     @Test
-    public void testServiceAddress() {
+    void testServiceAddress() {
         ServiceAddress serviceAddress = K8sServiceUtil.getServiceAddress(v1Service);
         assertEquals(v1Service.getStatus().getLoadBalancer().getIngress().get(0).getIp(), serviceAddress.getServiceIP());
         assertEquals(getPorts(), serviceAddress.getPorts());
@@ -67,7 +69,7 @@ public class ServiceUtilTest {
     }
     
     @Test
-    public void testLoadBalancer() {
+    void testLoadBalancer() {
         V1LoadBalancerIngress loadBalancer = K8sServiceUtil.getLoadBalancer(v1Service);
         assertEquals(v1Service.getStatus().getLoadBalancer().getIngress().get(0), loadBalancer);
     }

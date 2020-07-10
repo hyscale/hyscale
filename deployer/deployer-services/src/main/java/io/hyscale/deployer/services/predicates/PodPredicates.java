@@ -29,6 +29,8 @@ import java.util.function.Predicate;
  *
  */
 public class PodPredicates {
+    
+    private PodPredicates() {}
 
 	public static Predicate<V1Pod> isPodschedulingCondition() {
 		return pod -> K8sPodUtil.checkForPodCondition(pod, PodCondition.POD_SCHEDULED);
@@ -43,7 +45,7 @@ public class PodPredicates {
 	}
 
 	public static Predicate<V1Pod> isPodCreated() {
-		return pod -> K8sPodUtil.checkForPodCreation(pod);
+		return K8sPodUtil::checkForPodCreation;
 	}
 	
 	/**
@@ -51,11 +53,11 @@ public class PodPredicates {
 	 * @return {@link Predicate} which checks for ambiguity condition
 	 */
 	public static Predicate<List<V1Pod>> isPodAmbiguous() {
-	     return podList -> K8sPodUtil.checkForPodAmbiguity(podList);
+	    return K8sPodUtil::checkForPodAmbiguity;
 	}
 	
 	public static BiPredicate<V1Pod, Map<String, String>> podContainsLabel(){
-	    return (pod, labels) -> K8sPodUtil.checkPodLabels(pod, labels);
+	    return K8sPodUtil::checkPodLabels;
 	}
 	
 	/**
@@ -63,10 +65,10 @@ public class PodPredicates {
 	 * @return {@link Predicate} return true if pod is in failed state, else false
 	 */
 	public static Predicate<V1Pod> isPodFailed(){
-		return pod->K8sPodUtil.checkForPodFailure(pod);
+	    return K8sPodUtil::checkForPodFailure;
 	}
 	
 	public static BiPredicate<V1Pod, Long> isPodRestarted(){
-		return (pod,restartCount)->K8sPodUtil.checkForPodRestart(pod, restartCount);
+	    return K8sPodUtil::checkForPodRestart;
 	}
 }

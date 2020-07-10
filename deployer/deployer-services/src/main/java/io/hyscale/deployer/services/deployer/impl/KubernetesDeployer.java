@@ -17,6 +17,7 @@ package io.hyscale.deployer.services.deployer.impl;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -129,11 +130,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
         String namespace = context.getNamespace();
         String appName = context.getAppName();
         WorkflowLogger.header(DeployerActivity.WAITING_FOR_DEPLOYMENT);
-        try {
-            podHandler.watch(apiClient, appName, serviceName, namespace);
-        } catch (HyscaleException e) {
-            throw e;
-        }
+        podHandler.watch(apiClient, appName, serviceName, namespace);
     }
 
     @Override
@@ -142,7 +139,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
          * For each resource kind and name, using resource handler Get resource from
          * cluster Get status of the fetched resource
          */
-        ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
+        ApiClient apiClient = clientProvider.get(authConfig);
         YAMLManifest yamlManifest = (YAMLManifest) manifest;
         try {
             KubernetesResource resource = KubernetesResourceUtil.getKubernetesResource(yamlManifest, namespace);
@@ -159,7 +156,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
 
     @Override
     public List<Pod> getPods(String namespace, String appName, String serviceName, K8sAuthorisation k8sAuthorisation) throws Exception {
-        List<Pod> podList = new ArrayList<Pod>();
+        List<Pod> podList = new ArrayList<>();
         List<V1Pod> v1PodList = null;
         try {
             ApiClient apiClient = clientProvider.get(k8sAuthorisation);
@@ -169,13 +166,13 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
 
             v1PodList = v1PodHandler.getBySelector(apiClient, selector, true, namespace);
             if (v1PodList == null || v1PodList.isEmpty()) {
-                return null;
+                return Collections.emptyList();
             }
 
             for (V1Pod v1Pod : v1PodList) {
                 PodBuilder builder = new PodBuilder();
                 List<V1Volume> v1VolumeList = v1Pod.getSpec().getVolumes();
-                List<Volume> podVolumeList = new ArrayList<Volume>();
+                List<Volume> podVolumeList = new ArrayList<>();
                 Set<String> volumeNames = new HashSet<>();
                 if (v1VolumeList != null) {
                     for (V1Volume v1Volume : v1VolumeList) {
@@ -223,7 +220,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
     public InputStream logs(K8sAuthorisation authConfig, String serviceName, String namespace, String podName,
                             String containerName, Integer readLines, boolean tail) throws HyscaleException {
         try {
-            ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
+            ApiClient apiClient = clientProvider.get(authConfig);
             V1PodHandler podHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
             if (readLines == null) {
                 readLines = deployerConfig.getDefaultTailLines();
@@ -311,24 +308,24 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
 
         v1PodList = v1PodHandler.getBySelector(apiClient, selector, true, namespace);
         if (v1PodList == null || v1PodList.isEmpty()) {
-            return null;
+            return Collections.emptyList();
         }
         return K8sReplicaUtil.getReplicaInfo(v1PodList);
     }
 
     private List<Container> getContainers(V1Pod v1Pod, Set<String> volumeNames) {
-        List<Container> containers = new ArrayList<Container>();
+        List<Container> containers = new ArrayList<>();
         // get all status
         Map<String, String> containerVsStatus = new HashMap<>();
         if (v1Pod.getStatus() != null && v1Pod.getStatus().getContainerStatuses() != null) {
-            v1Pod.getStatus().getContainerStatuses().forEach((containerStatus) -> {
+            v1Pod.getStatus().getContainerStatuses().forEach(containerStatus -> {
                 String status = K8sPodUtil.getContainerStatus(containerStatus);
                 if (status != null) {
                     containerVsStatus.put(containerStatus.getName(), status);
                 }
             });
         }
-        v1Pod.getSpec().getContainers().forEach((v1Container) -> {
+        v1Pod.getSpec().getContainers().forEach(v1Container -> {
             Container container = new Container();
             container.setName(v1Container.getName());
             container.setStatus(containerVsStatus.get(v1Container.getName()));

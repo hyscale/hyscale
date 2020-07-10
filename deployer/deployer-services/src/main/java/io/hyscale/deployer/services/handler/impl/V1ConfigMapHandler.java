@@ -92,7 +92,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         } catch (HyscaleException ex) {
             LOGGER.debug("Error while getting ConfigMap {} in namespace {} for Update, creating new", name, namespace);
             V1ConfigMap configMap = create(apiClient, resource, namespace);
-            return configMap != null ? true : false;
+            return configMap != null;
         }
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_CONFIGMAP);
         try {
@@ -165,7 +165,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         } catch (HyscaleException e) {
             LOGGER.debug("Error while getting ConfigMap {} in namespace {} for Patch, creating new", name, namespace);
             V1ConfigMap configMap = create(apiClient, target, namespace);
-            return configMap != null ? true : false;
+            return configMap != null;
         }
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_CONFIGMAP);
         String lastAppliedConfig = sourceConfigMap.getMetadata().getAnnotations()
@@ -195,17 +195,10 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
 
     @Override
     public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-
-        V1DeleteOptions deleteOptions = getDeleteOptions();
         ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_CONFIG_MAP);
         WorkflowLogger.startActivity(activityContext);
         try {
-            try {
-                coreV1Api.deleteNamespacedConfigMap(name, namespace, DeployerConstants.TRUE, null, null, null, null, deleteOptions);
-            } catch (JsonSyntaxException e) {
-                // K8s end exception ignore
-            }
+            delete(apiClient, name, namespace);
             List<String> configmapList = Lists.newArrayList();
             configmapList.add(name);
             if (wait) {
@@ -226,6 +219,17 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         return true;
     }
 
+    private void delete(ApiClient apiClient, String name, String namespace) throws ApiException {
+        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+        V1DeleteOptions deleteOptions = getDeleteOptions();
+        try {
+            coreV1Api.deleteNamespacedConfigMap(name, namespace, DeployerConstants.TRUE, null, null, null, null,
+                    deleteOptions);
+        } catch (JsonSyntaxException e) {
+            // K8s end exception ignore
+        }
+    }
+    
     @Override
     public boolean deleteBySelector(ApiClient apiClient, String selector, boolean label, String namespace, boolean wait)
             throws HyscaleException {
@@ -263,6 +267,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
         return ResourceKind.CONFIG_MAP.getWeight();
     }
 
+    @Override
 	public ResourceStatus status(V1ConfigMap v1ConfigMap){
 		return ResourceStatus.STABLE;
 	}

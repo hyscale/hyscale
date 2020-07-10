@@ -62,4 +62,6 @@ public class K8SRuntimeConstants {
 	
 	public static final Integer DEFAULT_REPLICA_COUNT = 1;
 
+	private K8SRuntimeConstants() {}
+
 }
