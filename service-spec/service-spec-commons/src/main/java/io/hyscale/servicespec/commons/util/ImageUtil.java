@@ -30,9 +30,12 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 public class ImageUtil {
     private static final Logger logger = LoggerFactory.getLogger(ImageUtil.class);
-
+    
+    private ImageUtil() {}
 
     private static final String DELIMITER = "/";
+    
+    public static final String DEFAULT_TAG = "latest";
 
     /**
      * Get complete image name from service spec
@@ -140,10 +143,7 @@ public class ImageUtil {
             return false;
         }
 
-        if (image instanceof BuildSpecImage || image instanceof DockerBuildImage) {
-            return true;
-        }
-
-        return false;
+        return image instanceof BuildSpecImage || image instanceof DockerBuildImage;
     }
+    
 }
