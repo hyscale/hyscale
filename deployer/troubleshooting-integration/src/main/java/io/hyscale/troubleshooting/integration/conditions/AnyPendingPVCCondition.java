@@ -60,7 +60,7 @@ public class AnyPendingPVCCondition extends ConditionNode<TroubleshootingContext
             Object obj = context.getAttribute(FailedResourceKey.FAILED_POD);
             if (obj == null) {
                 String describe = describe();
-                logger.debug("Cannot find any failed pod for to {}", describe);
+                logger.debug("Cannot find any failed pod for {}", describe);
                 return false;
             }
             

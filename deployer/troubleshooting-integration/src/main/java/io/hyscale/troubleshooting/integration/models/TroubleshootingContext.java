@@ -29,7 +29,7 @@ public class TroubleshootingContext implements NodeContext {
     private boolean trace;
 
     public TroubleshootingContext() {
-        this.failedObjects = new HashMap<>();
+        this.failedObjects = new EnumMap<>(FailedResourceKey.class);
         this.diagnosisReports = new ArrayList<>();
     }
 

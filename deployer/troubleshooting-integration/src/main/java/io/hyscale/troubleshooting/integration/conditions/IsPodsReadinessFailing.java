@@ -63,9 +63,8 @@ public class IsPodsReadinessFailing implements Node<TroubleshootingContext> {
             throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
         }
 
-        List<V1Event> v1Events = null;
+        List<V1Event> v1Events = new ArrayList<>();
         Object obj = context.getAttribute(FailedResourceKey.UNREADY_POD);
-        v1Events = new ArrayList<>();
         V1Pod unhealthyPod = null;
         if (obj != null) {
             unhealthyPod = (V1Pod) FailedResourceKey.UNREADY_POD.getKlazz().cast(obj);
@@ -79,7 +78,7 @@ public class IsPodsReadinessFailing implements Node<TroubleshootingContext> {
         // Get all the events of the unhealthy pod from previous conditionNode or fetch it from the existing
         // set of pods
         for (TroubleshootingContext.ResourceInfo resourceInfo : resourceInfos) {
-            if (resourceInfo != null && resourceInfo.getResource() != null && resourceInfo.getResource() instanceof V1Pod) {
+            if (resourceInfo != null && resourceInfo.getResource() instanceof V1Pod) {
                 V1Pod pod = (V1Pod) resourceInfo.getResource();
                 if (unhealthyPod == null) {
                     PodStatus status = PodStatus.get(K8sPodUtil.getAggregatedStatusOfContainersForPod(pod));
@@ -94,7 +93,8 @@ public class IsPodsReadinessFailing implements Node<TroubleshootingContext> {
             }
         }
 
-        if (v1Events == null && v1Events.isEmpty()) {
+        if (v1Events.isEmpty()) {
+            logger.debug("No events found when checking for pod readiness");
             report.setReason(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getReason());
             report.setRecommendedFix(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getMessage());
             context.addReport(report);

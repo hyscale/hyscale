@@ -27,6 +27,7 @@ public class FixImageNameAction extends ActionNode<TroubleshootingContext> {
 
     @Override
     public void process(TroubleshootingContext context) {
+        logger.debug("Running action node: {}", this.getClass().getName());
         DiagnosisReport report = new DiagnosisReport();
         report.setRecommendedFix(AbstractedErrorMessage.FIX_IMAGE_NAME.getMessage());
         report.setReason(AbstractedErrorMessage.FIX_IMAGE_NAME.getReason());
