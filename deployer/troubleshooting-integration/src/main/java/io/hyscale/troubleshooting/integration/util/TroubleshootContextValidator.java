@@ -20,11 +20,14 @@ import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
 import io.kubernetes.client.openapi.models.V1Pod;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 public class TroubleshootContextValidator {
+    
+    private TroubleshootContextValidator() {}
 
     public static boolean validateContext(TroubleshootingContext context) {
         if (context == null || context.getResourceInfos() == null) {
@@ -42,13 +45,10 @@ public class TroubleshootContextValidator {
 
         // If PodsList is empty Issue might be with Parent Resource, do not exit from here
         if (resourceData == null || resourceData.isEmpty()) {
-            return null;
-        } else {
-            return resourceData.stream().filter(each -> {
-                return each.getResource() != null && each.getResource() instanceof V1Pod;
-            }).map(each -> {
-                return ((V1Pod) each.getResource());
-            }).collect(Collectors.toUnmodifiableList());
+            return Collections.emptyList();
         }
+        return resourceData.stream().filter(each -> each.getResource() instanceof V1Pod).map(each -> {
+            return ((V1Pod) each.getResource());
+        }).collect(Collectors.toUnmodifiableList());
     }
 }

@@ -16,6 +16,8 @@
 package io.hyscale.troubleshooting.integration.constants;
 
 public class TroubleshootConstants {
+    
+    private TroubleshootConstants() {}
 
     public static final String PENDING_PHASE = "Pending";
 
