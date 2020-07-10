@@ -66,8 +66,7 @@ public class HyscaleFilesUtil {
 		try (FileWriter fileWriter = new FileWriter(file)) {
 			fileWriter.write(fileData);
 		} catch (IOException e) {
-			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_WRITE_FILE, filename);
-			throw ex;
+			throw new HyscaleException(e, CommonErrorCode.FAILED_TO_WRITE_FILE, filename);
 		}
 		return file;
 	}
@@ -103,8 +102,7 @@ public class HyscaleFilesUtil {
 				return file;
 			}
 		} catch (IOException e) {
-			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_WRITE_FILE, file.getName());
-			throw ex;
+			throw new HyscaleException(e, CommonErrorCode.FAILED_TO_WRITE_FILE, file.getName());
 		}
 		return null;
 	}
@@ -153,8 +151,7 @@ public class HyscaleFilesUtil {
 		try {
 			FileUtils.copyFileToDirectory(sourceFile, dest);
 		} catch (IOException e) {
-			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_COPY_FILE, sourceFile.getName());
-			throw ex;
+			throw  new HyscaleException(e, CommonErrorCode.FAILED_TO_COPY_FILE, sourceFile.getName());
 		}
 	}
 
@@ -174,8 +171,7 @@ public class HyscaleFilesUtil {
 		try {
 			FileUtils.copyFile(sourceFile, destFile);
 		} catch (IOException e) {
-			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_COPY_FILE, sourceFile.getName());
-			throw ex;
+			throw new HyscaleException(e, CommonErrorCode.FAILED_TO_COPY_FILE, sourceFile.getName());
 		}
 	}
 
@@ -216,8 +212,7 @@ public class HyscaleFilesUtil {
 			try {
 				FileUtils.cleanDirectory(directory);
 			} catch (IOException e) {
-				HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_CLEAN_DIRECTORY, dir);
-				throw ex;
+				throw new HyscaleException(e, CommonErrorCode.FAILED_TO_CLEAN_DIRECTORY, dir);
 			}
 		}
 	}
@@ -229,8 +224,7 @@ public class HyscaleFilesUtil {
 			try {
 				FileUtils.deleteDirectory(directory);
 			} catch (IOException e) {
-				HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_DELETE_DIRECTORY, dir);
-				throw ex;
+				throw  new HyscaleException(e, CommonErrorCode.FAILED_TO_DELETE_DIRECTORY, dir);
 			}
 		}
 	}
@@ -246,8 +240,7 @@ public class HyscaleFilesUtil {
 	    try (FileInputStream inputStream = new FileInputStream(filepath)){
 	        return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_READ_FILE, filepath.getAbsolutePath());
-            throw ex;
+            throw new HyscaleException(e, CommonErrorCode.FAILED_TO_READ_FILE, filepath.getAbsolutePath());
         }
 	}
 	
@@ -275,9 +268,7 @@ public class HyscaleFilesUtil {
             return Collections.emptyList();
         }
 	    
-	    File[] matchingFile = directory.listFiles((dir, name) -> {
-	          return name.matches(fileNamePattern);
-	        });
+	    File[] matchingFile = directory.listFiles((dir, name) -> name.matches(fileNamePattern));
 	    
 	    return matchingFile == null ? null : Arrays.asList(matchingFile);
 	}

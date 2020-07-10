@@ -31,4 +31,9 @@ public class StringOutputStream extends OutputStream {
         return data.toString();
     }
 
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+       data.append(new String(b,off,len));
+    }
+
 }

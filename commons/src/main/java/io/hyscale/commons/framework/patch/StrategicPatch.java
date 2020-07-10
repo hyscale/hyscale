@@ -132,11 +132,9 @@ public class StrategicPatch {
             return patch;
         }
 
-        Map<String, JsonValue> effectiveMap = new HashMap<String, JsonValue>();
+        Map<String, JsonValue> effectiveMap = new HashMap<>();
 
-        source.entrySet().stream().forEach(each -> {
-            effectiveMap.put(each.getKey(), each.getValue());
-        });
+        source.entrySet().stream().forEach(each -> effectiveMap.put(each.getKey(), each.getValue()));
 
         for (Entry<String, JsonValue> entrySet : patch.entrySet()) {
             String key = entrySet.getKey();
@@ -161,7 +159,7 @@ public class StrategicPatch {
                 JsonArray patchArray = value.asJsonArray();
 
                 JsonValue sourceJsonVal = effectiveMap.get(key);
-                Set<JsonValue> updatedJsonObj = new HashSet<JsonValue>();
+                Set<JsonValue> updatedJsonObj = new HashSet<>();
                 JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
                 JsonArray sourceArray = null;
                 if (sourceJsonVal != null) {
@@ -208,9 +206,7 @@ public class StrategicPatch {
         }
 
         JsonObjectBuilder objBuilder = Json.createObjectBuilder();
-        effectiveMap.entrySet().stream().forEach(each -> {
-            objBuilder.add(each.getKey(), each.getValue());
-        });
+        effectiveMap.entrySet().stream().forEach(each -> objBuilder.add(each.getKey(), each.getValue()));
         return objBuilder.build();
     }
 

@@ -16,7 +16,6 @@
 package io.hyscale.commons.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import org.apache.commons.io.FileUtils;
@@ -26,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class DataFormatConverter {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataFormatConverter.class);
@@ -68,7 +68,7 @@ public class DataFormatConverter {
             if(file==null){
                return null;
             }
-            String data = FileUtils.readFileToString(file,ToolConstants.CHARACTER_ENCODING);
+            String data = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
             return yamlToJson(data);
         } catch (IOException e) {
             LOGGER.error(e.getMessage());
