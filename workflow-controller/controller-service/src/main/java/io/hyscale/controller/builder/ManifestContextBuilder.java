@@ -34,7 +34,8 @@ public class ManifestContextBuilder {
 
     @Autowired
     private RegistryManager registryManager;
-    
+
+    @SuppressWarnings("java:S2583")
     public ManifestContext build(WorkflowContext workflowContext) throws HyscaleException {
 
         if (workflowContext == null) {
@@ -60,7 +61,8 @@ public class ManifestContextBuilder {
         }
         return manifestContext;
     }
-    
+
+    @SuppressWarnings({"java:S1172","java:S1130"})
     private Map<String, String> getCustomLabels(WorkflowContext context) throws HyscaleException {
         // TODO Generate add on labels, ensure only K8s allowed values
         return null;
