@@ -35,13 +35,13 @@ public class TableFormatter {
 
 	private static final String DASH = "---";
 
-	private final String PERCENTAGE = "%";
+	private static final String PERCENTAGE = "%";
 
 	private final String formatter;
 
-	private List<TableField> fields = new ArrayList<TableField>();
+	private List<TableField> fields = new ArrayList<>();
 
-	private List<TableRow> tableRows = new ArrayList<TableRow>();
+	private List<TableRow> tableRows = new ArrayList<>();
 
 	private TableFormatter(List<TableField> fields) {
 		this.fields = fields;
@@ -144,7 +144,7 @@ public class TableFormatter {
 		private List<TableField> fields;
 
 		public Builder() {
-			fields = new ArrayList<TableField>();
+			fields = new ArrayList<>();
 		}
 
 		public Builder addField(String name) {

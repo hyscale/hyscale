@@ -165,9 +165,7 @@ public class StrategicPatch {
                 if (sourceJsonVal != null) {
                     sourceArray = sourceJsonVal.asJsonArray();
                     // Add pre-existing elements
-                    sourceArray.stream().forEach(each -> {
-                        updatedJsonObj.add(each);
-                    });
+                    sourceArray.stream().forEach(each -> updatedJsonObj.add(each));
                 }
 
                 for (JsonValue patchValue : patchArray) {
@@ -194,9 +192,7 @@ public class StrategicPatch {
                     }
                 }
                 // update list items
-                updatedJsonObj.stream().forEach(each -> {
-                    arrayBuilder.add(each);
-                });
+                updatedJsonObj.stream().forEach(each -> arrayBuilder.add(each));
 
                 effectiveMap.put(key, arrayBuilder.build());
             } else {

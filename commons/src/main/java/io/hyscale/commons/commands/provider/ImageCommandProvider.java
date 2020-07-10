@@ -86,9 +86,7 @@ public class ImageCommandProvider {
     
     private String getBuildArgs(Map<String, String> buildArgs) {
         StringBuilder buildArgsCmd = new StringBuilder();
-        buildArgs.entrySet().stream().forEach(each -> {
-            buildArgsCmd.append(BUILD_ARGS).append(each.getKey() + EQUALS + each.getValue());
-        });
+        buildArgs.entrySet().stream().forEach(each -> buildArgsCmd.append(BUILD_ARGS).append(each.getKey() + EQUALS + each.getValue()));
         return buildArgsCmd.toString();
     }
 
@@ -157,9 +155,7 @@ public class ImageCommandProvider {
         if (force) {
             removeDockerImages.append(SPACE).append(HYPHEN).append(FORCE_FLAG);
         }
-        imageIds.stream().forEach( imageId -> {
-            removeDockerImages.append(SPACE).append(imageId);
-        });
+        imageIds.stream().forEach( imageId -> removeDockerImages.append(SPACE).append(imageId));
         return removeDockerImages.toString();
     }
 
@@ -198,10 +194,9 @@ public class ImageCommandProvider {
             return null;
         }
         StringBuilder labelFilter = new StringBuilder();
-        labels.entrySet().stream().forEach(each -> {
-            labelFilter.append(SPACE).append(FILTER).append(SPACE).append(LABEL_ARGS)
-            .append(EQUALS).append(each.getKey()).append(EQUALS).append(each.getValue());
-        });
+        labels.entrySet().stream().forEach(each ->
+                labelFilter.append(SPACE).append(FILTER).append(SPACE).append(LABEL_ARGS)
+                        .append(EQUALS).append(each.getKey()).append(EQUALS).append(each.getValue()));
         return labelFilter.toString();
     }
 
