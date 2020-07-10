@@ -294,7 +294,8 @@ public class DockerRESTClient implements HyscaleDockerClient {
         }
         DockerClient dockerClient = getDockerClient();
         try {
-            TagImageCmd tagImageCmd = dockerClient.tagImageCmd(source, ImageUtil.getImageWithoutTag(dest), dest.getTag());
+            String tag = StringUtils.isNotBlank(dest.getTag()) ? dest.getTag() : ImageUtil.DEFAULT_TAG;
+            TagImageCmd tagImageCmd = dockerClient.tagImageCmd(source, ImageUtil.getImageWithoutTag(dest), tag);
             tagImageCmd.exec();
         } catch (DockerException e) {
             logger.error("Error while tagging image",e);
@@ -308,6 +309,9 @@ public class DockerRESTClient implements HyscaleDockerClient {
     @Override
     public void push(Image image, BuildContext buildContext) throws HyscaleException {
 
+        ActivityContext pushActivity = new ActivityContext(ImageBuilderActivity.IMAGE_PUSH);
+        WorkflowLogger.startActivity(pushActivity);
+        
         AuthConfig authConfig = getAuthConfig(buildContext.getPushRegistry());
 
         DockerClient dockerClient = getDockerClient();
@@ -315,10 +319,10 @@ public class DockerRESTClient implements HyscaleDockerClient {
         // Push image
         String logFilePath = imageBuilderConfig.getDockerPushLogDir(buildContext.getAppName(), buildContext.getServiceName());
         buildContext.setPushLogs(logFilePath);
-        PushImageCmd pushImageCmd = dockerClient.pushImageCmd(ImageUtil.getImageWithoutTag(image)).withTag(image.getTag())
-                .withAuthConfig(authConfig);
-        ActivityContext pushActivity = new ActivityContext(ImageBuilderActivity.IMAGE_PUSH);
-        WorkflowLogger.startActivity(pushActivity);
+        String tag = StringUtils.isNotBlank(image.getTag()) ? image.getTag() : ImageUtil.DEFAULT_TAG;
+        PushImageCmd pushImageCmd = dockerClient
+                .pushImageCmd(ImageUtil.getImageWithoutTag(image)).withTag(tag).withAuthConfig(authConfig);
+        
         if (buildContext.isVerbose()) {
             WorkflowLogger.header(ImageBuilderActivity.IMAGE_PUSH_LOG);
         }
