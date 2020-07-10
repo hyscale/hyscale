@@ -22,6 +22,8 @@ public class TimeStampProvider {
 
     private static final String DEFAULT_DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
+    private TimeStampProvider() {}
+
     public static String get() {
         return get(DEFAULT_DATE_PATTERN);
     }

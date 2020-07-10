@@ -20,17 +20,19 @@ import org.apache.commons.lang3.StringUtils;
 
 public class NormalizationUtil {
 
+    private NormalizationUtil() {}
+
     public static String normalize(String name, int length) {
         if (StringUtils.isEmpty(name)) {
             return name;
         }
         String normalized = name.toLowerCase().trim().replaceAll("[\\.]+", "-").replaceAll("[ ]+", "-")
                 .replaceAll("[^a-zA-Z0-9-_]", "");
-        int str_length = normalized.length();
-        if (str_length > length) {
-            str_length = length;
+        int strLength = normalized.length();
+        if (strLength > length) {
+            strLength = length;
         }
-        return normalized.substring(0, str_length);
+        return normalized.substring(0, strLength);
     }
 
     public static String normalize(String name) {

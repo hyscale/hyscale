@@ -53,7 +53,7 @@ public class ThreadPoolUtil {
 			executor.execute(runnable);
 			return true;
 		} catch (RejectedExecutionException re) {
-
+			//
 		}
 		return false;
 	}
@@ -62,7 +62,7 @@ public class ThreadPoolUtil {
 		try {
 			return executor.submit(callable);
 		} catch (RejectedExecutionException re) {
-
+			//
 		}
 		return null;
 	}
@@ -79,7 +79,7 @@ public class ThreadPoolUtil {
 		try {
 			executor.shutdown();
 		} catch (Exception e) {
-
+			//
 		}
 	}
 }
