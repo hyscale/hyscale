@@ -57,8 +57,8 @@ public class ServiceTypeHandler implements ManifestHandler {
         return manifestSnippetList;
     }
 
+    @SuppressWarnings("java:S2583")
     private K8sServiceType getServiceType(Boolean external) {
-        
         if (BooleanUtils.toBoolean(external)) {
             if (checkForLoadBalancerType()) {
                 return K8sServiceType.LOAD_BALANCER;
