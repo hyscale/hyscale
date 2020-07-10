@@ -21,6 +21,8 @@ import java.util.List;
 
 public class K8SRuntimeConstants {
 
+	private K8SRuntimeConstants() {}
+
 	public static final String K8S_DEPLOYMENT_POD_TEMPLATE_HASH = "pod-template-hash";
 
 	public static final String K8S_STS_CONTROLLER_REVISION_HASH = "controller-revision-hash";

@@ -74,4 +74,6 @@ public class DataFormatConverter {
             throw ex;
         }
     }
+
+    private DataFormatConverter(){}
 }

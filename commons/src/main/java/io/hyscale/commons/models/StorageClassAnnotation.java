@@ -37,4 +37,6 @@ public class StorageClassAnnotation {
 		}
 		return null;
 	}
+
+	private StorageClassAnnotation(){}
 }

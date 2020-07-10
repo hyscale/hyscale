@@ -53,4 +53,6 @@ public class HyscaleInputReader {
         }
     }
 
+    private HyscaleInputReader() {}
+
 }

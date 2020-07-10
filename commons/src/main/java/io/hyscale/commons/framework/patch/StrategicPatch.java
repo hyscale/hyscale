@@ -233,4 +233,6 @@ public class StrategicPatch {
         return ex;
     }
 
+    private StrategicPatch() {}
+
 }

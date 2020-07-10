@@ -40,4 +40,6 @@ public class DockerHubAliases {
     public static List<String> getDefaultDockerRegistryAlias() {
     	return REGISTRY_HOST_LIST;
     }
+
+    private DockerHubAliases() {}
 }

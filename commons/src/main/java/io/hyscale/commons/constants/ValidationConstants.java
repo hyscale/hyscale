@@ -16,6 +16,8 @@
 package io.hyscale.commons.constants;
 
 public class ValidationConstants {
+
+    private ValidationConstants(){}
     
     public static final int NAMESPACE_LENGTH_MAX = 30;
     

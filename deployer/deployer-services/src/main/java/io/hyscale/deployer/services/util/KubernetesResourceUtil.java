@@ -44,7 +44,7 @@ public class KubernetesResourceUtil {
         }
         KubernetesResource resource = new KubernetesResource();
         YAMLManifest yamlManifest = (YAMLManifest) manifest;
-        Object obj = Yaml.load(yamlManifest.getYamlManifest());
+        Object obj = Yaml.load(yamlManifest.getManifestFile());
         Method kindMethod = obj.getClass().getMethod(GET_KIND);
         String kind = (String) kindMethod.invoke(obj);
 

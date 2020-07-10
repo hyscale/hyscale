@@ -16,14 +16,14 @@
 package io.hyscale.commons.models;
 
 public class Auth {
-	private String auth;
+	private String authentication;
 
-	public String getAuth() {
-		return auth;
+	public String getAuthentication() {
+		return authentication;
 	}
 
-	public void setAuth(String auth) {
-		this.auth = auth;
+	public void setAuthentication(String authentication) {
+		this.authentication = authentication;
 	}
 
 }
