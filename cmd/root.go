@@ -16,14 +16,10 @@ Copyright 2019 Pramati Prism, Inc.
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"os"
 
 	"github.com/spf13/cobra"
-
-	homedir "github.com/mitchellh/go-homedir"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -62,33 +58,5 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
 	RootCmd.Flags().BoolVarP(&version, "version", "v", false, "Hyscale Version")
-}
-
-// initConfig reads in config file and ENV variables if set.
-//TODO Remove Viper
-func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		// Search config in home directory with name ".cmd" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".cmd")
-	}
-
-	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
-	}
 }
