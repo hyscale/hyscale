@@ -111,17 +111,10 @@ public class V1PersistentVolumeClaimHandler implements ResourceLifeCycleHandler<
 
 	@Override
 	public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-
-		V1DeleteOptions deleteOptions = getDeleteOptions();
 		ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_PERSISTENT_VOLUME_CLAIMS);
 		WorkflowLogger.startActivity(activityContext);
 		try {
-		    try {
-				coreV1Api.deleteNamespacedPersistentVolumeClaim(name, namespace, DeployerConstants.TRUE, null, null, null, null, deleteOptions);
-		    } catch (JsonSyntaxException e) {
-			// K8s Exception ignore
-		    }
+		    delete(apiClient, name, namespace);
 			List<String> persistentVolumeClaims = Lists.newArrayList();
 			persistentVolumeClaims.add(name);
 			if (wait) {
@@ -143,6 +136,17 @@ public class V1PersistentVolumeClaimHandler implements ResourceLifeCycleHandler<
 		return true;
 
 	}
+
+    private void delete(ApiClient apiClient, String name, String namespace) throws ApiException {
+        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+        V1DeleteOptions deleteOptions = getDeleteOptions();
+        try {
+            coreV1Api.deleteNamespacedPersistentVolumeClaim(name, namespace, DeployerConstants.TRUE, null, null, null,
+                    null, deleteOptions);
+        } catch (JsonSyntaxException e) {
+            // K8s Exception ignore
+        }
+    }
 
 	@Override
 	public boolean deleteBySelector(ApiClient apiClient, String selector, boolean label, String namespace, boolean wait)

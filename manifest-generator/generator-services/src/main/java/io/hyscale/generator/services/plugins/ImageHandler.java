@@ -97,7 +97,7 @@ public class ImageHandler implements ManifestHandler {
             imgPullSecretNamesnippet.setPath("spec.template.spec.imagePullSecrets");
             imgPullSecretNamesnippet.setSnippet(JsonSnippetConvertor.serialize(resourceNameList));
         } catch (JsonProcessingException e) {
-            logger.error("Error while generating image pull secret manifest {}", e);
+            logger.error("Error while generating image pull secret manifest {}", name, e);
         }
         return imgPullSecretNamesnippet;
     }

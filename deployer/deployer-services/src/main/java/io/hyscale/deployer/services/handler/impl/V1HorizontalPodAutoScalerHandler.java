@@ -91,7 +91,7 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
         } catch (HyscaleException ex) {
             logger.debug("Error while getting HorizontalPodAutoScaler  {} in namespace {} for Update, creating new", name, namespace);
             V1HorizontalPodAutoscaler horizontalPodAutoscaler = create(apiClient, resource, namespace);
-            return horizontalPodAutoscaler != null ? true : false;
+            return horizontalPodAutoscaler != null;
         }
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_HORIZONTAL_AUTO_SCALER);
         try {
@@ -161,7 +161,7 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
         } catch (HyscaleException e) {
             logger.debug("Error while getting HorizontalPodAutoScaler {} in namespace {} for Patch, creating new", name, namespace);
             V1HorizontalPodAutoscaler horizontalPodAutoscaler = create(apiClient, target, namespace);
-            return horizontalPodAutoscaler != null ? true : false;
+            return horizontalPodAutoscaler != null;
         }
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_HORIZONTAL_AUTO_SCALER);
         Object patchObject = null;
@@ -191,17 +191,10 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
 
     @Override
     public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-        AutoscalingV1Api autoscalingV1Api = new AutoscalingV1Api(apiClient);
-        V1DeleteOptions deleteOptions = getDeleteOptions();
-        deleteOptions.setApiVersion("autoscaling/v1");
         ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_HORIZONTAL_POD_AUTOSCALER);
         WorkflowLogger.startActivity(activityContext);
         try {
-            try {
-                autoscalingV1Api.deleteNamespacedHorizontalPodAutoscaler(name, namespace, DeployerConstants.TRUE, null, null, null, null, deleteOptions);
-            } catch (JsonSyntaxException e) {
-                logger.debug("Ignoring delete HorizontalPodAutoScaler exception");
-            }
+            delete(apiClient, name, namespace);
             List<String> pendingHPAs = Lists.newArrayList();
             pendingHPAs.add(name);
             if (wait) {
@@ -221,6 +214,18 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
         }
         WorkflowLogger.endActivity(activityContext, Status.DONE);
         return true;
+    }
+
+    private void delete(ApiClient apiClient, String name, String namespace) throws ApiException {
+        AutoscalingV1Api autoscalingV1Api = new AutoscalingV1Api(apiClient);
+        V1DeleteOptions deleteOptions = getDeleteOptions();
+        deleteOptions.setApiVersion("autoscaling/v1");
+        try {
+            autoscalingV1Api.deleteNamespacedHorizontalPodAutoscaler(name, namespace, DeployerConstants.TRUE, null,
+                    null, null, null, deleteOptions);
+        } catch (JsonSyntaxException e) {
+            logger.debug("Ignoring delete HorizontalPodAutoScaler exception");
+        }
     }
 
     @Override

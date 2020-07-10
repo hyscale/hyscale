@@ -15,8 +15,10 @@
  */
 package io.hyscale.controller.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
@@ -25,17 +27,11 @@ import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 public class ServiceSpecTestUtil {
-
-    public static ServiceSpec getServiceSpec(String filepath) throws IOException {
-        if (StringUtils.isBlank(filepath)) {
-            return null;
-        }
-        return new ServiceSpec(getServiceSpecJsonNode(filepath));
-    }
 
     public static JsonNode getServiceSpecJsonNode(String filepath) throws IOException {
         if (StringUtils.isBlank(filepath)) {
@@ -45,6 +41,18 @@ public class ServiceSpecTestUtil {
         InputStream resourceAsStream = ServiceSpecTestUtil.class.getResourceAsStream(filepath);
         String testData = IOUtils.toString(resourceAsStream, StandardCharsets.UTF_8);
         return objectMapper.readTree(testData);
+    }
+    
+    public static ServiceSpec getServiceSpec(String serviceSpecPath) throws HyscaleException {
+        if (StringUtils.isBlank(serviceSpecPath)) {
+            return null;
+        }
+        return new ServiceSpec(getServiceSpecFile(serviceSpecPath));
+    }
+    
+    private static File getServiceSpecFile(String serviceSpecPath) {
+        URL urlPath = ServiceSpecTestUtil.class.getResource(serviceSpecPath);
+        return new File(urlPath.getFile());
     }
 
 }

@@ -82,7 +82,7 @@ public class IsPodsReadinessFailing implements Node<TroubleshootingContext> {
                 V1Pod pod = (V1Pod) resourceInfo.getResource();
                 if (unhealthyPod == null) {
                     PodStatus status = PodStatus.get(K8sPodUtil.getAggregatedStatusOfContainersForPod(pod));
-                    if (status != null || !status.isFailed()) {
+                    if (status != null && !status.isFailed()) {
                         v1Events.addAll(resourceInfo.getEvents());
                     }
                 } else {

@@ -19,13 +19,13 @@ import io.hyscale.deployer.core.model.DeploymentStatus;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class DeploymentStatusUtilTest {
+class DeploymentStatusUtilTest {
 
     @Test
-    public void testNotDeployedStatus() {
+    void testNotDeployedStatus() {
         DeploymentStatus status = DeploymentStatusUtil.getNotDeployedStatus("myservice");
         Assertions.assertNotNull(status);
-        Assertions.assertEquals(status.getServiceName(), "myservice");
-        Assertions.assertEquals(status.getServiceStatus(), DeploymentStatus.ServiceStatus.NOT_DEPLOYED);
+        Assertions.assertEquals("myservice", status.getServiceName());
+        Assertions.assertEquals(DeploymentStatus.ServiceStatus.NOT_DEPLOYED, status.getServiceStatus());
     }
 }

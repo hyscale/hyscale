@@ -61,29 +61,29 @@ public class K8sResourceBroker {
         }
         V1ObjectMeta objectMeta = kubernetesResource.getV1ObjectMeta();
         T obj = (T) kubernetesResource.getResource();
-        String namespace = kubernetesResource.getV1ObjectMeta().getNamespace();
+        String resourceNamespace = kubernetesResource.getV1ObjectMeta().getNamespace();
         switch (updatePolicy) {
             case PATCH:
                 try {
-                    boolean isPatched = lifeCycleHandler.patch(apiClient, objectMeta.getName(), namespace, obj);
+                    boolean isPatched = lifeCycleHandler.patch(apiClient, objectMeta.getName(), resourceNamespace, obj);
                     if (!isPatched) {
                         // Fallback to delete and create if patch fails to apply
-                        lifeCycleHandler.delete(apiClient, objectMeta.getName(), namespace, true);
-                        lifeCycleHandler.create(apiClient, obj, namespace);
+                        lifeCycleHandler.delete(apiClient, objectMeta.getName(), resourceNamespace, true);
+                        lifeCycleHandler.create(apiClient, obj, resourceNamespace);
 
                     }
                 } catch (HyscaleException e) {
                     // Fallback to delete and create if patch fails to apply
-                    lifeCycleHandler.delete(apiClient, objectMeta.getName(), namespace, true);
-                    lifeCycleHandler.create(apiClient, obj, namespace);
+                    lifeCycleHandler.delete(apiClient, objectMeta.getName(), resourceNamespace, true);
+                    lifeCycleHandler.create(apiClient, obj, resourceNamespace);
                 }
                 break;
             case UPDATE:
-                lifeCycleHandler.update(apiClient, obj, namespace);
+                lifeCycleHandler.update(apiClient, obj, resourceNamespace);
                 break;
             case DELETE_AND_CREATE:
-                lifeCycleHandler.delete(apiClient, objectMeta.getName(), namespace, true);
-                lifeCycleHandler.create(apiClient, obj, namespace);
+                lifeCycleHandler.delete(apiClient, objectMeta.getName(), resourceNamespace, true);
+                lifeCycleHandler.create(apiClient, obj, resourceNamespace);
                 break;
         }
     }

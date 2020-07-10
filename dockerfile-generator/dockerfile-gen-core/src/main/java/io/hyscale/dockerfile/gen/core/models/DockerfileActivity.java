@@ -19,7 +19,8 @@ import io.hyscale.commons.models.Activity;
 
 public enum DockerfileActivity implements Activity {
 	DOCKERFILE_GENERATION("Generating Dockerfile "),
-	SUPPORT_FILES_COPY("Copying support files ");
+	SUPPORT_FILES_COPY("Copying support files "),
+	COMMANDS_AND_SCRIPT_FOUND("Command and Script file both provided for {} in build spec, ignoring script file");
 
 	private String message;
 

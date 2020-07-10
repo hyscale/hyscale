@@ -1,0 +1,7 @@
+name: myservice
+image:
+  registry: x.y.z
+  name: myServiceImage
+  tag: 1.2.3
+  buildSpec:
+    stackImage: abc/pqr:1.0

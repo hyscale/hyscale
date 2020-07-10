@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.stream.Stream;
 
-public class JsonPatchTest {
+class JsonPatchTest {
 
     public static Stream<Arguments> input() {
         return Stream.of(Arguments.of("/source.json", "/target.json",
@@ -38,7 +38,7 @@ public class JsonPatchTest {
     @ParameterizedTest
     @MethodSource(value = "input")
     @Disabled
-    public void testJsonPatch(String source, String target, String expectedResult) throws HyscaleException, IOException {
+    void testJsonPatch(String source, String target, String expectedResult) throws HyscaleException, IOException {
         InputStream resourceAsStream = JsonPatchTest.class.getResourceAsStream(source);
         source = IOUtils.toString(resourceAsStream, "UTF-8");
         resourceAsStream.close();

@@ -18,7 +18,6 @@ package io.hyscale.controller.validator.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
 import java.util.stream.Stream;
 
 import io.hyscale.controller.model.WorkflowContextBuilder;
@@ -42,7 +41,7 @@ import io.hyscale.servicespec.commons.model.service.Image;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @SpringBootTest
-public class RegistryValidatorTest {
+class RegistryValidatorTest {
 
     @Autowired
     private RegistryValidator registryValidator;
@@ -55,7 +54,7 @@ public class RegistryValidatorTest {
     private static ServiceSpec invalidServiceSpec = null;
 
     @BeforeAll
-    public static void setUp() throws IOException {
+    public static void setUp() throws HyscaleException {
         validServiceSpec = ServiceSpecTestUtil.getServiceSpec("/servicespecs/validator/registry_validation.hspec");
         invalidServiceSpec = ServiceSpecTestUtil.getServiceSpec("/servicespecs/validator/invalid-registry.hspec");
 
@@ -72,13 +71,13 @@ public class RegistryValidatorTest {
                 .thenReturn(null);
     }
 
-    public static Stream<Arguments> input() {
+    private static Stream<Arguments> input() {
         return Stream.of(Arguments.of(validServiceSpec, true), Arguments.of(invalidServiceSpec, false));
     }
 
     @ParameterizedTest
     @MethodSource("input")
-    public void validateRegistry(ServiceSpec serviceSpec, boolean expectedResult) {
+    void validateRegistry(ServiceSpec serviceSpec, boolean expectedResult) {
         try {
             WorkflowContext context = new WorkflowContextBuilder(null).withService(serviceSpec).get();
             assertEquals(expectedResult, registryValidator.validate(context));
