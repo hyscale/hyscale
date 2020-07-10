@@ -37,8 +37,6 @@ public class IsClusterFull extends ConditionNode<TroubleshootingContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(IsClusterFull.class);
 
-    private Predicate<TroubleshootingContext> isClusterFull;
-
     @Autowired
     private ClusterFullAction clusterFullAction;
 
@@ -63,7 +61,8 @@ public class IsClusterFull extends ConditionNode<TroubleshootingContext> {
 
         Object obj = context.getAttribute(FailedResourceKey.FAILED_POD_EVENTS);
         if (obj == null) {
-            logger.debug("Cannot find any failed pod for to {}", describe());
+            String describe = describe();
+            logger.debug("Cannot find any failed pod for node: {}", describe);
             return false;
         }
 

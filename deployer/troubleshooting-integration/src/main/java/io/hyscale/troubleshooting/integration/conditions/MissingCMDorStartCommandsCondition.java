@@ -47,8 +47,6 @@ public class MissingCMDorStartCommandsCondition extends ConditionNode<Troublesho
     private static final String DOCKER_INSTALLATION_NOTFOUND_MESSAGE = "Docker is not installed";
     private static final String IMAGE_NOT_FOUND_LOCALLY = "Image %s is not found locally to inspect";
 
-    private Predicate<TroubleshootingContext> containerStartCommandCheck;
-
     @Autowired
     private ImageCommandProvider commandProvider;
 
