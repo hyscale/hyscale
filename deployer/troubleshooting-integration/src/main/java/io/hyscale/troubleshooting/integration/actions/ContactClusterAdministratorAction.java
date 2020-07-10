@@ -15,8 +15,6 @@
  */
 package io.hyscale.troubleshooting.integration.actions;
 
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.troubleshooting.integration.models.*;
 import org.springframework.stereotype.Component;
 

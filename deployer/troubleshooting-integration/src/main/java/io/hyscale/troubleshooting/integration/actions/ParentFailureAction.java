@@ -83,7 +83,6 @@ public class ParentFailureAction extends ActionNode<TroubleshootingContext> {
             report.setReason(AbstractedErrorMessage.INVALID_RESOURCE_NAME.formatReason(resourceDetails));
             report.setRecommendedFix(AbstractedErrorMessage.INVALID_RESOURCE_NAME.getMessage());
             context.addReport(report);
-            return;
         }
     }
 

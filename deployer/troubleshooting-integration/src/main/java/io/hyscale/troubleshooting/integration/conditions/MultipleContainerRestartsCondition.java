@@ -16,9 +16,10 @@
 package io.hyscale.troubleshooting.integration.conditions;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
 import io.hyscale.troubleshooting.integration.models.*;
+import io.hyscale.troubleshooting.integration.util.ConditionUtil;
+import io.hyscale.troubleshooting.integration.util.DiagnosisReportUtil;
 import io.kubernetes.client.openapi.models.V1Pod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 //TODO JAVADOC
 @Component
@@ -43,46 +43,36 @@ public class MultipleContainerRestartsCondition extends ConditionNode<Troublesho
 
     @Override
     public boolean decide(TroubleshootingContext context) throws HyscaleException {
-        DiagnosisReport report = new DiagnosisReport();
-        List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos().get(ResourceKind.POD.getKind());
-        if (resourceInfos == null || resourceInfos.isEmpty()) {
-            report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceInfo().getServiceName()));
-            report.setRecommendedFix(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.getMessage());
-            context.addReport(report);
-            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
-        }
+        String serviceName = context.getServiceInfo().getServiceName();
 
         Object obj = context.getAttribute(FailedResourceKey.FAILED_POD);
         List<V1Pod> podList = null;
         if (obj == null) {
-            podList = resourceInfos.stream().filter(each -> {
-                return each != null && each.getResource() != null && each.getResource() instanceof V1Pod;
-            }).map(resourceInfo -> {
-                return (V1Pod) resourceInfo.getResource();
-            }).collect(Collectors.toList());
+            logger.debug("Getting pods from resource info");
+            podList = ConditionUtil.getPods(context);
+            if (podList == null || podList.isEmpty()) {
+                context.addReport(DiagnosisReportUtil.getServiceNotDeployedReport(serviceName));
+                throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, serviceName);
+            }
         } else {
+            logger.debug("Pods found in context");
             V1Pod failedPod = (V1Pod) FailedResourceKey.FAILED_POD.getKlazz().cast(obj);
             podList = new LinkedList<>();
             podList.add(failedPod);
         }
 
-        return podList.stream().anyMatch(each -> {
-            if (each instanceof V1Pod) {
-                V1Pod pod = (V1Pod) each;
-                return pod.getStatus().getContainerStatuses().stream().anyMatch(containerStatus -> {
+        return podList.stream()
+                .anyMatch(each -> each.getStatus().getContainerStatuses().stream().anyMatch(containerStatus -> {
                     if (containerStatus.getRestartCount() > 0) {
                         // Passing the failed pod to the next nodes when it is not set in the context
                         context.addAttribute(FailedResourceKey.RESTARTS, true);
                         if (obj == null) {
-                            context.addAttribute(FailedResourceKey.FAILED_POD, pod);
+                            context.addAttribute(FailedResourceKey.FAILED_POD, each);
                         }
                         return true;
                     }
                     return false;
-                });
-            }
-            return false;
-        });
+                }));
     }
 
     @Override

@@ -15,13 +15,9 @@
  */
 package io.hyscale.troubleshooting.integration.actions;
 
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.troubleshooting.integration.conditions.IsPodsReadinessFailing;
 import io.hyscale.troubleshooting.integration.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -31,6 +27,7 @@ public class FixImageNameAction extends ActionNode<TroubleshootingContext> {
 
     @Override
     public void process(TroubleshootingContext context) {
+        logger.debug("Running action node: {}", this.getClass().getName());
         DiagnosisReport report = new DiagnosisReport();
         report.setRecommendedFix(AbstractedErrorMessage.FIX_IMAGE_NAME.getMessage());
         report.setReason(AbstractedErrorMessage.FIX_IMAGE_NAME.getReason());

@@ -30,10 +30,7 @@ public class TroubleshootContextValidator {
     private TroubleshootContextValidator() {}
 
     public static boolean validateContext(TroubleshootingContext context) {
-        if (context == null || context.getResourceInfos() == null) {
-            return false;
-        }
-        return true;
+        return context != null && context.getResourceInfos() != null;
     }
 
     public static boolean isResourceInfoInValid(List<TroubleshootingContext.ResourceInfo> resourceData) {
@@ -47,8 +44,7 @@ public class TroubleshootContextValidator {
         if (resourceData == null || resourceData.isEmpty()) {
             return Collections.emptyList();
         }
-        return resourceData.stream().filter(each -> each.getResource() instanceof V1Pod).map(each -> {
-            return ((V1Pod) each.getResource());
-        }).collect(Collectors.toUnmodifiableList());
+        return resourceData.stream().filter(each -> each.getResource() instanceof V1Pod)
+                .map(each -> (V1Pod) each.getResource()).collect(Collectors.toUnmodifiableList());
     }
 }

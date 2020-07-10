@@ -107,7 +107,7 @@ public class ParentStatusCondition implements Node<TroubleshootingContext> {
         
         Integer replicas = podParentHandler.getReplicas(parentInfo.getResource());
         
-        return replicas != null && replicas == 0 ? true : false;
+        return replicas != null && replicas == 0;
     }
 
     // TODO filter events wrt latest deployment

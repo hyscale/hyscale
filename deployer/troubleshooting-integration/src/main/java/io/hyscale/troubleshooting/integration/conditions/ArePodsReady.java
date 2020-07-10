@@ -16,10 +16,11 @@
 package io.hyscale.troubleshooting.integration.conditions;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.model.PodCondition;
 import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
 import io.hyscale.troubleshooting.integration.models.*;
+import io.hyscale.troubleshooting.integration.util.ConditionUtil;
+import io.hyscale.troubleshooting.integration.util.DiagnosisReportUtil;
 import io.kubernetes.client.openapi.models.V1Pod;
 import io.kubernetes.client.openapi.models.V1PodCondition;
 import org.slf4j.Logger;
@@ -28,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 //TODO JAVADOC
 @Component
@@ -41,40 +42,25 @@ public class ArePodsReady extends ConditionNode<TroubleshootingContext> {
 
     @Override
     public boolean decide(TroubleshootingContext context) throws HyscaleException {
-        List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos().get(ResourceKind.POD.getKind());
-        DiagnosisReport report = new DiagnosisReport();
-        if (resourceInfos == null || resourceInfos.isEmpty()) {
-            report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceInfo().getServiceName()));
-            report.setRecommendedFix(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.getMessage());
-            context.addReport(report);
-            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
-        }
 
-        List<V1Pod> podsList = resourceInfos.stream().filter(each -> {
-            return each != null && each.getResource() != null && each.getResource() instanceof V1Pod;
-        }).map(pod -> {
-            return (V1Pod) pod.getResource();
-        }).collect(Collectors.toList());
+        List<V1Pod> podsList = ConditionUtil.getPods(context);
+        String serviceName = context.getServiceInfo().getServiceName();
 
         if (podsList == null || podsList.isEmpty()) {
-            report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceInfo().getServiceName()));
-            report.setRecommendedFix(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.getMessage());
-            context.addReport(report);
-            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
+            logger.debug("No pods found for service: {}", serviceName);
+            context.addReport(DiagnosisReportUtil.getServiceNotDeployedReport(serviceName));
+            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, serviceName);
         }
 
         // check if all pods are in ready state with the pod condition ready
-        return podsList.stream().filter(each -> {
-            return each instanceof V1Pod;
-        }).allMatch(each -> {
-            V1Pod pod = (V1Pod) each;
+        return podsList.stream().filter(Objects::nonNull).allMatch(pod -> {
             boolean ready = true;
             for (V1PodCondition condition : pod.getStatus().getConditions()) {
                 if (condition.getType().equals(PodCondition.READY.getPodCondition())
                         && condition.getStatus().equals("False")) {
                     ready = false;
-                    context.addAttribute(FailedResourceKey.FAILED_POD, each);
-                    context.addAttribute(FailedResourceKey.UNREADY_POD, each);
+                    context.addAttribute(FailedResourceKey.FAILED_POD, pod);
+                    context.addAttribute(FailedResourceKey.UNREADY_POD, pod);
                     break;
                 }
             }
