@@ -249,11 +249,7 @@ public class WorkflowLogger {
             return;
         }
         if (!persistedActivities.isEmpty()) {
-            persistedActivities.stream().filter(each -> {
-                return each != null && StringUtils.isNotBlank(each);
-            }).forEach(each -> {
-                System.out.println(each);
-            });
+            persistedActivities.stream().filter(StringUtils::isNotBlank).forEach(System.out::println);
             System.out.println();
         }
         persistedActivities.clear();

@@ -29,7 +29,7 @@ public class ManifestContext {
 
 	public ManifestContext() {
 		this.generationAttributes = new HashMap<>();
-		this.customLabels = new HashMap<String, String>();
+		this.customLabels = new HashMap<>();
 	}
 
 	public String getAppName() {
