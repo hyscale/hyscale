@@ -54,6 +54,7 @@ public class MustacheTemplateResolver {
 		try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(); Writer out = new OutputStreamWriter(outputStream,StandardCharsets.UTF_8.newEncoder());) {
 			Mustache m = mustacheFactory.compile(templateFile);
 			m.execute(out, context);
+			out.flush();
 			return new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			HyscaleException ex = new HyscaleException(CommonErrorCode.FAILED_TO_RESOLVE_TEMPLATE, templateFile);
