@@ -140,7 +140,8 @@ public class LogProcessorTests {
                 for (String line : lines) {
                     try {
                         FileUtils.writeStringToFile(file, line + "\n", ENCODING, true);
-                    } catch (IOException e) {
+                        Thread.sleep(100);
+                    } catch (IOException | InterruptedException e) {
                     }
 
                 }
@@ -148,6 +149,10 @@ public class LogProcessorTests {
             fileWriterThread.start();
 
             while (tailLogFile.isRunning()) {
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                }
                 if (System.currentTimeMillis() >= timeLimit) {
                     tailLogFile.stopRunning();
                     Assertions.fail("Tail timed out ,End of file did not match.");
