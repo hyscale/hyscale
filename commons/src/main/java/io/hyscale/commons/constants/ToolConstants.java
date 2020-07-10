@@ -95,4 +95,6 @@ public class ToolConstants {
 
     public static final String WORKFLOW_LOGGER_DISABLED = "WORKFLOW_LOGGER_DISABLED";
 
+    private ToolConstants() {}
+
 }

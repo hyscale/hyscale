@@ -21,6 +21,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -38,6 +39,8 @@ import io.hyscale.commons.exception.HyscaleException;
  * Utility class to handle file operation
  */
 public class HyscaleFilesUtil {
+
+	private HyscaleFilesUtil() {}
 
 	private static final Logger logger = LoggerFactory.getLogger(HyscaleFilesUtil.class);
 
@@ -256,7 +259,7 @@ public class HyscaleFilesUtil {
 	 */
 	public static List<File> listFilesWithPattern(String directory, String fileNamePattern) {
         if (directory == null || StringUtils.isBlank(fileNamePattern)) {
-            return null;
+            return Collections.emptyList();
         }
         return listFilesWithPattern(new File(directory), fileNamePattern);
     }
@@ -269,7 +272,7 @@ public class HyscaleFilesUtil {
      */
 	public static List<File> listFilesWithPattern(File directory, String fileNamePattern){
 	    if (directory == null || !directory.isDirectory()|| StringUtils.isBlank(fileNamePattern)) {
-            return null;
+            return Collections.emptyList();
         }
 	    
 	    File[] matchingFile = directory.listFiles((dir, name) -> {
@@ -278,5 +281,4 @@ public class HyscaleFilesUtil {
 	    
 	    return matchingFile == null ? null : Arrays.asList(matchingFile);
 	}
-	
 }

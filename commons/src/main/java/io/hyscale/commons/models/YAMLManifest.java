@@ -19,14 +19,14 @@ import java.io.File;
 
 public class YAMLManifest implements Manifest {
 
-	private File yamlManifest;
+	private File manifest;
 
-	public File getYamlManifest() {
-		return yamlManifest;
+	public File getManifest() {
+		return manifest;
 	}
 
-	public void setYamlManifest(File yamlManifest) {
-		this.yamlManifest = yamlManifest;
+	public void setManifest(File manifest) {
+		this.manifest = manifest;
 	}
 
 	@Override
