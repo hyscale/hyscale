@@ -126,6 +126,7 @@ public class LogProcessorTests {
 
     @Nested
     @DisplayName("Tailing log file test cases.")
+    @SuppressWarnings("java:S2925")
     public class TailLogFileTests {
         private TailLogTestHandler tailLogTestHandler = new TailLogTestHandler();
 

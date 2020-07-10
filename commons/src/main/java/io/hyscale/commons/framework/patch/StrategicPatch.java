@@ -118,6 +118,7 @@ public class StrategicPatch {
      * @return merged JsonObject
      * @throws HyscaleException
      */
+    @SuppressWarnings("java:S3776")
     public static JsonObject mergeJsonObjects(JsonObject source, JsonObject patch,
             FieldMetaDataProvider fieldDataProvider) throws HyscaleException {
 

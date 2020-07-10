@@ -18,7 +18,7 @@ package io.hyscale.commons.component;
 import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.List;
-
+@SuppressWarnings("java:S3740")
 public class ExecutableComponentProvider {
 
 	private List<ComponentInvoker> componentInvokers;

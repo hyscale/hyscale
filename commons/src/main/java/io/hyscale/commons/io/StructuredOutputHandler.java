@@ -29,6 +29,7 @@ import java.util.List;
 /**
  * Class to handle output acivity in structured format like JSON/YAML.
  */
+@SuppressWarnings("java:S106")
 @Component
 public class StructuredOutputHandler {
 

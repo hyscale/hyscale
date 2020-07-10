@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * are executed. In case of error the execution is terminated and the
  * @see {@link #onError(ComponentInvokerContext, HyscaleException)} is invoked.
  */
-
+@SuppressWarnings("java:S3740")
 public abstract class ComponentInvoker<C extends ComponentInvokerContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(ComponentInvoker.class);
