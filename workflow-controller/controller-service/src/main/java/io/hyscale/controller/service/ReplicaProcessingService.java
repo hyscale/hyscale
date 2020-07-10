@@ -115,9 +115,6 @@ public class ReplicaProcessingService {
     }
 
     private Map<Integer, ReplicaInfo> getIndexedReplicaInfo(List<ReplicaInfo> replicasInfo) {
-        if (replicasInfo == null || replicasInfo.isEmpty()) {
-            return null;
-        }
         Map<Integer, ReplicaInfo> indexedReplicasInfo = new LinkedHashMap<Integer, ReplicaInfo>();
         Integer replicaIndex = 1;
         for (ReplicaInfo replicaInfo : replicasInfo) {
