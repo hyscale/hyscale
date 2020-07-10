@@ -87,7 +87,7 @@ public class LogProcessorTests {
                 Assertions.fail();
             }
             Assertions.assertNotNull(content);
-            Assertions.assertEquals(content, logFileContent);
+            Assertions.assertEquals(logFileContent, content );
         }
     }
 
@@ -120,7 +120,7 @@ public class LogProcessorTests {
             } catch (HyscaleException e) {
             }
             Assertions.assertNotNull(os);
-            Assertions.assertEquals(os.toString().trim(), logFileContent);
+            Assertions.assertEquals(logFileContent, os.toString().trim());
         }
     }
 
@@ -140,8 +140,7 @@ public class LogProcessorTests {
                 for (String line : lines) {
                     try {
                         FileUtils.writeStringToFile(file, line + "\n", ENCODING, true);
-                        Thread.sleep(100);
-                    } catch (IOException | InterruptedException e) {
+                    } catch (IOException e) {
                     }
 
                 }
@@ -149,10 +148,6 @@ public class LogProcessorTests {
             fileWriterThread.start();
 
             while (tailLogFile.isRunning()) {
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                }
                 if (System.currentTimeMillis() >= timeLimit) {
                     tailLogFile.stopRunning();
                     Assertions.fail("Tail timed out ,End of file did not match.");

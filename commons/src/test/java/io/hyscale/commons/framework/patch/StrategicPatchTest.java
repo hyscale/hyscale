@@ -112,7 +112,7 @@ public class StrategicPatchTest {
             if (expected == null) {
                 assertNull(merged);
             } else {
-                assertTrue(expected.equals(merged));
+                assertEquals(expected,merged);
             }
         } catch (HyscaleException e) {
             fail();
