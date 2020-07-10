@@ -102,9 +102,7 @@ public class TroubleshootingContextCollector {
             List<TroubleshootingContext.ResourceInfo> replicaSetResourceInfos = resources.get(ResourceKind.REPLICA_SET.getKind());
             List<TroubleshootingContext.ResourceInfo> podResourceInfos = resources.get(ResourceKind.POD.getKind());
             List<TroubleshootingContext.ResourceInfo> filteredPodResourceInfos = new ArrayList<>();
-            deploymentResourceInfos.stream().filter(each -> {
-                return each != null && each.getResource() != null && each.getResource() instanceof V1Deployment;
-            }).forEach(each -> {
+            deploymentResourceInfos.stream().filter(each -> each != null && each.getResource() instanceof V1Deployment).forEach(each -> {
                 String deploymentRevision = V1DeploymentHandler.getDeploymentRevision((V1Deployment) each.getResource());
                 if (StringUtils.isNotBlank(deploymentRevision)) {
                     V1ReplicaSet replicaSet = filterReplicaSetByrevision(replicaSetResourceInfos, deploymentRevision);

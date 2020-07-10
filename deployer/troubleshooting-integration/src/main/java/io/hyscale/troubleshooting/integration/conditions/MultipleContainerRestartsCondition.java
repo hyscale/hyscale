@@ -55,34 +55,26 @@ public class MultipleContainerRestartsCondition extends ConditionNode<Troublesho
         Object obj = context.getAttribute(FailedResourceKey.FAILED_POD);
         List<V1Pod> podList = null;
         if (obj == null) {
-            podList = resourceInfos.stream().filter(each -> {
-                return each != null && each.getResource() != null && each.getResource() instanceof V1Pod;
-            }).map(resourceInfo -> {
-                return (V1Pod) resourceInfo.getResource();
-            }).collect(Collectors.toList());
+            podList = resourceInfos.stream().filter(each -> each != null && each.getResource() instanceof V1Pod)
+                    .map(resourceInfo -> (V1Pod) resourceInfo.getResource()).collect(Collectors.toList());
         } else {
             V1Pod failedPod = (V1Pod) FailedResourceKey.FAILED_POD.getKlazz().cast(obj);
             podList = new LinkedList<>();
             podList.add(failedPod);
         }
 
-        return podList.stream().anyMatch(each -> {
-            if (each instanceof V1Pod) {
-                V1Pod pod = (V1Pod) each;
-                return pod.getStatus().getContainerStatuses().stream().anyMatch(containerStatus -> {
+        return podList.stream()
+                .anyMatch(each -> each.getStatus().getContainerStatuses().stream().anyMatch(containerStatus -> {
                     if (containerStatus.getRestartCount() > 0) {
                         // Passing the failed pod to the next nodes when it is not set in the context
                         context.addAttribute(FailedResourceKey.RESTARTS, true);
                         if (obj == null) {
-                            context.addAttribute(FailedResourceKey.FAILED_POD, pod);
+                            context.addAttribute(FailedResourceKey.FAILED_POD, each);
                         }
                         return true;
                     }
                     return false;
-                });
-            }
-            return false;
-        });
+                }));
     }
 
     @Override

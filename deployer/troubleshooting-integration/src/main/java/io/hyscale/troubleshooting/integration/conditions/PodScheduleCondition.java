@@ -51,11 +51,9 @@ public class PodScheduleCondition extends ConditionNode<TroubleshootingContext> 
             throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
         }
 
-        List<V1Pod> podsList = resourceInfos.stream().filter(each -> {
-            return each != null && each.getResource() != null && each.getResource() instanceof V1Pod;
-        }).map(pod -> {
-            return (V1Pod) pod.getResource();
-        }).collect(Collectors.toList());
+        List<V1Pod> podsList = resourceInfos.stream()
+                .filter(each -> each != null && each.getResource() instanceof V1Pod)
+                .map(pod -> (V1Pod) pod.getResource()).collect(Collectors.toList());
 
         if (podsList == null || podsList.isEmpty()) {
             report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceInfo().getServiceName()));
@@ -64,14 +62,8 @@ public class PodScheduleCondition extends ConditionNode<TroubleshootingContext> 
             throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
         }
 
-        return podsList.stream().anyMatch(pod -> {
-            if (pod instanceof V1Pod) {
-                V1Pod v1Pod = (V1Pod) pod;
-                return !K8sPodUtil.checkForPodCondition((V1Pod) pod, PodCondition.POD_SCHEDULED) ||
-                        K8sPodUtil.checkForPodCondition(v1Pod, PodCondition.UNSCHEDULABLE);
-            }
-            return false;
-        });
+        return podsList.stream().anyMatch(pod -> !K8sPodUtil.checkForPodCondition(pod, PodCondition.POD_SCHEDULED)
+                || K8sPodUtil.checkForPodCondition(pod, PodCondition.UNSCHEDULABLE));
     }
 
 

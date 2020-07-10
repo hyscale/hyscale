@@ -15,13 +15,9 @@
  */
 package io.hyscale.troubleshooting.integration.actions;
 
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.troubleshooting.integration.conditions.IsPodsReadinessFailing;
 import io.hyscale.troubleshooting.integration.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component

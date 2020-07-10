@@ -27,7 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 //TODO JAVADOC
@@ -75,9 +74,8 @@ public class IsClusterFull extends ConditionNode<TroubleshootingContext> {
             return false;
         }
 
-        return eventList.stream().anyMatch(event -> {
-            return FAILED_SCHEDULING.equals(event.getReason()) && pattern.matcher(event.getMessage()).find();
-        });
+        return eventList.stream().anyMatch(
+                event -> FAILED_SCHEDULING.equals(event.getReason()) && pattern.matcher(event.getMessage()).find());
     }
 
 

@@ -36,7 +36,6 @@ import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 //TODO JAVADOC
@@ -68,11 +67,9 @@ public class MissingCMDorStartCommandsCondition extends ConditionNode<Troublesho
             throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
         }
 
-        List<V1Pod> podsList = resourceInfos.stream().filter(each -> {
-            return each != null && each.getResource() != null && each.getResource() instanceof V1Pod;
-        }).map(pod -> {
-            return (V1Pod) pod.getResource();
-        }).collect(Collectors.toList());
+        List<V1Pod> podsList = resourceInfos.stream()
+                .filter(each -> each != null && each.getResource() instanceof V1Pod)
+                .map(pod -> (V1Pod) pod.getResource()).collect(Collectors.toList());
 
         if (podsList == null || podsList.isEmpty()) {
             report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceInfo().getServiceName()));

@@ -26,12 +26,13 @@ import io.hyscale.troubleshooting.integration.models.*;
 import io.hyscale.troubleshooting.integration.actions.FixHealthCheckAction;
 import io.kubernetes.client.openapi.models.V1Event;
 import io.kubernetes.client.openapi.models.V1Pod;
+
+import org.apache.commons.lang.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,9 +72,9 @@ public class IsPodsReadinessFailing implements Node<TroubleshootingContext> {
         }
 
         Object restartsObj = context.getAttribute(FailedResourceKey.RESTARTS);
-        Boolean restartsObserved = false;
+        boolean restartsObserved = false;
         if (restartsObj != null) {
-            restartsObserved = (Boolean) FailedResourceKey.RESTARTS.getKlazz().cast(restartsObj);
+            restartsObserved = BooleanUtils.toBoolean((Boolean)FailedResourceKey.RESTARTS.getKlazz().cast(restartsObj));
         }
         // Get all the events of the unhealthy pod from previous conditionNode or fetch it from the existing
         // set of pods

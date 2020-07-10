@@ -67,21 +67,21 @@ public class AnyPendingPVCCondition extends ConditionNode<TroubleshootingContext
             V1Pod pod = (V1Pod) FailedResourceKey.FAILED_POD.getKlazz().cast(obj);
             
             // Get all the pvc names associated to the failed pod
-            List<String> podPvcList = pod.getSpec().getVolumes().stream().map(each -> {
-                return each.getPersistentVolumeClaim() != null && each.getPersistentVolumeClaim().getClaimName() != null ? each.getPersistentVolumeClaim().getClaimName() : null;
-            }).collect(Collectors.toList());
-            
+            List<String> podPvcList = pod.getSpec().getVolumes().stream()
+                    .map(each -> each.getPersistentVolumeClaim() != null
+                            && each.getPersistentVolumeClaim().getClaimName() != null
+                                    ? each.getPersistentVolumeClaim().getClaimName()
+                                    : null)
+                    .collect(Collectors.toList());            
             
             // get all the pvc list for this particular failed pod from context
             List<V1PersistentVolumeClaim> pvcList = resourceData.stream().filter(each -> {
-                if (each != null && each.getResource() != null && each.getResource() instanceof V1PersistentVolumeClaim) {
+                if (each != null && each.getResource() instanceof V1PersistentVolumeClaim) {
                     V1PersistentVolumeClaim persistentVolumeClaim = (V1PersistentVolumeClaim) each.getResource();
                     return podPvcList.contains(persistentVolumeClaim.getMetadata().getName());
                 }
                 return false;
-            }).map(each -> {
-                return (V1PersistentVolumeClaim) each.getResource();
-            }).collect(Collectors.toList());
+            }).map(each -> (V1PersistentVolumeClaim) each.getResource()).collect(Collectors.toList());
             
             // Since there are no pvc's found for the service, there's not pending pvc
             if (pvcList == null || pvcList.isEmpty()) {
@@ -91,7 +91,7 @@ public class AnyPendingPVCCondition extends ConditionNode<TroubleshootingContext
             return pvcList.stream().filter(each -> each instanceof V1PersistentVolumeClaim).anyMatch(each -> {
                 V1PersistentVolumeClaim persistentVolumeClaim = each;
                 String pvcPhase = persistentVolumeClaim.getStatus().getPhase();
-                return pvcPhase != null ? pvcPhase.equals(TroubleshootConstants.PENDING_PHASE) : false;
+                return TroubleshootConstants.PENDING_PHASE.equals(pvcPhase);
             });
         };
     }

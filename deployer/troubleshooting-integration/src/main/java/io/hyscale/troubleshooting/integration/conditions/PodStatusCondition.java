@@ -70,6 +70,7 @@ public class PodStatusCondition implements Node<TroubleshootingContext> {
             return parentStatusCondition;
         }
         PodStatus effectivePodStatus = PodStatus.DEFAULT;
+        
         for (TroubleshootingContext.ResourceInfo each : resourceInfos) {
             if (each == null || each.getResource() == null) {
                 continue;

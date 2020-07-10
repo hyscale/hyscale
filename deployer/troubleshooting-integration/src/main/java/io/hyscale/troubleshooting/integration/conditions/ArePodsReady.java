@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 //TODO JAVADOC
@@ -50,11 +51,9 @@ public class ArePodsReady extends ConditionNode<TroubleshootingContext> {
             throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
         }
 
-        List<V1Pod> podsList = resourceInfos.stream().filter(each -> {
-            return each != null && each.getResource() != null && each.getResource() instanceof V1Pod;
-        }).map(pod -> {
-            return (V1Pod) pod.getResource();
-        }).collect(Collectors.toList());
+        List<V1Pod> podsList = resourceInfos.stream()
+                .filter(each -> each != null && each.getResource() instanceof V1Pod)
+                .map(pod -> (V1Pod) pod.getResource()).collect(Collectors.toList());
 
         if (podsList == null || podsList.isEmpty()) {
             report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceInfo().getServiceName()));
@@ -64,17 +63,14 @@ public class ArePodsReady extends ConditionNode<TroubleshootingContext> {
         }
 
         // check if all pods are in ready state with the pod condition ready
-        return podsList.stream().filter(each -> {
-            return each instanceof V1Pod;
-        }).allMatch(each -> {
-            V1Pod pod = (V1Pod) each;
+        return podsList.stream().filter(Objects::nonNull).allMatch(pod -> {
             boolean ready = true;
             for (V1PodCondition condition : pod.getStatus().getConditions()) {
                 if (condition.getType().equals(PodCondition.READY.getPodCondition())
                         && condition.getStatus().equals("False")) {
                     ready = false;
-                    context.addAttribute(FailedResourceKey.FAILED_POD, each);
-                    context.addAttribute(FailedResourceKey.UNREADY_POD, each);
+                    context.addAttribute(FailedResourceKey.FAILED_POD, pod);
+                    context.addAttribute(FailedResourceKey.UNREADY_POD, pod);
                     break;
                 }
             }
