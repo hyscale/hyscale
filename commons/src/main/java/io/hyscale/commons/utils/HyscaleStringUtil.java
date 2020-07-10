@@ -19,6 +19,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public class HyscaleStringUtil {
 
+    private HyscaleStringUtil() {}
+
     public static String removeSuffixStr(String input, String trailingStr) {
         if (StringUtils.isBlank(input) || StringUtils.isBlank(trailingStr)) {
             return input;

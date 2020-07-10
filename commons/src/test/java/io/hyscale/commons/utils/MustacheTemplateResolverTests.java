@@ -68,6 +68,6 @@ public class MustacheTemplateResolverTests {
             Assertions.fail(e.getMessage());
         }
         Assertions.assertNotNull(template);
-        Assertions.assertEquals(template.trim(), TESTING_TEMPLATE_CONTENT);
+        Assertions.assertEquals(TESTING_TEMPLATE_CONTENT,template.trim());
     }
 }

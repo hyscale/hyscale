@@ -35,6 +35,7 @@ public class WindowsUtil {
 	private static final String WINDOWS_FS_MATCHER = "\\\\";
 	private static final String WINDOWS_DOCKER_HOST = "tcp://localhost:2375";
 
+	private WindowsUtil () {}
 
 	/**
 	 * 

@@ -15,6 +15,9 @@
  */
 package io.hyscale.commons.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.*;
 
 public class ThreadPoolUtil {
@@ -25,6 +28,8 @@ public class ThreadPoolUtil {
 	private static final int MAX_FIRING_RETRIES = 3;
 
 	private ThreadPoolExecutor executor;
+
+	private static final Logger logger = LoggerFactory.getLogger(ThreadPoolUtil.class);
 
 	private static final class InstanceHolder {
 		private static final ThreadPoolUtil INSTANCE = new ThreadPoolUtil();
@@ -53,7 +58,7 @@ public class ThreadPoolUtil {
 			executor.execute(runnable);
 			return true;
 		} catch (RejectedExecutionException re) {
-
+			logger.error("Error while executing thread.",re);
 		}
 		return false;
 	}
@@ -62,7 +67,7 @@ public class ThreadPoolUtil {
 		try {
 			return executor.submit(callable);
 		} catch (RejectedExecutionException re) {
-
+			logger.error("Error while submitting thread to executor",re);
 		}
 		return null;
 	}
@@ -79,7 +84,7 @@ public class ThreadPoolUtil {
 		try {
 			executor.shutdown();
 		} catch (Exception e) {
-
+			logger.error("Error while performing executor shutdown",e);
 		}
 	}
 }

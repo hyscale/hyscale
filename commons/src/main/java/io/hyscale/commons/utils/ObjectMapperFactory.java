@@ -25,6 +25,8 @@ public class ObjectMapperFactory {
 
 	private static ObjectMapper yamlObjectMapper;
 
+	private ObjectMapperFactory() {}
+
 	public static ObjectMapper jsonMapper() {
 		if (jsonObjectMapper == null) {
 			synchronized (ObjectMapperFactory.class) {

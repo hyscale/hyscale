@@ -21,6 +21,8 @@ import io.hyscale.commons.models.ResourceLabelKey;
 
 public class ResourceLabelUtil {
 
+	private ResourceLabelUtil() {}
+
 	public static String getServiceName(Map<String, String> labels) {
 		if (labels == null) {
 			return null;

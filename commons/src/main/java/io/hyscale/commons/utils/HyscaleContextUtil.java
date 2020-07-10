@@ -24,6 +24,8 @@ public class HyscaleContextUtil {
 
     private static ApplicationContext applicationContext;
 
+    private HyscaleContextUtil() {}
+
     public static synchronized void setContext(ApplicationContext appContext) {
         if (applicationContext == null) {
             applicationContext = appContext;
@@ -39,17 +41,17 @@ public class HyscaleContextUtil {
     }
 
     public static <T> T getSpringBean(Class<T> className) {
-        return (T) applicationContext.getBean(className);
+        return applicationContext.getBean(className);
     }
 
     public static <T> T getSpringBean(Class<T> className, Object... args) {
-        return (T) applicationContext.getBean(className, args);
+        return applicationContext.getBean(className, args);
     }
 
     public static <T> T getSpringBeanNullIfNotExists(Class<T> className) {
         try {
             if (applicationContext != null) {
-                return (T) applicationContext.getBean(className);
+                return applicationContext.getBean(className);
             } else {
                 return null;
             }

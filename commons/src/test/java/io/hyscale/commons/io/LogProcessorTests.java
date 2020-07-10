@@ -87,7 +87,7 @@ public class LogProcessorTests {
                 Assertions.fail();
             }
             Assertions.assertNotNull(content);
-            Assertions.assertEquals(content, logFileContent);
+            Assertions.assertEquals(logFileContent, content );
         }
     }
 
@@ -120,7 +120,7 @@ public class LogProcessorTests {
             } catch (HyscaleException e) {
             }
             Assertions.assertNotNull(os);
-            Assertions.assertEquals(os.toString().trim(), logFileContent);
+            Assertions.assertEquals(logFileContent, os.toString().trim());
         }
     }
 

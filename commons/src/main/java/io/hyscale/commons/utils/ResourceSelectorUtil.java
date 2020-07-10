@@ -24,11 +24,13 @@ import io.hyscale.commons.models.ResourceLabelKey;
 
 public class ResourceSelectorUtil {
 
+    private ResourceSelectorUtil() {}
+
     public static String getSelectorFromLabelMap(Map<ResourceLabelKey, String> label) {
         if (label == null || label.isEmpty()) {
             return null;
         }
-        return label.entrySet().stream().map((entry) -> entry.getKey().getLabel() + "=" + entry.getValue())
+        return label.entrySet().stream().map(entry -> entry.getKey().getLabel() + "=" + entry.getValue())
                 .collect(Collectors.joining(","));
     }
 

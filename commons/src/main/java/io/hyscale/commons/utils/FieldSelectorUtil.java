@@ -22,11 +22,13 @@ import java.util.stream.Collectors;
 
 public class FieldSelectorUtil {
 
+    private FieldSelectorUtil() {}
+
     public static String getSelectorFromFieldMap(Map<ResourceFieldSelectorKey, String> fieldMap) {
         if (fieldMap == null || fieldMap.isEmpty()) {
             return null;
         }
-        return fieldMap.entrySet().stream().map((entry) -> entry.getKey().getFieldName() + "=" + entry.getValue())
+        return fieldMap.entrySet().stream().map(entry -> entry.getKey().getFieldName() + "=" + entry.getValue())
                 .collect(Collectors.joining(","));
     }
 }

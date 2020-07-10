@@ -15,7 +15,7 @@
  */
 package io.hyscale.commons.utils;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 import io.hyscale.commons.constants.K8SRuntimeConstants;
@@ -27,8 +27,10 @@ public class ResourceLabelBuilder {
 
 	private static final Integer MAX_LABEL_VALUE_SIZE = 63;
 
+	private ResourceLabelBuilder() {}
+
 	public static Map<ResourceLabelKey, String> build(String appName, String envName, String serviceName) {
-		Map<ResourceLabelKey, String> labels = new HashMap<ResourceLabelKey, String>();
+		Map<ResourceLabelKey, String> labels = new EnumMap<>(ResourceLabelKey.class);
 
 		if (StringUtils.isNotBlank(appName)) {
 			labels.put(ResourceLabelKey.APP_NAME, normalize(appName));
