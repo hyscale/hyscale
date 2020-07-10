@@ -17,8 +17,6 @@ package io.hyscale.commons.constants;
 
 public class ToolConstants {
 
-    private ToolConstants() {}
-
     public static final String CHARACTER_ENCODING = "UTF-8";
 
     public static final String AT_SIGN = "@";
@@ -96,5 +94,7 @@ public class ToolConstants {
     public static final String PROFILES_DIR_NAME = "profiles";
 
     public static final String WORKFLOW_LOGGER_DISABLED = "WORKFLOW_LOGGER_DISABLED";
+
+    private ToolConstants() {}
 
 }

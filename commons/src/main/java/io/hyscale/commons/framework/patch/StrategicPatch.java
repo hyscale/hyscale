@@ -50,6 +50,8 @@ public class StrategicPatch {
     private static final List<ValueType> replacementValueTypes = Arrays.asList(ValueType.NUMBER, ValueType.STRING,
             ValueType.TRUE, ValueType.FALSE);
 
+    private StrategicPatch() {}
+
     /**
      * Convert String input for source and patch to Json 
      * and calls {@link #mergeJsonObjects(JsonObject, JsonObject, FieldMetaDataProvider)}
@@ -232,7 +234,5 @@ public class StrategicPatch {
         logger.error("Error while performing strategic patch", ex);
         return ex;
     }
-
-    private StrategicPatch() {}
 
 }

@@ -40,6 +40,8 @@ import io.hyscale.commons.exception.HyscaleException;
  */
 public class HyscaleFilesUtil {
 
+	private HyscaleFilesUtil() {}
+
 	private static final Logger logger = LoggerFactory.getLogger(HyscaleFilesUtil.class);
 
 	private static final String NULL_STRING = "null";
@@ -279,7 +281,4 @@ public class HyscaleFilesUtil {
 	    
 	    return matchingFile == null ? null : Arrays.asList(matchingFile);
 	}
-
-	private HyscaleFilesUtil() {}
-	
 }

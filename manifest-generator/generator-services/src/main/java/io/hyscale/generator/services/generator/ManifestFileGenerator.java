@@ -46,7 +46,7 @@ public class ManifestFileGenerator {
 		sb.append(ManifestGenConstants.YAML_EXTENSION);
 		File manifestFile = HyscaleFilesUtil.createFile(sb.toString(), yaml);
 		YAMLManifest yamlManifest = new YAMLManifest();
-		yamlManifest.setManifestFile(manifestFile);
+		yamlManifest.setManifest(manifestFile);
 		return yamlManifest;
 	}
 

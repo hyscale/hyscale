@@ -21,8 +21,6 @@ import java.util.List;
 
 public class K8SRuntimeConstants {
 
-	private K8SRuntimeConstants() {}
-
 	public static final String K8S_DEPLOYMENT_POD_TEMPLATE_HASH = "pod-template-hash";
 
 	public static final String K8S_STS_CONTROLLER_REVISION_HASH = "controller-revision-hash";
@@ -63,5 +61,7 @@ public class K8SRuntimeConstants {
 	public static final List<String> SYSTEM_NAMESPACE = Collections.unmodifiableList(Arrays.asList("kube-system", "kube-public", "kube-node-lease"));
 	
 	public static final Integer DEFAULT_REPLICA_COUNT = 1;
+
+	private K8SRuntimeConstants() {}
 
 }

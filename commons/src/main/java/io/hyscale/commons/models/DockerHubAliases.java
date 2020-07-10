@@ -24,6 +24,8 @@ public class DockerHubAliases {
     private static final List<String> DOCKER_REGISTRY_ALIASES = Collections.unmodifiableList(List.of("index.docker.io", "registry-1.docker.io", "docker.io"));
     private static final List<String> REGISTRY_HOST_LIST = Collections.unmodifiableList(List.of("index.docker.io/v1/"));
 
+    private DockerHubAliases() {}
+
     /**
      * gets docker registry aliases if private docker hub registry given,else returns registry itself.
      *
@@ -41,5 +43,4 @@ public class DockerHubAliases {
     	return REGISTRY_HOST_LIST;
     }
 
-    private DockerHubAliases() {}
 }

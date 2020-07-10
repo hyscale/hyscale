@@ -22,6 +22,8 @@ import java.util.Map.Entry;
 
 public class StorageClassAnnotation {
 
+	private StorageClassAnnotation(){}
+
 	private static List<String> defaultAnnotations = Arrays.asList(
 			AnnotationKey.DEFAULT_STORAGE_CLASS.getAnnotation(),
 			AnnotationKey.DEFAULT_BETA_STORAGE_CLASS.getAnnotation());
@@ -38,5 +40,4 @@ public class StorageClassAnnotation {
 		return null;
 	}
 
-	private StorageClassAnnotation(){}
 }

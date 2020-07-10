@@ -37,6 +37,8 @@ public class WorkflowLogger {
 
     private static boolean disabled;
 
+    private WorkflowLogger() {}
+
     public static void header(Activity activity, String... args) {
         if(isDisabled()){
             return;
@@ -271,7 +273,5 @@ public class WorkflowLogger {
         }
         System.out.println(message);
     }
-
-    private WorkflowLogger() {}
 
 }

@@ -30,6 +30,8 @@ import java.io.IOException;
 public class DataFormatConverter {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataFormatConverter.class);
 
+    private DataFormatConverter(){}
+
     /**
      * Converts the given String to Json.
      *
@@ -75,5 +77,4 @@ public class DataFormatConverter {
         }
     }
 
-    private DataFormatConverter(){}
 }

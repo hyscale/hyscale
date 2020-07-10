@@ -48,6 +48,8 @@ public class CommandExecutor {
 
     private static final Logger logger = LoggerFactory.getLogger(CommandExecutor.class);
 
+    private CommandExecutor(){}
+
     /**
      * @param command to be executed
      * @return {@link CommandResult} which contains command output and exit code
@@ -195,5 +197,4 @@ public class CommandExecutor {
         return new StringOutputStream();
     }
 
-    private CommandExecutor(){}
 }
