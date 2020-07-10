@@ -73,7 +73,7 @@ public class ImageRegistryBuilder {
         if (auth == null) {
             return null;
         }
-        String encodedAuth = auth.getAuthentication();
+        String encodedAuth = auth.getAuth();
         if (StringUtils.isBlank(encodedAuth)) {
             return null;
         }
