@@ -15,6 +15,8 @@
  */
 package io.hyscale.troubleshooting.integration.models;
 
+import org.apache.commons.lang.StringUtils;
+
 public enum AbstractedErrorMessage implements IMessage, IReason {
 
     CONTACT_CLUSTER_ADMINISTRATOR("Please contact your cluster administrator", ""),
@@ -57,8 +59,8 @@ public enum AbstractedErrorMessage implements IMessage, IReason {
     }
 
     private String format(String s, String... args) {
-        if (s == null || s == null) {
-            return "";
+        if (s == null) {
+            return StringUtils.EMPTY;
         }
         return args != null && args.length != 0 ? String.format(s.replaceAll("\\{\\}", "%s"), args)
                 : s;
