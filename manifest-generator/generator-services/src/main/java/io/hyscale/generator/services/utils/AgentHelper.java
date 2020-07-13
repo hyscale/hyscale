@@ -23,6 +23,7 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
 
 public abstract class AgentHelper {
@@ -33,11 +34,10 @@ public abstract class AgentHelper {
         TypeReference<List<Agent>> agentsList = new TypeReference<List<Agent>>() {
         };
         try {
-            List<Agent> agents = serviceSpec.get(HyscaleSpecFields.agents, agentsList);
-            return  agents;
+            return serviceSpec.get(HyscaleSpecFields.agents, agentsList);
         } catch (HyscaleException e) {
             logger.error("Error while fetching agents from service spec, returning null.",e);
-            return null;
+            return Collections.emptyList();
         }
     }
 }

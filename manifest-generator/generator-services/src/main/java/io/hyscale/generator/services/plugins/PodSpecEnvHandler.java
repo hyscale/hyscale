@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -56,7 +57,7 @@ public class PodSpecEnvHandler implements ManifestHandler {
         serviceMetadata.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
         String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
 
-        List<V1EnvVar> envVarList = new DecoratedArrayList<V1EnvVar>();
+        List<V1EnvVar> envVarList = new DecoratedArrayList<>();
         try {
             // Preparing Pod Spec env's from props
             Props props = PropsProvider.getProps(serviceSpec);
@@ -72,7 +73,7 @@ public class PodSpecEnvHandler implements ManifestHandler {
                 envVarList.addAll(getSecretsSnippet(secrets, serviceMetadata));
             }
             if (envVarList.isEmpty()) {
-                return null;
+                return Collections.emptyList();
             }
 
             ManifestSnippet propsEnvSnippet = new ManifestSnippet();

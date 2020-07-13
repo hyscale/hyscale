@@ -32,9 +32,4 @@ public @interface ManifestPlugin {
 	 */
 	String name();
 
-	/**
-	 * @return
-	 */
-	// String dependencies() default "";
-
 }

@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -48,17 +49,17 @@ public class ImageHandler implements ManifestHandler {
         String image = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.name), String.class);
         if (StringUtils.isBlank(image)) {
             logger.debug("Found empty image in the service spec, cannot process ImageHandler");
-            return null;
+            return Collections.emptyList();
         }
         List<ManifestSnippet> snippetList = new ArrayList<>();
         snippetList.add(getImageSnippet(serviceSpec, manifestContext));
-        snippetList.add(getImagePullPolicy(serviceSpec, manifestContext));
+        snippetList.add(getImagePullPolicy(manifestContext));
         snippetList.add(getImagePullSecretName((String) manifestContext.getGenerationAttribute(ManifestGenConstants.IMAGE_PULL_SECRET_NAME),
                 (String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER)));
         return snippetList;
     }
 
-    private ManifestSnippet getImagePullPolicy(ServiceSpec serviceSpec, ManifestContext manifestContext) {
+    private ManifestSnippet getImagePullPolicy(ManifestContext manifestContext) {
         ManifestSnippet manifestSnippet = new ManifestSnippet();
         manifestSnippet.setSnippet(ManifestGenConstants.DEFAULT_IMAGE_PULL_POLICY);
         String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));

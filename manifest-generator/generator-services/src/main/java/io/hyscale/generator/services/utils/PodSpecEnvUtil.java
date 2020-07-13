@@ -26,17 +26,20 @@ import io.kubernetes.client.openapi.models.V1EnvVarSource;
 import io.kubernetes.client.openapi.models.V1SecretKeySelector;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 @Component
 public class PodSpecEnvUtil {
+    
+    private PodSpecEnvUtil() {}
 
     public static List<V1EnvVar> getPropEnv(Props props, String configMapName) {
+        List<V1EnvVar> envVarList = new DecoratedArrayList<>();
         if (props == null || props.getProps().isEmpty()) {
-            return null;
+            return envVarList;
         }
-        List<V1EnvVar> envVarList = new DecoratedArrayList<V1EnvVar>();
         props.getProps().entrySet().stream().filter(each -> {
             return each != null && !PropType.FILE.getPatternMatcher().matcher(each.getValue()).matches();
         }).forEach(each -> {
@@ -56,13 +59,13 @@ public class PodSpecEnvUtil {
 
     public static List<V1EnvVar> getSecretEnv(Secrets secrets, String secretName) {
         if (secrets == null ) {
-            return null;
+            return Collections.emptyList();
         }
         Set<String> secretKeys = getSecretKeys(secrets);
         if (secretKeys == null) {
-            return null;
+            return Collections.emptyList();
         }
-        List<V1EnvVar> envVarList = new DecoratedArrayList<V1EnvVar>();
+        List<V1EnvVar> envVarList = new DecoratedArrayList<>();
         secretKeys.stream().forEach(each -> {
             V1EnvVar envVar = new V1EnvVar();
             envVar.setName(each);
@@ -80,16 +83,15 @@ public class PodSpecEnvUtil {
 
     private static Set<String> getSecretKeys(Secrets secrets) {
         if (secrets == null) {
-            return null;
+            return Collections.emptySet();
         }
         if(secrets.getType()  == SecretType.MAP){
             MapBasedSecrets mapBasedSecrets = (MapBasedSecrets) secrets;
             return mapBasedSecrets.keySet();
         }
         if(secrets.getType() == SecretType.SET){
-            SetBasedSecrets setBasedSecrets = (SetBasedSecrets) secrets;
-            return setBasedSecrets;
+            return (SetBasedSecrets) secrets;
         }
-        return null;
+        return Collections.emptySet();
     }
 }

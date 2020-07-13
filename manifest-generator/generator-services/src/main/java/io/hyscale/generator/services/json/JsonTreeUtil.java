@@ -26,6 +26,8 @@ import java.util.regex.Pattern;
 public class JsonTreeUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(JsonTreeUtil.class);
+    
+    private JsonTreeUtil() {}
 
     private static final String JSON_PATH_ARRAY_REGEX = "\\w+(\\[([0-9]*|\\*)?\\])+";
     private static final Pattern arrayRegexPattern = Pattern.compile(JSON_PATH_ARRAY_REGEX);
@@ -55,8 +57,7 @@ public class JsonTreeUtil {
         if (!field.contains(".")) {
             return null;
         }
-        String parentKey = field.substring(0, field.lastIndexOf("."));
-        return parentKey;
+        return field.substring(0, field.lastIndexOf("."));
     }
 
     public static String getKey(String field) {
@@ -66,8 +67,7 @@ public class JsonTreeUtil {
         if (!field.contains(".")) {
             return field;
         }
-        String key = field.substring(field.lastIndexOf(".") + 1);
-        return key;
+        return field.substring(field.lastIndexOf(".") + 1);
     }
 
     public static String getSanitizedArrayPath(String field) {

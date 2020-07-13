@@ -44,6 +44,8 @@ public class ConfigMapDataUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigMapDataUtil.class);
     
+    private ConfigMapDataUtil() {}
+    
     private static final String DATA_PATH = "data";
     
     private static final String BINARY_DATA_PATH = "binaryData";

@@ -16,6 +16,7 @@
 package io.hyscale.generator.services.plugins;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,7 @@ public class PodAnnotationHandler implements ManifestHandler {
         logger.debug("Executing annotation handler");
         Object podChecksumObj = manifestContext.getGenerationAttribute(ManifestGenConstants.POD_CHECKSUM);
         if (podChecksumObj == null) {
-            return null;
+            return Collections.emptyList();
         }
         PodChecksum podChecksum = (PodChecksum) podChecksumObj;
         ChecksumProvider<PodChecksum> checkSumProvider = new ChecksumProvider<PodChecksum>(podChecksum);

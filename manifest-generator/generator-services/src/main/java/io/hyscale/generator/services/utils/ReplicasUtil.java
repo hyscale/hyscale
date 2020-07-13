@@ -29,6 +29,8 @@ import io.hyscale.servicespec.commons.model.service.Replicas;
 public class ReplicasUtil {
 
     private static final String CPU_THRESHOLD_REGEX = "[\\d]+%";
+    
+    private ReplicasUtil() {}
 
     public static boolean isAutoScalingEnabled(Replicas replicas) {
         return isAutoScalingEnabled(replicas, false);
@@ -75,7 +77,7 @@ public class ReplicasUtil {
                     "The field cpuThreshold should match the regex " + CPU_THRESHOLD_REGEX);
             return false;
         }
-        int cpuThreshold = Integer.parseInt(replicas.getCpuThreshold().replaceAll("%", ""));
+        int cpuThreshold = Integer.parseInt(replicas.getCpuThreshold().replace("%", ""));
         if (cpuThreshold < 1) {
             persistWarnMsg(persistMsg, ManifestGeneratorActivity.IGNORING_REPLICAS,
                     "The field cpuThreshold should be greater than 0");

@@ -32,8 +32,6 @@ public enum ManifestResource {
         @Override
         public String getName(ServiceMetadata serviceMetadata) {
             StringBuilder sb = new StringBuilder();
-            //sb.append(NormalizationUtil.normalize(serviceMetadata.getAppName()));
-            //sb.append(ManifestGenConstants.NAME_DELIMITER);
             sb.append(NormalizationUtil.normalize(serviceMetadata.getServiceName()));
             return sb.toString();
         }
@@ -53,8 +51,6 @@ public enum ManifestResource {
         @Override
         public String getName(ServiceMetadata serviceMetadata) {
             StringBuilder sb = new StringBuilder();
-            //sb.append(NormalizationUtil.normalize(serviceMetadata.getAppName()));
-            //sb.append(ManifestGenConstants.NAME_DELIMITER);
             sb.append(NormalizationUtil.normalize(serviceMetadata.getServiceName()));
             return sb.toString();
         }

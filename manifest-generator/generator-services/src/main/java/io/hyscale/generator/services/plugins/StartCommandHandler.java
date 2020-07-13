@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -45,7 +46,7 @@ public class StartCommandHandler implements ManifestHandler {
         String startCommand = serviceSpec.get(HyscaleSpecFields.startCommand, String.class);
         if (StringUtils.isBlank(startCommand)) {
             logger.debug("Found empty start command.");
-            return null;
+            return Collections.emptyList();
         }
         String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         return getCommandAndArgsSnippet(startCommand, podSpecOwner);
@@ -85,7 +86,7 @@ public class StartCommandHandler implements ManifestHandler {
 
         } catch (JsonProcessingException e) {
             logger.error("Error while creating command and args snippet ", e);
-            return null;
+            return Collections.emptyList();
         }
         return snippetList;
     }
