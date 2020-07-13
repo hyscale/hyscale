@@ -55,7 +55,7 @@ const (
 
 //TODO build image name with property
 var (
-	imageName      = "docker.io/hyscale/hyscale:"+cnst.ImageTag
+	imageName      = cnst.ImageName+":"+cnst.ImageTag
 	currentUser, _ = user.Current()
 	dockerConf     = currentUser.HomeDir + configJSONPath
 	dockerConfDir  = currentUser.HomeDir + configDir
