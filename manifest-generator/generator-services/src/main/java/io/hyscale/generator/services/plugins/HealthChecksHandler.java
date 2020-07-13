@@ -59,9 +59,11 @@ public class HealthChecksHandler implements ManifestHandler {
         };
         List<Port> portsList = serviceSpec.get(HyscaleSpecFields.ports, listTypeReference);
     
+        List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
+        
         if (portsList == null || portsList.isEmpty()) {
             logger.debug("Cannot handle HealthChecks as ports are empty.");
-            return Collections.emptyList();
+            return manifestSnippetList;
         }
         // TODO supporting single health check
         boolean healthCheck = false;
@@ -104,7 +106,6 @@ public class HealthChecksHandler implements ManifestHandler {
             }
         }
     
-        List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         if (healthCheck) {
             v1Probe.setInitialDelaySeconds(DEFAULT_INITIAL_DELAY_IN_SECONDS);
             v1Probe.setPeriodSeconds(DEFAULT_PERIOD_IN_SECONDS);
