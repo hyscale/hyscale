@@ -2,8 +2,6 @@ general:
   vulnerabilities:
     #fix is not provided for the below vulnarabilities yet, refer to https://security-tracker.debian.org/tracker/CVE-2020-10878 and https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=962005
     - CVE-2020-10878
-    #Issue in the base image(openjdk-11.0.7)
-    - CVE-2020-14155
   bestPracticeViolations:
     - CIS-DI-0001
     - DKL-DI-0006
