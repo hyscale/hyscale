@@ -25,7 +25,9 @@ const (
 	Hyscale = "hyscale"
 	//DockerDir defines the .docker dir
 	DockerDir = ".docker"
-    // ImageTag Defines the latest image tag of the HyScale Image
+	//ImageName Defines the latest image name of the HyScale Image
+	ImageName = "@@IMAGE_NAME@@"
+	// ImageTag Defines the latest image tag of the HyScale Image
 	ImageTag = "@@IMAGE_TAG@@"
 )
 
