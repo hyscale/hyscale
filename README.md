@@ -1,7 +1,10 @@
 ![HyScale](https://www.hyscale.io/wp-content/uploads/2019/01/hyscale-logo.png)
 
 [![Actions Status](https://github.com/hyscale/hyscale/workflows/Build/badge.svg)](https://github.com/hyscale/hyscale/actions?query=workflow%3ABuild)
+[![Release](https://github.com/hyscale/hyscale/workflows/Upload%20Release%20Asset/badge.svg)](https://github.com/hyscale/hyscale/actions?query=workflow%3A%22Upload+Release+Asset%22)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=io.hyscale%3Ahyscale&metric=security_rating)](https://sonarcloud.io/dashboard?id=io.hyscale%3Ahyscale)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=io.hyscale%3Ahyscale&metric=bugs)](https://sonarcloud.io/dashboard?id=io.hyscale%3Ahyscale)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/hyscale/hyscale/blob/master/LICENSE)
 
 HyScale is an application deployment tool that helps you effortlessly deploy to Kubernetes. It offers a high-level abstraction on top of Kubernetes so that teams can deploy software to K8s while focusing more on code rather than on low-level details.
 
