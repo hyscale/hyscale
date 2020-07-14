@@ -62,9 +62,9 @@ class ImageHandlerTest {
             "spec.template.spec.containers[0].image", "spec.template.spec.imagePullSecrets");
 
     private static Stream<Arguments> input() throws HyscaleException {
-        return Stream.of(Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/no-image.hspec"), getContext(false)),
-                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/image-handler.hspec"), getContext(false)),
-                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/image-handler.hspec"), getContext(true)));
+        return Stream.of(Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/image/no-image.hspec"), getContext(false)),
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/image/image-handler.hspec"), getContext(false)),
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/image/image-handler.hspec"), getContext(true)));
     }
 
     @ParameterizedTest

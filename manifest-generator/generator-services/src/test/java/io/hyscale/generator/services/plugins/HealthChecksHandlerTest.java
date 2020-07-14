@@ -51,7 +51,7 @@ class HealthChecksHandlerTest {
     private ManifestContext context = ManifestContextTestUtil.getManifestContext(ManifestResource.STATEFUL_SET);
 
     @ParameterizedTest
-    @ValueSource(strings = { "/plugins/no-ports.hspec", "/plugins/service-no-health.hspec" })
+    @ValueSource(strings = { "/plugins/ports/no-ports.hspec", "/plugins/health/service-no-health.hspec" })
     void testNoHealthCheck(String serviceSpecPath) throws HyscaleException {
         ServiceSpec serviceSpec = ServiceSpecTestUtil.getServiceSpec(serviceSpecPath);
         try {
@@ -65,8 +65,8 @@ class HealthChecksHandlerTest {
     }
 
     private Stream<Arguments> input() {
-        return Stream.of(Arguments.of("/plugins/healthcheck-http.hspec", HealthCheckType.HTTPS),
-                Arguments.of("/plugins/healthcheck-tcp.hspec", HealthCheckType.TCP));
+        return Stream.of(Arguments.of("/plugins/health/healthcheck-http.hspec", HealthCheckType.HTTPS),
+                Arguments.of("/plugins/health/healthcheck-tcp.hspec", HealthCheckType.TCP));
     }
 
     @ParameterizedTest

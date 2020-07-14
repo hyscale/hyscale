@@ -59,8 +59,8 @@ class AutoScalingPluginHandlerTest {
     @BeforeAll
     public void init() throws HyscaleException {
         Mockito.when(mustacheTemplateResolver.resolveTemplate(anyString(), anyMap())).thenReturn("data");
-        noScalingSpec = ServiceSpecTestUtil.getServiceSpec("/plugins/service-no-hpa.hspec");
-        scalingEnabledSpec = ServiceSpecTestUtil.getServiceSpec("/plugins/service-hpa.hspec");
+        noScalingSpec = ServiceSpecTestUtil.getServiceSpec("/plugins/hpa/service-no-hpa.hspec");
+        scalingEnabledSpec = ServiceSpecTestUtil.getServiceSpec("/plugins/hpa/service-hpa.hspec");
     }
 
     private Stream<Arguments> skipAutoScalingInput() {

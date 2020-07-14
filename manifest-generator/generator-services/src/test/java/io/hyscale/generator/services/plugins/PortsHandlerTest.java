@@ -54,13 +54,13 @@ class PortsHandlerTest {
     private PortsHandler portsHandler;
 
     private static Stream<Arguments> input() throws HyscaleException {
-        return Stream.of(Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/no-ports.hspec")),
-                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/ports-handler.hspec")));
+        return Stream.of(Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/ports/no-ports.hspec")),
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/ports/ports-handler.hspec")));
     }
 
     @ParameterizedTest
     @MethodSource("input")
-    void testportsHandler(ServiceSpec serviceSpec) throws HyscaleException, IOException {
+    void testPortsHandler(ServiceSpec serviceSpec) throws HyscaleException, IOException {
         ManifestContext context = new ManifestContext();
         context.addGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER, ManifestResource.STATEFUL_SET.getKind());
         List<ManifestSnippet> manifestList = portsHandler.handle(serviceSpec, context);
