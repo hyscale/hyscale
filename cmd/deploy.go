@@ -59,6 +59,7 @@ func init() {
 	ServiceCmd.Flags().StringP(opts.NamespaceOpts.Option, opts.NamespaceOpts.Shorthand, "", opts.NamespaceOpts.Description)
 	ServiceCmd.Flags().StringSliceVarP(&hspecList,opts.HspecOpts.Option, opts.HspecOpts.Shorthand, []string{}, opts.HspecOpts.Description)
 	ServiceCmd.Flags().BoolP("verbose", "v", false, "Verbose output")
+	ServiceCmd.Flags().StringP("output","o","json","Output format")
 
 	//TODO making profiles exclusive
 	ServiceCmd.Flags().StringSliceP(opts.HprofOpts.Option,opts.HprofOpts.Shorthand, []string{}, opts.HprofOpts.Description)
