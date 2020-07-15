@@ -270,9 +270,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
      * Get Replica info for pods
      *
      * @param authConfig cluster auth configuration
-     *                   Implementation:
-     *                   <p>
-     *                   isFilter if disabled return replica info for all pods fetched based on selector
+     * @param all        if disabled, return replica info for all pods fetched based on selector
      *                   if enabled,
      *                   1. If owner kind for pods is different, warn user and return replica info for all pods
      *                   2. If owner kind is {@link ResourceKind #DEPLOYMENT} or {@link ResourceKind #REPLICA_SET},

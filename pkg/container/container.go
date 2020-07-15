@@ -41,6 +41,7 @@ const (
 	dockerConfEnv      = "HYSCALECTL_DOCKERCONF"
 	dockerConfigDirEnv = "DOCKER_CONFIG"
 	lbReadyTimeoutEnv  = "HYS_LB_READY_TIMEOUT"
+	workflowLoggerDisabled = "WORKFLOW_LOGGER_DISABLED"
 	//EqualsTo is used for constructing environment varibles
 	EqualsTo               = "="
 	containerFileSeparator = "/"
@@ -53,7 +54,7 @@ const (
 	externalRegistryEnv    = "HYS_REGISTRY_CONFIG"
 )
 
-//TODO build image name with property
+
 var (
 	imageName      = cnst.ImageName+":"+cnst.ImageTag
 	currentUser, _ = user.Current()
@@ -73,7 +74,7 @@ func (hyscontainer *HysContainer) Run(cliSpec *installer.DeploySpec) (resp *inst
 	labels := make(map[string]string)
 	labels["name"] = constants.Hyscale
 
-	args := []string{"run", "--rm"}
+	args := []string{"run", "--rm","--net=host"}
 
 	// Attach the cmd stdin to os.Stdin
 	args = append(args, "-i")
@@ -107,6 +108,7 @@ func (hyscontainer *HysContainer) Run(cliSpec *installer.DeploySpec) (resp *inst
 		if err != nil {
 			panic(err)
 		}
+		
 		stdin, e := cmd.StdinPipe()
 		if e != nil {
 			panic(e)
@@ -148,10 +150,16 @@ func getEnvs(user *user.User) *map[string]string {
 	envs[dockerConfigDirEnv] = "/" + constants.Hyscale + "/.docker"
 	envs[externalRegistryEnv] = "true"
 
-	if util.IsWindows() {
-		envs[dockerHost] = constants.WindowsInternalDockerHost
-	} else {
-		envs[dockerHost] = "unix://" + unixSocket
+	// If the DockerHost environment variable is empty , the value is set based on the OS
+	dockerHostEnv := os.Getenv(dockerHost)
+	if dockerHostEnv == ""{
+		if util.IsWindows() {
+			envs[dockerHost] = constants.WindowsInternalDockerHost
+		} else {
+			envs[dockerHost] = "unix://" + unixSocket
+		}
+	}else{
+		envs[dockerHost] = dockerHostEnv
 	}
 
 	// IMAGE_CLEANUP_POLICY Env

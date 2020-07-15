@@ -44,19 +44,22 @@ func GetAuthConfig(hspecFiles []string) (*string, error) {
 			log.Fatal("Error while deserializing hspec", err)
 		}
 
-		if !RegistryMap[hspec.Image.Registry] {
-			RegistryMap[hspec.Image.Registry] = true
+		registry := hspec.Image.Registry
+		if registry != "" && !RegistryMap[registry] {
+			RegistryMap[registry] = true
 		}
 
-		if !RegistryMap[hspec.Image.BuildSpec.StackImage] {
-			stackImgReg := getImageRegistry(hspec.Image.BuildSpec.StackImage)
+		stkImg := hspec.Image.BuildSpec.StackImage
+		if stkImg != "" && !RegistryMap[stkImg] {
+			stackImgReg := getImageRegistry(stkImg)
 			RegistryMap[stackImgReg] = true
 		}
 
 		if hspec.Agents != nil {
 			for _, each := range *hspec.Agents {
-				if !RegistryMap[each.Name] {
-					imgReg := getImageRegistry(each.Name)
+				agent := each.Name
+				if agent != "" && !RegistryMap[agent] {
+					imgReg := getImageRegistry(agent)
 					RegistryMap[imgReg] = true
 				}
 			}
@@ -64,7 +67,7 @@ func GetAuthConfig(hspecFiles []string) (*string, error) {
 	}
 
 	// Constructing all auth configs for the unique registries
-	auth := make([]types.AuthConfig, 5)
+	auth := make([]types.AuthConfig, 0)
 	for key := range RegistryMap {
 		//TODO read verbose from external configuration
 		regCreds := GetRegistryCredentials(key, false)
@@ -89,7 +92,7 @@ func GetAuthConfig(hspecFiles []string) (*string, error) {
 //GetRegistryCredentials fetches the registry credentials from docker config json
 func GetRegistryCredentials(registry string, verbose bool) types.AuthConfig {
 	if registry == "" {
-		log.Fatal("Invalid Registry")
+		return types.AuthConfig{}
 	}
 
 	auth, err := GetCredentials(registry, verbose)
@@ -107,11 +110,13 @@ func convert(auths []types.AuthConfig) (*configfile.ConfigFile, error) {
 
 	authConfigs := make(map[string]types.AuthConfig)
 	for _, each := range auths {
+		
 		tmp := each.Username + ":" + each.Password
 		each.Auth = base64.StdEncoding.EncodeToString([]byte(tmp))
 		each.Username = ""
 		each.Password = ""
 		authConfigs[each.ServerAddress] = each
+		
 	}
 	configfile := configfile.ConfigFile{
 		AuthConfigs: authConfigs,
