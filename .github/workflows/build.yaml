@@ -79,12 +79,12 @@ jobs:
       run: |
           if [[ "x`echo ${GITHUB_REF}`" == *"release/HyScale"* ]]
           then
-            scripts="hyscale hyscale_osx hyscale.ps1 hyscale.jar"
-            upload_to="hyscale mac/hyscale win/hyscale.ps1 hyscale.jar"
+            scripts="hyscale-linux-amd64 hyscale-windows-amd64.exe hyscale-darwin-amd64 hyscale.jar"
+            upload_to="hyscale win/hyscale.exe mac/hyscale hyscale.jar"
             set -- $upload_to
             for script in $scripts
             do
-              aws s3 cp scripts/$script s3://$AWS_S3_BUCKET/hyscale/release/latest/$1
+              aws s3 cp $script s3://$AWS_S3_BUCKET/hyscale/release/latest/$1
               aws s3api put-object-tagging --bucket $AWS_S3_BUCKET  --key hyscale/release/latest/$1 --tagging 'TagSet=[{Key=hyscalepubliccontent,Value=true}]'
               shift
             done
@@ -100,10 +100,10 @@ jobs:
           if [ $(echo ${GITHUB_REF##*/}) == "master" ]
           then
             echo -en "CHANGE LOG: \n$(git log -1 --pretty=format:"%s") \n-------------------------------------------------------- \n" >> hyscale_version.txt
-            echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \ncurl -sSL ${{ secrets.HYS_DEV_BINARY_URL }} | HYS_VERSION=$IMAGE_VERSION  bash \n\nJAR can be downloaded using \nwget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_DEV_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/hyscale.jar \n\nWindows Binary can be downloaded using \nwget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_DEV_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/win/hyscale.ps1 \n\nMAC Binary can be downloaded using \nwget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_DEV_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/mac/hyscale" >> hyscale_version.txt
+            echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \ncurl -sSL ${{ secrets.HYS_DEV_BINARY_URL }} | HYS_VERSION=$IMAGE_VERSION  bash \n\nJAR can be downloaded using \nwget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_DEV_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/hyscale.jar \n\nWindows Binary can be downloaded using \nwget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_DEV_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/win/hyscale.exe \n\nMAC Binary can be downloaded using \nwget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_DEV_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/mac/hyscale" >> hyscale_version.txt
           elif [[ "x`echo ${GITHUB_REF}`" == *"release/HyScale"* ]]
           then
-            echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \ncurl -sSL ${{ secrets.HYS_STABLE_BINARY_URL }} | HYS_VERSION=$IMAGE_VERSION  bash\n\nJAR can be downloaded using \nwget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_STABLE_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/hyscale.jar \n\nWindows Binary can be downloaded using \nwget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_STABLE_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/win/hyscale.ps1 \n\nMAC Binary can be downloaded using \nwget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_STABLE_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/mac/hyscale" >> hyscale_version.txt
+            echo -en "Hyscale tool Build Completed Successfully with $(echo ${GITHUB_REF##*/}) and can be downloaded using \ncurl -sSL ${{ secrets.HYS_STABLE_BINARY_URL }} | HYS_VERSION=$IMAGE_VERSION  bash\n\nJAR can be downloaded using \nwget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_STABLE_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/hyscale.jar \n\nWindows Binary can be downloaded using \nwget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_STABLE_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/win/hyscale.exe \n\nMAC Binary can be downloaded using \nwget https://s3-us-west-2.amazonaws.com/${{ secrets.HYS_STABLE_AWS_S3_BUCKET }}/hyscale/release/$IMAGE_VERSION/mac/hyscale" >> hyscale_version.txt
           else
             echo -en "Hyscale tool Build triggered but nothing is built or published as the branch is $(echo ${GITHUB_REF##*/})" >> hyscale_version.txt
           fi
