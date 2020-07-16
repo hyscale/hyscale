@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("java:S106")
 public class WorkflowLogger {
 
     public static final Integer LEFT_ALIGNED_PADDING = 82;

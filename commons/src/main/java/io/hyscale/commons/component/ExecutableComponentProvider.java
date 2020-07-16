@@ -19,15 +19,15 @@ import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.List;
 
-public class ExecutableComponentProvider {
+public class ExecutableComponentProvider<C> {
 
-	private List<ComponentInvoker> componentInvokers;
+	private List<C> componentInvokers;
 
-	public ExecutableComponentProvider(List<ComponentInvoker> componentInvokers) {
+	public ExecutableComponentProvider(List<C> componentInvokers) {
 		this.componentInvokers = componentInvokers;
 	}
 
-	public List<ComponentInvoker> getComponentInvokers() {
+	public List<C> getComponentInvokers() {
 		return Collections.unmodifiableList(componentInvokers);
 	}
 

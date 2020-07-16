@@ -51,6 +51,7 @@ public class TailLogFile implements Runnable {
 		return run;
 	}
 
+	@SuppressWarnings("java:S106")
 	private void handle(String line) {
 		System.out.println(line);
 	}
