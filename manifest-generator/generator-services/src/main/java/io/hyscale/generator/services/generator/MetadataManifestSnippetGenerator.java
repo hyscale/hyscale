@@ -24,6 +24,8 @@ import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 
 public class MetadataManifestSnippetGenerator {
+    
+    private MetadataManifestSnippetGenerator() {}
 
 	public static ManifestSnippet getMetaData(ManifestResource manifestResource, ServiceMetadata serviceMetadata)
 			throws JsonProcessingException {

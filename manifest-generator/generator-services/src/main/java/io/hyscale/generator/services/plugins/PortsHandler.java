@@ -97,7 +97,7 @@ public class PortsHandler implements ManifestHandler {
             });
 
             try {
-                manifestSnippetList.add(buildServicePortsSnippet(v1ServicePorts, podSpecOwner));
+                manifestSnippetList.add(buildServicePortsSnippet(v1ServicePorts));
                 manifestSnippetList.add(buildContainerPortsSnippet(v1ContainerPorts, podSpecOwner));
             } catch (JsonProcessingException e) {
                 logger.error("Error while building ports snippet", e);
@@ -116,7 +116,7 @@ public class PortsHandler implements ManifestHandler {
     }
 
 
-    private ManifestSnippet buildServicePortsSnippet(Set<V1ServicePort> servicePorts, String podSpecOwner)
+    private ManifestSnippet buildServicePortsSnippet(Set<V1ServicePort> servicePorts)
             throws JsonProcessingException {
         ManifestSnippet manifestSnippet = new ManifestSnippet();
         manifestSnippet.setKind(ManifestResource.SERVICE.getKind());

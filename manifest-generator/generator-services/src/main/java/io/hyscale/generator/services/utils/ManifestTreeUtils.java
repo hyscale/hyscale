@@ -140,30 +140,6 @@ public class ManifestTreeUtils {
         return createParentsIfNotExists(parent, paths, index + 1);
     }
 
-        /*
-        if (parent == null) {
-            if (JsonTreeUtil.isArrayPath(paths[index])) {
-                parent = jsonTreeOperations.arrayNode();
-                root = jsonTreeOperations.put(root, JsonTreeUtil.getParentKey(effectivePath),
-                        JsonTreeUtil.getSanitizedArrayPath(paths[index]), parent);
-                int arrayIndex = JsonTreeUtil.getArrayIndex(paths[index]);
-                if (arrayIndex >= 0) {
-                    for (int j = 0; j <= arrayIndex; j++) {
-                        root = jsonTreeOperations.add(root,
-                                JsonTreeUtil.getSanitizedArrayPath(effectivePath), jsonTreeOperations.objectNode());
-                    }
-                }
-            } else {
-                parent = jsonTreeOperations.objectNode();
-                root = jsonTreeOperations.put(root, JsonTreeUtil.getParentKey(effectivePath), paths[index],
-                        parent);
-            }
-        }
-        return createParentsIfNotExists(root, paths, index + 1);
-
-        
-    }*/
-
     /*
      * Prepares the leaf node to inject the snippet Checks if the leaf node to be
      * inserted in an array, => if yes inserts arraynode => else inserts objectnode

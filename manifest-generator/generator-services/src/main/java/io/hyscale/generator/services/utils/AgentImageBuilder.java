@@ -44,9 +44,10 @@ public class AgentImageBuilder extends AgentHelper implements AgentBuilder {
     @Override
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException {
         String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
-        List<ManifestSnippet> podSnippets = new ArrayList<ManifestSnippet>();
+        List<ManifestSnippet> podSnippets = new ArrayList<>();
         List<Agent> agents = getAgents(serviceSpec);
         if(agents == null){
+            logger.debug("No Agents found for agents image builder");
             return podSnippets;
         }
         int agentCount = 1;

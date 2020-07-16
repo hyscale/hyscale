@@ -30,13 +30,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Component
 @ManifestPlugin(name = "ReplicasHandler")
 public class ReplicasHandler implements ManifestHandler {
     private static final Logger logger = LoggerFactory.getLogger(ReplicasHandler.class);
-    private static final String DEFAULT_UPDATE_STRATEGY = "RollingUpdate";
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
@@ -44,7 +44,7 @@ public class ReplicasHandler implements ManifestHandler {
         String podSpecOwner = (String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER);
         if (replicas == null || !(podSpecOwner.equals(ManifestResource.DEPLOYMENT.getKind()) || podSpecOwner.equals(ManifestResource.STATEFUL_SET.getKind()))) {
             logger.debug("Cannot handle replicas as the field is not declared");
-            return null;
+            return Collections.emptyList();
         }
         // If user does not specify replicas field in hspec, by default we consider a single replica
         int replicaCount = replicas.getMin() >= 0 ? replicas.getMin() : 1;

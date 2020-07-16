@@ -37,6 +37,8 @@ import java.util.stream.Collectors;
 public class SecretsDataUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(SecretsDataUtil.class);
+    
+    private SecretsDataUtil() {}
 
     public static ManifestSnippet build(Secrets secrets, String secretsVolumePath, String fileName) throws JsonProcessingException{
         ManifestSnippet snippet = new ManifestSnippet();

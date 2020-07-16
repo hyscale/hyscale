@@ -16,6 +16,8 @@
 package io.hyscale.generator.services.constants;
 
 public class ManifestGenConstants {
+    
+    private ManifestGenConstants() {}
 
 	public static final String NAME_DELIMITER = "-";
 

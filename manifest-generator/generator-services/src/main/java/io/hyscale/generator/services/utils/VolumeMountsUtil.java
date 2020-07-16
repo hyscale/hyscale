@@ -18,6 +18,8 @@ package io.hyscale.generator.services.utils;
 import io.kubernetes.client.openapi.models.V1VolumeMount;
 
 public class VolumeMountsUtil {
+    
+    private VolumeMountsUtil() {}
 
     public static V1VolumeMount buildForProps(String propsVolumePath, String name) {
         V1VolumeMount volumeMount = new V1VolumeMount();

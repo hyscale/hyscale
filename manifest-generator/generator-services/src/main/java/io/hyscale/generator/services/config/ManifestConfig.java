@@ -26,11 +26,11 @@ public class ManifestConfig {
 	@Autowired
 	private SetupConfig setupConfig;
 
-	private static final String manifestDir = "manifests";
+	private static final String MANIFESTS_DIR = "manifests";
 
 	public String getManifestDir(String appName, String serviceName) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(setupConfig.getGeneratedFilesDir(appName, serviceName)).append(manifestDir)
+		sb.append(setupConfig.getGeneratedFilesDir(appName, serviceName)).append(MANIFESTS_DIR)
 				.append(SetupConfig.FILE_SEPARATOR);
 		return sb.toString();
 	}

@@ -58,6 +58,7 @@ public class AgentEnvBuilder extends AgentHelper implements AgentBuilder {
         List<ManifestSnippet> envSnippets = new ArrayList<ManifestSnippet>();
         List<Agent> agents = getAgents(serviceSpec);
         if(agents == null){
+            logger.debug("No Agents found for agents env builder");
             return  envSnippets;
         }
         int agentCount = 1;

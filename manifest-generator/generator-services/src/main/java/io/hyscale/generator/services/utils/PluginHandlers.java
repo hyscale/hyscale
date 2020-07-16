@@ -17,6 +17,7 @@ package io.hyscale.generator.services.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
@@ -48,10 +48,11 @@ public class PluginHandlers {
 
 	public void registerHandlers() throws HyscaleException {
 		if (manifestHandlerBeans != null) {
+		    logger.debug("Registering Manifest Handlers");
 			manifestHandlers = new ArrayList<>();
 			InputStream is = PluginHandlers.class.getClassLoader().getResourceAsStream(PLUGINS_LIST);
 			try {
-				List<String> pluginsList = IOUtils.readLines(is, ToolConstants.CHARACTER_ENCODING);
+				List<String> pluginsList = IOUtils.readLines(is, StandardCharsets.UTF_8);
 
 				Map<String, ManifestHandler> classVsHandlerMap = manifestHandlerBeans.stream()
 						.collect(Collectors.toMap(key -> key.getClass().getName(), value -> value));
@@ -61,8 +62,7 @@ public class PluginHandlers {
 				});
 
 			} catch (IOException e) {
-				HyscaleException ex = new HyscaleException(ManifestErrorCodes.ERROR_WHILE_CREATING_MANIFEST);
-				throw ex;
+				throw new HyscaleException(ManifestErrorCodes.ERROR_WHILE_CREATING_MANIFEST);
 			}
 		}
 	}
