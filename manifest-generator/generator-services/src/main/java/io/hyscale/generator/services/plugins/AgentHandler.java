@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -58,9 +59,9 @@ public class AgentHandler implements ManifestHandler {
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         if (!ManifestPredicates.getAgentsPredicate().test(serviceSpec)) {
             logger.debug("Agents found to be empty while processing service spec data.");
-            return null;
+            return Collections.emptyList();
         }
-        List<ManifestSnippet> manifestSnippetList = new ArrayList<ManifestSnippet>();
+        List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         try {
             for (AgentBuilder agentBuilder : agentBuilders) {
                 manifestSnippetList.addAll(agentBuilder.build(manifestContext, serviceSpec));

@@ -44,7 +44,7 @@ public class ConfigMapDataHandler implements ManifestHandler {
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         if (!ManifestPredicates.getPropsPredicate().test(serviceSpec)) {
             logger.debug("Props found to be empty while processing ConfigMap data.");
-            return null;
+            return Collections.emptyList();
         }
         Props props = PropsProvider.getProps(serviceSpec);
         String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);

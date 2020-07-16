@@ -16,6 +16,7 @@
 package io.hyscale.generator.services.plugins;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +65,7 @@ public class ImagePullSecretHandler implements ManifestHandler {
 			String registry = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.registry), String.class);
 			registry = registry == null ? "" : registry;
 			WorkflowLogger.persist(ManifestGeneratorActivity.FAILED_TO_CREATE_IMAGE_PULL_SECRET, registry, registry);
-			return null;
+			return Collections.emptyList();
 		}
 
         String name = imageRegistry.getName() == null ? imageRegistry.getUrl() : imageRegistry.getName();

@@ -28,6 +28,8 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 public class ManifestPredicates {
+    
+    private ManifestPredicates() {}
 
     public static Predicate<ServiceSpec> getVolumesPredicate() {
         return serviceSpec -> {
@@ -97,7 +99,6 @@ public class ManifestPredicates {
 
     public static Predicate<ServiceSpec> getSecretsPredicate() {
         return serviceSpec -> {
-            //	Secrets secrets = null;
             Secrets secrets = null;
             try {
                 secrets = serviceSpec.get(HyscaleSpecFields.secrets, Secrets.class);

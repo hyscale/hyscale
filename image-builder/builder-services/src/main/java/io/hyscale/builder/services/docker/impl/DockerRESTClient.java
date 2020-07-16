@@ -382,12 +382,11 @@ public class DockerRESTClient implements HyscaleDockerClient {
         }
         AuthConfig authConfig = new AuthConfig();
         authConfig.withRegistryAddress(imageRegistry.getUrl());
-
         String decodedAuth = new String(Base64.getDecoder().decode(imageRegistry.getToken()));
-        String[] credentialArr = decodedAuth.split(":");
-        if (credentialArr.length >= 2) {
-            authConfig.withUsername(credentialArr[0]);
-            authConfig.withPassword(credentialArr[1]);
+        int delimiter = decodedAuth.indexOf(':');
+        if (delimiter > 0) {
+            authConfig.withUsername(decodedAuth.substring(0,delimiter));
+            authConfig.withPassword(decodedAuth.substring(delimiter+1));
         }
         return authConfig;
     }

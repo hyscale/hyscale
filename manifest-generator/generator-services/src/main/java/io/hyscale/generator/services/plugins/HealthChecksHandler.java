@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,7 +51,6 @@ public class HealthChecksHandler implements ManifestHandler {
     private static final int DEFAULT_PERIOD_IN_SECONDS = 30;
     private static final int DEFAULT_TIMEOUT_IN_SECONDS = 30;
     private static final int DEFAULT_FAILURE_THRESHOLD_IN_SECONDS = 10;
-    private static final int DEFAULT_SUCESS_THRESHOLD_IN_SECONDS = 1;
     private static final String HTTPS = "HTTPS";
     
     @Override
@@ -61,7 +61,7 @@ public class HealthChecksHandler implements ManifestHandler {
     
         if (portsList == null || portsList.isEmpty()) {
             logger.debug("Cannot handle HealthChecks as ports are empty.");
-            return null;
+            return Collections.emptyList();
         }
         // TODO supporting single health check
         boolean healthCheck = false;

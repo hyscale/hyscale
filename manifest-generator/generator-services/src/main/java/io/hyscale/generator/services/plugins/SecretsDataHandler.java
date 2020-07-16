@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -44,7 +45,7 @@ public class SecretsDataHandler implements ManifestHandler {
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         if (!ManifestResource.SECRET.getPredicate().test(serviceSpec)) {
-            return null;
+            return Collections.emptyList();
         }
         Secrets secrets = serviceSpec.get(HyscaleSpecFields.secrets, Secrets.class);
         String secretsVolumePath = serviceSpec.get(HyscaleSpecFields.secretsVolumePath, String.class);

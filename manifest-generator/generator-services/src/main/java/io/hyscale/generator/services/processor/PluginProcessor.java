@@ -104,10 +104,8 @@ public class PluginProcessor {
         if (manifestHandlerList == null || manifestHandlerList.isEmpty()) {
             return null;
         }
-        Map<ManifestMeta, ManifestNode> manifestMetavsNodeMap = new LinkedHashMap();
-        manifestHandlerList.stream().filter(each -> {
-            return each != null;
-        }).forEach(each -> {
+        Map<ManifestMeta, ManifestNode> manifestMetavsNodeMap = new LinkedHashMap<>();
+        manifestHandlerList.stream().filter(Objects::nonNull).forEach(each -> {
             List<ManifestSnippet> manifestSnippetList = null;
             try {
                 logger.debug("Executing plugin handler of : {}", each.getClass().getCanonicalName());

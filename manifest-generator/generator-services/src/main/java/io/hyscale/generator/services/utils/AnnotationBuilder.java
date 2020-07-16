@@ -21,20 +21,20 @@ import java.util.Map;
 import io.hyscale.commons.models.AnnotationKey;
 
 public class AnnotationBuilder {
-
-	private static final long MAX_ANNOTATION_VALUE_SIZE = 64000;
+    
+    private AnnotationBuilder() {}
 
 	// TODO CHECK THIS LIMIT
 	private static final int MAX_ANNOTATION_KEY_SIZE = 1024;
 
 	public static Map<AnnotationKey, String> volumeClaimTemplate(String storageClass) {
-		Map<AnnotationKey, String> annotations = new HashMap<AnnotationKey, String>();
+		Map<AnnotationKey, String> annotations = new HashMap<>();
 		annotations.put(AnnotationKey.PVC_TEMPLATE_STORAGE_CLASS, normalize(storageClass));
 		return annotations;
 	}
 
 	public static Map<AnnotationKey, String> serviceSpec(String serviceSpec) {
-		Map<AnnotationKey, String> annotations = new HashMap<AnnotationKey, String>();
+		Map<AnnotationKey, String> annotations = new HashMap<>();
 		annotations.put(AnnotationKey.HYSCALE_SERVICE_SPEC,serviceSpec);
 		return annotations;
 	}

@@ -54,7 +54,7 @@ public class PodSpecLabels implements ManifestHandler {
             ManifestSnippet metaDataSnippet = new ManifestSnippet();
             metaDataSnippet.setPath("spec.template.metadata");
             metaDataSnippet.setKind(podSpecOwner);
-            metaDataSnippet.setSnippet(JsonSnippetConvertor.serialize(getTemplateMetaData(serviceMetadata, podSpecOwner, manifestContext)));
+            metaDataSnippet.setSnippet(JsonSnippetConvertor.serialize(getTemplateMetaData(serviceMetadata, manifestContext)));
             snippetList.add(metaDataSnippet);
 
         } catch (JsonProcessingException e) {
@@ -63,7 +63,7 @@ public class PodSpecLabels implements ManifestHandler {
         return snippetList;    
         }
 
-    private V1ObjectMeta getTemplateMetaData(ServiceMetadata serviceMetadata, String podSpecOwner, ManifestContext manifestContext) {
+    private V1ObjectMeta getTemplateMetaData(ServiceMetadata serviceMetadata, ManifestContext manifestContext) {
         V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
         Map<String, String> labels = DefaultLabelBuilder.build(serviceMetadata);
         Map<String, String> addOnLabels = manifestContext.getCustomLabels();

@@ -17,6 +17,7 @@ package io.hyscale.generator.services.plugins;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,7 @@ public class LabelsAddonHandler implements ManifestHandler {
         Map<String, String> addOnLabels = manifestContext.getCustomLabels();
 
         if (addOnLabels == null || addOnLabels.isEmpty()) {
-            return null;
+            return Collections.emptyList();
         }
         logger.debug("Started LabelsAddonHandler");
         ServiceMetadata serviceMetadata = new ServiceMetadata();
