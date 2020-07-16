@@ -18,16 +18,16 @@ package io.hyscale.commons.component;
 import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.List;
-@SuppressWarnings("java:S3740")
-public class ExecutableComponentProvider {
 
-	private List<ComponentInvoker> componentInvokers;
+public class ExecutableComponentProvider<C> {
 
-	public ExecutableComponentProvider(List<ComponentInvoker> componentInvokers) {
+	private List<C> componentInvokers;
+
+	public ExecutableComponentProvider(List<C> componentInvokers) {
 		this.componentInvokers = componentInvokers;
 	}
 
-	public List<ComponentInvoker> getComponentInvokers() {
+	public List<C> getComponentInvokers() {
 		return Collections.unmodifiableList(componentInvokers);
 	}
 

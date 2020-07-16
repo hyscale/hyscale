@@ -39,10 +39,9 @@ public class ThreadPoolUtil {
 		return InstanceHolder.INSTANCE;
 	}
 
-	@SuppressWarnings("java:S3740")
 	private ThreadPoolUtil() {
 		executor = new ThreadPoolExecutor(CORE_POOL_SIZE, MAX_POOL_SIZE, (long) 60 * 1000, TimeUnit.MILLISECONDS,
-				new LinkedBlockingQueue(BLOCKING_QUEUE_SIZE));
+				new LinkedBlockingQueue<>(BLOCKING_QUEUE_SIZE));
 	}
 
 	public void executeWithRetries(Runnable runnable) {
