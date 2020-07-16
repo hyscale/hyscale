@@ -16,17 +16,21 @@ Copyright 2019 Pramati Prism, Inc.
 package cmd
 
 import (
-    "github.com/spf13/cobra"
-    opts "hyscale/cmd/options"
+	opts "hyscale/cmd/options"
+	"log"
+
+	"github.com/spf13/cobra"
 )
-var(
+
+var (
 	hspecList []string
+	output    string
 )
 
 // DeployCmd represents the 'hyscale deploy' command
 var DeployCmd = &cobra.Command{
-	Use:   "deploy",
-	Short: "Deploys the specified resource",
+	Use:                   "deploy",
+	Short:                 "Deploys the specified resource",
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Usage()
@@ -35,34 +39,45 @@ var DeployCmd = &cobra.Command{
 
 //ServiceCmd represents the 'hyscale deploy service' command
 var ServiceCmd = &cobra.Command{
-	Use:   "service",
-	Short: "Deploys the services to k8s cluster",
+	Use:                   "service",
+	Short:                 "Deploys the services to k8s cluster",
 	DisableFlagsInUseLine: true,
+	PreRun: func(cmd *cobra.Command, args []string) {
+		if output != "" {
+			if !(output == "json" || output == "JSON") {
+				log.Fatal("Invalid output format " + output + ".Allowed Values of output are [json|JSON]")
+			}
+		}
+	},
 	Run: func(cmd *cobra.Command, args []string) {
+		disableBanner := false
+		if output != "" {
+			disableBanner = true
+		}
 		clinput := CLIInput{
-			Cmd:        cmd,
-			Args:       hspecList,
-			Interative: false,
+			Cmd:           cmd,
+			Args:          hspecList,
+			Interative:    false,
+			DisableBanner: disableBanner,
 		}
 
 		HyscaleRun(&clinput)
 	},
 }
 
-
 func init() {
-    RootCmd.AddCommand(DeployCmd)
-    DeployCmd.AddCommand(ServiceCmd)
+	RootCmd.AddCommand(DeployCmd)
+	DeployCmd.AddCommand(ServiceCmd)
 
-    ServiceCmd.Flags().StringP(opts.AppOpts.Option,opts.AppOpts.Shorthand,"",opts.AppOpts.Description)
-    //TODO accepting 'ns' alias for namespace
+	ServiceCmd.Flags().StringP(opts.AppOpts.Option, opts.AppOpts.Shorthand, "", opts.AppOpts.Description)
+	//TODO accepting 'ns' alias for namespace
 	ServiceCmd.Flags().StringP(opts.NamespaceOpts.Option, opts.NamespaceOpts.Shorthand, "", opts.NamespaceOpts.Description)
-	ServiceCmd.Flags().StringSliceVarP(&hspecList,opts.HspecOpts.Option, opts.HspecOpts.Shorthand, []string{}, opts.HspecOpts.Description)
+	ServiceCmd.Flags().StringSliceVarP(&hspecList, opts.HspecOpts.Option, opts.HspecOpts.Shorthand, []string{}, opts.HspecOpts.Description)
 	ServiceCmd.Flags().BoolP("verbose", "v", false, "Verbose output")
-	ServiceCmd.Flags().StringP("output","o","json","Output format")
+	ServiceCmd.Flags().StringVarP(&output, "output", "o", "json", "Output format")
 
 	//TODO making profiles exclusive
-	ServiceCmd.Flags().StringSliceP(opts.HprofOpts.Option,opts.HprofOpts.Shorthand, []string{}, opts.HprofOpts.Description)
+	ServiceCmd.Flags().StringSliceP(opts.HprofOpts.Option, opts.HprofOpts.Shorthand, []string{}, opts.HprofOpts.Description)
 	ServiceCmd.Flags().StringP(opts.ProfileNameOpts.Option, opts.ProfileNameOpts.Shorthand, "", opts.ProfileNameOpts.Description)
 
 	//Required fields

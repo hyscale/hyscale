@@ -24,6 +24,7 @@ import (
 
 	"hyscale/pkg/container"
 	installer "hyscale/pkg/installer"
+
 	//java "hyscale/pkg/java"
 
 	"github.com/spf13/cobra"
@@ -37,9 +38,10 @@ const (
 
 //CLIInput is the struct for user input
 type CLIInput struct {
-	Cmd        *cobra.Command
-	Args       []string
-	Interative bool
+	Cmd           *cobra.Command
+	Args          []string
+	Interative    bool
+	DisableBanner bool
 }
 
 //HyscaleRun is an entrypoint for Hyscale CommandLine Run
@@ -51,7 +53,7 @@ func HyscaleRun(cliInput *CLIInput) {
 	}
 
 	//javaPresent := checkForJava()
-	spec := installer.DeploySpec{Interactive: cliInput.Interative, Hspecs: cliInput.Args}
+	spec := installer.DeploySpec{Interactive: cliInput.Interative, Hspecs: cliInput.Args, DisableBanner: cliInput.DisableBanner}
 	/*if javaPresent {
 		// Check for Hyscale jar if not present download it
 		var javaInstaller java.Jar

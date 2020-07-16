@@ -36,11 +36,11 @@ const (
 	//ImageCleanUpPolicy is used to clean the build images
 	ImageCleanUpPolicy = "IMAGE_CLEANUP_POLICY"
 
-	homeEnv            = "HYSCALECTL_HOME"
-	kubeConfEnv        = "HYSCALECTL_KUBECONF"
-	dockerConfEnv      = "HYSCALECTL_DOCKERCONF"
-	dockerConfigDirEnv = "DOCKER_CONFIG"
-	lbReadyTimeoutEnv  = "HYS_LB_READY_TIMEOUT"
+	homeEnv                = "HYSCALECTL_HOME"
+	kubeConfEnv            = "HYSCALECTL_KUBECONF"
+	dockerConfEnv          = "HYSCALECTL_DOCKERCONF"
+	dockerConfigDirEnv     = "DOCKER_CONFIG"
+	lbReadyTimeoutEnv      = "HYS_LB_READY_TIMEOUT"
 	workflowLoggerDisabled = "WORKFLOW_LOGGER_DISABLED"
 	//EqualsTo is used for constructing environment varibles
 	EqualsTo               = "="
@@ -53,7 +53,6 @@ const (
 	dockerHost             = "DOCKER_HOST"
 	externalRegistryEnv    = "HYS_REGISTRY_CONFIG"
 )
-
 
 var (
 	imageName      = cnst.ImageName+":"+cnst.ImageTag
@@ -74,7 +73,7 @@ func (hyscontainer *HysContainer) Run(cliSpec *installer.DeploySpec) (resp *inst
 	labels := make(map[string]string)
 	labels["name"] = constants.Hyscale
 
-	args := []string{"run", "--rm","--net=host"}
+	args := []string{"run", "--rm", "--net=host"}
 
 	// Attach the cmd stdin to os.Stdin
 	args = append(args, "-i")
@@ -86,6 +85,12 @@ func (hyscontainer *HysContainer) Run(cliSpec *installer.DeploySpec) (resp *inst
 	for k, v := range *getEnvs(constants.User) {
 		args = append(args, "-e")
 		args = append(args, BuildOption(k, v))
+	}
+
+	// Disabling hyscale banner
+	if cliSpec.DisableBanner {
+		args = append(args, "-e")
+		args = append(args, BuildOption(workflowLoggerDisabled, "true"))
 	}
 
 	for _, mount := range *getVolumes() {
@@ -108,7 +113,7 @@ func (hyscontainer *HysContainer) Run(cliSpec *installer.DeploySpec) (resp *inst
 		if err != nil {
 			panic(err)
 		}
-		
+
 		stdin, e := cmd.StdinPipe()
 		if e != nil {
 			panic(e)
@@ -152,13 +157,13 @@ func getEnvs(user *user.User) *map[string]string {
 
 	// If the DockerHost environment variable is empty , the value is set based on the OS
 	dockerHostEnv := os.Getenv(dockerHost)
-	if dockerHostEnv == ""{
+	if dockerHostEnv == "" {
 		if util.IsWindows() {
 			envs[dockerHost] = constants.WindowsInternalDockerHost
 		} else {
 			envs[dockerHost] = "unix://" + unixSocket
 		}
-	}else{
+	} else {
 		envs[dockerHost] = dockerHostEnv
 	}
 

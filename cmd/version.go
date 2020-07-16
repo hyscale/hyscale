@@ -17,19 +17,20 @@ Copyright 2019 Pramati Prism, Inc.
 package cmd
 
 import (
-	
 	"github.com/spf13/cobra"
 )
+
 // versionCommand represents 'hyscale version' command
 var versionCommand = &cobra.Command{
-	Use:   "version",
-	Short: "Print the version of Hyscale",
+	Use:    "version",
+	Short:  "Print the version of Hyscale",
 	Hidden: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		clinput := CLIInput{
-			cmd,
-			args,
-			false,
+			Cmd:           cmd,
+			Args:          args,
+			Interative:    false,
+			DisableBanner: false,
 		}
 		HyscaleRun(&clinput)
 	},
