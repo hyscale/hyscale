@@ -16,49 +16,49 @@ Copyright 2019 Pramati Prism, Inc.
 package cmd
 
 import (
+	opts "hyscale/cmd/options"
 
-    "github.com/spf13/cobra"
-    opts "hyscale/cmd/options"
+	"github.com/spf13/cobra"
 )
 
 var scaleCmd = &cobra.Command{
-	Use:   "scale",
-	Short: "scale the resource",
-    DisableFlagsInUseLine: true,
+	Use:                   "scale",
+	Short:                 "scale the resource",
+	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Usage()
 	},
 }
 
 var scaleServiceCmd = &cobra.Command{
-	Use:   "service",
-	Short: "Scales the service of an application",
-	DisableFlagsInUseLine: true,	
+	Use:                   "service",
+	Short:                 "Scales the service of an application",
+	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		clinput := CLIInput{
-			cmd,
-			args,
-			false,
+			Cmd:           cmd,
+			Args:          args,
+			Interative:    false,
+			DisableBanner: false,
 		}
 		HyscaleRun(&clinput)
 	},
 }
 
-
 func init() {
-    RootCmd.AddCommand(scaleCmd)
-    scaleCmd.AddCommand(scaleServiceCmd)
-	
-	scaleServiceCmd.Flags().StringP(opts.AppOpts.Option,opts.AppOpts.Shorthand,"",opts.AppOpts.Description)
+	RootCmd.AddCommand(scaleCmd)
+	scaleCmd.AddCommand(scaleServiceCmd)
+
+	scaleServiceCmd.Flags().StringP(opts.AppOpts.Option, opts.AppOpts.Shorthand, "", opts.AppOpts.Description)
 	scaleServiceCmd.Flags().StringP(opts.NamespaceOpts.Option, opts.NamespaceOpts.Shorthand, "", opts.NamespaceOpts.Description)
 	scaleServiceCmd.Flags().StringP(opts.ServiceOpts.Option, opts.ServiceOpts.Shorthand, "", opts.ServiceOpts.Description)
 
-    scaleServiceCmd.MarkFlagRequired(opts.AppOpts.Option)
+	scaleServiceCmd.MarkFlagRequired(opts.AppOpts.Option)
 	scaleServiceCmd.MarkFlagRequired(opts.NamespaceOpts.Option)
 	scaleServiceCmd.MarkFlagRequired(opts.ServiceOpts.Option)
 
 	// TODO make these mutually exclusive
 	scaleServiceCmd.Flags().String("up", "", "Scale up service by specified value")
 	scaleServiceCmd.Flags().String("down", "", "Scale down service by specified value")
-	scaleServiceCmd.Flags().String("to", "", "Scale service to a specified value")	
+	scaleServiceCmd.Flags().String("to", "", "Scale service to a specified value")
 }

@@ -18,13 +18,14 @@ package installer
 
 // DeploySpec specifies the inputs to the hyscale binary
 type DeploySpec struct {
-	Interactive bool
-	Hspecs      []string
+	Interactive   bool
+	Hspecs        []string
+	DisableBanner bool
 }
 
 // DeployResponse the response status after the command execution
 type DeployResponse struct {
-	Status string
+	Status   string
 	ExitCode int
 }
 

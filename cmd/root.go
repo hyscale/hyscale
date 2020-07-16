@@ -36,9 +36,10 @@ var (
 				return
 			}
 			clinput := CLIInput{
-				cmd,
-				args,
-				false,
+				Cmd:           cmd,
+				Args:          args,
+				Interative:    false,
+				DisableBanner: false,
 			}
 			HyscaleRun(&clinput)
 
