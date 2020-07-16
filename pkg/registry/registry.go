@@ -30,7 +30,7 @@ import (
 var (
 	configDir = os.Getenv("DOCKER_CONFIG")
 	//DockerHubAliases define the alias host names to which docker pull, docker push can be resolved with auth credentials of these aliases
-	DockerHubAliases = []string{"index.docker.io", "registry-1.docker.io", "docker.io", "registry.hub.docker.com"}
+	DockerHubAliases = []string{"index.docker.io", "registry-1.docker.io", "docker.io"}
 )
 
 //GetCredentialsFromConfig fetches the docker registry credentials from the specified configDir

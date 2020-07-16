@@ -20,13 +20,21 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
+	"os"
+	"strconv"
 	"strings"
 
 	hspec "hyscale/pkg/hspec"
 
 	"github.com/docker/cli/cli/config/configfile"
 	"github.com/docker/cli/cli/config/types"
+)
+
+const (
+	//debugCredstoreEnv variable to debug the credstore flow
+	debugCredstoreEnv = "DEBUG_CREDSTORE"
 )
 
 //GetAuthConfig retrieves the respective registy credentials from the docker config
@@ -65,12 +73,16 @@ func GetAuthConfig(hspecFiles []string) (*string, error) {
 			}
 		}
 	}
+	verbose, ok := strconv.ParseBool(os.Getenv(debugCredstoreEnv))
+	if ok != nil {
+		verbose = false
+	}
 
 	// Constructing all auth configs for the unique registries
 	auth := make([]types.AuthConfig, 0)
 	for key := range RegistryMap {
 		//TODO read verbose from external configuration
-		regCreds := GetRegistryCredentials(key, false)
+		regCreds := GetRegistryCredentials(key, verbose)
 		if regCreds != (types.AuthConfig{}) {
 			auth = append(auth, regCreds)
 		}
@@ -86,6 +98,9 @@ func GetAuthConfig(hspecFiles []string) (*string, error) {
 		log.Fatal("Error while deserializing auth ")
 	}
 	json := string(authString)
+	if verbose {
+		fmt.Println(json)
+	}
 	return &json, nil
 }
 
@@ -110,13 +125,13 @@ func convert(auths []types.AuthConfig) (*configfile.ConfigFile, error) {
 
 	authConfigs := make(map[string]types.AuthConfig)
 	for _, each := range auths {
-		
+
 		tmp := each.Username + ":" + each.Password
 		each.Auth = base64.StdEncoding.EncodeToString([]byte(tmp))
 		each.Username = ""
 		each.Password = ""
 		authConfigs[each.ServerAddress] = each
-		
+
 	}
 	configfile := configfile.ConfigFile{
 		AuthConfigs: authConfigs,
