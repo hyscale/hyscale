@@ -10,7 +10,6 @@ on:
     - docs/*
     - LICENSE
     - README.md
-    - scripts/release_version.txt
     branches: 
     - master
     - release/HyScale*
