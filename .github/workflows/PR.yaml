@@ -2,10 +2,22 @@ name: Compile and Run Static Code Analysis
 
 on:
   push:
+    paths-ignore:
+    - .gitignore
+    - docs/images/*
+    - docs/*
+    - LICENSE
+    - README.md
     branches:
       - master
       - release/HyScale*
   pull_request:
+    paths-ignore:
+    - .gitignore
+    - docs/images/*
+    - docs/*
+    - LICENSE
+    - README.md
     branches: [ master ]
 
 jobs:
