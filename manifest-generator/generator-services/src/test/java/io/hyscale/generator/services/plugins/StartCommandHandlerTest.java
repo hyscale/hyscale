@@ -51,9 +51,9 @@ class StartCommandHandlerTest {
 
     private static Stream<Arguments> input() throws HyscaleException {
         return Stream.of(
-                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/start-cmd/no-start-cmd.hspec"),
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice-min.hspec"),
                         ManifestContextTestUtil.getManifestContext(ManifestResource.STATEFUL_SET)),
-                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/start-cmd/start-cmd.hspec"),
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice.hspec"),
                         ManifestContextTestUtil.getManifestContext(ManifestResource.STATEFUL_SET)));
     }
 

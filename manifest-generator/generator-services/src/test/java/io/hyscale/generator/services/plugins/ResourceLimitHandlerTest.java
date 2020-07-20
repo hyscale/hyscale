@@ -54,11 +54,11 @@ class ResourceLimitHandlerTest {
     private static final String MEMORY = "memory";
 
     private static Stream<Arguments> input() throws HyscaleException {
-        return Stream.of(Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/resources/cpu-memory-range.hspec")),
+        return Stream.of(Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice.hspec")),
                 Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/resources/cpu-memory.hspec")),
                 Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/resources/cpu.hspec")),
                 Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/resources/memory.hspec")),
-                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/resources/no-resources.hspec")));
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice-min.hspec")));
     }
 
     @ParameterizedTest

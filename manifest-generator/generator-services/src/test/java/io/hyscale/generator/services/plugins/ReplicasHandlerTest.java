@@ -44,7 +44,7 @@ class ReplicasHandlerTest {
     private ReplicasHandler replicasHandler;
 
     private static Stream<Arguments> input() throws HyscaleException {
-        return Stream.of(Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/replica/no-replicas.hspec")),
+        return Stream.of(Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice-min.hspec")),
                 Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/replica/replicas.hspec")));
     }
 

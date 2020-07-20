@@ -66,9 +66,9 @@ class VolumeTemplatesHandlerTest {
 
     private static Stream<Arguments> input() throws HyscaleException {
         return Stream.of(
-                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/volumes/no-volumes.hspec"),
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice-min.hspec"),
                         ManifestContextTestUtil.getManifestContext(ManifestResource.DEPLOYMENT)),
-                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/volumes/volumes.hspec"),
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice.hspec"),
                         ManifestContextTestUtil.getManifestContext(ManifestResource.STATEFUL_SET)));
     }
 

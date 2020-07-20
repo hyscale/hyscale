@@ -1,5 +1,6 @@
 name: myservice
 image:
+  registry: x.y.z
   name: myServiceImage
   tag: 1.2.3
   buildSpec:
@@ -15,12 +16,19 @@ image:
       echo "Hello, I'm run commands"
 
 startCommand: "a,bc,def"
-
-replicas: 2
+replicas: 
+  min: 1
+  max: 3
+  cpuThreshold: 10%
+memory: 123Mi-456Mi
+cpu: 123m-456m
 
 volumes:
   - name: vol-name
     path: /volume/mount/path
+    storageClass: storageClass
+  - name: vol-name-two
+    path: /test/path
     size: 1Gi
     storageClass: storageClass
 
@@ -30,3 +38,13 @@ ports:
     healthCheck:
       httpPath: /sample
   - port : 8081
+
+propsVolumePath: /abc/def/props.txt
+props:
+    key1: value1
+    key2: value2
+    
+secretsVolumePath: /abc/def/secrets.txt
+secrets:
+   skey1: val1
+   skey2: val2

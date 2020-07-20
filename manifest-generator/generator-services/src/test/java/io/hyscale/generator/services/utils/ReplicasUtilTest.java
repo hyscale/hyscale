@@ -29,8 +29,10 @@ class ReplicasUtilTest {
 
     private static Stream<Arguments> input() {
         return Stream.of(Arguments.of(null, false), Arguments.of(getReplica(null, null, null), false),
+                Arguments.of(getReplica(1, null, "10"), false), Arguments.of(getReplica(null, 2, "10"), false),
                 Arguments.of(getReplica(1, 2, null), false), Arguments.of(getReplica(1, 2, "test"), false),
                 Arguments.of(getReplica(1, 2, "10"), false), Arguments.of(getReplica(1, 2, "-10%"), false),
+                Arguments.of(getReplica(-1, 2, "10"), false), Arguments.of(getReplica(3, 2, "10"), false),
                 Arguments.of(getReplica(1, 2, "10%"), true));
     }
 

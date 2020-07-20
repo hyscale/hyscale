@@ -45,8 +45,8 @@ class ServiceTypeTest {
     private ServiceTypeHandler serviceTypeHandler;
 
     private static Stream<Arguments> input() throws HyscaleException {
-        return Stream.of(Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/service/no-service.hspec"), null),
-                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/service/external.hspec"),
+        return Stream.of(Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice-min.hspec"), null),
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice.hspec"),
                         K8sServiceType.LOAD_BALANCER.getName()),
                 Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/service/internal.hspec"),
                         K8sServiceType.CLUSTER_IP.getName()));

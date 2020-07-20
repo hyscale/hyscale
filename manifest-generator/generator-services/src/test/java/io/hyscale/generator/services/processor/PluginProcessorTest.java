@@ -15,6 +15,7 @@
  */
 package io.hyscale.generator.services.processor;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
@@ -22,8 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
@@ -82,9 +85,10 @@ class PluginProcessorTest {
                         getResourceList(ManifestResource.DEPLOYMENT, ManifestResource.SERVICE)),
                 Arguments.of(ServiceSpecTestUtil.getServiceSpec("/processor/noservice.hspec"),
                         getResourceList(ManifestResource.STATEFUL_SET)),
-                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/processor/service-hpa.hspec"),
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice.hspec"),
                         getResourceList(ManifestResource.STATEFUL_SET, ManifestResource.SERVICE,
-                                ManifestResource.HORIZONTAL_POD_AUTOSCALER)),
+                                ManifestResource.HORIZONTAL_POD_AUTOSCALER, ManifestResource.CONFIG_MAP, 
+                                ManifestResource.SECRET)),
                 Arguments.of(ServiceSpecTestUtil.getServiceSpec("/processor/service-hpa-deploy.hspec"),
                         getResourceList(ManifestResource.DEPLOYMENT, ManifestResource.SERVICE,
                                 ManifestResource.HORIZONTAL_POD_AUTOSCALER)),
@@ -98,7 +102,10 @@ class PluginProcessorTest {
                         getResourceList(ManifestResource.STATEFUL_SET, ManifestResource.SERVICE,
                                 ManifestResource.CONFIG_MAP, ManifestResource.SECRET)),
                 Arguments.of(ServiceSpecTestUtil.getServiceSpec("/processor/statefulset.hspec"),
-                        getResourceList(ManifestResource.STATEFUL_SET, ManifestResource.SERVICE)));
+                        getResourceList(ManifestResource.STATEFUL_SET, ManifestResource.SERVICE)),
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice-min.hspec"),
+                        getResourceList(ManifestResource.DEPLOYMENT))
+                );
     }
 
     @ParameterizedTest
@@ -106,13 +113,9 @@ class PluginProcessorTest {
     void test(ServiceSpec serviceSpec, List<String> expectedResources) {
         Map<ManifestMeta, ManifestNode> manifestMap = pluginProcessor.process(serviceSpec, context);
 
-        for (Entry<ManifestMeta, ManifestNode> manifests : manifestMap.entrySet()) {
-            ManifestMeta manifestMeta = manifests.getKey();
-            expectedResources.remove(manifestMeta.getKind());
-        }
-        if (!expectedResources.isEmpty()) {
-            fail("Expected resources not found: " + expectedResources);
-        }
+        List<String> generatedResources = manifestMap.entrySet().stream().map(each -> each.getKey().getKind())
+                .collect(Collectors.toList());
+        assertTrue(CollectionUtils.isEqualCollection(expectedResources, generatedResources));
     }
 
     private static List<String> getResourceList(ManifestResource... manifestResources) {

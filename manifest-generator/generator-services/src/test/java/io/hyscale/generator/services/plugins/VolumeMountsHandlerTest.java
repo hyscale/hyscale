@@ -55,8 +55,8 @@ class VolumeMountsHandlerTest {
     private static Stream<Arguments> input() throws HyscaleException {
         return Stream.of(Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/volumes/no-props-vol.hspec")),
                 Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/volumes/no-secrets-vol.hspec")),
-                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/volumes/no-volumes.hspec")),
-                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/volumes/props-secrets-vol.hspec")),
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice-min.hspec")),
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice.hspec")),
                 Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/volumes/props-vol.hspec")),
                 Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/volumes/secrets-vol.hspec")),
                 Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/volumes/volumes.hspec")));

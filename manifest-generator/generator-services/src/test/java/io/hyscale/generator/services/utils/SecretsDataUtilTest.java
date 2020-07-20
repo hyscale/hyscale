@@ -60,9 +60,8 @@ class SecretsDataUtilTest {
             return;
         }
         MapBasedSecrets mapBasedSecrets = (MapBasedSecrets) secrets;
-        Map modifiedMap;
         try {
-            modifiedMap = JsonSnippetConvertor.deserialize(snippet.getSnippet(), Map.class);
+            Map modifiedMap = JsonSnippetConvertor.deserialize(snippet.getSnippet(), Map.class);
             assertTrue(mapBasedSecrets.entrySet().stream().allMatch(each -> modifiedMap.containsKey(each.getKey())));
             if (StringUtils.isNotBlank(secretsVolumePath)) {
                 assertTrue(modifiedMap.containsKey(fileName));
