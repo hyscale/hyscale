@@ -30,7 +30,7 @@ import (
 var (
 	configDir = os.Getenv("DOCKER_CONFIG")
 	//DockerHubAliases define the alias host names to which docker pull, docker push can be resolved with auth credentials of these aliases
-	DockerHubAliases = []string{"index.docker.io", "registry-1.docker.io", "docker.io"}
+	DockerHubAliases = []string{"index.docker.io", "registry-1.docker.io", "docker.io", "index.docker.io/v1/"}
 )
 
 //GetCredentialsFromConfig fetches the docker registry credentials from the specified configDir
@@ -59,7 +59,7 @@ func GetCredentialsFromConfig(registry string, verbose bool, configDir string) (
 			return authConfig, err
 		}
 
-		if authConfig.Username != "" {
+		if authConfig.Username != "" && authConfig.ServerAddress != "" {
 			return authConfig, nil
 		}
 	}
@@ -94,7 +94,7 @@ func containsAlias(aliases []string, registry string) bool {
 func getSearchPatterns(registry string) []string {
 	SearchRegistryAliases := []string{registry}
 
-	if containsAlias(DockerHubAliases, registry) {
+	if registry == "" {
 		SearchRegistryAliases = DockerHubAliases
 	}
 	searchPatterns := []string{}
