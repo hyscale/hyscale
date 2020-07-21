@@ -16,6 +16,7 @@ Options:
   -a, --application string   name of application `<applicationName>`
   -v  --verbose              `Optional` verbose mode
   -P  string                 `Optional` profile name 
+  -o, --output json          `Optional` After the command has completed its execution, deployment status will be shown in a json format.
 ```
 
 #### Description
