@@ -1,0 +1,19 @@
+{
+	"root": {
+		"test": [
+			{
+				"new": {
+					"existing": "value"
+				}
+			},
+			{
+				
+			},
+			{
+				"new": {
+					"test": "value"
+				}
+			}
+		]
+	}
+}

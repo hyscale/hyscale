@@ -51,7 +51,10 @@ public class ConfigMapDataUtil {
     private static final String BINARY_DATA_PATH = "binaryData";
 
     public static List<ManifestSnippet> build(Props props, String propsVolumePath) throws JsonProcessingException {
-
+        List<ManifestSnippet> manifestSnippetList = new ArrayList<ManifestSnippet>();
+        if (props == null) {
+            return manifestSnippetList;
+        }
         Map<String, String> configProps = new HashMap<>();
         Map<String, String> fileProps = new HashMap<>();
         StringBuilder sb = new StringBuilder();
@@ -87,8 +90,6 @@ public class ConfigMapDataUtil {
             logger.debug("Consolidating config props to file {}", ManifestGenConstants.DEFAULT_CONFIG_PROPS_FILE);
             configProps.put(ManifestGenConstants.DEFAULT_CONFIG_PROPS_FILE, fileData);
         }
-
-        List<ManifestSnippet> manifestSnippetList = new ArrayList<ManifestSnippet>();
 
         ManifestSnippet configMapDataSnippet = new ManifestSnippet();
         configMapDataSnippet.setKind(ManifestResource.CONFIG_MAP.getKind());

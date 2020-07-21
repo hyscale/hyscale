@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,53 +58,17 @@ public class HealthChecksHandler implements ManifestHandler {
         };
         List<Port> portsList = serviceSpec.get(HyscaleSpecFields.ports, listTypeReference);
     
+        List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
+        
         if (portsList == null || portsList.isEmpty()) {
             logger.debug("Cannot handle HealthChecks as ports are empty.");
-            return Collections.emptyList();
+            return manifestSnippetList;
         }
         // TODO supporting single health check
-        boolean healthCheck = false;
-        V1Probe v1Probe = new V1Probe();
+        V1Probe v1Probe = getHealthProbe(portsList);
         // TODO set successful threshold
     
-        Optional<Port> httpHealthCheckPort = portsList.stream().filter(each -> {
-            return each.getPort() != null && each.getHealthCheck() != null && each.getHealthCheck().getHttpPath() != null;
-        }).findFirst();
-    
-        if (httpHealthCheckPort.isPresent()) {
-            Port port = httpHealthCheckPort.get();
-            String[] portAndProtocol = port.getPort().split("/");
-            String path = port.getHealthCheck().getHttpPath();
-            if (StringUtils.isNotBlank(path)) {
-                String protocol = portAndProtocol.length > 1 ? portAndProtocol[1] : null;
-                logger.debug("Protocol {} for HealthCheck for port {} .", protocol, port.getPort());
-                V1HTTPGetAction v1HTTPGetAction = new V1HTTPGetAction();
-                v1HTTPGetAction.setPort(new IntOrString(Integer.valueOf(portAndProtocol[0])));
-                v1HTTPGetAction.setPath(path);
-                if (HTTPS.equalsIgnoreCase(protocol)) {
-                    v1HTTPGetAction.setScheme(HTTPS);
-                }
-                v1Probe.setHttpGet(v1HTTPGetAction);
-                healthCheck = true;
-            }
-        } else {
-            for (Port port : portsList) {
-                String[] portAndProtocol = port.getPort().split("/");
-                int portValue = Integer.valueOf(portAndProtocol[0]);
-                logger.debug("Port {}, HealthCheck {}", port.getPort(), port.getHealthCheck());
-                if (port.getHealthCheck() != null) {
-                    logger.debug("Adding TCP HealthCheck for port {} .", port);
-                    V1TCPSocketAction v1TCPSocketAction = new V1TCPSocketAction();
-                    v1TCPSocketAction.setPort(new IntOrString(portValue));
-                    v1Probe.setTcpSocket(v1TCPSocketAction);
-                    healthCheck = true;
-                    break;
-                }
-            }
-        }
-    
-        List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
-        if (healthCheck) {
+        if (v1Probe != null) {
             v1Probe.setInitialDelaySeconds(DEFAULT_INITIAL_DELAY_IN_SECONDS);
             v1Probe.setPeriodSeconds(DEFAULT_PERIOD_IN_SECONDS);
             v1Probe.setTimeoutSeconds(DEFAULT_TIMEOUT_IN_SECONDS);
@@ -120,6 +83,45 @@ public class HealthChecksHandler implements ManifestHandler {
             }
         }
         return manifestSnippetList;
+    }
+    
+    private V1Probe getHealthProbe(List<Port> portsList) {
+        Optional<Port> httpHealthCheckPort = portsList.stream().filter(each -> each.getPort() != null
+                && each.getHealthCheck() != null && each.getHealthCheck().getHttpPath() != null).findFirst();
+    
+        if (httpHealthCheckPort.isPresent()) {
+            Port port = httpHealthCheckPort.get();
+            String[] portAndProtocol = port.getPort().split("/");
+            String path = port.getHealthCheck().getHttpPath();
+            if (StringUtils.isNotBlank(path)) {
+                String protocol = portAndProtocol.length > 1 ? portAndProtocol[1] : null;
+                logger.debug("Protocol {} for HealthCheck for port {} .", protocol, port.getPort());
+                V1HTTPGetAction v1HTTPGetAction = new V1HTTPGetAction();
+                v1HTTPGetAction.setPort(new IntOrString(Integer.valueOf(portAndProtocol[0])));
+                v1HTTPGetAction.setPath(path);
+                if (HTTPS.equalsIgnoreCase(protocol)) {
+                    v1HTTPGetAction.setScheme(HTTPS);
+                }
+                V1Probe v1Probe = new V1Probe();
+                v1Probe.setHttpGet(v1HTTPGetAction);
+                return v1Probe;
+            }
+            return null;
+        }
+        for (Port port : portsList) {
+            String[] portAndProtocol = port.getPort().split("/");
+            int portValue = Integer.parseInt(portAndProtocol[0]);
+            logger.debug("Port {}, HealthCheck {}", port.getPort(), port.getHealthCheck());
+            if (port.getHealthCheck() != null) {
+                logger.debug("Adding TCP HealthCheck for port {} .", port);
+                V1TCPSocketAction v1TCPSocketAction = new V1TCPSocketAction();
+                v1TCPSocketAction.setPort(new IntOrString(portValue));
+                V1Probe v1Probe = new V1Probe();
+                v1Probe.setTcpSocket(v1TCPSocketAction);
+                return v1Probe;
+            }
+        }
+        return null;
     }
 
     private ManifestSnippet buildReadinessProbe(V1Probe v1Probe, String podSpecOwner) throws JsonProcessingException {

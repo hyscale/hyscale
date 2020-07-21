@@ -1,0 +1,10 @@
+{
+	"test": {
+		"testleaf": {
+			"testleafkey": "testleafval"
+		},
+		"newtestleaf": {
+			"test": "value"
+		}
+	}
+}
