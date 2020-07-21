@@ -155,18 +155,12 @@ func getEnvs(user *user.User) *map[string]string {
 	envs[dockerConfigDirEnv] = "/" + constants.Hyscale + "/.docker"
 	envs[externalRegistryEnv] = "true"
 
-	// If the DockerHost environment variable is empty , the value is set based on the OS
-	dockerHostEnv := os.Getenv(dockerHost)
-	if dockerHostEnv == "" {
-		if util.IsWindows() {
-			envs[dockerHost] = constants.WindowsInternalDockerHost
-		} else {
-			envs[dockerHost] = "unix://" + unixSocket
-		}
+	// The DOCKER_HOST environment variable value is set based on the OS
+	if util.IsWindows() {
+		envs[dockerHost] = constants.WindowsInternalDockerHost
 	} else {
-		envs[dockerHost] = dockerHostEnv
+		envs[dockerHost] = "unix://" + unixSocket
 	}
-
 	// IMAGE_CLEANUP_POLICY Env
 	cleanUp := os.Getenv(ImageCleanUpPolicy)
 	if cleanUp != "" {
