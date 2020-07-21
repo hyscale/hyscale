@@ -4,312 +4,92 @@
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=io.hyscale%3Ahyscale&metric=security_rating)](https://sonarcloud.io/dashboard?id=io.hyscale%3Ahyscale)
 [![Release](https://img.shields.io/github/v/release/hyscale/hyscale)](https://github.com/hyscale/hyscale/releases/latest)
 
-HyScale is an application deployment tool that helps you effortlessly deploy to Kubernetes. It offers a high-level abstraction on top of Kubernetes so that teams can deploy software to K8s while focusing more on code rather than on low-level details.
+***
 
-**You can use HyScale to:**
+**Kubernetes (K8s) is complex.** This makes application deployment to K8s challenging, time-consuming, tedious and error-prone. But it doesn't have to be that way.
 
-+ Generate Docker files & images from packaged code like binaries, jar, war, scripts etc 
-+ Generate Kubernetes manifests from an app-centric declarative description of services/applications & configurations
-+ Deploy manifests into directed clusters and get a live service/app URL on Kubernetes
-+ Easily troubleshoot any deployment issues by getting actionable easily-understood app-centric error messages than the cryptic low-level messages that K8s returns. 
-
-## Our Belief
-
-At HyScale, we believe all complexities around deployment can be abstracted and eventually be eliminated. Our goal here is to create a community of users building and deploying apps to Kubernetes in the most efficient way possible.  Our roadmap and priorities will be shared soon along with tasks and features that can help the community,
-
-## Contribute
-
-Do you have any inputs that can make HyScale better? Say, a bug or a feature request? Please open a new issue [here](https://github.com/hyscale/hyscale/issues). See our architecture & contributor documentation [here](https://github.com/hyscale/hyscale/blob/master/docs/contributor-guide.md).
-
-## Community
-Let us know your experiences with HyScale! Questions, Issues, Suggestions - we look forward to them all!
-* Follow [@hyscaleio](https://twitter.com/hyscaleio) updates on Twitter 
-* Read [@teamhyscale](https://medium.com/@teamhyscale)  updates and musings on Medium
-* Write to us at connect@hyscale.io  and we will respond as quickly as we can.
-
-## Capabilities
-
-**1. Automatic containerization & auto-generation of K8s yamls**
-
-HyScale offers a declarative spec for K8s abstraction using which K8s manifests & docker files are automatically generated, docker images are built & pushed to the target docker registry, and the manifests are deployed to the K8s cluster resulting in a URL.
-
-**2. App-centric abstraction**
-
-HyScale's app centric abstraction helps you achieve the folowing with just a few lines of declaration:
-
-+ Setting up resource-limits and enabling auto-scaling.
-
-+ Enabling health-checks on a http path or tcp port.
-
-+ Declaring volume paths for storing service data.
-
-+ Providing configuration properties that are automatically made available as a file within the pod and as env props in the service container.
-
-+ Declaring the keys for secrets such as passwords & tokens that are automatically made available from the K8s secrets store.
-
-+ Attaching log, monitoring and tracing agents to the service.
-
-+ Override or add different configurations for different environments using profiles.
+This project is aimed at building an abstraction framework over K8s (for app deployments) in the same vein as jQuery over Javascript or Spring over servlets.
 
 
-**3. App-centric troubleshooting**
+## Abstracting K8s
 
-Deployment failures at Kubernetes are cryptic and not intuitive for debugging. Users have to refer many things to identify the root cause of the failure like pod status, describe pod , statuses of other kinds etc. When issues occur abstraction is needed to simplify troubleshooting. So instead of presenting users with an error like "CrashLoopBackOff", HyScale executes a troubleshooting flowchart that will basically try to figure out the possible causes and inform the user in plain terms. 
-Hyscale abstracts Kubernetes errors to an app-centric model eg.: a "Pending" state may mean one of many things such as "New services cannot be accommodated as cluster capacity is full" or "Specified volume cannot be attached to the service"
+Containerizing apps and deploying them to K8s can be tedious and error-prone with having to write & maintain large portions of yaml, dealing with cryptic K8s error messages, challenging new ops and keeping up with new K8s versions. An abstraction brings higher-level objects & actions that are intuitively understood by developers & devops professionals alike making deployments, maintenance & troubleshooting a breeze!
+
+Such an abstraction must: <br />
+a) be declarative, <br />
+b) intuitive to read, and <br /> 
+c) orders of magnitude smaller to write & maintain
 
 
-## Getting started
+## Examples
 
-Here is what you need to do:
+For instance, if your service requires to persist some data at the path /mydata , all you would need to declare is:
 
-<img src="docs/images/user-workflow.png" height="125" />
+```yaml
+volumes:
+    - name: myvol
+      path: /mydata
+      size: 1G
+```
 
-Here is a glimpse of what HyScale does when you invoke it
+and leave to the abstraction framework all the details of generating the right yamls & labels for stateful sets, persistent volume templates, with PVCs linked to the storage class, etc.
 
-<img src="docs/images/inside-hyscale.png" height="400" />
 
-To get started, install hyscale as per the below [instructions](https://github.com/hyscale/hyscale#prerequisites) & follow the [tutorial](https://www.hyscale.io/tutorial/get-started/) to deploy your first app.
-For detailed information, refer [hspec](https://github.com/hyscale/hspec/blob/master/docs/hyscale-spec-reference.md).
+Similarly, if your service needs auto-scaling, the high-level intent declaration would be something like this:
 
-## Prerequisites
-In order to deploy your service to K8s, you must have the following configurations and installations in place on your machine from which you wish to deploy your application.
-1. Docker 18.09.x or above. Your Linux user should be part of the docker group and `docker.sock` should be present at /var/run/docker.sock (Default location) 
-2. Kubernetes authentication credentials kubeconfig file having the cluster token placed at $HOME/.kube/config
-3. Image registry credentials at $HOME/.docker/config.json . Make sure `config.json` has the latest auth creds by logging into the image registry using `docker login` prior to deployment.
+```yaml
+replicas:
+      min: 2
+      max: 5
+      cpuThreshold: 80%
+```
+Of course you can have different profiles to override things for different environments of your app.
 
-If you do not have access to a kubernetes cluster and wish to deploy your application to a local cluster on your machine, you could try setting up [minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/) or [kind](https://github.com/kubernetes-sigs/kind).
+To see what other things you could specify in an app-centric declarative way and how to write a complete spec file, check out the tutorial [here](https://www.hyscale.io/tutorial/get-started/).
 
-## Installation
+You can also find spec files for a few sample applications [here](https://github.com/hyscale/hyscale/tree/master/examples).
 
-#### Linux
 
-Open your terminal and enter the following:
+## App2URL | Deploying to K8s
 
+Once you've written the declaration of your service's requirements (we call it a hspec file), deploying and obtaining a URL is a one-line command:
+
+```hyscale deploy service -f '<myservice.hspec>' -n '<my-namespace>' -a '<my-app-name>'```
+
+HyScale will generate the dockerfile if necessary, build & push the docker image, generate the required K8s yamls and talk to the K8s cluster specified at $HOME/.kube/config . At the end of this command execution, you should see a URL with which to access your app!
+
+
+## Completing the abstraction | Troubleshooting & Ops
+
+If, say, you got an error message such as CrashLoopBackOff, the abstraction would tell you whether that was due to an erroneous CMD in your dockerfile, a failing health-check or a missing entrypoint for your service. 
+
+And if you wanted to perform some operations such as getting the logs of a service, all you would do is say something like 
+```hyscale get service logs -s <service-name>```
+
+
+## Download & Try
+
+To run HyScale, you need Docker 18.09.x or above, your Kubernetes cluster token at $HOME/.kube/config and registry credentials at $HOME/.docker/config.json
+
+If you are on Linux, install using:
 ```sh
 curl -sSL https://get.hyscale.io | bash
 ```
 
-#### Mac 
-Usage Pre-Requisites:
-
-* JDK version 11 and above
-
-1.Download the latest stable release:
-
-    curl -L https://get.hyscale.io/mac -o hyscale
-
-2.Make the hyscale binary executable.
-
-    chmod +x ./hyscale
-
-3.Move the binary in to your PATH.
-
-    sudo mv ./hyscale /usr/local/bin/hyscale
-4.Test to ensure hyscale is installed.
-   
-    hyscale --version
+For more details on pre-requisites as well as instructions for Windows & Mac, see [here](https://github.com/hyscale/hyscale/wiki/Installation).
 
 
-### Windows
-Usage Pre-Requisites:
+## Contribute
 
-* JDK version 11 and above
+Our initial goal is to achieve sufficient abstraction levels to satisfy at least 80% of the app deployment use-cases out there. 
 
-1.Download the latest stable release from this [link](https://get.hyscale.io/win) Or run the below command in powershell.
+Do you have any inputs that can make HyScale better? Say, a bug or a feature request? Please open a new issue [here](https://github.com/hyscale/hyscale/issues). 
 
-     Invoke-WebRequest -Uri https://get.hyscale.io/win -OutFile hyscale.ps1               
-
-2.Add the downloaded hyscale.ps1 to your PATH
-
-3.Verify the installation by running the below command in the powershell window.
-
-    hyscale.ps1 --version
-
-*Note: The first time run would take time as the script downloads the required binary file. If you get execution error, please set execution policy for current user, for more info refer [here](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_execution_policies?view=powershell-7) *
+To contribute, see our architecture & contributor documentation [here](https://github.com/hyscale/hyscale/blob/master/docs/contributor-guide.md).
 
 
-Note: Verified on CentOS, Ubuntu, Debian Linux, Mac and Windows.
-
-## Deploying to K8s
-
-### Preparing your first service spec (hspec)
-
-Here is a basic service spec for deploying tomcat (without any application). To get started with more options see the [tutorial](https://www.hyscale.io/tutorial/get-started/).
-
-##### myservice.hspec
-
-```yaml
-name: myservice
-image:
-    registry: registry.hub.docker.com
-    name: library/tomcat
-    tag: 8.5.0-jre8
- 
-volumes:
-    - name: tomcat-logs-dir
-      path: /usr/local/tomcat/logs
-      size: 1Gi
-
-external: true
-ports:
-  - port: 8080/tcp
-    healthCheck:
-       httpPath: /docs/images/tomcat.gif
-
-```
-Managing configuration differences across environments is necessary, so a hspec alone may not be sufficient across all environments. Environment specific configurations can be achieved through [profiles](https://github.com/hyscale/hspec/blob/master/docs/hyscale-spec-reference.md#profile-files) as shown in the example below.
-
-####  Stage profile for myservice can be like
-
-##### stage-myservice.hprof
-
-```yaml
-environment: stage
-overrides: myservice
- 
-volumes:
-    - name: tomcat-logs-dir
-      size: 2Gi
-
-replicas:
-    min: 1
-    max: 4
-    cpuThreshold: 30%
- 
-
-```
-
-### Deploy the service
-
-**To deploy, invoke the hyscale deploy command:**
-    
-```sh
-hyscale deploy service -f `<myservice.hspec>` -n `<my-namespace>` -a `<my-app-name>`
-```
-
-**To deploy with profiles, invoke the hyscale deploy command:**
-    
-```sh
-hyscale deploy service -f `<myservice.hspec>` -n `<my-namespace>` -a `<my-app-name>` -p `<stage-myservice.hprof>`
-```
-
-**To view the status of your deployment:**
-
-```sh
-hyscale get service status -s `<myservice>` -n `<my-namespace>` -a `<my-app-name>`
-```
-
-**To view logs:**
-```sh
-hyscale get service logs -s `<myservice>` -n `<my-namespace>` -a `<my-app-name>`
-```
-
-For all possible commands, see the [command reference](docs/hyscale-commands-reference.md).
-
-### HyScale version compatibility
-####  HyScale vs [hspec version](https://github.com/hyscale/hspec) 
-<table>
-<tr>
-    <th class="tg-0lax">hspec-version ➝ </th>
-    <th class="tg-cly1"><a href="https://github.com/hyscale/hyscale/blob/v0.9/docs/hyscale-spec-reference.md">0.5</a></th>
-    <th class="tg-cly1"><a href="https://github.com/hyscale/hspec/blob/v0.6/docs/hyscale-spec-reference.md">0.6</a></th>
-    <th class="tg-0lax"><a href="https://github.com/hyscale/hspec/blob/v0.6.1/docs/hyscale-spec-reference.md">0.6.1</a></th>
-    <th class="tg-0lax"><a href="https://github.com/hyscale/hspec/blob/v0.6.1.1/docs/hyscale-spec-reference.md">0.6.1.1</a></th>
-  </tr>
-  <tr>
-    <td class="tg-0lax">0.9</td>
-    <td class="tg-cly1">✔️</td>
-    <td class="tg-cly1">-️</td>
-    <td class="tg-0lax">-️</td>
-    <td class="tg-0lax">-️</td>
-  </tr>
-  <tr>
-    <td class="tg-0lax">0.9.1</td>
-    <td class="tg-cly1">✔️</td>
-    <td class="tg-cly1">✔️</td>
-    <td class="tg-0lax">-️</td>
-    <td class="tg-0lax">-️</td>
-  </tr>
-  <tr>
-    <td class="tg-0lax">0.9.2</td>
-    <td class="tg-cly1">✔️</td>
-    <td class="tg-cly1">✔️</td>
-    <td class="tg-0lax">✔️</td>
-    <td class="tg-0lax">-️</td>
-  </tr>
-  <tr>
-    <td class="tg-0lax">0.9.3</td>
-    <td class="tg-cly1">✔️</td>
-    <td class="tg-cly1">✔️</td>
-    <td class="tg-0lax">✔️</td>
-    <td class="tg-0lax">✔️</td>
-  </tr>
-  <tr>
-    <td class="tg-0lax">0.9.4</td>
-    <td class="tg-cly1">✔️</td>
-    <td class="tg-cly1">✔️</td>
-    <td class="tg-0lax">✔️</td>
-    <td class="tg-0lax">✔️</td>
-  </tr>
-  </table>
-  
-#### HyScale vs Kubernetes cluster 
-
-<table class="tg">
-  <tr>
-    <th class="tg-cly1">cluster-version ➝ </th>
-    <th class="tg-cly1">1.12</th>
-    <th class="tg-0lax">1.13</th>
-    <th class="tg-0lax">1.14</th>
-    <th class="tg-0lax">1.15</th>
-    <th class="tg-0lax">1.16</th>
-  </tr>
-  <tr>
-    <td class="tg-cly1">0.9</td>
-    <td class="tg-cly1">✔️</td>
-    <td class="tg-0lax">-</td>
-    <td class="tg-0lax">-</td>
-    <td class="tg-0lax">-</td>
-    <td class="tg-0lax">-</td>
-  </tr>
-  <tr>
-    <td class="tg-cly1">0.9.1</td>
-    <td class="tg-cly1">✔️</td>
-    <td class="tg-0lax">-</td>
-    <td class="tg-0lax">-</td>
-    <td class="tg-0lax">-</td>
-    <td class="tg-0lax">-</td>
-  </tr>
-  <tr>
-    <td class="tg-cly1">0.9.2</td>
-    <td class="tg-cly1">+</td>
-    <td class="tg-0lax">✔️</td>
-    <td class="tg-0lax">✔️</td>
-    <td class="tg-0lax">-</td>
-    <td class="tg-0lax">-</td>
-  </tr>
-  <tr>
-    <td class="tg-cly1">0.9.3</td>
-    <td class="tg-cly1">+</td>
-    <td class="tg-0lax">✔️</td>
-    <td class="tg-0lax">✔️</td>
-    <td class="tg-0lax">-</td>
-    <td class="tg-0lax">-</td>
-  </tr>
-  <tr>
-    <td class="tg-cly1">0.9.4</td>
-    <td class="tg-cly1">+</td>
-    <td class="tg-0lax">✔️</td>
-    <td class="tg-0lax">✔️</td>
-    <td class="tg-0lax">✔️</td>
-    <td class="tg-0lax">✔️</td>
-  </tr>
-</table>
-
-Key: 
-
-* `✔` Supported version 
-* `-` Unsupported version
-* `+` Backward compatible
-
-
+## Community
+Let us know your experience with HyScale!
+* Follow [@hyscaleio](https://twitter.com/hyscaleio) for updates on Twitter 
+* Read [@teamhyscale](https://medium.com/@teamhyscale)  for updates and musings on Medium
+* Write to us at connect@hyscale.io  and we will respond as quickly as we can.
