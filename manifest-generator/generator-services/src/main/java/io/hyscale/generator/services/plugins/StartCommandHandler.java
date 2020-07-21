@@ -58,10 +58,10 @@ public class StartCommandHandler implements ManifestHandler {
             List<String> commandWithArgsList = Lists.newArrayList();
             String[] commandWithArgsArray = startCommand.split("\\s*,\\s*");
             for (String arg : commandWithArgsArray) {
-                String trimmedArg = arg.replaceAll("^\"|\"$", "");
+                // Replace starting and ending '"' from command
+                String trimmedArg = arg.replaceAll("(?:^\")|(?:\"$)", "");
                 commandWithArgsList.add(trimmedArg);
             }
-            // TODO split on " "? for command
             List<String> command = Lists.newArrayList();
             command.add(commandWithArgsList.get(0));
             List<String> args = Lists.newArrayList(commandWithArgsList);
