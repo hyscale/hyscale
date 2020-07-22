@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.commons.models;
+package io.hyscale.event.model;
 
-public interface Activity {
+import org.springframework.context.ApplicationEvent;
 
-	public String getActivityMessage();
-	
-	default String getActivityMessage(String ...args) {
-	    if (args == null || args.length == 0) {
-	        return getActivityMessage();
-	    }
-	    return String.format(getActivityMessage().replaceAll("\\{\\}", "%s"), args);
-	}
+public abstract class HyscaleEvent extends ApplicationEvent {
+
+    public HyscaleEvent(Object source) {
+        super(source);
+    }
+
 }

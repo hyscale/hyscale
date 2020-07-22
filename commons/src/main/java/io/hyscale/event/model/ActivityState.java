@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.commons.models;
+package io.hyscale.event.model;
 
-public interface Activity {
+public enum ActivityState {
+    HEADER(""), STARTED(""), DONE("DONE"), SKIPPING("SKIPPED"), FAILED("FAILED"), PROGRESS(".");
 
-	public String getActivityMessage();
-	
-	default String getActivityMessage(String ...args) {
-	    if (args == null || args.length == 0) {
-	        return getActivityMessage();
-	    }
-	    return String.format(getActivityMessage().replaceAll("\\{\\}", "%s"), args);
-	}
+    private String message;
+
+    private ActivityState(String message) {
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
+    }
 }
