@@ -39,6 +39,9 @@ import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.model.WorkflowContextBuilder;
 import io.hyscale.deployer.core.model.AppMetadata;
 import io.hyscale.deployer.services.deployer.Deployer;
+import io.hyscale.event.model.InformationEvent;
+import io.hyscale.event.model.InformationEvent.Level;
+import io.hyscale.event.processor.EventProcessor;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -135,8 +138,10 @@ public class HyscaleGetAppsCommand implements Callable<Integer> {
             String[] row = new String[]{appInfo.getAppName(), appInfo.getEnvName(), appInfo.getNamespace(), services};
             table.addRow(row);
         });
-        WorkflowLogger.logTable(table);
-        WorkflowLogger.footer();
+        InformationEvent<TableFormatter> tableInfo = new InformationEvent<>(table, Level.INFO);
+        EventProcessor.publishEvent(tableInfo);
+//        WorkflowLogger.logTable(table);
+//        WorkflowLogger.footer();
         return ToolConstants.HYSCALE_SUCCESS_CODE;
     }
 
