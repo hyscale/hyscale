@@ -25,6 +25,10 @@ module commons {
 	exports io.hyscale.commons.framework.patch;
 	exports io.hyscale.commons.commands.provider;
 	exports io.hyscale.commons.io;
+	exports io.hyscale.event.listener.console;
+	exports io.hyscale.event.model;
+	exports io.hyscale.event.processor;
+	exports io.hyscale.event.publisher;
 
 	requires com.fasterxml.jackson.annotation;
 	requires client.java.api;
@@ -41,4 +45,5 @@ module commons {
 	requires java.json;
 	requires commons.exec;
     requires gson;
+    requires spring.core;
 }

@@ -33,8 +33,11 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.commons.models.ManifestContext;
-import io.hyscale.commons.models.Status;
 import io.hyscale.commons.models.YAMLManifest;
+import io.hyscale.event.model.ActivityEvent;
+import io.hyscale.event.model.ActivityEvent.ActivityEventBuilder;
+import io.hyscale.event.model.ActivityState;
+import io.hyscale.event.processor.EventProcessor;
 import io.hyscale.generator.services.config.ManifestConfig;
 import io.hyscale.generator.services.generator.ManifestFileGenerator;
 import io.hyscale.generator.services.model.ManifestGeneratorActivity;
@@ -78,22 +81,35 @@ public class PluginProcessor {
 
         manifestMetavsNodeMap.entrySet().stream().forEach(each -> {
             ManifestNode manifestNode = each.getValue();
+            ActivityEventBuilder builder = new ActivityEventBuilder().withActivity(ManifestGeneratorActivity.GENERATING_MANIFEST)
+                    .withArgs(each.getKey().getKind()).withActivityState(ActivityState.STARTED);
+            EventProcessor.publishEvent(builder.build());
             try {
                 String yamString = null;
                 if (manifestNode != null && manifestNode.getObjectNode() != null) {
                     yamString = yamlMapper.writeValueAsString(manifestNode.getObjectNode());
                 }
-                WorkflowLogger.startActivity(ManifestGeneratorActivity.GENERATING_MANIFEST, each.getKey().getKind());
+//                WorkflowLogger.startActivity(ManifestGeneratorActivity.GENERATING_MANIFEST, each.getKey().getKind());
                 YAMLManifest yamlManifest = manifestFileGenerator.getYamlManifest(manifestDir, yamString,
                         each.getKey());
                 manifestList.add(yamlManifest);
-                WorkflowLogger.endActivity(Status.DONE);
+                // TODO New Event
+                builder = new ActivityEventBuilder().withActivity(ManifestGeneratorActivity.GENERATING_MANIFEST)
+                        .withArgs(each.getKey().getKind()).withActivityState(ActivityState.DONE);
+                EventProcessor.publishEvent(builder.build());
+//                WorkflowLogger.endActivity(Status.DONE);
             } catch (HyscaleException e) {
                 logger.error("Failed to process manifest {}", each.getKey(), e);
-                WorkflowLogger.endActivity(Status.FAILED);
+                builder = new ActivityEventBuilder().withActivity(ManifestGeneratorActivity.GENERATING_MANIFEST)
+                        .withArgs(each.getKey().getKind()).withActivityState(ActivityState.FAILED);
+                EventProcessor.publishEvent(builder.build());
+//                WorkflowLogger.endActivity(Status.FAILED);
             } catch (JsonProcessingException e) {
                 logger.error("Failed to process manifest during yaml conversion {}", each.getKey(), e);
-                WorkflowLogger.endActivity(Status.FAILED);
+                builder = new ActivityEventBuilder().withActivity(ManifestGeneratorActivity.GENERATING_MANIFEST)
+                        .withArgs(each.getKey().getKind()).withActivityState(ActivityState.FAILED);
+                EventProcessor.publishEvent(builder.build());
+//                WorkflowLogger.endActivity(Status.FAILED);
             }
         });
         return manifestList;

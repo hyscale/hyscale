@@ -36,6 +36,8 @@ import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.exception.ExceptionHandler;
 import io.hyscale.controller.util.ResourceCleanUpUtil;
 import io.hyscale.controller.util.ShutdownHook;
+import io.hyscale.event.processor.EventProcessor;
+import io.hyscale.event.publisher.EventPublisher;
 import picocli.CommandLine;
 import picocli.CommandLine.IFactory;
 import picocli.CommandLine.ParameterException;
@@ -67,6 +69,9 @@ public class HyscaleInitializer implements CommandLineRunner {
     @Autowired
     private HyscaleCommand hyscaleCommand;
     
+    @Autowired
+    private EventPublisher eventPublisher;
+    
     private static final boolean IS_LAZY_INITIALIZATION = true;
 
     static {
@@ -96,6 +101,7 @@ public class HyscaleInitializer implements CommandLineRunner {
             commandLine.setSubcommandsCaseInsensitive(true);
             commandLine.setExecutionExceptionHandler(exceptionHandler);
             commandLine.setParameterExceptionHandler(parameterExceptionHandler);
+            EventProcessor.addPublisher(eventPublisher);
             exitCode = commandLine.execute(args);
         } catch (ParameterException e) {
             logger.error("Error while processing command, error {}", ControllerErrorCodes.INVALID_COMMAND.getMessage(), e);

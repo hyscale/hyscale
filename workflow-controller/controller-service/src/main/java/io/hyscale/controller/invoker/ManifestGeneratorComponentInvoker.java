@@ -22,6 +22,9 @@ import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.ManifestContextBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.event.model.ActivityEvent.ActivityEventBuilder;
+import io.hyscale.event.model.ActivityState;
+import io.hyscale.event.processor.EventProcessor;
 import io.hyscale.controller.hooks.ManifestCleanUpHook;
 import io.hyscale.generator.services.config.ManifestConfig;
 import io.hyscale.generator.services.exception.ManifestErrorCodes;
@@ -76,8 +79,9 @@ public class ManifestGeneratorComponentInvoker extends ComponentInvoker<Workflow
             throw new HyscaleException(ServiceSpecErrorCodes.SERVICE_SPEC_REQUIRED);
         }
         String serviceName = context.getServiceName();
-
-        WorkflowLogger.header(ControllerActivity.STARTING_MANIFEST_GENERATION);
+        ActivityEventBuilder builder = new ActivityEventBuilder()
+                .withActivity(ControllerActivity.STARTING_MANIFEST_GENERATION).withActivityState(ActivityState.HEADER);
+        EventProcessor.publishEvent(builder.build());
         ManifestContext manifestContext = manifestContextBuilder.build(context);
 
         List<Manifest> manifestList = null;
