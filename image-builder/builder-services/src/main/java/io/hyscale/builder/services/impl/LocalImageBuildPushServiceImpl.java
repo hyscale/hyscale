@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 import io.hyscale.builder.core.models.BuildContext;
 import io.hyscale.builder.core.models.DockerImage;
 import io.hyscale.builder.core.models.ImageBuilderActivity;
+import io.hyscale.builder.events.model.ImageBuildEvent;
 import io.hyscale.builder.services.cleanup.ImageCleanUpProcessor;
 import io.hyscale.builder.services.constants.DockerImageConstants;
 import io.hyscale.builder.services.docker.HyscaleDockerClient;
@@ -34,6 +35,8 @@ import io.hyscale.builder.services.service.ImageBuildPushService;
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.framework.events.model.ActivityState;
+import io.hyscale.commons.framework.events.publisher.EventPublisher;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Status;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -82,6 +85,8 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
                     String.class);
             //Prepare Dockerfile for Image build
             Dockerfile dockerfile = getDockerfile(userDockerfile, context);
+            ImageBuildEvent event = new ImageBuildEvent(new File(dockerfile.getDockerfilePath()), ActivityState.STARTED);
+            EventPublisher.getInstance().publishEvent(event);
             dockerImage = hyscaleDockerClient.build(dockerfile, tag, context);
             context.setDockerImage(dockerImage);
         }
