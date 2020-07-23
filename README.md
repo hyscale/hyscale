@@ -67,7 +67,7 @@ HyScale will generate the dockerfile if necessary, build & push the docker image
 
 If, say, you got an error message such as CrashLoopBackOff, the abstraction would tell you whether that was due to an erroneous CMD in your dockerfile, a failing health-check or a missing entrypoint for your service. 
 
-For more on app-centric automated troubleshooting, see [here](https://github.com/hyscale/hyscale/wiki/Troubleshooting)
+For more on app-centric automated troubleshooting, see [here](https://github.com/hyscale/hyscale/wiki/App-centric-Troubleshooting)
 
 And if you wanted to perform some operations such as getting the logs of a service, all you would do is say something like 
 ```hyscale get service logs -s <service-name>```
