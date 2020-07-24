@@ -24,7 +24,7 @@ To deploy an application service which is defined in the hspec file, use the "de
 
 -P profilename option lookups for the profile files in the format `<profilename>-<servicename>`.hprof in the directory of hspec ,say dir(hspec) or in the dir(hspec)/profiles. In this case profile is compulsory for all the service spec(s) provided.
 
-Images that are built part of hyscale deploy are handled based on the IMAGE_CLEANUP_POLICY environment variable. Possible values of the policy are 
+Images that are built part of hyscale deploy are handled based on the HYS_IMAGE_CLEANUP_POLICY environment variable. Possible values of the policy are 
 * PRESERVE_N_RECENTLY_USED (default) , preserves the last 3 recently used images
 * DELETE_AFTER_BUILD, deletes the image immediately after the build.
 * PRESERVE_ALL, preserves the images
