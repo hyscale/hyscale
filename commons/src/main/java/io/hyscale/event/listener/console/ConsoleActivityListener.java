@@ -34,22 +34,22 @@ public class ConsoleActivityListener implements ApplicationListener<ActivityEven
         logger.debug("Listening Activity event: {}", event.getState());
         switch (event.getState()) {
         case HEADER:
-            WorkflowLogger.header(event.getActivity().getStartActivity(), event.getArgs());
+            WorkflowLogger.header(event.getActivityContext().getStartActivity(), event.getActivityContext().getArgs());
             break;
         case DONE:
-            WorkflowLogger.endActivity(event.getActivity(), Status.DONE);
+            WorkflowLogger.endActivity(event.getActivityContext(), Status.DONE);
             break;
         case FAILED:
-            WorkflowLogger.endActivity(event.getActivity(), Status.FAILED);
+            WorkflowLogger.endActivity(event.getActivityContext(), Status.FAILED);
             break;
         case PROGRESS:
-            WorkflowLogger.continueActivity(event.getActivity());
+            WorkflowLogger.continueActivity(event.getActivityContext());
             break;
         case SKIPPING:
-            WorkflowLogger.endActivity(event.getActivity(), Status.SKIPPING);
+            WorkflowLogger.endActivity(event.getActivityContext(), Status.SKIPPING);
             break;
         case STARTED:
-            WorkflowLogger.startActivity(event.getActivity(), event.getArgs());
+            WorkflowLogger.startActivity(event.getActivityContext(), event.getActivityContext().getArgs());
             break;
         default:
             break;

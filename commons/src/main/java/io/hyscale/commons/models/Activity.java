@@ -18,4 +18,11 @@ package io.hyscale.commons.models;
 public interface Activity {
 
 	public String getActivityMessage();
+	
+	default String getActivityMessage(String ...args) {
+	    if (args == null || args.length == 0) {
+	        return getActivityMessage();
+	    }
+	    return String.format(getActivityMessage().replaceAll("\\{\\}", "%s"), args);
+	}
 }

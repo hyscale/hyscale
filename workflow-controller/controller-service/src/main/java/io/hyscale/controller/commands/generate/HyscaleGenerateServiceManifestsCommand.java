@@ -28,7 +28,6 @@ import io.hyscale.controller.profile.ServiceSpecProcessor;
 import io.hyscale.controller.validator.impl.ManifestValidator;
 import io.hyscale.controller.validator.impl.RegistryValidator;
 import io.hyscale.controller.validator.impl.ServiceSpecInputValidator;
-import io.hyscale.event.model.ActivityEvent;
 import io.hyscale.event.model.ActivityState;
 import io.hyscale.event.model.ActivityEvent.ActivityEventBuilder;
 import io.hyscale.event.processor.EventProcessor;
@@ -168,8 +167,8 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
         boolean isFailed = false;
         for (WorkflowContext workflowContext : contextList) {
             String serviceName = workflowContext.getServiceName();
-            ActivityEventBuilder builder = new ActivityEventBuilder().withActivity(ControllerActivity.SERVICE_NAME)
-                    .withArgs(serviceName).withActivityState(ActivityState.HEADER);
+            ActivityEventBuilder builder = new ActivityEventBuilder().withActivity(ControllerActivity.SERVICE_NAME, serviceName)
+                    .withActivityState(ActivityState.HEADER);
             EventProcessor.publishEvent(builder.build());
             SetupConfig.clearAbsolutePath();
             SetupConfig.setAbsolutePath(serviceVsSpecFile.get(serviceName).getAbsoluteFile().getParent());

@@ -138,8 +138,10 @@ public class HyscaleGetAppsCommand implements Callable<Integer> {
             String[] row = new String[]{appInfo.getAppName(), appInfo.getEnvName(), appInfo.getNamespace(), services};
             table.addRow(row);
         });
-        WorkflowLogger.logTable(table);
-        WorkflowLogger.footer();
+        InformationEvent<TableFormatter> tableInfo = new InformationEvent<>(this, table, Level.INFO);
+        EventProcessor.publishEvent(tableInfo);
+//        WorkflowLogger.logTable(table);
+//        WorkflowLogger.footer();
         return ToolConstants.HYSCALE_SUCCESS_CODE;
     }
 

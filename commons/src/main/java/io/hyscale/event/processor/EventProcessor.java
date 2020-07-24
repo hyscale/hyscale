@@ -20,29 +20,17 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-<<<<<<< HEAD
-=======
 import org.springframework.context.ApplicationListener;
->>>>>>> origin/event-framework
 
 import io.hyscale.event.model.HyscaleEvent;
 import io.hyscale.event.publisher.EventPublisher;
 
 /**
-<<<<<<< HEAD
- * 
- * Performs functions such as:
- * 1. Listeners: Registering and deregistering
- * 2. Calling Publishers
- * 3. Processing Events before publishing
- * 
-=======
  * Event Processor Class
  * Provides high level functioning with respect to events, such as:
  * Publish events
  * Registering Publishers
  * Removing Listeners (Listeners are automatically registered by spring)
->>>>>>> origin/event-framework
  *
  */
 public class EventProcessor {
@@ -51,11 +39,6 @@ public class EventProcessor {
 
     private static List<EventPublisher> publishers = new ArrayList<>();
 
-<<<<<<< HEAD
-    //    private static List<InformationEvent> persistedEvents = new LinkedList<>();
-
-=======
->>>>>>> origin/event-framework
     public static void registerPublishers(List<EventPublisher> publishers) {
         if (publishers == null) {
             return;

@@ -15,23 +15,38 @@
  */
 package io.hyscale.commons.logger;
 
+import org.apache.commons.lang3.StringUtils;
+
 import io.hyscale.commons.models.Activity;
 
 
 public class ActivityContext {
 
     private Activity startActivity;
+    private String[] args;
     private long startTime;
 
     private int remaining;
 
-    public ActivityContext(Activity startActivity) {
+    public ActivityContext(Activity startActivity, String ...args) {
         this.startActivity = startActivity;
-        this.remaining = WorkflowLogger.LEFT_ALIGNED_PADDING - startActivity.getActivityMessage().length();
+        this.args = args;
+        this.remaining = WorkflowLogger.LEFT_ALIGNED_PADDING - getActivityMessage().length();
+    }
+    
+    public String getActivityMessage() {
+        if (startActivity == null) {
+            return StringUtils.EMPTY;
+        }
+        return startActivity.getActivityMessage(args);
     }
 
     public Activity getStartActivity() {
         return startActivity;
+    }
+
+    public String[] getArgs() {
+        return args;
     }
 
     public long getStartTime() {
