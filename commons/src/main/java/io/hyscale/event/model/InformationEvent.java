@@ -15,20 +15,27 @@
  */
 package io.hyscale.event.model;
 
-public class InformationEvent<T> extends HyscaleEvent {
-
-    private InformationEvent(Object source) {
-        super(source);
-    }
-
-    public InformationEvent(T message, Level level) {
-        super(message);
-        this.level = level;
-        this.message = message;
-    }
+public class InformationEvent<T> extends HyscaleGenericEvent {
 
     private Level level;
     private T message;
+
+    private InformationEvent(T message) {
+        super(message);
+        this.message = message;
+    }
+
+    private InformationEvent(T message, Level level) {
+        super(message);
+        this.message = message;
+        this.level = level;
+    }
+
+    public InformationEvent(Object source, T message, Level level) {
+        super(source);
+        this.level = level;
+        this.message = message;
+    }
 
     public Level getLevel() {
         return level;
@@ -41,4 +48,10 @@ public class InformationEvent<T> extends HyscaleEvent {
     public enum Level {
         INFO, WARN, DEBUG, ERROR, VERBOSE;
     }
+
+    @Override
+    protected Object getType() {
+        return message;
+    }
+
 }

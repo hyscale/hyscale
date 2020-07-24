@@ -45,4 +45,5 @@ module commons {
 	requires java.json;
 	requires commons.exec;
     requires gson;
+    requires spring.core;
 }

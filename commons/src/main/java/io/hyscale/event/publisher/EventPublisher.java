@@ -32,8 +32,11 @@ public class EventPublisher {
         multicaster.multicastEvent(event);
     }
     
-    // Remove Listener methods
     public void removeListener(ApplicationListener listener) {
         multicaster.removeApplicationListener(listener);
+    }
+    
+    public void removeListener(String listenerBeanName) {
+        multicaster.removeApplicationListenerBean(listenerBeanName);
     }
 }

@@ -20,7 +20,11 @@ a) be declarative, <br />
 b) intuitive to read, and <br /> 
 c) orders of magnitude smaller to write & maintain
 
+***
 
+<img src="https://github.com/hyscale/hyscale/blob/master/docs/images/hyscale-app2k8s.png" width="750" />
+
+***
 ## Examples
 
 For instance, if your service requires to persist some data at the path /mydata , all you would need to declare is:
@@ -45,7 +49,7 @@ replicas:
 ```
 Of course you can have different profiles to override things for different environments of your app.
 
-To see what other things you could specify in an app-centric declarative way and how to write a complete spec file, check out the tutorial [here](https://www.hyscale.io/tutorial/get-started/).
+To see what other things you could specify in an app-centric declarative way and how to write a complete spec file, **check out the tutorial [here](https://github.com/hyscale/hyscale/wiki/Tutorial)**.
 
 You can also find spec files for a few sample applications [here](https://github.com/hyscale/hyscale/tree/master/examples).
 
@@ -63,6 +67,8 @@ HyScale will generate the dockerfile if necessary, build & push the docker image
 
 If, say, you got an error message such as CrashLoopBackOff, the abstraction would tell you whether that was due to an erroneous CMD in your dockerfile, a failing health-check or a missing entrypoint for your service. 
 
+For more on app-centric automated troubleshooting, see [here](https://github.com/hyscale/hyscale/wiki/App-centric-Troubleshooting)
+
 And if you wanted to perform some operations such as getting the logs of a service, all you would do is say something like 
 ```hyscale get service logs -s <service-name>```
 
@@ -79,6 +85,13 @@ curl -sSL https://get.hyscale.io | bash
 For more details on pre-requisites as well as instructions for Windows & Mac, see [here](https://github.com/hyscale/hyscale/wiki/Installation).
 
 
+## Community
+Let us know your experience with HyScale!
+* Follow [@hyscaleio](https://twitter.com/hyscaleio) for updates on Twitter 
+* Read [@teamhyscale](https://medium.com/@teamhyscale)  for updates and musings on Medium
+* Write to us at connect@hyscale.io  and we will respond as quickly as we can.
+
+
 ## Contribute
 
 Our initial goal is to achieve sufficient abstraction levels to satisfy at least 80% of the app deployment use-cases out there. 
@@ -86,10 +99,3 @@ Our initial goal is to achieve sufficient abstraction levels to satisfy at least
 Do you have any inputs that can make HyScale better? Say, a bug or a feature request? Please open a new issue [here](https://github.com/hyscale/hyscale/issues). 
 
 To contribute, see our architecture & contributor documentation [here](https://github.com/hyscale/hyscale/blob/master/docs/contributor-guide.md).
-
-
-## Community
-Let us know your experience with HyScale!
-* Follow [@hyscaleio](https://twitter.com/hyscaleio) for updates on Twitter 
-* Read [@teamhyscale](https://medium.com/@teamhyscale)  for updates and musings on Medium
-* Write to us at connect@hyscale.io  and we will respond as quickly as we can.
