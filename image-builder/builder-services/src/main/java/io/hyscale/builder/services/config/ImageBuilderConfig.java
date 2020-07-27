@@ -32,7 +32,7 @@ public class ImageBuilderConfig {
     public static final String DOCKER_HOST = "DOCKER_HOST";
     private static final String PUSH_LOG = "push.log";
     private static final String BUILD_LOG = "build.log";
-    private static final String IMAGE_CLEAN_UP_POLICY_PROPERTY = "IMAGE_CLEANUP_POLICY";
+    private static final String IMAGE_CLEAN_UP_POLICY_PROPERTY = "HYS_IMAGE_CLEANUP_POLICY";
     private static final String UNIX_DOCKER_SOCK = "unix:///var/run/docker.sock";
 
     

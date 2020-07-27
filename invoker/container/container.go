@@ -21,21 +21,24 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"runtime"
 	"strings"
 
-	"github.com/docker/docker/api/types/mount"
+	"hyscale/credstore"
 
-	"hyscale/pkg/constants"
-	cnst "hyscale/pkg/constants"
-	installer "hyscale/pkg/installer"
-	"hyscale/pkg/registry"
-	util "hyscale/pkg/util"
+	"github.com/docker/docker/api/types/mount"
 )
 
 const (
+	// Hyscale defines the constant hyscale
+	Hyscale = "hyscale"
+	//ImageName Defines the latest image name of the HyScale Image
+	ImageName = "@@IMAGE_NAME@@"
+	// ImageTag Defines the latest image tag of the HyScale Image
+	ImageTag = "@@IMAGE_TAG@@"
 	//ImageCleanUpPolicy is used to clean the build images
-	ImageCleanUpPolicy = "IMAGE_CLEANUP_POLICY"
-
+	ImageCleanUpPolicy     = "HYS_IMAGE_CLEANUP_POLICY"
+	hysHostFsEnv           = "HYSCALE_HOST_FS"
 	homeEnv                = "HYSCALECTL_HOME"
 	kubeConfEnv            = "HYSCALECTL_KUBECONF"
 	dockerConfEnv          = "HYSCALECTL_DOCKERCONF"
@@ -55,7 +58,16 @@ const (
 )
 
 var (
-	imageName      = cnst.ImageName+":"+cnst.ImageTag
+	//User defines the current user executing the hyscale binary
+	User, _ = user.Current()
+
+	// HysDir defines the hyscale directory of the 'User'
+	HysDir = User.HomeDir + "/." + Hyscale
+
+	//WindowsInternalDockerHost specifies the host address of where docker daemon is running
+	WindowsInternalDockerHost = "tcp://host.docker.internal:2375"
+
+	imageName      = ImageName + ":" + ImageTag
 	currentUser, _ = user.Current()
 	dockerConf     = currentUser.HomeDir + configJSONPath
 	dockerConfDir  = currentUser.HomeDir + configDir
@@ -63,15 +75,18 @@ var (
 	pwd, _         = os.Getwd()
 )
 
-//HysContainer is container based installer for hyscale
-type HysContainer struct {
+//CliSpec refers to the Spec of the command line that controls the HyscaleRun
+type CliSpec struct {
+	Interactive   bool
+	Hspecs        []string
+	DisableBanner bool
 }
 
 //Run method for Container based hyscale installer
-func (hyscontainer *HysContainer) Run(cliSpec *installer.DeploySpec) (resp *installer.DeployResponse, err error) {
+func Run(cliSpec *CliSpec) (err error) {
 
 	labels := make(map[string]string)
-	labels["name"] = constants.Hyscale
+	labels["name"] = Hyscale
 
 	args := []string{"run", "--rm", "--net=host"}
 
@@ -82,7 +97,7 @@ func (hyscontainer *HysContainer) Run(cliSpec *installer.DeploySpec) (resp *inst
 		args = append(args, "--label")
 		args = append(args, BuildOption(k, v))
 	}
-	for k, v := range *getEnvs(constants.User) {
+	for k, v := range *getEnvs(User) {
 		args = append(args, "-e")
 		args = append(args, BuildOption(k, v))
 	}
@@ -109,7 +124,7 @@ func (hyscontainer *HysContainer) Run(cliSpec *installer.DeploySpec) (resp *inst
 
 	// Writing the docker config json to stdin of docker container
 	if len(cliSpec.Hspecs) > 0 {
-		authConfig, err := registry.GetAuthConfig(cliSpec.Hspecs)
+		authConfig, err := credstore.GetAuthConfig(cliSpec.Hspecs)
 		if err != nil {
 			panic(err)
 		}
@@ -133,7 +148,7 @@ func (hyscontainer *HysContainer) Run(cliSpec *installer.DeploySpec) (resp *inst
 			os.Exit(exit.ExitCode())
 		}
 	}
-	return resp, nil
+	return nil
 }
 
 //BuildOption builds the options in the map form to return the option string
@@ -149,19 +164,20 @@ func BuildOption(key string, value string) string {
 func getEnvs(user *user.User) *map[string]string {
 	envs := make(map[string]string)
 
-	envs[homeEnv] = user.HomeDir + "/." + constants.Hyscale
+	envs[homeEnv] = user.HomeDir + "/." + Hyscale
 	envs[kubeConfEnv] = kubeConf
 	envs[dockerConfEnv] = dockerConf
-	envs[dockerConfigDirEnv] = "/" + constants.Hyscale + "/.docker"
+	envs[dockerConfigDirEnv] = "/" + Hyscale + "/.docker"
 	envs[externalRegistryEnv] = "true"
 
 	// The DOCKER_HOST environment variable value is set based on the OS
-	if util.IsWindows() {
-		envs[dockerHost] = constants.WindowsInternalDockerHost
+	if IsWindows() {
+		envs[dockerHost] = WindowsInternalDockerHost
+		envs[hysHostFsEnv] = string(os.PathSeparator)
 	} else {
 		envs[dockerHost] = "unix://" + unixSocket
 	}
-	// IMAGE_CLEANUP_POLICY Env
+	// HYS_IMAGE_CLEANUP_POLICY Env
 	cleanUp := os.Getenv(ImageCleanUpPolicy)
 	if cleanUp != "" {
 		envs[ImageCleanUpPolicy] = cleanUp
@@ -180,31 +196,31 @@ func getVolumes() *[]mount.Mount {
 		{
 			Type:     mount.TypeBind,
 			Source:   dockerConf,
-			Target:   containerFileSeparator + constants.Hyscale + configJSONPath,
+			Target:   containerFileSeparator + Hyscale + configJSONPath,
 			ReadOnly: true,
 		},
 		{
 			Type:     mount.TypeBind,
 			Source:   kubeConf,
-			Target:   containerFileSeparator + constants.Hyscale + kubeConfPath,
+			Target:   containerFileSeparator + Hyscale + kubeConfPath,
 			ReadOnly: true,
 		},
 		{
 			Type:     mount.TypeBind,
 			Source:   pwd,
-			Target:   containerFileSeparator + constants.Hyscale + "/app",
+			Target:   containerFileSeparator + Hyscale + "/app",
 			ReadOnly: true,
 		},
 		{
 			Type:     mount.TypeBind,
-			Source:   constants.HysDir + containerFileSeparator + constants.Hyscale,
-			Target:   containerFileSeparator + constants.Hyscale + containerFileSeparator + constants.Hyscale,
+			Source:   HysDir + containerFileSeparator + Hyscale,
+			Target:   containerFileSeparator + Hyscale + containerFileSeparator + Hyscale,
 			ReadOnly: false,
 		},
 	}
 
 	// Mount unix docket for all unix OS
-	if !util.IsWindows() {
+	if !IsWindows() {
 		dockersock := mount.Mount{
 			Type:     mount.TypeBind,
 			Source:   unixSocket,
@@ -228,4 +244,12 @@ func BuildVolumes(mount *mount.Mount) string {
 	}
 
 	return builder.String()
+}
+
+//IsWindows verifies whether the host machine is windows or not
+func IsWindows() bool {
+	if runtime.GOOS == "windows" {
+		return true
+	}
+	return false
 }

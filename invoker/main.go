@@ -13,83 +13,60 @@ Copyright 2019 Pramati Prism, Inc.
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package cmd
+
+package main
 
 import (
 	"errors"
 	"log"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 
-	"hyscale/pkg/container"
-	installer "hyscale/pkg/installer"
-
-	//java "hyscale/pkg/java"
-
-	"github.com/spf13/cobra"
+	container "hyscale/container"
 )
 
 const (
-	javaVersionWarnMsg   = "JDK version 11 and above is required but found a lesser version"
 	dockerVersionWarnMsg = "Docker Version 18.09 and above is required but found a lesser version"
 	dockerRequireMsg     = "Docker 18.09 and above is required to run Hyscale"
 )
 
-//CLIInput is the struct for user input
-type CLIInput struct {
-	Cmd           *cobra.Command
-	Args          []string
-	Interative    bool
-	DisableBanner bool
-}
-
-//HyscaleRun is an entrypoint for Hyscale CommandLine Run
-func HyscaleRun(cliInput *CLIInput) {
-
+func main() {
 	dockerPresent := checkForDocker()
 	if !dockerPresent {
 		log.Fatal(errors.New(dockerRequireMsg))
 	}
-
-	//javaPresent := checkForJava()
-	spec := installer.DeploySpec{Interactive: cliInput.Interative, Hspecs: cliInput.Args, DisableBanner: cliInput.DisableBanner}
-	/*if javaPresent {
-		// Check for Hyscale jar if not present download it
-		var javaInstaller java.Jar
-		javaInstaller.Run(&spec)
-
-	}*/
-
-	if dockerPresent {
-		var containerInstaller container.HysContainer
-		containerInstaller.Run(&spec)
-	}
+	args := os.Args[1:]
+	clispec := parse(args)
+	container.Run(clispec)
 }
 
-func checkForJava() bool {
+func parse(args []string) *container.CliSpec {
+	interactive := false
 
-	javaInstalled := false
-	cmd := exec.Command("java", "-version")
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Fatal(err)
+	if len(args) > 2 && ("logs" == args[2] || "log" == args[2]) {
+		interactive = true
 	}
 
-	javaVersion := string(out)
-	if javaVersion != "" {
-		tokens := strings.Split(javaVersion, " ")
-		majorVersion, err := strconv.Atoi(strings.Split(strings.Trim(tokens[2], "\""), ".")[0])
-		//fmt.Println(majorVersion)
-		if err != nil {
-			log.Fatal(err)
+	var outputEnabled bool
+	var hspecs []string
+	for i, each := range args {
+		if strings.HasPrefix(each, "-o") || strings.HasPrefix(each, "--output") {
+			outputEnabled = true
 		}
-		if majorVersion < 11 {
-			log.Fatal(errors.New(javaVersionWarnMsg))
+
+		if strings.HasPrefix(each, "-f=") {
+			hspecs = append(hspecs, strings.Split(each[3:], ",")...)
+		} else if strings.HasPrefix(each, "-f") {
+			hspecs = append(hspecs, strings.Split(args[i+1], ",")...)
 		}
-		javaInstalled = true
 	}
-	return javaInstalled
+	return &container.CliSpec{
+		Interactive:   interactive,
+		Hspecs:        hspecs,
+		DisableBanner: outputEnabled,
+	}
 }
 
 func checkForDocker() bool {
@@ -97,10 +74,10 @@ func checkForDocker() bool {
 	cmd := exec.Command("docker", "--version")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(errors.New(dockerRequireMsg))
 	}
 	dockerVersionStr := string(out)
-	//fmt.Println(dockerVersionStr)
+
 	if dockerVersionStr != "" {
 		tokens := strings.Split(dockerVersionStr, " ")
 		dockerVersion, err := strconv.Atoi(strings.Split(tokens[2], ".")[0])

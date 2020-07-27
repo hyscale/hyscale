@@ -14,17 +14,20 @@ Copyright 2019 Pramati Prism, Inc.
    limitations under the License.
 */
 
-package registry
+package credstore
 
 import (
 	"fmt"
 	"os"
 	"path/filepath"
 
-	"hyscale/pkg/constants"
-
 	"github.com/docker/cli/cli/config"
 	"github.com/docker/cli/cli/config/types"
+)
+
+const (
+	//DockerDir defines the .docker dir
+	DockerDir = ".docker"
 )
 
 var (
@@ -76,7 +79,7 @@ func GetCredentials(registry string, verbose bool) (types.AuthConfig, error) {
 			fmt.Println("Error while fetching home directory", err)
 			return authConfig, err
 		}
-		configDir = filepath.Join(HomeDir, constants.DockerDir)
+		configDir = filepath.Join(HomeDir, DockerDir)
 	}
 
 	return GetCredentialsFromConfig(registry, verbose, configDir)

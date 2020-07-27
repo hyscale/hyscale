@@ -14,7 +14,7 @@ Copyright 2019 Pramati Prism, Inc.
    limitations under the License.
 */
 
-package registry
+package credstore
 
 import (
 	"encoding/base64"
@@ -26,7 +26,7 @@ import (
 	"strconv"
 	"strings"
 
-	hspec "hyscale/pkg/hspec"
+	hspec "hyscale/hspec"
 
 	"github.com/docker/cli/cli/config/configfile"
 	"github.com/docker/cli/cli/config/types"
