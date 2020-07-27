@@ -25,8 +25,11 @@ aws_cp_upload()
 
 
 
-sed -i "s|@@IMAGE_NAME@@|$DOCKER_REPO/hyscale|g" pkg/constants/constants.go
-sed -i "s|@@IMAGE_TAG@@|$IMAGE_VERSION|g" pkg/constants/constants.go
+sed -i "s|@@IMAGE_NAME@@|$DOCKER_REPO/hyscale|g" invoker/container/container.go
+sed -i "s|@@IMAGE_TAG@@|$IMAGE_VERSION|g" invoker/container/container.go
+
+#Changing the directory to invoker to build the go binary(Package main.go is available in the invoker directory)
+cd invoker
 
 export GOPATH=$HOME/go
 export GOBIN=$(go env GOPATH)/bin
