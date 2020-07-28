@@ -65,6 +65,23 @@ public class ManifestPredicates {
         };
     }
 
+    public static Predicate<ServiceSpec> getCustomSnippetsPredicate(){
+        return serviceSpec -> {
+            List<String> k8sSnippetFilePaths = null;
+            try {
+                k8sSnippetFilePaths = serviceSpec.get(HyscaleSpecFields.k8sPatches,
+                        new TypeReference<List<String>>() {} );
+            } catch (HyscaleException e) {
+                return false;
+            }
+            if(k8sSnippetFilePaths != null && !k8sSnippetFilePaths.isEmpty()){
+                return true;
+            }else{
+                return false;
+            }
+        };
+    }
+
     public static Predicate<ServiceSpec> getPortsPredicate() {
         return serviceSpec -> {
             TypeReference<List<Port>> portsList = new TypeReference<List<Port>>() {

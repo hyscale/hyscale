@@ -42,6 +42,7 @@ public class HyscaleSpecFields {
 	public static final String runCommands = "runCommands";
 	public static final String runCommandsScript = "runCommandsScript";
 	public static final String startCommand = "startCommand";
+	public static final String k8sPatches = "k8sPatches";
 	public static final String replicas = "replicas";
 	public static final String memory = "memory";
 	public static final String cpu = "cpu";
