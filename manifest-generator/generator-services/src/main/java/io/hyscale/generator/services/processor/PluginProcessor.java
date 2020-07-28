@@ -18,6 +18,8 @@ package io.hyscale.generator.services.processor;
 import java.io.IOException;
 import java.util.*;
 
+import io.hyscale.generator.services.provider.CustomSnippetsProvider;
+import io.hyscale.generator.services.utils.CustomSnippetsUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,11 +66,17 @@ public class PluginProcessor {
     @Autowired
     private ManifestConfig manifestConfig;
 
+    @Autowired
+    private CustomSnippetsProvider customSnippetsProvider;
+
+
+
     public List<Manifest> getManifests(ServiceSpec serviceSpec, ManifestContext manifestContext)
             throws HyscaleException {
         YAMLMapper yamlMapper = new YAMLMapper();
         String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
         List<Manifest> manifestList = new ArrayList<>();
+        customSnippetsProvider.init(serviceSpec);
         Map<ManifestMeta, ManifestNode> manifestMetavsNodeMap = process(serviceSpec, manifestContext);
         if (manifestMetavsNodeMap == null || manifestMetavsNodeMap.isEmpty()) {
             logger.debug("Found empty processed manifests ");
@@ -77,14 +85,17 @@ public class PluginProcessor {
         String manifestDir = manifestConfig.getManifestDir(manifestContext.getAppName(), serviceName);
 
         manifestMetavsNodeMap.entrySet().stream().forEach(each -> {
+            ManifestMeta manifestMeta = each.getKey();
             ManifestNode manifestNode = each.getValue();
             try {
-                String yamString = null;
+                String yamlString = null;
                 if (manifestNode != null && manifestNode.getObjectNode() != null) {
-                    yamString = yamlMapper.writeValueAsString(manifestNode.getObjectNode());
+                    yamlString = yamlMapper.writeValueAsString(manifestNode.getObjectNode());
+                    String kind = manifestMeta.getKind();
+                    yamlString = customSnippetsProvider.mergeCustomSnippetsIfAvailable(kind,yamlString);
                 }
                 WorkflowLogger.startActivity(ManifestGeneratorActivity.GENERATING_MANIFEST, each.getKey().getKind());
-                YAMLManifest yamlManifest = manifestFileGenerator.getYamlManifest(manifestDir, yamString,
+                YAMLManifest yamlManifest = manifestFileGenerator.getYamlManifest(manifestDir, yamlString,
                         each.getKey());
                 manifestList.add(yamlManifest);
                 WorkflowLogger.endActivity(Status.DONE);
