@@ -15,6 +15,7 @@
  */
 package io.hyscale.commons.utils;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
@@ -32,7 +33,7 @@ public class WindowsUtil {
 	
 	private static final Logger logger = LoggerFactory.getLogger(WindowsUtil.class);
 	public static final String HYSCALE_HOST_FS = System.getenv(ToolConstants.HYSCALE_HOST_FS_PROPERTY);
-	private static final String WINDOWS_FS_MATCHER = "\\\\";
+	private static final String WINDOWS_FS_MATCHER = "\\";
 	private static final String WINDOWS_DOCKER_HOST = "tcp://localhost:2375";
 
 	private WindowsUtil () {}
@@ -59,7 +60,7 @@ public class WindowsUtil {
 			return filepath;
 		}
 		if (isHostWindows()) {
-		    return filepath.replace(ToolConstants.LINUX_FILE_SEPARATOR, WINDOWS_FS_MATCHER);
+		    return FilenameUtils.separatorsToWindows(filepath);
 		}
 		return filepath;
 	}
@@ -70,10 +71,13 @@ public class WindowsUtil {
      * @return unix file separator based file path
      */
     public static String updateToUnixFileSeparator(String filePath) {
+        logger.debug("Updating file path: {}", filePath);
     	if (StringUtils.isBlank(filePath)) {
 			return filePath;
 		}
-		return filePath.replaceAll(WINDOWS_FS_MATCHER, ToolConstants.LINUX_FILE_SEPARATOR);
+		String updatedFilePath = FilenameUtils.separatorsToUnix(filePath);
+		logger.debug("Updated file path: {}", updatedFilePath);
+        return updatedFilePath;
     }
 
 	public static String dockerHost() {
