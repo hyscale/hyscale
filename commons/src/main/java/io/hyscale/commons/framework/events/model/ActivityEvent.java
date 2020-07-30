@@ -15,19 +15,15 @@
  */
 package io.hyscale.commons.framework.events.model;
 
-import org.springframework.context.ApplicationEvent;
-
 public abstract class ActivityEvent extends HyscaleEvent {
 
     private ActivityState state;
 
     /**
-     * HyscaleEvents implements {@link ApplicationEvent}
-     * which requires a source object {@link ApplicationEvent#getSource()}.
-     * ActivityEvent might also be published from static class
-     * and won't have the object reference, hence {@link ActivityState}
-     * is used as source since every activity event will have a defined state
-     * 
+     * Using {@link ActivityState} as source 
+     * since ActivityEvent can also be published from a static class
+     * and won't have the object reference
+     * Whereas state would be present for every ActivityEvent
      * @param state 
      */
     public ActivityEvent(ActivityState state) {

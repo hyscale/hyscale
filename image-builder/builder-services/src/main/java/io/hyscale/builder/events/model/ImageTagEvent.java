@@ -15,37 +15,30 @@
  */
 package io.hyscale.builder.events.model;
 
-import java.io.File;
-
 import io.hyscale.commons.framework.events.model.ActivityEvent;
 import io.hyscale.commons.framework.events.model.ActivityState;
 
-public class ImageBuildEvent extends ActivityEvent {
+public class ImageTagEvent extends ActivityEvent {
 
-    private File dockerfile;
-    private String buildLogsPath;
-
-    public ImageBuildEvent(ActivityState state) {
+    private String sourceImage;
+    private String destinationImage;
+    
+    public ImageTagEvent(ActivityState state) {
         super(state);
     }
-
-    public ImageBuildEvent(ActivityState state, File dockerfile) {
+    
+    public ImageTagEvent(ActivityState state, String sourceImage, String destinationImage) {
         super(state);
-        this.dockerfile = dockerfile;
+        this.sourceImage = sourceImage;
+        this.destinationImage = destinationImage;
     }
 
-    public ImageBuildEvent(ActivityState state, File dockerfile, String buildLogsPath) {
-        super(state);
-        this.dockerfile = dockerfile;
-        this.buildLogsPath = buildLogsPath;
+
+    public String getSourceImage() {
+        return sourceImage;
     }
 
-    public File getDockerfile() {
-        return dockerfile;
+    public String getDestinationImage() {
+        return destinationImage;
     }
-
-    public String getBuildLogsPath() {
-        return buildLogsPath;
-    }
-
 }

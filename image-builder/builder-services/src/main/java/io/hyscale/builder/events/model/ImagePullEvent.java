@@ -13,21 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.commons.framework.events.model;
+package io.hyscale.builder.events.model;
 
-import org.springframework.context.ApplicationEvent;
+import io.hyscale.commons.framework.events.model.ActivityEvent;
+import io.hyscale.commons.framework.events.model.ActivityState;
 
-public abstract class HyscaleEvent extends ApplicationEvent {
+public class ImagePullEvent extends ActivityEvent {
 
-    /**
-     * @param source HyscaleEvents implements {@link ApplicationEvent}
-     * which requires a source object {@link ApplicationEvent#getSource()}.
-     * Implementing class should take care of how they define source. 
-     * It could be based the object on which the event initially occurred
-     * or with which the event is associated (never {@code null})
-     */
-    public HyscaleEvent(Object source) {
-        super(source);
+    private String pullImage;
+    
+    public ImagePullEvent(ActivityState state) {
+        super(state);
+    }
+    
+    public ImagePullEvent(ActivityState state, String pullImage) {
+        super(state);
+        this.pullImage = pullImage;
+    }
+
+    public String getPullImage() {
+        return pullImage;
     }
 
 }

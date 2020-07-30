@@ -27,7 +27,11 @@ import io.hyscale.builder.core.models.BuildContext;
 import io.hyscale.builder.core.models.DockerImage;
 import io.hyscale.builder.core.models.ImageBuilderActivity;
 import io.hyscale.builder.events.model.ImageBuildEvent;
+import io.hyscale.builder.events.model.ImagePullEvent;
+import io.hyscale.builder.events.model.ImagePushEvent;
+import io.hyscale.builder.events.model.ImageTagEvent;
 import io.hyscale.builder.services.cleanup.ImageCleanUpProcessor;
+import io.hyscale.builder.services.config.ImageBuilderConfig;
 import io.hyscale.builder.services.constants.DockerImageConstants;
 import io.hyscale.builder.services.docker.HyscaleDockerClient;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
@@ -43,6 +47,7 @@ import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Dockerfile;
 import io.hyscale.servicespec.commons.model.service.Image;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+import io.hyscale.servicespec.commons.util.ImageUtil;
 
 @Component
 public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
@@ -51,6 +56,9 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
 
     @Autowired
     private HyscaleDockerClient hyscaleDockerClient;
+    
+    @Autowired
+    private ImageBuilderConfig imageBuilderConfig;
     
     @Autowired
     private ImageCleanUpProcessor imageCleanUp;
@@ -69,46 +77,115 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
             throw new HyscaleException(ImageBuilderErrorCodes.DOCKER_NOT_INSTALLED);
         }
         
-        //TEST without error message
         if (!hyscaleDockerClient.isDockerRunning()) {
             throw new HyscaleException(ImageBuilderErrorCodes.DOCKER_DAEMON_NOT_RUNNING);
         }
+        
+        buildImage(serviceSpec, context);
+        
+        String sourceImage = getSourceImageName(serviceSpec, context);
+
+        pullImage(sourceImage, context);
+        
+        Image image = serviceSpec.get(HyscaleSpecFields.image, Image.class);
+
+        tagImage(sourceImage, image);
+        
+        pushImage(image, context);
+        
+        // Clean up images based on clean up policy
+        imageCleanUp.cleanUp(serviceSpec, context);
+    }
+
+    private void buildImage(ServiceSpec serviceSpec, BuildContext context) throws HyscaleException {
         Dockerfile userDockerfile = serviceSpec.get(
                 HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.dockerfile), Dockerfile.class);
         //Skip Image Build if neither dockerfile from buildSpec nor user dockerfile is available
         if (skipBuild(userDockerfile, context)) {
+            ImageBuildEvent event = new ImageBuildEvent(ActivityState.STARTED);
+            EventPublisher.getInstance().publishEvent(event);
             WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_BUILD);
             WorkflowLogger.endActivity(Status.SKIPPING);
-        } else {
-            DockerImage dockerImage = null;
-            String tag = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.tag),
-                    String.class);
-            //Prepare Dockerfile for Image build
-            Dockerfile dockerfile = getDockerfile(userDockerfile, context);
-            ImageBuildEvent event = new ImageBuildEvent(new File(dockerfile.getDockerfilePath()), ActivityState.STARTED);
+            event = new ImageBuildEvent(ActivityState.SKIPPED);
             EventPublisher.getInstance().publishEvent(event);
-            dockerImage = hyscaleDockerClient.build(dockerfile, tag, context);
+            return;
+        }
+        String tag = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.tag),
+                String.class);
+        //Prepare Dockerfile for Image build
+        Dockerfile dockerfile = getDockerfile(userDockerfile, context);
+        ImageBuildEvent event = new ImageBuildEvent(ActivityState.STARTED, new File(dockerfile.getDockerfilePath()));
+        EventPublisher.getInstance().publishEvent(event);
+        String logFilePath = imageBuilderConfig.getDockerBuildlog(context.getAppName(), context.getServiceName());
+        try {
+            DockerImage dockerImage = hyscaleDockerClient.build(dockerfile, tag, context);
             context.setDockerImage(dockerImage);
+            event = new ImageBuildEvent(ActivityState.DONE, new File(dockerfile.getDockerfilePath()), logFilePath);
+        } catch (HyscaleException ex) {
+            event = new ImageBuildEvent(ActivityState.FAILED, new File(dockerfile.getDockerfilePath()), logFilePath);
+            throw ex;
+        } finally {
+            EventPublisher.getInstance().publishEvent(event);
         }
-        // validate Push
-        validate(serviceSpec, context);
-        String sourceImage = getSourceImageName(serviceSpec, context);
-
-        if (context.isStackAsServiceImage()) {
+    }
+    
+    private void pullImage(String sourceImage, BuildContext context) throws HyscaleException {
+        if (!context.isStackAsServiceImage()) {
+            return;
+        }
+        ImagePullEvent event = new ImagePullEvent(ActivityState.STARTED, sourceImage);
+        EventPublisher.getInstance().publishEvent(event);
+        try {
             hyscaleDockerClient.pull(sourceImage, context);
+            event = new ImagePullEvent(ActivityState.DONE, sourceImage);
+        } catch (HyscaleException ex) {
+            event = new ImagePullEvent(ActivityState.FAILED, sourceImage);
+            throw ex;
+        } finally {
+            EventPublisher.getInstance().publishEvent(event);
         }
-        Image image = serviceSpec.get(HyscaleSpecFields.image, Image.class);
-        hyscaleDockerClient.tag(sourceImage, image);
-
+    }
+    
+    private void tagImage(String sourceImage, Image image) throws HyscaleException {
+        String destinationImage = ImageUtil.getImage(image);
+        ImageTagEvent event = new ImageTagEvent(ActivityState.STARTED, sourceImage, destinationImage);
+        EventPublisher.getInstance().publishEvent(event);
+        if (StringUtils.isBlank(sourceImage)) {
+            event = new ImageTagEvent(ActivityState.SKIPPED, sourceImage, destinationImage);
+            EventPublisher.getInstance().publishEvent(event);
+        }
+        try {
+            hyscaleDockerClient.tag(sourceImage, image);
+            event = new ImageTagEvent(ActivityState.DONE, sourceImage, destinationImage);
+        } catch (HyscaleException e) {
+            event = new ImageTagEvent(ActivityState.FAILED, sourceImage, destinationImage);
+            throw e;
+        } finally {
+            EventPublisher.getInstance().publishEvent(event);
+        }
+    }
+    
+    private void pushImage(Image image, BuildContext context) throws HyscaleException {
+        String logFilePath = imageBuilderConfig.getDockerPushLogDir(context.getAppName(), context.getServiceName());
+        String pushImage = ImageUtil.getImage(image);
+        ImagePushEvent event = new ImagePushEvent(ActivityState.STARTED, pushImage, logFilePath);
+        EventPublisher.getInstance().publishEvent(event);
         if (context.getPushRegistry() == null) {
             WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_PUSH);
             WorkflowLogger.endActivity(Status.SKIPPING);
+            event = new ImagePushEvent(ActivityState.SKIPPED, pushImage, logFilePath);
+            EventPublisher.getInstance().publishEvent(event);
             return;
         }
-        hyscaleDockerClient.push(image, context);
-        
-        // Clean up images based on clean up policy
-        imageCleanUp.cleanUp(serviceSpec, context);
+        try {
+            hyscaleDockerClient.push(image, context);
+            event = new ImagePushEvent(ActivityState.DONE, pushImage, logFilePath);
+        } catch (HyscaleException e) {
+            event = new ImagePushEvent(ActivityState.FAILED, pushImage, logFilePath);
+            throw e;
+        } finally {
+            EventPublisher.getInstance().publishEvent(event);
+        }
     }
     
     private Dockerfile getDockerfile(Dockerfile userDockerfile, BuildContext context) throws HyscaleException {
