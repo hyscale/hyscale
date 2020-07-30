@@ -44,6 +44,9 @@ public class TroubleshootServiceImpl implements TroubleshootService {
 
     @Autowired
     private PodStatusCondition podStatusCondition;
+    
+    @Autowired
+    private EventPublisher publisher;
 
     @Override
     public List<DiagnosisReport> troubleshoot(ServiceMetadata serviceMetadata, K8sAuthorisation k8sAuthorisation, String namespace) throws HyscaleException {
@@ -52,7 +55,7 @@ public class TroubleshootServiceImpl implements TroubleshootService {
             executeTroubleshootFlow(troubleshootingContext);
             List<DiagnosisReport> diagnosisReports = troubleshootingContext.getDiagnosisReports();
             TroubleshootingEvent event = new TroubleshootingEvent(ActivityState.DONE, diagnosisReports);
-            EventPublisher.getInstance().publishEvent(event);
+            publisher.publishEvent(event);
             return diagnosisReports;
         } catch (HyscaleException e) {
             logger.error("Error while troubleshooting service {}", serviceMetadata.getServiceName(), e);
