@@ -15,24 +15,39 @@
  */
 package io.hyscale.commons.framework.events.model;
 
+import java.io.Serializable;
+
 import org.springframework.core.ResolvableType;
 import org.springframework.core.ResolvableTypeProvider;
 
 /**
  * Class to define Generic events
  * All events which uses Generic type should extend this class
+ * Ensures Generic events are resolved at runtime
  *
  */
-public abstract class HyscaleGenericEvent extends HyscaleEvent implements ResolvableTypeProvider {
+public abstract class HyscaleGenericEvent<T extends Serializable> extends HyscaleEvent
+        implements ResolvableTypeProvider {
 
-    public HyscaleGenericEvent(Object source) {
+    private T message;
+
+    public HyscaleGenericEvent(T message) {
+        super(message);
+        this.message = message;
+    }
+
+    public HyscaleGenericEvent(Object source, T message) {
         super(source);
+        this.message = message;
+    }
+
+    public T getMessage() {
+        return message;
     }
 
     @Override
     public ResolvableType getResolvableType() {
-        return ResolvableType.forClassWithGenerics(getClass(), ResolvableType.forInstance(getType()));
+        return ResolvableType.forClassWithGenerics(getClass(), ResolvableType.forInstance(message));
     }
 
-    protected abstract Object getType();
 }
