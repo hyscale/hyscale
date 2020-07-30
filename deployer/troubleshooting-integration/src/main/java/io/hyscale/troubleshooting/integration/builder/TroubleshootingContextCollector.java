@@ -20,6 +20,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.ResourceFieldSelectorKey;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.commons.utils.FieldSelectorUtil;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
@@ -31,7 +32,6 @@ import io.hyscale.deployer.services.handler.impl.V1StorageClassHandler;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.hyscale.deployer.services.util.KubernetesResourceUtil;
 import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
-import io.hyscale.troubleshooting.integration.models.ServiceInfo;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
 import io.hyscale.troubleshooting.integration.spring.TroubleshootingConfig;
 import io.kubernetes.client.openapi.ApiClient;
@@ -63,20 +63,20 @@ public class TroubleshootingContextCollector {
     private List<String> troubleshootResources = Arrays.asList(ResourceKind.STATEFUL_SET.getKind(), ResourceKind.DEPLOYMENT.getKind(),
             ResourceKind.REPLICA_SET.getKind(), ResourceKind.POD.getKind(), ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind());
 
-    public TroubleshootingContext build(@NonNull ServiceInfo serviceInfo, @NonNull K8sAuthorisation k8sAuthorisation, @NonNull String namespace) throws HyscaleException {
+    public TroubleshootingContext build(@NonNull ServiceMetadata serviceMetadata, @NonNull K8sAuthorisation k8sAuthorisation, @NonNull String namespace) throws HyscaleException {
         TroubleshootingContext context = new TroubleshootingContext();
         try {
             ApiClient apiClient = k8sClientProvider.get(k8sAuthorisation);
 
-            context.setServiceInfo(serviceInfo);
+            context.setServiceMetadata(serviceMetadata);
             context.setTrace(troubleshootingConfig.isTrace());
             long start = System.currentTimeMillis();
-            context.setResourceInfos(filter(getResources(serviceInfo, apiClient, namespace)));
+            context.setResourceInfos(filter(getResources(serviceMetadata, apiClient, namespace)));
             if (context.isTrace()) {
-                logger.debug("Time taken to build the context for service {} is {}", serviceInfo.getServiceName(), System.currentTimeMillis() - start);
+                logger.debug("Time taken to build the context for service {} is {}", serviceMetadata.getServiceName(), System.currentTimeMillis() - start);
             }
         } catch (HyscaleException e) {
-            logger.error("Error while preparing context to troubleshoot the service {}", serviceInfo.getServiceName());
+            logger.error("Error while preparing context to troubleshoot the service {}", serviceMetadata.getServiceName());
             throw e;
         }
         return context;
@@ -150,8 +150,8 @@ public class TroubleshootingContextCollector {
         return replicaSet;
     }
 
-    private Map<String, List<TroubleshootingContext.ResourceInfo>> getResources(@NonNull ServiceInfo serviceInfo, @NonNull ApiClient apiClient, @NonNull String namespace) throws HyscaleException {
-        String selector = ResourceSelectorUtil.getSelector(serviceInfo.getAppName(), serviceInfo.getEnvName(), serviceInfo.getServiceName());
+    private Map<String, List<TroubleshootingContext.ResourceInfo>> getResources(@NonNull ServiceMetadata serviceMetadata, @NonNull ApiClient apiClient, @NonNull String namespace) throws HyscaleException {
+        String selector = ResourceSelectorUtil.getSelector(serviceMetadata.getAppName(), serviceMetadata.getEnvName(), serviceMetadata.getServiceName());
         List<ResourceLifeCycleHandler> handlerList = getResourceHandlers();
         if (handlerList == null || handlerList.isEmpty()) {
             logger.error("Error while fetching resource lifecycle handler ");

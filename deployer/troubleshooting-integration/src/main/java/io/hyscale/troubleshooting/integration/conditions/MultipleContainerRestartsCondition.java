@@ -43,7 +43,7 @@ public class MultipleContainerRestartsCondition extends ConditionNode<Troublesho
 
     @Override
     public boolean decide(TroubleshootingContext context) throws HyscaleException {
-        String serviceName = context.getServiceInfo().getServiceName();
+        String serviceName = context.getServiceMetadata().getServiceName();
 
         Object obj = context.getAttribute(FailedResourceKey.FAILED_POD);
         List<V1Pod> podList = null;

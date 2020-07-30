@@ -53,7 +53,7 @@ public class AnyPendingPVCCondition extends ConditionNode<TroubleshootingContext
             
             // Since there are no pvc's found for the service, there's not pending pvc
             if (resourceData == null || resourceData.isEmpty()) {
-                logger.debug("No PVC's found for service {}", context.getServiceInfo().getServiceName());
+                logger.debug("No PVC's found for service {}", context.getServiceMetadata().getServiceName());
                 return false;
             }
             
@@ -85,7 +85,7 @@ public class AnyPendingPVCCondition extends ConditionNode<TroubleshootingContext
             
             // Since there are no pvc's found for the service, there's not pending pvc
             if (pvcList == null || pvcList.isEmpty()) {
-                logger.debug("PVC List if found empty for service {}", context.getServiceInfo().getServiceName());
+                logger.debug("PVC List if found empty for service {}", context.getServiceMetadata().getServiceName());
                 return false;
             }
             return pvcList.stream().filter(each -> each instanceof V1PersistentVolumeClaim).anyMatch(each -> {

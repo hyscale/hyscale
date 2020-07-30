@@ -13,14 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.generator.services.model;
+package io.hyscale.commons.models;
 
 import java.util.Objects;
 
+import org.springframework.lang.NonNull;
+
 public class ServiceMetadata {
 
+    @NonNull
 	private String serviceName;
+    
+    @NonNull
 	private String appName;
+    
+    @NonNull
 	private String envName;
 
 	public String getServiceName() {
