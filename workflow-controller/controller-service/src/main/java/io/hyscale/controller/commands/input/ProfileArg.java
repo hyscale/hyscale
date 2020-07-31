@@ -18,7 +18,6 @@ package io.hyscale.controller.commands.input;
 import java.io.File;
 import java.util.List;
 
-import io.hyscale.controller.commands.args.FileConverter;
 import picocli.CommandLine;
 
 /**
@@ -28,8 +27,7 @@ import picocli.CommandLine;
  */
 public class ProfileArg {
 
-    @CommandLine.Option(names = { "-p", "--profile" }, 
-            required = false, description = "Profile for service.", converter = FileConverter.class)
+    @CommandLine.Option(names = { "-p", "--profile" }, required = false, description = "Profile for service.")
     private List<File> profiles;
 
     @CommandLine.Option(names = {"-P"}, required = false, description = "Profile name for service.")

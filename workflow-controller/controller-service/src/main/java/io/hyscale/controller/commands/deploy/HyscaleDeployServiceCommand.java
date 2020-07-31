@@ -46,7 +46,6 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.model.WorkflowContextBuilder;
-import io.hyscale.controller.commands.args.FileConverter;
 import io.hyscale.controller.commands.input.ProfileArg;
 import io.hyscale.controller.invoker.DeployComponentInvoker;
 import io.hyscale.controller.invoker.ImageBuildComponentInvoker;
@@ -104,8 +103,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
     @CommandLine.Option(names = {"-v", "--verbose", "-verbose"}, required = false, description = "Verbose output")
     private boolean verbose = false;
 
-    @CommandLine.Option(names = {"-f", "--files"}, 
-            required = true, description = "Service specs files.", split = ",", converter = FileConverter.class)
+    @CommandLine.Option(names = {"-f", "--files"}, required = true, description = "Service specs files.", split = ",")
     private List<File> serviceSpecsFiles;
 
     @Pattern(regexp = ValidationConstants.STRUCTURED_OUTPUT_FORMAT_REGEX, message = ValidationConstants.INVALID_OUTPUT_FORMAT_MSG)
@@ -194,7 +192,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
 
-        Map<String, File> serviceVsSpecFile = new HashMap<>();
+        Map<String, File> serviceVsSpecFile = new HashMap<String, File>();
         for (File serviceSpec : serviceSpecsFiles) {
             serviceVsSpecFile.put(ServiceSpecUtil.getServiceName(serviceSpec), serviceSpec);
         }
@@ -310,7 +308,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
                 jsonArr.add(json);
             }
         }
-        return !context.isFailed();
+        return context.isFailed() ? false : true;
     }
 
     private void logWorkflowInfo(WorkflowContext workflowContext) {

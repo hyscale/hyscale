@@ -34,7 +34,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.io.HyscaleFilesUtil;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.commons.models.Status;
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.controller.activity.ControllerActivity;
@@ -44,6 +43,7 @@ import io.hyscale.controller.model.EffectiveServiceSpec;
 import io.hyscale.controller.model.HyscaleInputSpec;
 import io.hyscale.controller.util.ServiceProfileUtil;
 import io.hyscale.controller.util.ServiceSpecUtil;
+import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.servicespec.commons.builder.EffectiveServiceSpecBuilder;
 import io.hyscale.servicespec.commons.builder.MapFieldDataProvider;
 import io.hyscale.servicespec.commons.builder.ServiceInputType;
@@ -97,7 +97,7 @@ public class EffectiveServiceSpecProvider {
     private List<EffectiveServiceSpec> mergeServiceSpec(List<File> serviceSpecFiles,
             Map<String, Entry<String, File>> serviceVsProfile) throws HyscaleException {
 
-        List<EffectiveServiceSpec> effectiveServiceSpecList = new ArrayList<>();
+        List<EffectiveServiceSpec> effectiveServiceSpecList = new ArrayList<EffectiveServiceSpec>();
         ObjectMapper mapper = null;
 
         for (File serviceSpecFile : serviceSpecFiles) {
@@ -144,8 +144,8 @@ public class EffectiveServiceSpecProvider {
 
     private Map<String, Map.Entry<String, File>> getDependencyMap(List<File> serviceSpecFiles, List<File> profileFiles)
             throws HyscaleException {
-        Map<String, Entry<String, File>> serviceVsProfile = new HashMap<>();
-        List<String> invalidServiceList = new ArrayList<>();
+        Map<String, Entry<String, File>> serviceVsProfile = new HashMap<String, Map.Entry<String, File>>();
+        List<String> invalidServiceList = new ArrayList<String>();
         if (profileFiles != null && !profileFiles.isEmpty()) {
             for (File profileFile : profileFiles) {
                 String profileName = ServiceProfileUtil.getProfileName(profileFile);
@@ -154,7 +154,7 @@ public class EffectiveServiceSpecProvider {
                     // Multiple profiles for a single service
                     invalidServiceList.add(serviceName);
                 }
-                serviceVsProfile.put(serviceName, new SimpleEntry<>(profileName, profileFile));
+                serviceVsProfile.put(serviceName, new SimpleEntry<String, File>(profileName, profileFile));
             }
         }
 
@@ -164,14 +164,14 @@ public class EffectiveServiceSpecProvider {
             throw new HyscaleException(ControllerErrorCodes.UNIQUE_PROFILE_REQUIRED, invalidServices);
         }
 
-        Map<String, File> serviceVsSpecFile = new HashMap<>();
+        Map<String, File> serviceVsSpecFile = new HashMap<String, File>();
 
         for (File serviceSpecFile : serviceSpecFiles) {
             serviceVsSpecFile.put(ServiceSpecUtil.getServiceName(serviceSpecFile), serviceSpecFile);
         }
 
         // Services specified in profile not found
-        invalidServiceList = serviceVsProfile.entrySet().stream().map(Entry::getKey)
+        invalidServiceList = serviceVsProfile.entrySet().stream().map(entrySet -> entrySet.getKey())
                 .filter(service -> !serviceVsSpecFile.containsKey(service)).collect(Collectors.toList());
 
         if (invalidServiceList != null && !invalidServiceList.isEmpty()) {

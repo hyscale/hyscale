@@ -57,10 +57,10 @@ public class IsPodsReadinessFailing implements Node<TroubleshootingContext> {
         List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos().get(ResourceKind.POD.getKind());
         DiagnosisReport report = new DiagnosisReport();
         if (resourceInfos == null || resourceInfos.isEmpty()) {
-            report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceMetadata().getServiceName()));
+            report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceInfo().getServiceName()));
             report.setRecommendedFix(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.getMessage());
             context.addReport(report);
-            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceMetadata().getServiceName());
+            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
         }
 
         List<V1Event> v1Events = new ArrayList<>();

@@ -27,8 +27,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import io.hyscale.commons.models.ResourceLabelKey;
-import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.commons.utils.ResourceLabelBuilder;
+import io.hyscale.generator.services.model.ServiceMetadata;
 
 class DefaultLabelBuilderTest {
 

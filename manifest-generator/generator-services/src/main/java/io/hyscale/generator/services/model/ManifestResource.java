@@ -23,7 +23,6 @@ import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import org.apache.commons.lang3.StringUtils;
 
-import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.commons.utils.NormalizationUtil;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 

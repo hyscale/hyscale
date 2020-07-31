@@ -65,7 +65,7 @@ public class PodStatusCondition implements Node<TroubleshootingContext> {
         List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos().getOrDefault(ResourceKind.POD.getKind(), null);
         if (resourceInfos == null) {
             if (context.isTrace()) {
-                logger.debug("Cannot find any pods for the service {}", context.getServiceMetadata().getServiceName());
+                logger.debug("Cannot find any pods for the service {}", context.getServiceInfo().getServiceName());
             }
             return parentStatusCondition;
         }
@@ -80,7 +80,7 @@ public class PodStatusCondition implements Node<TroubleshootingContext> {
                 String aggregatedStatus = PodStatusUtil.currentStatusOf(v1Pod);
                 if (context.isTrace()) {
                     logger.debug("Aggregated status of pod {} of service {}", v1Pod.getMetadata().getName(),
-                            context.getServiceMetadata().getServiceName());
+                            context.getServiceInfo().getServiceName());
                 }
                 if (StringUtils.isEmpty(aggregatedStatus)) {
                     continue;

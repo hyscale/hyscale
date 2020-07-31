@@ -58,7 +58,7 @@ public class MissingCMDorStartCommandsCondition extends ConditionNode<Troublesho
 
     @Override
     public boolean decide(TroubleshootingContext context) throws HyscaleException {
-        String serviceName = context.getServiceMetadata().getServiceName();
+        String serviceName = context.getServiceInfo().getServiceName();
         List<V1Pod> podsList = ConditionUtil.getPods(context);
 
         if (podsList == null || podsList.isEmpty()) {
@@ -78,7 +78,7 @@ public class MissingCMDorStartCommandsCondition extends ConditionNode<Troublesho
             report.setReason(AbstractedErrorMessage.CANNOT_INFER_ERROR.getReason());
             report.setRecommendedFix(AbstractedErrorMessage.CANNOT_INFER_ERROR.getMessage());
             context.addReport(report);
-            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceMetadata().getServiceName());
+            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
         }
 
         String dockerInstallCommand = commandProvider.dockerVersion();

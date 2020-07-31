@@ -15,7 +15,6 @@
  */
 package io.hyscale.controller.invoker;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +27,6 @@ import io.hyscale.commons.component.ComponentInvoker;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.K8sAuthorisation;
-import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.controller.builder.DeploymentContextBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
@@ -37,6 +35,7 @@ import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.services.deployer.Deployer;
 import io.hyscale.troubleshooting.integration.actions.ServiceNotDeployedAction;
 import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
+import io.hyscale.troubleshooting.integration.models.ServiceInfo;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
 import io.hyscale.troubleshooting.integration.service.TroubleshootService;
 
@@ -114,22 +113,22 @@ public class StatusComponentInvoker extends ComponentInvoker<WorkflowContext> {
     }
     
     private List<DiagnosisReport> troubleshoot(DeploymentContext deploymentContext) {
-        ServiceMetadata serviceMetadata = new ServiceMetadata();
-        serviceMetadata.setAppName(deploymentContext.getAppName());
-        serviceMetadata.setServiceName(deploymentContext.getServiceName());
+        ServiceInfo serviceInfo = new ServiceInfo();
+        serviceInfo.setAppName(deploymentContext.getAppName());
+        serviceInfo.setServiceName(deploymentContext.getServiceName());
         try {
-            return troubleshootService.troubleshoot(serviceMetadata, (K8sAuthorisation) deploymentContext.getAuthConfig(), 
+            return troubleshootService.troubleshoot(serviceInfo, (K8sAuthorisation) deploymentContext.getAuthConfig(), 
                     deploymentContext.getNamespace());
         } catch (HyscaleException e) {
             logger.error("Error while executing troubleshooot serice {}",deploymentContext.getServiceName(), e);
         }
-        return Collections.emptyList();
+        return null;
     }
     
     @Override
     protected void onError(WorkflowContext context, HyscaleException th) throws HyscaleException {
         if (th != null) {
-            logger.error("Error while getting status {}", th.getMessage());
+            logger.error("Error while getting status", th.getMessage());
             throw th;
         }
     }
