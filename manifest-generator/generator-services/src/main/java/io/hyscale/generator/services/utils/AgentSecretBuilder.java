@@ -54,7 +54,7 @@ public class AgentSecretBuilder extends AgentHelper implements AgentBuilder {
     private static final Logger logger = LoggerFactory.getLogger(AgentSecretBuilder.class);
     @Override
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException, HyscaleException {
-        List<ManifestSnippet> secretSnippets = new ArrayList<ManifestSnippet>();
+        List<ManifestSnippet> secretSnippets = new ArrayList<>();
         List<Agent> agents = getAgents(serviceSpec);
         String serviceName = serviceSpec.get(HyscaleSpecFields.name,String.class);
         if(agents == null){
@@ -87,12 +87,12 @@ public class AgentSecretBuilder extends AgentHelper implements AgentBuilder {
         }catch (HyscaleException e){
             logger.error("Error fetching service name from service spec",e);
         }
-        List<ManifestSnippet> secretSnippets = new ArrayList<ManifestSnippet>();
+        List<ManifestSnippet> secretSnippets = new ArrayList<>();
         ManifestSnippet kindSnippet = MetadataManifestSnippetGenerator.getKind(ManifestResource.SECRET);
         kindSnippet.setName(secretName);
         secretSnippets.add(kindSnippet);
 
-        ManifestSnippet apiVersionSnippet = MetadataManifestSnippetGenerator.getApiVersion(ManifestResource.SECRET, null);
+        ManifestSnippet apiVersionSnippet = MetadataManifestSnippetGenerator.getApiVersion(ManifestResource.SECRET);
         apiVersionSnippet.setName(secretName);
         secretSnippets.add(apiVersionSnippet);
 

@@ -23,6 +23,8 @@ module commons {
 	exports io.hyscale.commons.component;
 	exports io.hyscale.commons.exception;
 	exports io.hyscale.commons.framework.patch;
+	exports io.hyscale.commons.framework.events.model;
+	exports io.hyscale.commons.framework.events.publisher;
 	exports io.hyscale.commons.commands.provider;
 	exports io.hyscale.commons.io;
 	exports io.hyscale.event.listener.console;

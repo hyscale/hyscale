@@ -96,7 +96,7 @@ public class PendingPvcAction extends ActionNode<TroubleshootingContext> {
             return;
         }
         if (provisioningFailed) {
-            report.setReason(AbstractedErrorMessage.INVALID_STORAGE_CLASS.formatReason(context.getServiceInfo().getServiceName()));
+            report.setReason(AbstractedErrorMessage.INVALID_STORAGE_CLASS.formatReason(context.getServiceMetadata().getServiceName()));
             report.setRecommendedFix(AbstractedErrorMessage.INVALID_STORAGE_CLASS.formatMessage(storageClassResources
                     .stream().filter(each -> each != null && each.getResource() instanceof V1StorageClass).map(each -> {
                         V1StorageClass storageClass = (V1StorageClass) each.getResource();

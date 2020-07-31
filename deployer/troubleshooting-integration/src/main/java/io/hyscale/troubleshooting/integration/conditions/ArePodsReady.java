@@ -44,7 +44,7 @@ public class ArePodsReady extends ConditionNode<TroubleshootingContext> {
     public boolean decide(TroubleshootingContext context) throws HyscaleException {
 
         List<V1Pod> podsList = ConditionUtil.getPods(context);
-        String serviceName = context.getServiceInfo().getServiceName();
+        String serviceName = context.getServiceMetadata().getServiceName();
 
         if (podsList == null || podsList.isEmpty()) {
             logger.debug("No pods found for service: {}", serviceName);

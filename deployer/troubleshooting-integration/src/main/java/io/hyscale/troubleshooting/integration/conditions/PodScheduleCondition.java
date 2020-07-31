@@ -42,7 +42,7 @@ public class PodScheduleCondition extends ConditionNode<TroubleshootingContext> 
 
     @Override
     public boolean decide(TroubleshootingContext context) throws HyscaleException {
-        String serviceName = context.getServiceInfo().getServiceName();
+        String serviceName = context.getServiceMetadata().getServiceName();
 
         List<V1Pod> podsList = ConditionUtil.getPods(context);
 

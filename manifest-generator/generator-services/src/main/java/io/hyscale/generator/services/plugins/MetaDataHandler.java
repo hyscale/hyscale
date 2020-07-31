@@ -21,8 +21,8 @@ import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.generator.services.generator.MetadataManifestSnippetGenerator;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
@@ -57,7 +57,7 @@ public class MetaDataHandler implements ManifestHandler {
                     snippetList.add(MetadataManifestSnippetGenerator.getKind(manifestResource));
 
                     /* Snippet for apiVersion for each manifest */
-                    snippetList.add(MetadataManifestSnippetGenerator.getApiVersion(manifestResource, serviceMetadata));
+                    snippetList.add(MetadataManifestSnippetGenerator.getApiVersion(manifestResource));
 
                     /* Snippet for metadata for each manifest */
                     snippetList.add(MetadataManifestSnippetGenerator.getMetaData(manifestResource, serviceMetadata));

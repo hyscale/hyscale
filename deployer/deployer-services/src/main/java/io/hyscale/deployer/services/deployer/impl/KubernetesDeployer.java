@@ -37,17 +37,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.framework.events.model.ActivityState;
+import io.hyscale.commons.framework.events.publisher.EventPublisher;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.ClusterVersionInfo;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.KubernetesResource;
 import io.hyscale.commons.models.Manifest;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.commons.models.YAMLManifest;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.AppMetadata;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ResourceKind;
+import io.hyscale.deployer.events.model.ApplyingManifestEvent;
+import io.hyscale.deployer.events.model.AwaitingDeploymentEvent;
+import io.hyscale.deployer.events.model.UnDeployEvent;
 import io.hyscale.deployer.services.builder.AppMetadataBuilder;
 import io.hyscale.deployer.services.builder.PodBuilder;
 import io.hyscale.deployer.services.config.DeployerConfig;
@@ -104,18 +110,27 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
     @Autowired
     private ClusterVersionProvider clusterVersionProvider;
     
+    @Autowired
+    private EventPublisher publisher;
+    
     @Override
     public void deploy(DeploymentContext context) throws HyscaleException {
-
+        List<Manifest> manifests = context.getManifests();
+        String namespace = context.getNamespace();
+        ApplyingManifestEvent event = new ApplyingManifestEvent(ActivityState.STARTED, manifests, namespace);
+        publisher.publishEvent(event);
         K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(clientProvider.get((K8sAuthorisation) context.getAuthConfig()));
         try {
             resourceDispatcher.waitForReadiness(context.isWaitForReadiness());
-            resourceDispatcher.withNamespace(context.getNamespace()).apply(context.getManifests());
-
+            resourceDispatcher.withNamespace(namespace).apply(manifests);
+            event = new ApplyingManifestEvent(ActivityState.DONE, manifests, namespace);
         } catch (HyscaleException e) {
             logger.error("Error while deploying service {} in namespace {} , error {} ", context.getServiceName(),
-                    context.getNamespace(), e.toString());
+                    namespace, e.toString());
+            event = new ApplyingManifestEvent(ActivityState.FAILED, manifests, namespace);
             throw e;
+        } finally {
+            publisher.publishEvent(event);
         }
     }
 
@@ -129,8 +144,21 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
         String serviceName = context.getServiceName();
         String namespace = context.getNamespace();
         String appName = context.getAppName();
+        ServiceMetadata serviceMetadata = new ServiceMetadata();
+        serviceMetadata.setAppName(appName);
+        serviceMetadata.setServiceName(serviceName);
+        AwaitingDeploymentEvent event = new AwaitingDeploymentEvent(ActivityState.STARTED, serviceMetadata, namespace);
+        publisher.publishEvent(event);
         WorkflowLogger.header(DeployerActivity.WAITING_FOR_DEPLOYMENT);
-        podHandler.watch(apiClient, appName, serviceName, namespace);
+        try {
+            podHandler.watch(apiClient, appName, serviceName, namespace);
+            event = new AwaitingDeploymentEvent(ActivityState.DONE, serviceMetadata, namespace);
+        } catch (HyscaleException ex) {
+            event = new AwaitingDeploymentEvent(ActivityState.FAILED, serviceMetadata, namespace);
+            throw ex;
+        } finally {
+            publisher.publishEvent(event);
+        }
     }
 
     @Override
@@ -199,14 +227,26 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
 
     @Override
     public void unDeploy(DeploymentContext context) throws HyscaleException {
-        K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(clientProvider.get((K8sAuthorisation) context.getAuthConfig()));
+        String appName = context.getAppName();
+        String serviceName = context.getServiceName();
+        String namespace = context.getNamespace();
+
+        ServiceMetadata serviceMetadata = new ServiceMetadata();
+        serviceMetadata.setAppName(appName);
+        serviceMetadata.setServiceName(serviceName);
+        UnDeployEvent event = new UnDeployEvent(ActivityState.STARTED, serviceMetadata, namespace);
+        publisher.publishEvent(event);
+        K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(
+                clientProvider.get((K8sAuthorisation) context.getAuthConfig()));
         try {
-            resourceDispatcher.withNamespace(context.getNamespace()).undeploy(context.getAppName(),
-                    context.getServiceName());
+            resourceDispatcher.withNamespace(namespace).undeploy(appName, serviceName);
+            event = new UnDeployEvent(ActivityState.DONE, serviceMetadata, namespace);
         } catch (HyscaleException e) {
-            logger.error("Error while undeploying service in namespace {} , error {} ", context.getNamespace(),
-                    e.toString());
+            logger.error("Error while undeploying service in namespace {} , error {} ", namespace, e.toString());
+            event = new UnDeployEvent(ActivityState.FAILED, serviceMetadata, namespace);
             throw e;
+        } finally {
+            publisher.publishEvent(event);
         }
     }
 

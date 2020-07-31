@@ -15,7 +15,7 @@
  */
 package io.hyscale.controller.model;
 
-import io.hyscale.generator.services.model.ServiceMetadata;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 import java.util.Objects;

@@ -56,7 +56,7 @@ public class FixCrashingApplication extends ActionNode<TroubleshootingContext> {
 
 		if (lastState.equals(PodStatus.OOMKILLED.getStatus())) {
 			report.setReason(AbstractedErrorMessage.NOT_ENOUGH_MEMORY_FOUND
-					.formatReason(context.getServiceInfo().getServiceName()));
+					.formatReason(context.getServiceMetadata().getServiceName()));
 			report.setRecommendedFix(AbstractedErrorMessage.NOT_ENOUGH_MEMORY_FOUND.getMessage());
 		} else if (lastState.equals(PodStatus.COMPLETED.getStatus())) {
 			report.setReason(AbstractedErrorMessage.INVALID_STARTCOMMANDS_FOUND.getReason());

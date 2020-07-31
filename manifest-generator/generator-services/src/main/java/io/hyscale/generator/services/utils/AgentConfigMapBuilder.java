@@ -19,10 +19,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.builder.DefaultLabelBuilder;
-import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.generator.MetadataManifestSnippetGenerator;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.PodChecksum;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -56,7 +54,7 @@ public class AgentConfigMapBuilder extends AgentHelper implements AgentBuilder {
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException, HyscaleException {
         List<Agent> agents = getAgents(serviceSpec);
         String serviceName = serviceSpec.get(HyscaleSpecFields.name,String.class);
-        List<ManifestSnippet> configMapSnippets = new ArrayList<ManifestSnippet>();
+        List<ManifestSnippet> configMapSnippets = new ArrayList<>();
         if(agents == null){
             return configMapSnippets;
         }
@@ -71,9 +69,7 @@ public class AgentConfigMapBuilder extends AgentHelper implements AgentBuilder {
             String propsVolumePath = agent.getPropsVolumePath();
             List<ManifestSnippet> agentConfigMapSnippets = ConfigMapDataUtil.build(props,propsVolumePath);
             ConfigMapDataUtil.updatePodChecksum(agentConfigMapSnippets, manifestContext, agent.getName());
-            agentConfigMapSnippets.forEach(manifestSnippet -> {
-                manifestSnippet.setName(configMapName);
-            });
+            agentConfigMapSnippets.forEach(manifestSnippet -> manifestSnippet.setName(configMapName));
             configMapSnippets.addAll(agentConfigMapSnippets);
         }
         return configMapSnippets;
@@ -88,12 +84,12 @@ public class AgentConfigMapBuilder extends AgentHelper implements AgentBuilder {
         }catch (HyscaleException e){
             logger.error("Error fetching service name from service spec",e);
         }
-        List<ManifestSnippet> configMapSnippets = new ArrayList<ManifestSnippet>();
+        List<ManifestSnippet> configMapSnippets = new ArrayList<>();
         ManifestSnippet kindSnippet = MetadataManifestSnippetGenerator.getKind(ManifestResource.CONFIG_MAP);
         kindSnippet.setName(configMapName);
         configMapSnippets.add(kindSnippet);
 
-        ManifestSnippet apiVersionSnippet = MetadataManifestSnippetGenerator.getApiVersion(ManifestResource.CONFIG_MAP, null);
+        ManifestSnippet apiVersionSnippet = MetadataManifestSnippetGenerator.getApiVersion(ManifestResource.CONFIG_MAP);
         apiVersionSnippet.setName(configMapName);
         configMapSnippets.add(apiVersionSnippet);
 
