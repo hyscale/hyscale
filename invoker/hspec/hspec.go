@@ -54,7 +54,7 @@ type Agents struct {
 	PropsVolumePath   PropsVolumePath   `yaml:"propsVolumePath,omitempty"`
 	Secrets           interface{}       `yaml:"secrets,omitempty"`
 	SecretsVolumePath SecretsVolumePath `yaml:"secretsVolumePath,omitempty"`
-	VolumesFrom       []*VolumesFrom    `yaml:"props,omitempty"`
+	VolumesFrom       []*VolumesFrom    `yaml:"volumes,omitempty"`
 }
 
 // PropsVolumePath defines the volume path of the Props defined in hspec
