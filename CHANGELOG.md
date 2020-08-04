@@ -1,3 +1,22 @@
+# v0.9.7 Release
+
+### Features:
+
+* [Installer support for Mac & Windows](https://github.com/hyscale/hyscale/issues/222)
+* [1.17 cluster support](https://github.com/hyscale/hyscale/issues/204)
+* [Structured output for hyscale deployments](https://github.com/hyscale/hyscale/issues/206)
+* [Support for Credstore](https://github.com/hyscale/hyscale/issues/222)
+### Fixes
+
+* [Fix for retrieving service IP is based on labels rather than service name](https://github.com/hyscale/hyscale/issues/192)
+* [Fix for change in props not reflected as env in hyscale deployments](https://github.com/hyscale/hyscale/issues/210)
+* [Fix for fetching service logs of multiple replicas with retry option when provided an invalid replica name](https://github.com/hyscale/hyscale/issues/219)
+* [Fix for service status command, when service is deployed with zero ports](https://github.com/hyscale/hyscale/issues/220)
+* [Fix for troubleshooting message , when a service is deployed with invalid start commands](https://github.com/hyscale/hyscale/issues/221)
+* [Fix for artifacts not found message](https://github.com/hyscale/hyscale/issues/231)
+* [Renamed env IMAGE_CLEANUP_POLICY to HYS_IMAGE_CLEANUP_POLICY](https://github.com/hyscale/hyscale/issues/278)
+* [Fix for scaling down replicas to zero when HPA is enabled](https://github.com/hyscale/hyscale/pull/288)  
+
 # v0.9.6 Release
 
 ### Features:
