@@ -14,7 +14,8 @@
 * [Fix for service status command, when service is deployed with zero ports](https://github.com/hyscale/hyscale/issues/220)
 * [Fix for troubleshooting message , when a service is deployed with invalid start commands](https://github.com/hyscale/hyscale/issues/221)
 * [Fix for artifacts not found message](https://github.com/hyscale/hyscale/issues/231)
-* [Renamed env IMAGE_CLEANUP_POLICY to HYS_IMAGE_CLEANUP_POLICY](https://github.com/hyscale/hyscale/issues/278)  
+* [Renamed env IMAGE_CLEANUP_POLICY to HYS_IMAGE_CLEANUP_POLICY](https://github.com/hyscale/hyscale/issues/278)
+* [Fix for scaling down replicas to zero when HPA is enabled](https://github.com/hyscale/hyscale/pull/288)  
 
 # v0.9.6 Release
 
