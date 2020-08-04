@@ -16,6 +16,7 @@
 package io.hyscale.deployer.services.manager.impl;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
@@ -57,11 +58,16 @@ public class ScaleServiceManagerImpl implements ScaleServiceManager {
 
         int replicas = podParentHandler.getReplicas(podParent.getParent());
         int desiredReplicas = podParentHandler.getDesiredReplicas(scaleSpec.getScaleOp(), scaleSpec.getValue(), replicas);
-
+        logger.debug("Scaling service {} from replicas to desired state {}",service,replicas,desiredReplicas);
         V1HorizontalPodAutoScalerHandler autoScalerHandler = (V1HorizontalPodAutoScalerHandler) ResourceHandlers.getHandlerOf(ResourceKind.HORIZONTAL_POD_AUTOSCALER.getKind());
         List<V1HorizontalPodAutoscaler> podAutoscalers = autoScalerHandler.getBySelector(apiClient, ResourceSelectorUtil.getServiceSelector(appName, service), true, namespace);
         if (podAutoscalers != null && !podAutoscalers.isEmpty()) {
-            validate(podAutoscalers.get(0),desiredReplicas);
+            // When you are scaling up from zero replicas to a non-zero replicas when HPA is enabled. Because here HPA maintains min replica policy
+            if(replicas==0){
+                WorkflowLogger.persist(DeployerActivity.DESIRED_STATE_ON_HPA_ENABLED);
+            }else {
+                validate(podAutoscalers.get(0), desiredReplicas);
+            }
         }
 
         status = podParentHandler.scale(apiClient, podParent.getParent(), namespace, desiredReplicas);
@@ -75,6 +81,9 @@ public class ScaleServiceManagerImpl implements ScaleServiceManager {
     private void validate(V1HorizontalPodAutoscaler v1HorizontalPodAutoscaler, int desiredReplicas) throws HyscaleException {
         if (v1HorizontalPodAutoscaler == null) {
             return;
+        }
+        if (desiredReplicas == 0) {
+           return;
         }
 
         if (desiredReplicas < v1HorizontalPodAutoscaler.getSpec().getMinReplicas() || desiredReplicas > v1HorizontalPodAutoscaler.getSpec().getMaxReplicas()) {
