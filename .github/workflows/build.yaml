@@ -78,6 +78,7 @@ jobs:
       run: |
           if [[ "x`echo ${GITHUB_REF}`" == *"release/HyScale"* ]]
           then
+            cd invoker
             scripts="hyscale-linux-amd64 hyscale-windows-amd64.exe hyscale-darwin-amd64 hyscale.jar"
             upload_to="hyscale win/hyscale.exe mac/hyscale hyscale.jar"
             set -- $upload_to
