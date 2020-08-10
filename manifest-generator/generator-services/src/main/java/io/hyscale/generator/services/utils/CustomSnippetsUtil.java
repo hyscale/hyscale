@@ -94,7 +94,7 @@ public class CustomSnippetsUtil {
             jsonNode = objectMapper.readTree(jsonSnippet);
             kind = jsonNode.get("kind").asText();
             return kind;
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("Error while trying to identify kind in Snippet {}",jsonSnippet,e);
         }
         return null;

@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Multimap;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.generator.services.utils.CustomSnippetsUtil;
+import io.hyscale.plugin.framework.models.ManifestMeta;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.slf4j.Logger;
@@ -27,12 +28,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Custom K8s Snippets
  * <p>
- *  This class is responsible for patching custom K8s snippets with respect to kind on top of generated manifests.
+ *  This class is responsible for patching custom K8s snippets with respect to kind on top of generated manifests
+ *   or add K8s Snippet as manifest file if particular kind doesn't exist.
  * </p>
  * @author Nishanth Panthangi
  */
@@ -62,6 +66,16 @@ public class CustomSnippetsProvider {
                 yamlString = customSnippetsUtil.mergeYamls(yamlString,customSnippet);
             }
         }
+        kindVsCustomSnippets.removeAll(kind);
         return yamlString;
+    }
+
+    public Map<ManifestMeta,String> fetchUnmergedCustomSnippets(){
+        Map<ManifestMeta,String> manifestMetaVsSnippet = new HashMap<ManifestMeta,String>();
+        kindVsCustomSnippets.forEach((kind,snippet)->{
+            ManifestMeta manifestMeta = new ManifestMeta(kind);
+            manifestMetaVsSnippet.put(manifestMeta,snippet);
+        });
+        return manifestMetaVsSnippet;
     }
 }
