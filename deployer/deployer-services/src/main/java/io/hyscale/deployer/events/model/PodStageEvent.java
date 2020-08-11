@@ -15,25 +15,30 @@
  */
 package io.hyscale.deployer.events.model;
 
-import io.hyscale.commons.framework.events.model.ActivityEvent;
-import io.hyscale.commons.framework.events.model.ActivityState;
+import io.hyscale.commons.framework.events.model.HyscaleEvent;
 import io.hyscale.commons.models.ServiceMetadata;
 
-public class PodStageEvent extends ActivityEvent {
+public class PodStageEvent extends HyscaleEvent {
 
     private ServiceMetadata serviceMetadata;
     private String namespace;
-    private PodStage podStage;
+    private PodStage stage;
+    private String status;
+    private boolean failure;
 
-    public PodStageEvent(ActivityState state) {
-        super(state);
-    }
-
-    public PodStageEvent(ActivityState state, ServiceMetadata serviceMetadata, String namespace, PodStage podStage) {
-        super(state);
+    public PodStageEvent(ServiceMetadata serviceMetadata, String namespace, PodStage stage) {
+        super(stage);
         this.serviceMetadata = serviceMetadata;
         this.namespace = namespace;
-        this.podStage = podStage;
+        this.stage = stage;
+    }
+
+    public PodStageEvent(ServiceMetadata serviceMetadata, String namespace, PodStage stage, String status) {
+        super(stage);
+        this.serviceMetadata = serviceMetadata;
+        this.namespace = namespace;
+        this.stage = stage;
+        this.status = status;
     }
 
     public ServiceMetadata getServiceMetadata() {
@@ -44,8 +49,24 @@ public class PodStageEvent extends ActivityEvent {
         return namespace;
     }
 
-    public PodStage getPodStage() {
-        return podStage;
+    public PodStage getStage() {
+        return stage;
+    }
+
+    public boolean isFailure() {
+        return failure;
+    }
+
+    public void setFailure(boolean failure) {
+        this.failure = failure;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public enum PodStage {

@@ -25,10 +25,6 @@ public class ImageBuildEvent extends ActivityEvent {
     private File dockerfile;
     private String buildLogsPath;
 
-    public ImageBuildEvent(ActivityState state) {
-        super(state);
-    }
-
     public ImageBuildEvent(ActivityState state, File dockerfile) {
         super(state);
         this.dockerfile = dockerfile;

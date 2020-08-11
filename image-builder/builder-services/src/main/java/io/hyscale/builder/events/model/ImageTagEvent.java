@@ -22,11 +22,7 @@ public class ImageTagEvent extends ActivityEvent {
 
     private String sourceImage;
     private String destinationImage;
-    
-    public ImageTagEvent(ActivityState state) {
-        super(state);
-    }
-    
+
     public ImageTagEvent(ActivityState state, String sourceImage, String destinationImage) {
         super(state);
         this.sourceImage = sourceImage;

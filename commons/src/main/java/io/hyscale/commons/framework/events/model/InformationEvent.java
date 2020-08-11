@@ -21,22 +21,22 @@ import org.springframework.core.ResolvableType;
 import org.springframework.core.ResolvableTypeProvider;
 
 /**
- * Class to define Generic events
+ * Class to define information events
  * All events which uses Generic type should extend this class
- * Ensures Generic events are resolved at runtime
+ * Ensures information events are resolved at runtime
  *
  */
-public abstract class HyscaleGenericEvent<T extends Serializable> extends HyscaleEvent
+public abstract class InformationEvent<T extends Serializable> extends HyscaleEvent
         implements ResolvableTypeProvider {
 
     private T message;
 
-    public HyscaleGenericEvent(T message) {
+    public InformationEvent(T message) {
         super(message);
         this.message = message;
     }
 
-    public HyscaleGenericEvent(Object source, T message) {
+    public InformationEvent(Object source, T message) {
         super(source);
         this.message = message;
     }

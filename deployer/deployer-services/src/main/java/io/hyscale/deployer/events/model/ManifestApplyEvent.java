@@ -13,26 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.commons.framework.events.model;
+package io.hyscale.deployer.events.model;
 
-public abstract class ActivityEvent extends HyscaleEvent {
+import io.hyscale.commons.framework.events.model.HyscaleEvent;
+import io.hyscale.commons.models.KubernetesResource;
 
-    private ActivityState state;
+public class ManifestApplyEvent extends HyscaleEvent {
 
-    /**
-     * Using {@link ActivityState} as source 
-     * since ActivityEvent can also be published from a static class
-     * and won't have the object reference
-     * Whereas state would be present for every ActivityEvent
-     * @param state 
-     */
-    protected ActivityEvent(ActivityState state) {
-        super(state);
-        this.state = state;
+    private KubernetesResource resource;
+
+    public ManifestApplyEvent(KubernetesResource resource) {
+        super(resource);
+        this.resource = resource;
     }
 
-    public ActivityState getState() {
-        return state;
+    public KubernetesResource getResource() {
+        return this.resource;
     }
-
 }

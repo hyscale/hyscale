@@ -24,15 +24,11 @@ public class UnDeployEvent extends ActivityEvent {
     private ServiceMetadata serviceMetadata;
     private String namespace;
 
-    public UnDeployEvent(ActivityState state) {
-        super(state);
-    }
-
     public UnDeployEvent(ActivityState state, ServiceMetadata serviceMetadata) {
         super(state);
         this.serviceMetadata = serviceMetadata;
     }
-    
+
     public UnDeployEvent(ActivityState state, ServiceMetadata serviceMetadata, String namespace) {
         super(state);
         this.serviceMetadata = serviceMetadata;

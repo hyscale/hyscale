@@ -16,6 +16,6 @@
 package io.hyscale.commons.framework.events.model;
 
 public enum ActivityState {
-    STARTED, DONE, SKIPPED, FAILED;
+    STARTED, DONE, FAILED;
 
 }

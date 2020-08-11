@@ -16,11 +16,9 @@
 package io.hyscale.troubleshooting.integration.service.impl;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.framework.events.model.ActivityState;
 import io.hyscale.commons.framework.events.publisher.EventPublisher;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.ServiceMetadata;
-import io.hyscale.troubleshooting.events.model.TroubleshootingEvent;
 import io.hyscale.troubleshooting.integration.builder.TroubleshootingContextCollector;
 import io.hyscale.troubleshooting.integration.conditions.PodStatusCondition;
 import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
@@ -44,7 +42,7 @@ public class TroubleshootServiceImpl implements TroubleshootService {
 
     @Autowired
     private PodStatusCondition podStatusCondition;
-    
+
     @Autowired
     private EventPublisher publisher;
 
@@ -53,10 +51,7 @@ public class TroubleshootServiceImpl implements TroubleshootService {
         try {
             TroubleshootingContext troubleshootingContext = contextBuilder.build(serviceMetadata, k8sAuthorisation, namespace);
             executeTroubleshootFlow(troubleshootingContext);
-            List<DiagnosisReport> diagnosisReports = troubleshootingContext.getDiagnosisReports();
-            TroubleshootingEvent event = new TroubleshootingEvent(ActivityState.DONE, diagnosisReports);
-            publisher.publishEvent(event);
-            return diagnosisReports;
+            return troubleshootingContext.getDiagnosisReports();
         } catch (HyscaleException e) {
             logger.error("Error while troubleshooting service {}", serviceMetadata.getServiceName(), e);
             throw e;

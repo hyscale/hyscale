@@ -22,11 +22,7 @@ public class ImagePushEvent extends ActivityEvent {
 
     private String image;
     private String pushLogsPath;
-    
-    public ImagePushEvent(ActivityState state) {
-        super(state);
-    }
-    
+
     public ImagePushEvent(ActivityState state, String image, String pushLogsPath) {
         super(state);
         this.image = image;
@@ -36,6 +32,7 @@ public class ImagePushEvent extends ActivityEvent {
     public String getImage() {
         return image;
     }
+
     public String getPushLogsPath() {
         return pushLogsPath;
     }

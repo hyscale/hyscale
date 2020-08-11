@@ -56,13 +56,13 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
 
     @Autowired
     private HyscaleDockerClient hyscaleDockerClient;
-    
+
     @Autowired
     private ImageBuilderConfig imageBuilderConfig;
-    
+
     @Autowired
     private ImageCleanUpProcessor imageCleanUp;
-    
+
     @Autowired
     private EventPublisher publisher;
 
@@ -74,28 +74,28 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
             WorkflowLogger.endActivity(Status.SKIPPING);
             return;
         }
-        
+
         // Check if docker is installed or not
         if (!hyscaleDockerClient.checkForDocker()) {
             throw new HyscaleException(ImageBuilderErrorCodes.DOCKER_NOT_INSTALLED);
         }
-        
+
         if (!hyscaleDockerClient.isDockerRunning()) {
             throw new HyscaleException(ImageBuilderErrorCodes.DOCKER_DAEMON_NOT_RUNNING);
         }
-        
+
         buildImage(serviceSpec, context);
-        
+
         String sourceImage = getSourceImageName(serviceSpec, context);
 
         pullImage(sourceImage, context);
-        
+
         Image image = serviceSpec.get(HyscaleSpecFields.image, Image.class);
 
         tagImage(sourceImage, image);
-        
+
         pushImage(image, context);
-        
+
         // Clean up images based on clean up policy
         imageCleanUp.cleanUp(serviceSpec, context);
     }
@@ -105,12 +105,8 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
                 HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.dockerfile), Dockerfile.class);
         //Skip Image Build if neither dockerfile from buildSpec nor user dockerfile is available
         if (skipBuild(userDockerfile, context)) {
-            ImageBuildEvent event = new ImageBuildEvent(ActivityState.STARTED);
-            publisher.publishEvent(event);
             WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_BUILD);
             WorkflowLogger.endActivity(Status.SKIPPING);
-            event = new ImageBuildEvent(ActivityState.SKIPPED);
-            publisher.publishEvent(event);
             return;
         }
         String tag = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.tag),
@@ -131,7 +127,7 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
             publisher.publishEvent(event);
         }
     }
-    
+
     private void pullImage(String sourceImage, BuildContext context) throws HyscaleException {
         if (!context.isStackAsServiceImage()) {
             return;
@@ -148,15 +144,14 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
             publisher.publishEvent(event);
         }
     }
-    
+
     private void tagImage(String sourceImage, Image image) throws HyscaleException {
+        if (StringUtils.isBlank(sourceImage)) {
+            return;
+        }
         String destinationImage = ImageUtil.getImage(image);
         ImageTagEvent event = new ImageTagEvent(ActivityState.STARTED, sourceImage, destinationImage);
         publisher.publishEvent(event);
-        if (StringUtils.isBlank(sourceImage)) {
-            event = new ImageTagEvent(ActivityState.SKIPPED, sourceImage, destinationImage);
-            publisher.publishEvent(event);
-        }
         try {
             hyscaleDockerClient.tag(sourceImage, image);
             event = new ImageTagEvent(ActivityState.DONE, sourceImage, destinationImage);
@@ -167,7 +162,7 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
             publisher.publishEvent(event);
         }
     }
-    
+
     private void pushImage(Image image, BuildContext context) throws HyscaleException {
         String logFilePath = imageBuilderConfig.getDockerPushLogDir(context.getAppName(), context.getServiceName());
         String pushImage = ImageUtil.getImage(image);
@@ -176,8 +171,6 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
         if (context.getPushRegistry() == null) {
             WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_PUSH);
             WorkflowLogger.endActivity(Status.SKIPPING);
-            event = new ImagePushEvent(ActivityState.SKIPPED, pushImage, logFilePath);
-            publisher.publishEvent(event);
             return;
         }
         try {
@@ -190,7 +183,7 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
             publisher.publishEvent(event);
         }
     }
-    
+
     private Dockerfile getDockerfile(Dockerfile userDockerfile, BuildContext context) throws HyscaleException {
         Dockerfile dockerfile = new Dockerfile();
         String dockerfilePath = getDockerfilePath(userDockerfile, context);
@@ -201,7 +194,7 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
         dockerfile.setPath(userDockerfile != null ? SetupConfig.getAbsolutePath(userDockerfile.getPath()) : null);
         return dockerfile;
     }
-    
+
     /**
      * Get docker file path either:
      * User docker file based on dockerfile in spec or
@@ -235,7 +228,7 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
 
         return dockerfilePath;
     }
-    
+
     /**
      * Not required if dockerSpec and dockerfile are not available.
      * In case its just a stack image, need to push only
@@ -250,16 +243,17 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
         if (context.isStackAsServiceImage()) {
             return true;
         }
-        
+
         // No dockerfile
         return (serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.dockerfile),
                 Dockerfile.class) != null)
                 || (context.getDockerfileEntity() != null && context.getDockerfileEntity().getDockerfile() != null);
     }
-    
+
     /**
      * Source image is either the stack image being used as service image or
      * Local image build through dockerfile
+     *
      * @param serviceSpec
      * @param buildContext
      * @return source image name
@@ -282,7 +276,7 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
         return ((context.getDockerfileEntity() == null || context.getDockerfileEntity().getDockerfile() == null)
                 && (userDockerfile == null));
     }
-      
+
 
     private boolean validate(ServiceSpec serviceSpec, BuildContext context) throws HyscaleException {
         String imageName = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.name),
@@ -298,7 +292,7 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
         }
         return true;
     }
-    
+
     private void validateDockerfilePath(String dockerfilePath) throws HyscaleException {
         File dockerfile = new File(
                 dockerfilePath + ToolConstants.LINUX_FILE_SEPARATOR + DockerImageConstants.DOCKERFILE_NAME);

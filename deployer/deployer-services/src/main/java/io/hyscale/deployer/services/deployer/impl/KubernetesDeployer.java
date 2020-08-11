@@ -51,8 +51,6 @@ import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.AppMetadata;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ResourceKind;
-import io.hyscale.deployer.events.model.ApplyingManifestEvent;
-import io.hyscale.deployer.events.model.AwaitingDeploymentEvent;
 import io.hyscale.deployer.events.model.UnDeployEvent;
 import io.hyscale.deployer.services.builder.AppMetadataBuilder;
 import io.hyscale.deployer.services.builder.PodBuilder;
@@ -100,37 +98,31 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
 
     @Autowired
     private ScaleServiceManager scaleServiceManager;
-    
+
     @Autowired
     private ServiceStatusProcessor serviceStatusProcessor;
-    
+
     @Autowired
     private PodParentProvider podParentProvider;
-    
+
     @Autowired
     private ClusterVersionProvider clusterVersionProvider;
-    
+
     @Autowired
     private EventPublisher publisher;
-    
+
     @Override
     public void deploy(DeploymentContext context) throws HyscaleException {
         List<Manifest> manifests = context.getManifests();
         String namespace = context.getNamespace();
-        ApplyingManifestEvent event = new ApplyingManifestEvent(ActivityState.STARTED, manifests, namespace);
-        publisher.publishEvent(event);
         K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(clientProvider.get((K8sAuthorisation) context.getAuthConfig()));
         try {
             resourceDispatcher.waitForReadiness(context.isWaitForReadiness());
             resourceDispatcher.withNamespace(namespace).apply(manifests);
-            event = new ApplyingManifestEvent(ActivityState.DONE, manifests, namespace);
         } catch (HyscaleException e) {
             logger.error("Error while deploying service {} in namespace {} , error {} ", context.getServiceName(),
                     namespace, e.toString());
-            event = new ApplyingManifestEvent(ActivityState.FAILED, manifests, namespace);
             throw e;
-        } finally {
-            publisher.publishEvent(event);
         }
     }
 
@@ -147,17 +139,11 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
         ServiceMetadata serviceMetadata = new ServiceMetadata();
         serviceMetadata.setAppName(appName);
         serviceMetadata.setServiceName(serviceName);
-        AwaitingDeploymentEvent event = new AwaitingDeploymentEvent(ActivityState.STARTED, serviceMetadata, namespace);
-        publisher.publishEvent(event);
         WorkflowLogger.header(DeployerActivity.WAITING_FOR_DEPLOYMENT);
         try {
             podHandler.watch(apiClient, appName, serviceName, namespace);
-            event = new AwaitingDeploymentEvent(ActivityState.DONE, serviceMetadata, namespace);
         } catch (HyscaleException ex) {
-            event = new AwaitingDeploymentEvent(ActivityState.FAILED, serviceMetadata, namespace);
             throw ex;
-        } finally {
-            publisher.publishEvent(event);
         }
     }
 
@@ -299,13 +285,13 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
         return serviceStatusProcessor.getServiceDeploymentStatus(context.getAuthConfig(), context.getAppName(),
                 context.getServiceName(), context.getNamespace());
     }
-    
+
     @Override
     public List<DeploymentStatus> getDeploymentStatus(DeploymentContext context) throws HyscaleException {
         return serviceStatusProcessor.getDeploymentStatus(context.getAuthConfig(), context.getAppName(),
                 context.getNamespace());
     }
-    
+
     /**
      * Get Replica info for pods
      *
@@ -414,7 +400,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
     @Override
     public ScaleStatus scale(K8sAuthorisation authConfig, String appName, String serviceName, String namespace, ScaleSpec scaleSpec) throws HyscaleException {
         ApiClient apiClient = clientProvider.get(authConfig);
-        if(scaleSpec.getValue()<0){
+        if (scaleSpec.getValue() < 0) {
             throw new HyscaleException(DeployerErrorCodes.CANNOT_SCALE_NEGATIVE, Integer.toString(scaleSpec.getValue()));
         }
         return scaleServiceManager.scale(apiClient, appName, serviceName, namespace, scaleSpec);
