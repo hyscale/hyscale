@@ -29,8 +29,9 @@ public enum ManifestGeneratorActivity implements Activity {
     INVALID_RANGE("Invalid range {}"),
     FAILED_TO_CREATE_IMAGE_PULL_SECRET("Missing credentials for the registry {}. Please perform 'docker login {} ' to continue with the deployment"),
     FAILED_TO_PROCESS_REPLICAS("Unexpected error while processing replicas"),
-    IGNORING_REPLICAS("{} , so replicas has been ignored for this deployment");
-
+    IGNORING_REPLICAS("{} , so replicas has been ignored for this deployment"),
+    FAILED_TO_READ_CUSTOM_SNIPPETS("Failed to read custom snippet file from path {}"),
+    INVALID_CUSTOM_SNIPPET("Provide a valid YAML as custom snippet in {}");
     private String message;
 
     private ManifestGeneratorActivity(String message) {

@@ -19,11 +19,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import io.hyscale.commons.exception.CommonErrorCode;
+import io.hyscale.commons.exception.HyscaleError;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.framework.patch.StrategicPatch;
 import io.hyscale.commons.io.HyscaleFilesUtil;
+import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.utils.DataFormatConverter;
 import io.hyscale.commons.utils.ObjectMapperFactory;
+import io.hyscale.generator.services.exception.ManifestErrorCodes;
+import io.hyscale.generator.services.model.ManifestGeneratorActivity;
 import io.hyscale.servicespec.commons.builder.MapFieldDataProvider;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
@@ -66,24 +71,30 @@ public class CustomSnippetsUtil {
     public Multimap<String,String> processCustomSnippetFiles(List<String> k8sSnippetFilePaths) throws HyscaleException {
         Multimap<String,String> kindVsCustomSnippets = ArrayListMultimap.create(); // NOSONAR
         String kind = null;
+        String yamlSnippet = null;
         for(String snippetFilePath: k8sSnippetFilePaths){
             File snippetFile = new File(snippetFilePath); //NOSONAR
-            String yamlSnippet = HyscaleFilesUtil.readFileData(snippetFile);
-            kind = validateAndGetKind(yamlSnippet);
+            try{
+                yamlSnippet = HyscaleFilesUtil.readFileData(snippetFile);
+                if(yamlSnippet == null){
+                    throw new HyscaleException(CommonErrorCode.FAILED_TO_READ_FILE);
+                }
+            }catch (HyscaleException e){
+                logger.error("Failed to read Custom Snippet file from path {}",snippetFilePath);
+                WorkflowLogger.error(ManifestGeneratorActivity.FAILED_TO_READ_CUSTOM_SNIPPETS,snippetFilePath);
+                throw new HyscaleException(CommonErrorCode.FAILED_TO_READ_FILE,snippetFilePath);
+            }
+            try {
+                String jsonSnippet =  DataFormatConverter.yamlToJson(yamlSnippet);
+                kind = identifyKind(jsonSnippet);
+            }catch(HyscaleException e){
+                logger.error("Failed to convert YAML Snippet to json, invalid YAML File {}",yamlSnippet,e);
+                WorkflowLogger.error(ManifestGeneratorActivity.INVALID_CUSTOM_SNIPPET,snippetFilePath);
+                throw new HyscaleException(CommonErrorCode.FAILED_TO_READ_FILE,snippetFilePath);
+            }
             kindVsCustomSnippets.put(kind,yamlSnippet);
         }
         return kindVsCustomSnippets;
-    }
-
-    public String validateAndGetKind(String yamlSnippet){
-        String jsonSnippet = null;
-        try {
-            jsonSnippet =  DataFormatConverter.yamlToJson(yamlSnippet);
-            return identifyKind(jsonSnippet);
-        }catch (HyscaleException e){
-            logger.error("Failed to convert YAML Snippet to json, invalid YAML File {}",yamlSnippet,e);
-        }
-        return null;
     }
 
     public String identifyKind(String jsonSnippet){
