@@ -13,16 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.troubleshooting.integration.service;
+package io.hyscale.commons.framework.events.model;
 
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.models.K8sAuthorisation;
-import io.hyscale.commons.models.ServiceMetadata;
-import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
+public enum ActivityState {
+    STARTED, DONE, FAILED;
 
-import java.util.List;
-
-public interface TroubleshootService {
-
-    public List<DiagnosisReport> troubleshoot(ServiceMetadata serviceMetadata, K8sAuthorisation k8sAuthorisation, String namespace) throws HyscaleException;
 }

@@ -13,16 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.troubleshooting.integration.service;
+package io.hyscale.builder.events.model;
 
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.models.K8sAuthorisation;
-import io.hyscale.commons.models.ServiceMetadata;
-import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
+import io.hyscale.commons.framework.events.model.ActivityEvent;
+import io.hyscale.commons.framework.events.model.ActivityState;
 
-import java.util.List;
+public class ImagePushEvent extends ActivityEvent {
 
-public interface TroubleshootService {
+    private String image;
+    private String pushLogsPath;
 
-    public List<DiagnosisReport> troubleshoot(ServiceMetadata serviceMetadata, K8sAuthorisation k8sAuthorisation, String namespace) throws HyscaleException;
+    public ImagePushEvent(ActivityState state, String image, String pushLogsPath) {
+        super(state);
+        this.image = image;
+        this.pushLogsPath = pushLogsPath;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public String getPushLogsPath() {
+        return pushLogsPath;
+    }
 }

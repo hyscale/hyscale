@@ -13,16 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.troubleshooting.integration.service;
+package io.hyscale.commons.framework.events.model;
 
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.models.K8sAuthorisation;
-import io.hyscale.commons.models.ServiceMetadata;
-import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
+public abstract class ActivityEvent extends HyscaleEvent {
 
-import java.util.List;
+    private ActivityState state;
 
-public interface TroubleshootService {
+    /**
+     * Using {@link ActivityState} as source 
+     * since ActivityEvent can also be published from a static class
+     * and won't have the object reference
+     * Whereas state would be present for every ActivityEvent
+     * @param state 
+     */
+    protected ActivityEvent(ActivityState state) {
+        super(state);
+        this.state = state;
+    }
 
-    public List<DiagnosisReport> troubleshoot(ServiceMetadata serviceMetadata, K8sAuthorisation k8sAuthorisation, String namespace) throws HyscaleException;
+    public ActivityState getState() {
+        return state;
+    }
+
 }

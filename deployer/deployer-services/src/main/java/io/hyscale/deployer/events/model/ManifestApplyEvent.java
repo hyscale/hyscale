@@ -13,16 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.troubleshooting.integration.service;
+package io.hyscale.deployer.events.model;
 
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.models.K8sAuthorisation;
-import io.hyscale.commons.models.ServiceMetadata;
-import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
+import io.hyscale.commons.framework.events.model.HyscaleEvent;
+import io.hyscale.commons.models.KubernetesResource;
 
-import java.util.List;
+public class ManifestApplyEvent extends HyscaleEvent {
 
-public interface TroubleshootService {
+    private KubernetesResource resource;
 
-    public List<DiagnosisReport> troubleshoot(ServiceMetadata serviceMetadata, K8sAuthorisation k8sAuthorisation, String namespace) throws HyscaleException;
+    public ManifestApplyEvent(KubernetesResource resource) {
+        super(resource);
+        this.resource = resource;
+    }
+
+    public KubernetesResource getResource() {
+        return this.resource;
+    }
 }

@@ -85,4 +85,5 @@ public enum ControllerActivity implements Activity {
     public String getActivityMessage() {
         return message;
     }
+    
 }
