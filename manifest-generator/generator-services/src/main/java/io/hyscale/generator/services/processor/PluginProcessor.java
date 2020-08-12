@@ -119,11 +119,14 @@ public class PluginProcessor {
         List<Manifest> customSnippetsManifestList = new ArrayList<Manifest>();
         manifestMetaVsSnippet.forEach((manifestMeta, snippet)->{
             try{
+                WorkflowLogger.startActivity(ManifestGeneratorActivity.GENERATING_MANIFEST, manifestMeta.getKind());
                 YAMLManifest yamlManifest = manifestFileGenerator.getYamlManifest(manifestDir, snippet,
                         manifestMeta);
                 customSnippetsManifestList.add(yamlManifest);
+                WorkflowLogger.endActivity(Status.DONE);
             }catch (HyscaleException e){
                 logger.error("Error while converting custom K8s snippet into manifest file",e);
+                WorkflowLogger.endActivity(Status.FAILED);
             }
         });
         return customSnippetsManifestList;

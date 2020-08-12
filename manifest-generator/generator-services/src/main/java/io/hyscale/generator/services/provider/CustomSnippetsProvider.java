@@ -18,7 +18,7 @@ package io.hyscale.generator.services.provider;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Multimap;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.generator.services.utils.CustomSnippetsUtil;
+import io.hyscale.generator.services.processor.CustomSnippetsProcessor;
 import io.hyscale.plugin.framework.models.ManifestMeta;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
@@ -48,12 +48,12 @@ public class CustomSnippetsProvider {
     private Multimap<String,String> kindVsCustomSnippets = null;
 
     @Autowired
-    CustomSnippetsUtil customSnippetsUtil;
+    CustomSnippetsProcessor customSnippetsProcessor;
 
     public void init(ServiceSpec serviceSpec) throws HyscaleException {
         TypeReference<List<String>> listTypeReference = new TypeReference<List<String>>() {};
         List<String> k8sSnippetFilePaths= serviceSpec.get(HyscaleSpecFields.k8sPatches,listTypeReference);
-        this.kindVsCustomSnippets = customSnippetsUtil.processCustomSnippetFiles(k8sSnippetFilePaths);
+        this.kindVsCustomSnippets = customSnippetsProcessor.processCustomSnippetFiles(k8sSnippetFilePaths);
     }
 
     public String mergeCustomSnippetsIfAvailable(String kind, String yamlString) throws HyscaleException {
@@ -63,7 +63,7 @@ public class CustomSnippetsProvider {
         }
         for(String customSnippet : customSnippets){
             if(customSnippet != null && !customSnippet.isBlank()){
-                yamlString = customSnippetsUtil.mergeYamls(yamlString,customSnippet);
+                yamlString = customSnippetsProcessor.mergeYamls(yamlString,customSnippet);
             }
         }
         kindVsCustomSnippets.removeAll(kind);
