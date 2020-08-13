@@ -232,7 +232,7 @@
 					<artifactId>maven-license-plugin</artifactId>
 					<version>1.9.0</version>
 					<configuration>
-						<header>${main.basedir}/copyright.txt</header>
+						<header>${main.basedir}/copyright/copyright.txt</header>
 						<strictCheck>true</strictCheck>
 						<includes>
 							<include>**/*.java</include>
@@ -251,7 +251,7 @@
 				<groupId>com.mycila.maven-license-plugin</groupId>
 				<artifactId>maven-license-plugin</artifactId>
 				<configuration>
-					<header>${main.basedir}/copyright.txt</header>
+					<header>${main.basedir}/copyright/copyright.txt</header>
 					<strictCheck>true</strictCheck>
 					<includes>
 						<include>**/*.java</include>
