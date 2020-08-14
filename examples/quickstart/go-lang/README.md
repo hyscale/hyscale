@@ -1,6 +1,6 @@
 ### Quickstart with a sample golang application
 
-This is a simple example having a single Go file.
+This is a simple example having a single Go file App.
 
 ### To deploy this:
 1. Replace `{{username}}` with your dockerhub username.
