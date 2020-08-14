@@ -16,3 +16,11 @@ image:
     image: dockerhub-username/myservice
     tag: 1.0
 ```
+
+#### To get started quickly, you can start with [quickstart](https://github.com/hyscale/hyscale/tree/master/examples/quickstart) examples:
+
+For instance to deploy [go-lang](https://github.com/hyscale/hyscale/tree/master/examples/quickstart/go-lang) sample application.
+```
+cd quickstart/go-lang
+hyscale deploy service -f helloworld-go.hspec -n '<your-namespace>' -a helloworld-go
+```
