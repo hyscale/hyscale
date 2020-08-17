@@ -1,0 +1,17 @@
+name: ratings
+image:
+     registry: registry.hub.docker.com
+     name: {{username}}/bookinfo-ratingsv1
+     tag: 1.15.0
+     buildSpec:
+       stackImage: docker.io/istio/examples-bookinfo-ratings-v1:1.15.0
+
+external: true
+
+ports:
+  - port: 9080/http
+
+k8sPatches:
+  - "./usecases/initContainers/snippet.yaml"
+  - "./usecases/securitycontext/snippet.yaml"
+  - "./usecases/pod/snippet.yaml"

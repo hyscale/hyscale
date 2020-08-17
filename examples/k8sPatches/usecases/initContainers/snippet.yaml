@@ -1,0 +1,10 @@
+kind: "Deployment"
+spec:
+  template:
+    spec:
+      initContainers:
+      - name: init-myservice
+        image: busybox:1.28
+        command:
+        - "/bin/sleep"
+        - "60"
