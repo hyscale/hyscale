@@ -1,0 +1,6 @@
+environment: dev
+overrides: ratings
+k8sPatches:
+  - "./usecases/initContainers/snippet.yaml"
+  - "./usecases/securitycontext/snippet.yaml"
+  - "./usecases/NodePort/snippet.yaml"
