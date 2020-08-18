@@ -25,6 +25,10 @@ c) orders of magnitude smaller to write & maintain
 <img src="https://github.com/hyscale/hyscale/blob/master/docs/images/hyscale-app2k8s.png" width="750" />
 
 ***
+
+## Demo
+[![Watch the video](docs/images/hyscale-demo.png)](https://www.hyscale.io/wp-content/uploads/2020/05/200521-HS-OSS-1.mp4)
+
 ## Examples
 
 For instance, if your service requires to persist some data at the path /mydata , all you would need to declare is:

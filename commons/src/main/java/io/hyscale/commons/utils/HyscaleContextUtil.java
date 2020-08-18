@@ -77,5 +77,9 @@ public class HyscaleContextUtil {
         }
         return applicationContext.getMessage(key, null, defaultMessage, locale);
     }
+    
+    public static String[] getBeanNames(Class<?> className) {
+        return applicationContext.getBeanNamesForType(className);
+    }
 
 }
