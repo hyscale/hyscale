@@ -1,0 +1,7 @@
+kind: Service
+spec:
+  type: NodePort
+  ports:
+  - name: postgresql
+    port: 5732
+    targetPort: postgresql

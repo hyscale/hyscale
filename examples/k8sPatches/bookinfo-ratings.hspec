@@ -6,7 +6,7 @@ image:
      buildSpec:
        stackImage: docker.io/istio/examples-bookinfo-ratings-v1:1.15.0
 
-external: true
+external: false
 
 ports:
   - port: 9080/http
@@ -14,4 +14,4 @@ ports:
 k8sPatches:
   - "./usecases/initContainers/snippet.yaml"
   - "./usecases/securitycontext/snippet.yaml"
-  - "./usecases/pod/snippet.yaml"
+  - "./usecases/NodePort/snippet.yaml"
