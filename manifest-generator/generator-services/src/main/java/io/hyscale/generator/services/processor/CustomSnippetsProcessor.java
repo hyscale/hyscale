@@ -85,13 +85,11 @@ public class CustomSnippetsProcessor {
         if(patch == null){
             return source;
         }
-        MapFieldDataProvider mapFieldDataProvider = new MapFieldDataProvider(); //NOSONAR
         source = DataFormatConverter.yamlToJson(source);
         patch = DataFormatConverter.yamlToJson(patch);
-
-        String strategicMergeJson = StrategicPatch.apply(source, patch,mapFieldDataProvider);
+        String strategicMergeJson = StrategicPatch.apply(source, patch, new MapFieldDataProvider());
         try {
-            JsonNode jsonNode = ObjectMapperFactory.jsonMapper().readTree(strategicMergeJson); //NOSONAR
+            JsonNode jsonNode = ObjectMapperFactory.jsonMapper().readTree(strategicMergeJson);
             return ObjectMapperFactory.yamlMapper().writeValueAsString(jsonNode);
         }catch (IOException e){
             logger.error("Error while converting merged json string to yaml ",e);

@@ -52,11 +52,12 @@ public class CustomSnippetsProvider {
     CustomSnippetsProcessor customSnippetsProcessor;
 
     public void init(ServiceSpec serviceSpec) throws HyscaleException {
-        if(serviceSpec != null){
-            TypeReference<List<String>> listTypeReference = new TypeReference<List<String>>() {};
-            List<String> k8sSnippetFilePaths= serviceSpec.get(HyscaleSpecFields.k8sPatches,listTypeReference);
-            this.kindVsCustomSnippets = customSnippetsProcessor.processCustomSnippetFiles(k8sSnippetFilePaths);
+        if(serviceSpec == null){
+            return;
         }
+        TypeReference<List<String>> listTypeReference = new TypeReference<List<String>>() {};
+        List<String> k8sSnippetFilePaths= serviceSpec.get(HyscaleSpecFields.k8sPatches,listTypeReference);
+        this.kindVsCustomSnippets = customSnippetsProcessor.processCustomSnippetFiles(k8sSnippetFilePaths);
     }
 
     public String mergeCustomSnippetsIfAvailable(String kind, String yamlString) throws HyscaleException {
@@ -68,7 +69,7 @@ public class CustomSnippetsProvider {
             return yamlString;
         }
         for(String customSnippet : customSnippets){
-            if(customSnippet != null && !StringUtils.isNotBlank(customSnippet)){
+            if(StringUtils.isNotBlank(customSnippet)){
                 yamlString = customSnippetsProcessor.mergeYamls(yamlString,customSnippet);
             }
         }
@@ -77,10 +78,10 @@ public class CustomSnippetsProvider {
     }
 
     public Map<ManifestMeta,String> fetchUnmergedCustomSnippets(){
-        if(kindVsCustomSnippets == null){
+        if(kindVsCustomSnippets == null || kindVsCustomSnippets.isEmpty()){
             return null;
         }
-        Map<ManifestMeta,String> manifestMetaVsSnippet = new HashMap<ManifestMeta,String>();
+        Map<ManifestMeta,String> manifestMetaVsSnippet = new HashMap<>();
         kindVsCustomSnippets.forEach((kind,snippet)->{
             ManifestMeta manifestMeta = new ManifestMeta(kind);
             manifestMetaVsSnippet.put(manifestMeta,snippet);

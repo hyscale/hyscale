@@ -17,6 +17,7 @@ package io.hyscale.generator.services.processor;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import io.hyscale.generator.services.provider.CustomSnippetsProvider;
 import org.apache.commons.lang3.StringUtils;
@@ -106,17 +107,18 @@ public class PluginProcessor {
                 WorkflowLogger.endActivity(Status.FAILED);
             }
         });
+        warningMessageForK8sPatches();
+        return manifestList;
+    }
 
+    private void warningMessageForK8sPatches(){
+        //TODO Support all new resource kinds
         Map<ManifestMeta,String> manifestMetaVsSnippets = customSnippetsProvider.fetchUnmergedCustomSnippets();
         if(manifestMetaVsSnippets != null && !manifestMetaVsSnippets.isEmpty()){
-            Set<String> kinds = new HashSet<>();
-            manifestMetaVsSnippets.forEach((manifestMeta, snippet)->{
-                kinds.add(manifestMeta.getKind());
-            });
+            Set<String> kinds = manifestMetaVsSnippets.keySet().stream().map(ManifestMeta::getKind).collect(Collectors.toSet());
             String ignoreKindsForK8sPatches = String.join(",", kinds);
             WorkflowLogger.warn(ManifestGeneratorActivity.IGNORING_CUSTOM_SNIPPET,ignoreKindsForK8sPatches);
         }
-        return manifestList;
     }
 
     public Map<ManifestMeta, ManifestNode> process(ServiceSpec serviceSpec, ManifestContext manifestContext) {
