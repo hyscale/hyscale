@@ -31,7 +31,8 @@ public enum ManifestGeneratorActivity implements Activity {
     FAILED_TO_PROCESS_REPLICAS("Unexpected error while processing replicas"),
     IGNORING_REPLICAS("{} , so replicas has been ignored for this deployment"),
     FAILED_TO_READ_CUSTOM_SNIPPETS("Failed to read custom snippet file from path {}"),
-    INVALID_CUSTOM_SNIPPET("Provide a valid YAML as custom snippet in {}");
+    INVALID_CUSTOM_SNIPPET("Provide a valid YAML as custom snippet for K8s Patches in {}"),
+    IGNORING_CUSTOM_SNIPPET("Ignoring K8s Patch with kind {}");
     private String message;
 
     private ManifestGeneratorActivity(String message) {

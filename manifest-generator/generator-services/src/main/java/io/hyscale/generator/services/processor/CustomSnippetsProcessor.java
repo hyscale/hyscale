@@ -46,6 +46,9 @@ public class CustomSnippetsProcessor {
     private static final Logger logger = LoggerFactory.getLogger(CustomSnippetsProcessor.class);
 
     public Multimap<String,String> processCustomSnippetFiles(List<String> k8sSnippetFilePaths) throws HyscaleException {
+        if(k8sSnippetFilePaths == null){
+            return null;
+        }
         Multimap<String,String> kindVsCustomSnippets = ArrayListMultimap.create(); // NOSONAR
         String kind = null;
         String yamlSnippet = null;

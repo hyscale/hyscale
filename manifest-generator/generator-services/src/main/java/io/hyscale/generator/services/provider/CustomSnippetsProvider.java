@@ -57,6 +57,9 @@ public class CustomSnippetsProvider {
     }
 
     public String mergeCustomSnippetsIfAvailable(String kind, String yamlString) throws HyscaleException {
+        if(kindVsCustomSnippets == null){
+            return yamlString;
+        }
         Collection<String> customSnippets = kindVsCustomSnippets.get(kind);
         if(customSnippets == null || customSnippets.isEmpty()){
             return yamlString;
@@ -71,6 +74,9 @@ public class CustomSnippetsProvider {
     }
 
     public Map<ManifestMeta,String> fetchUnmergedCustomSnippets(){
+        if(kindVsCustomSnippets == null){
+            return null;
+        }
         Map<ManifestMeta,String> manifestMetaVsSnippet = new HashMap<ManifestMeta,String>();
         kindVsCustomSnippets.forEach((kind,snippet)->{
             ManifestMeta manifestMeta = new ManifestMeta(kind);
@@ -78,4 +84,5 @@ public class CustomSnippetsProvider {
         });
         return manifestMetaVsSnippet;
     }
+
 }

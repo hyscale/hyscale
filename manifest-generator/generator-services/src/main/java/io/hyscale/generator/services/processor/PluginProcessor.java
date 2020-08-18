@@ -109,27 +109,11 @@ public class PluginProcessor {
 
         Map<ManifestMeta,String> manifestMetaVsSnippets = customSnippetsProvider.fetchUnmergedCustomSnippets();
         if(manifestMetaVsSnippets != null && !manifestMetaVsSnippets.isEmpty()){
-            List<Manifest> customSnippetsManifestList = createManifestsFromCustomSnippets(manifestDir,manifestMetaVsSnippets);
-            manifestList.addAll(customSnippetsManifestList);
+            manifestMetaVsSnippets.forEach((manifestMeta, snippet)->{
+                WorkflowLogger.warn(ManifestGeneratorActivity.IGNORING_CUSTOM_SNIPPET,manifestMeta.getKind());
+            });
         }
         return manifestList;
-    }
-
-    public List<Manifest> createManifestsFromCustomSnippets(String manifestDir,Map<ManifestMeta,String> manifestMetaVsSnippet){
-        List<Manifest> customSnippetsManifestList = new ArrayList<Manifest>();
-        manifestMetaVsSnippet.forEach((manifestMeta, snippet)->{
-            try{
-                WorkflowLogger.startActivity(ManifestGeneratorActivity.GENERATING_MANIFEST, manifestMeta.getKind());
-                YAMLManifest yamlManifest = manifestFileGenerator.getYamlManifest(manifestDir, snippet,
-                        manifestMeta);
-                customSnippetsManifestList.add(yamlManifest);
-                WorkflowLogger.endActivity(Status.DONE);
-            }catch (HyscaleException e){
-                logger.error("Error while converting custom K8s snippet into manifest file",e);
-                WorkflowLogger.endActivity(Status.FAILED);
-            }
-        });
-        return customSnippetsManifestList;
     }
 
     public Map<ManifestMeta, ManifestNode> process(ServiceSpec serviceSpec, ManifestContext manifestContext) {
