@@ -49,7 +49,7 @@ public class CustomSnippetsProcessor {
         if(k8sSnippetFilePaths == null){
             return null;
         }
-        Multimap<String,String> kindVsCustomSnippets = ArrayListMultimap.create(); // NOSONAR
+        Multimap<String,String> kindVsCustomSnippets = ArrayListMultimap.create();
         String kind = null;
         String yamlSnippet = null;
         for(String snippetFilePath: k8sSnippetFilePaths){
@@ -68,6 +68,9 @@ public class CustomSnippetsProcessor {
                 // Validate YAML
                 String jsonSnippet =  DataFormatConverter.yamlToJson(yamlSnippet);
                 kind = identifyKind(jsonSnippet);
+                if(kind == null){
+                    throw new HyscaleException(CommonErrorCode.FAILED_TO_READ_FILE);
+                }
             }catch(HyscaleException e){
                 logger.error("Failed to convert YAML Snippet to json, invalid YAML File {}",yamlSnippet,e);
                 WorkflowLogger.error(ManifestGeneratorActivity.INVALID_CUSTOM_SNIPPET,snippetFilePath);
@@ -79,7 +82,9 @@ public class CustomSnippetsProcessor {
     }
 
     public String mergeYamls(String source, String patch) throws HyscaleException {
-        String mergedYaml = null;
+        if(patch == null){
+            return source;
+        }
         MapFieldDataProvider mapFieldDataProvider = new MapFieldDataProvider(); //NOSONAR
         source = DataFormatConverter.yamlToJson(source);
         patch = DataFormatConverter.yamlToJson(patch);
@@ -87,22 +92,21 @@ public class CustomSnippetsProcessor {
         String strategicMergeJson = StrategicPatch.apply(source, patch,mapFieldDataProvider);
         try {
             JsonNode jsonNode = ObjectMapperFactory.jsonMapper().readTree(strategicMergeJson); //NOSONAR
-            mergedYaml = ObjectMapperFactory.yamlMapper().writeValueAsString(jsonNode);
-            return mergedYaml;
+            return ObjectMapperFactory.yamlMapper().writeValueAsString(jsonNode);
         }catch (IOException e){
             logger.error("Error while converting merged json string to yaml ",e);
         }
-        return mergedYaml;
+        return null;
     }
 
     public String identifyKind(String jsonSnippet){
-        ObjectMapper objectMapper = ObjectMapperFactory.yamlMapper(); //NOSONAR
-        JsonNode jsonNode = null;
-        String kind = null;
+        if(jsonSnippet == null) {
+            return null;
+        }
         try {
-            jsonNode = objectMapper.readTree(jsonSnippet);
-            kind = jsonNode.get("kind").asText();
-            return kind;
+            ObjectMapper objectMapper = ObjectMapperFactory.yamlMapper(); // NOSONAR
+            JsonNode jsonNode  = objectMapper.readTree(jsonSnippet); // NOSONAR
+            return jsonNode.get("kind").asText();
         } catch (Exception e) {
             logger.error("Error while trying to identify kind in Snippet {}",jsonSnippet,e);
         }

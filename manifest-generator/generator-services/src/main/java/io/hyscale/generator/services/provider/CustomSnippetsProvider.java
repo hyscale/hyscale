@@ -22,6 +22,7 @@ import io.hyscale.generator.services.processor.CustomSnippetsProcessor;
 import io.hyscale.plugin.framework.models.ManifestMeta;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -51,9 +52,11 @@ public class CustomSnippetsProvider {
     CustomSnippetsProcessor customSnippetsProcessor;
 
     public void init(ServiceSpec serviceSpec) throws HyscaleException {
-        TypeReference<List<String>> listTypeReference = new TypeReference<List<String>>() {};
-        List<String> k8sSnippetFilePaths= serviceSpec.get(HyscaleSpecFields.k8sPatches,listTypeReference);
-        this.kindVsCustomSnippets = customSnippetsProcessor.processCustomSnippetFiles(k8sSnippetFilePaths);
+        if(serviceSpec != null){
+            TypeReference<List<String>> listTypeReference = new TypeReference<List<String>>() {};
+            List<String> k8sSnippetFilePaths= serviceSpec.get(HyscaleSpecFields.k8sPatches,listTypeReference);
+            this.kindVsCustomSnippets = customSnippetsProcessor.processCustomSnippetFiles(k8sSnippetFilePaths);
+        }
     }
 
     public String mergeCustomSnippetsIfAvailable(String kind, String yamlString) throws HyscaleException {
@@ -65,7 +68,7 @@ public class CustomSnippetsProvider {
             return yamlString;
         }
         for(String customSnippet : customSnippets){
-            if(customSnippet != null && !customSnippet.isBlank()){
+            if(customSnippet != null && !StringUtils.isNotBlank(customSnippet)){
                 yamlString = customSnippetsProcessor.mergeYamls(yamlString,customSnippet);
             }
         }

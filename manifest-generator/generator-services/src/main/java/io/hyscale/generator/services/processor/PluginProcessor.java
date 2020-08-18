@@ -109,9 +109,12 @@ public class PluginProcessor {
 
         Map<ManifestMeta,String> manifestMetaVsSnippets = customSnippetsProvider.fetchUnmergedCustomSnippets();
         if(manifestMetaVsSnippets != null && !manifestMetaVsSnippets.isEmpty()){
+            Set<String> kinds = new HashSet<>();
             manifestMetaVsSnippets.forEach((manifestMeta, snippet)->{
-                WorkflowLogger.warn(ManifestGeneratorActivity.IGNORING_CUSTOM_SNIPPET,manifestMeta.getKind());
+                kinds.add(manifestMeta.getKind());
             });
+            String ignoreKindsForK8sPatches = String.join(",", kinds);
+            WorkflowLogger.warn(ManifestGeneratorActivity.IGNORING_CUSTOM_SNIPPET,ignoreKindsForK8sPatches);
         }
         return manifestList;
     }
