@@ -1,0 +1,8 @@
+kind: "Deployment"
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: init-myservice
+          image: busybox:1.28
+          command: ['sh', '-c', "until nslookup ratings.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for ratings; sleep 2; done"]
