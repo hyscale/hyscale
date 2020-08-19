@@ -1,7 +1,7 @@
 name: ratings
 image:
      registry: registry.hub.docker.com
-     name: srujan5140/bookinfo-ratingsv1
+     name: {{username}}/bookinfo-ratingsv1
      tag: 1.15.0
      buildSpec:
        stackImage: docker.io/istio/examples-bookinfo-ratings-v1:1.15.0
