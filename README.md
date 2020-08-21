@@ -15,7 +15,7 @@ This project is aimed at building an abstraction framework over K8s (for app dep
 
 Containerizing apps and deploying them to K8s can be tedious and error-prone with having to write & maintain large portions of yaml, dealing with cryptic K8s error messages, challenging new ops and keeping up with new K8s versions. An abstraction brings higher-level objects & actions that are intuitively understood by developers & devops professionals alike making deployments, maintenance & troubleshooting a breeze!
 
-Such an abstraction must: <br />
+Such an [abstraction](https://github.com/hyscale/hyscale/wiki/App-centric-Abstraction) must: <br />
 a) be declarative, <br />
 b) intuitive to read, and <br /> 
 c) orders of magnitude smaller to write & maintain
@@ -28,6 +28,8 @@ c) orders of magnitude smaller to write & maintain
 
 ## Demo
 [![Watch the video](docs/images/hyscale-demo.png)](https://www.hyscale.io/wp-content/uploads/2020/05/200521-HS-OSS-1.mp4)
+
+For more detailed information refer the [wiki](https://github.com/hyscale/hyscale/wiki).
 
 ## Examples
 
