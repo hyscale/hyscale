@@ -10,6 +10,14 @@
 
 This project is aimed at building an abstraction framework over K8s (for app deployments) in the same vein as jQuery over Javascript or Spring over servlets.
 
+## Table of Contents
+
+- [Abstraction over K8s](#abstracting-k8s)
+- [Demo](#demo)
+- [Examples](#examples)
+- [Installing](#download--try)
+- [Troubleshooting](#completing-the-abstraction--troubleshooting--ops)
+- [Contribute](#contribute)
 
 ## Abstracting K8s
 
