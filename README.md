@@ -81,7 +81,7 @@ And if you wanted to perform some operations such as getting the logs of a servi
 
 ## Download & Try
 
-To run HyScale, you need Docker 18.09.x or above, your Kubernetes cluster token at $HOME/.kube/config and registry credentials at $HOME/.docker/config.json
+To run HyScale, you need Docker 18.09.x or above, your Kubernetes cluster token at $HOME/.kube/config and registry credentials at $HOME/.docker/config.json. Make sure you have logged into your docker registry using `docker login`.
 
 If you are on Linux, install using:
 ```sh
