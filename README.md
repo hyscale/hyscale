@@ -15,9 +15,10 @@ This project is aimed at building an abstraction framework over K8s (for app dep
 - [Abstraction over K8s](#abstracting-k8s)
 - [Demo](#demo)
 - [Examples](#examples)
-- [Installing](#download--try)
-- [Troubleshooting](#completing-the-abstraction--troubleshooting--ops)
+- [Installation](#download--try)
+- [Troubleshootingee](#completing-the-abstraction--troubleshooting--ops)
 - [Contribute](#contribute)
+- [Wiki](https://github.com/hyscale/hyscale/wiki)
 
 ## Abstracting K8s
 
