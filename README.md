@@ -8,7 +8,11 @@
 
 **Kubernetes (K8s) is complex.** This makes application deployment to K8s challenging, time-consuming, tedious and error-prone. But it doesn't have to be that way.
 
-This project is aimed at building an abstraction framework over K8s (for app deployments) in the same vein as jQuery over Javascript or Spring over servlets.
+This project is aimed at building **an abstraction framework over K8s (for app deployments)** in the same vein as jQuery over Javascript or Spring over servlets.
+
+HyScale takes a simple, short Declarative definition of your service config, given the config it generates Dockerfile, Container Image, Kubernetes Manifests (YAMLs) and deploys to any Kubernetes Cluster returning back the app URL. Also it abstracts & simplifies Deployment Troubleshooting and Runtime Ops.
+
+HyScale can be used to deploy either Monolithic or Microservice Applications.
 
 ## Table of Contents
 
@@ -71,7 +75,7 @@ You can also find spec files for a few sample applications [here](https://github
 
 ## App2URL | Deploying to K8s
 
-Once you've written the declaration of your service's requirements (we call it a hspec file), deploying and obtaining a URL is a one-line command:
+Once you've written the [declaration of your service's requirements](https://github.com/hyscale/hyscale/wiki/Tutorial) (we call it a hspec file), deploying and obtaining a URL is a one-line command:
 
 ```hyscale deploy service -f '<myservice.hspec>' -n '<my-namespace>' -a '<my-app-name>'```
 
