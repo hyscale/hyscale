@@ -10,6 +10,15 @@
 
 This project is aimed at building an abstraction framework over K8s (for app deployments) in the same vein as jQuery over Javascript or Spring over servlets.
 
+## Table of Contents
+
+- [Abstraction over K8s](#abstracting-k8s)
+- [Demo](#demo)
+- [Examples](#examples)
+- [Installation](#download--try)
+- [Troubleshooting](#completing-the-abstraction--troubleshooting--ops)
+- [Contribute](#contribute)
+- [Wiki](https://github.com/hyscale/hyscale/wiki)
 
 ## Abstracting K8s
 
@@ -81,7 +90,7 @@ And if you wanted to perform some operations such as getting the logs of a servi
 
 ## Download & Try
 
-To run HyScale, you need Docker 18.09.x or above, your Kubernetes cluster token at $HOME/.kube/config and registry credentials at $HOME/.docker/config.json
+To run HyScale, you need Docker 18.09.x or above, your Kubernetes cluster token at $HOME/.kube/config and registry credentials at $HOME/.docker/config.json. Make sure you have logged into your docker registry using `docker login`.
 
 If you are on Linux, install using:
 ```sh
