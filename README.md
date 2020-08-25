@@ -10,7 +10,7 @@
 
 This project is aimed at building **an abstraction framework over K8s (for app deployments)** in the same vein as jQuery over Javascript or Spring over servlets.
 
-HyScale takes a simple, short Declarative definition of your service config and then it generates Dockerfile, Container Image, Kubernetes Manifests (YAMLs) and deploys to any Kubernetes Cluster returning back the app URL. Also it abstracts & simplifies Deployment Troubleshooting and Runtime Ops.
+HyScale takes a simple, short Declarative definition of your service config, given the config it generates Dockerfile, Container Image, Kubernetes Manifests (YAMLs) and deploys to any Kubernetes Cluster returning back the app URL. Also it abstracts & simplifies Deployment Troubleshooting and Runtime Ops.
 
 HyScale can be used to deploy either Monolithic or Microservice Applications.
 
