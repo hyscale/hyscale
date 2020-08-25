@@ -18,6 +18,10 @@ package io.hyscale.generator.services.provider;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Multimap;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.Status;
+import io.hyscale.generator.services.exception.ManifestErrorCodes;
+import io.hyscale.generator.services.model.ManifestGeneratorActivity;
 import io.hyscale.generator.services.processor.CustomSnippetsProcessor;
 import io.hyscale.plugin.framework.models.ManifestMeta;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -46,21 +50,11 @@ public class CustomSnippetsProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(CustomSnippetsProvider.class);
 
-    private Multimap<String,String> kindVsCustomSnippets = null;
-
     @Autowired
     CustomSnippetsProcessor customSnippetsProcessor;
 
-    public void init(ServiceSpec serviceSpec) throws HyscaleException {
-        if(serviceSpec == null){
-            return;
-        }
-        TypeReference<List<String>> listTypeReference = new TypeReference<List<String>>() {};
-        List<String> k8sSnippetFilePaths= serviceSpec.get(HyscaleSpecFields.k8sPatches,listTypeReference);
-        this.kindVsCustomSnippets = customSnippetsProcessor.processCustomSnippetFiles(k8sSnippetFilePaths);
-    }
-
-    public String mergeCustomSnippetsIfAvailable(String kind, String yamlString) throws HyscaleException {
+    public String mergeCustomSnippetsIfAvailable(Multimap<String,String> kindVsCustomSnippets,
+                                                 String kind, String yamlString) throws HyscaleException {
         if(kindVsCustomSnippets == null){
             return yamlString;
         }
@@ -68,16 +62,23 @@ public class CustomSnippetsProvider {
         if(customSnippets == null || customSnippets.isEmpty()){
             return yamlString;
         }
-        for(String customSnippet : customSnippets){
-            if(StringUtils.isNotBlank(customSnippet)){
-                yamlString = customSnippetsProcessor.mergeYamls(yamlString,customSnippet);
+        WorkflowLogger.startActivity(ManifestGeneratorActivity.APPLYING_CUSTOM_SNIPPET,kind);
+        try{
+            for(String customSnippet : customSnippets){
+                if(StringUtils.isNotBlank(customSnippet)){
+                    yamlString = customSnippetsProcessor.mergeYamls(yamlString,customSnippet);
+                }
             }
+        }catch (HyscaleException e){
+            WorkflowLogger.endActivity(Status.FAILED);
+            throw new HyscaleException(ManifestErrorCodes.ERROR_WHILE_APPLYING_CUSTOM_SNIPPETS);
         }
         kindVsCustomSnippets.removeAll(kind);
+        WorkflowLogger.endActivity(Status.DONE);
         return yamlString;
     }
 
-    public Map<ManifestMeta,String> fetchUnmergedCustomSnippets(){
+    public Map<ManifestMeta,String> fetchUnmergedCustomSnippets(Multimap<String,String> kindVsCustomSnippets){
         if(kindVsCustomSnippets == null || kindVsCustomSnippets.isEmpty()){
             return null;
         }

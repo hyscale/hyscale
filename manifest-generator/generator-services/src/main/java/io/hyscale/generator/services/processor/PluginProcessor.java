@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.Multimap;
 import io.hyscale.generator.services.provider.CustomSnippetsProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -69,6 +71,9 @@ public class PluginProcessor {
     @Autowired
     private CustomSnippetsProvider customSnippetsProvider;
 
+    @Autowired
+    private CustomSnippetsProcessor customSnippetsProcessor;
+
 
 
     public List<Manifest> getManifests(ServiceSpec serviceSpec, ManifestContext manifestContext)
@@ -76,7 +81,11 @@ public class PluginProcessor {
         YAMLMapper yamlMapper = new YAMLMapper();
         String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
         List<Manifest> manifestList = new ArrayList<>();
-        customSnippetsProvider.init(serviceSpec);
+        TypeReference<List<String>> listTypeReference = new TypeReference<List<String>>() {};
+        List<String> k8sSnippetFilePaths= serviceSpec.get(HyscaleSpecFields.k8sPatches,listTypeReference);
+        // Fetching Custom Snippets for various kinds
+        Multimap<String,String> kindVsCustomSnippets  = customSnippetsProcessor.processCustomSnippetFiles(k8sSnippetFilePaths);
+
         Map<ManifestMeta, ManifestNode> manifestMetavsNodeMap = process(serviceSpec, manifestContext);
         if (manifestMetavsNodeMap == null || manifestMetavsNodeMap.isEmpty()) {
             logger.debug("Found empty processed manifests ");
@@ -92,7 +101,7 @@ public class PluginProcessor {
                 if (manifestNode != null && manifestNode.getObjectNode() != null) {
                     yamlString = yamlMapper.writeValueAsString(manifestNode.getObjectNode());
                     String kind = manifestMeta.getKind();
-                    yamlString = customSnippetsProvider.mergeCustomSnippetsIfAvailable(kind,yamlString);
+                    yamlString = customSnippetsProvider.mergeCustomSnippetsIfAvailable(kindVsCustomSnippets,kind,yamlString);
                 }
                 WorkflowLogger.startActivity(ManifestGeneratorActivity.GENERATING_MANIFEST, each.getKey().getKind());
                 YAMLManifest yamlManifest = manifestFileGenerator.getYamlManifest(manifestDir, yamlString,
@@ -107,13 +116,13 @@ public class PluginProcessor {
                 WorkflowLogger.endActivity(Status.FAILED);
             }
         });
-        warningMessageForK8sPatches();
+        warningMessageForK8sPatches(kindVsCustomSnippets);
         return manifestList;
     }
 
-    private void warningMessageForK8sPatches(){
+    private void warningMessageForK8sPatches(Multimap<String,String> kindVsCustomSnippets){
         //TODO Support all new resource kinds
-        Map<ManifestMeta,String> manifestMetaVsSnippets = customSnippetsProvider.fetchUnmergedCustomSnippets();
+        Map<ManifestMeta,String> manifestMetaVsSnippets = customSnippetsProvider.fetchUnmergedCustomSnippets(kindVsCustomSnippets);
         if(manifestMetaVsSnippets != null && !manifestMetaVsSnippets.isEmpty()){
             Set<String> kinds = manifestMetaVsSnippets.keySet().stream().map(ManifestMeta::getKind).collect(Collectors.toSet());
             String ignoreKindsForK8sPatches = String.join(",", kinds);

@@ -30,9 +30,10 @@ public enum ManifestGeneratorActivity implements Activity {
     FAILED_TO_CREATE_IMAGE_PULL_SECRET("Missing credentials for the registry {}. Please perform 'docker login {} ' to continue with the deployment"),
     FAILED_TO_PROCESS_REPLICAS("Unexpected error while processing replicas"),
     IGNORING_REPLICAS("{} , so replicas has been ignored for this deployment"),
-    FAILED_TO_READ_CUSTOM_SNIPPETS("Failed to read custom snippet file from path {}"),
-    INVALID_CUSTOM_SNIPPET("Provide a valid YAML as custom snippet for K8s Patches in {}"),
-    IGNORING_CUSTOM_SNIPPET("K8s Patches not supported for kinds {}");
+    FAILED_TO_READ_CUSTOM_SNIPPETS("Failed to read K8s Patches from file {}"),
+    INVALID_CUSTOM_SNIPPET("Provide a valid YAML snippet for K8s Patches in {}"),
+    IGNORING_CUSTOM_SNIPPET("K8s Patches not supported for kinds {}"),
+    APPLYING_CUSTOM_SNIPPET("Applying K8s Patches for {}");
     private String message;
 
     private ManifestGeneratorActivity(String message) {

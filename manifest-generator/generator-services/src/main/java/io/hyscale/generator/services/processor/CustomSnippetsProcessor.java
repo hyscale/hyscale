@@ -25,8 +25,9 @@ import io.hyscale.commons.io.HyscaleFilesUtil;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.utils.DataFormatConverter;
 import io.hyscale.commons.utils.ObjectMapperFactory;
+import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.generator.services.model.ManifestGeneratorActivity;
-import io.hyscale.servicespec.commons.builder.MapFieldDataProvider;
+import io.hyscale.generator.services.provider.CustomSnippetsFieldDataProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -53,7 +54,7 @@ public class CustomSnippetsProcessor {
         String kind = null;
         String yamlSnippet = null;
         for(String snippetFilePath: k8sSnippetFilePaths){
-            File snippetFile = new File(snippetFilePath); //NOSONAR
+            File snippetFile = new File(snippetFilePath);
             try{
                 yamlSnippet = HyscaleFilesUtil.readFileData(snippetFile);
                 if(yamlSnippet == null){
@@ -87,14 +88,14 @@ public class CustomSnippetsProcessor {
         }
         source = DataFormatConverter.yamlToJson(source);
         patch = DataFormatConverter.yamlToJson(patch);
-        String strategicMergeJson = StrategicPatch.apply(source, patch, new MapFieldDataProvider());
+        String strategicMergeJson = StrategicPatch.apply(source, patch, new CustomSnippetsFieldDataProvider());
         try {
             JsonNode jsonNode = ObjectMapperFactory.jsonMapper().readTree(strategicMergeJson);
             return ObjectMapperFactory.yamlMapper().writeValueAsString(jsonNode);
         }catch (IOException e){
             logger.error("Error while converting merged json string to yaml ",e);
         }
-        return null;
+        throw new HyscaleException(ManifestErrorCodes.ERROR_WHILE_APPLYING_CUSTOM_SNIPPETS);
     }
 
     public String identifyKind(String jsonSnippet){
@@ -102,8 +103,8 @@ public class CustomSnippetsProcessor {
             return null;
         }
         try {
-            ObjectMapper objectMapper = ObjectMapperFactory.yamlMapper(); // NOSONAR
-            JsonNode jsonNode  = objectMapper.readTree(jsonSnippet); // NOSONAR
+            ObjectMapper objectMapper = ObjectMapperFactory.yamlMapper();
+            JsonNode jsonNode  = objectMapper.readTree(jsonSnippet);
             return jsonNode.get("kind").asText();
         } catch (Exception e) {
             logger.error("Error while trying to identify kind in Snippet {}",jsonSnippet,e);
