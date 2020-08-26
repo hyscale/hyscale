@@ -101,7 +101,10 @@ public class PluginProcessor {
                 if (manifestNode != null && manifestNode.getObjectNode() != null) {
                     yamlString = yamlMapper.writeValueAsString(manifestNode.getObjectNode());
                     String kind = manifestMeta.getKind();
-                    yamlString = customSnippetsProvider.mergeCustomSnippetsIfAvailable(kindVsCustomSnippets,kind,yamlString);
+                    if(kindVsCustomSnippets!= null && !kindVsCustomSnippets.isEmpty()){
+                        yamlString = applyCustomSnippets(kindVsCustomSnippets,kind,yamlString);
+                        kindVsCustomSnippets.removeAll(kind);
+                    }
                 }
                 WorkflowLogger.startActivity(ManifestGeneratorActivity.GENERATING_MANIFEST, each.getKey().getKind());
                 YAMLManifest yamlManifest = manifestFileGenerator.getYamlManifest(manifestDir, yamlString,
@@ -116,15 +119,31 @@ public class PluginProcessor {
                 WorkflowLogger.endActivity(Status.FAILED);
             }
         });
-        warningMessageForK8sPatches(kindVsCustomSnippets);
+        warningMessageForCustomSnippets(kindVsCustomSnippets);
         return manifestList;
     }
 
-    private void warningMessageForK8sPatches(Multimap<String,String> kindVsCustomSnippets){
+    private String applyCustomSnippets(Multimap<String,String> kindVsCustomSnippets, String kind, String yamlString){
+        Collection<String> customSnippets = kindVsCustomSnippets.get(kind);
+        if(customSnippets != null && !customSnippets.isEmpty()){
+            WorkflowLogger.startActivity(ManifestGeneratorActivity.APPLYING_CUSTOM_SNIPPET,kind);
+            List<String> customSnippetsList = customSnippets.stream().collect(Collectors.toList());
+            try {
+                yamlString = customSnippetsProvider.mergeCustomSnippets(yamlString, customSnippetsList);
+                WorkflowLogger.endActivity(Status.DONE);
+                return yamlString;
+            }catch (HyscaleException e){
+                logger.error("Error while applying Custom Snippets on kind {}",kind, e);
+                WorkflowLogger.endActivity(Status.FAILED);
+            }
+        }
+        return yamlString;
+    }
+
+    private void warningMessageForCustomSnippets(Multimap<String,String> kindVsCustomSnippets){
         //TODO Support all new resource kinds
-        Map<ManifestMeta,String> manifestMetaVsSnippets = customSnippetsProvider.fetchUnmergedCustomSnippets(kindVsCustomSnippets);
-        if(manifestMetaVsSnippets != null && !manifestMetaVsSnippets.isEmpty()){
-            Set<String> kinds = manifestMetaVsSnippets.keySet().stream().map(ManifestMeta::getKind).collect(Collectors.toSet());
+        if(kindVsCustomSnippets != null && !kindVsCustomSnippets.isEmpty()){
+            Set<String> kinds = kindVsCustomSnippets.keySet();
             String ignoreKindsForK8sPatches = String.join(",", kinds);
             WorkflowLogger.warn(ManifestGeneratorActivity.IGNORING_CUSTOM_SNIPPET,ignoreKindsForK8sPatches);
         }

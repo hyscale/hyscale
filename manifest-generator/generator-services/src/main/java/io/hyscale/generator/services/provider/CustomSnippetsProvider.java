@@ -41,7 +41,6 @@ import java.util.Map;
  * Custom K8s Snippets
  * <p>
  *  This class is responsible for patching custom K8s snippets with respect to kind on top of generated manifests
- *   or add K8s Snippet as manifest file if particular kind doesn't exist.
  * </p>
  * @author Nishanth Panthangi
  */
@@ -53,41 +52,16 @@ public class CustomSnippetsProvider {
     @Autowired
     CustomSnippetsProcessor customSnippetsProcessor;
 
-    public String mergeCustomSnippetsIfAvailable(Multimap<String,String> kindVsCustomSnippets,
-                                                 String kind, String yamlString) throws HyscaleException {
-        if(kindVsCustomSnippets == null){
-            return yamlString;
-        }
-        Collection<String> customSnippets = kindVsCustomSnippets.get(kind);
+    public String mergeCustomSnippets(String yamlString,
+                                      List<String> customSnippets) throws HyscaleException {
         if(customSnippets == null || customSnippets.isEmpty()){
             return yamlString;
         }
-        WorkflowLogger.startActivity(ManifestGeneratorActivity.APPLYING_CUSTOM_SNIPPET,kind);
-        try{
-            for(String customSnippet : customSnippets){
-                if(StringUtils.isNotBlank(customSnippet)){
-                    yamlString = customSnippetsProcessor.mergeYamls(yamlString,customSnippet);
-                }
+        for(String customSnippet : customSnippets){
+            if(StringUtils.isNotBlank(customSnippet)){
+                yamlString = customSnippetsProcessor.mergeYamls(yamlString,customSnippet);
             }
-        }catch (HyscaleException e){
-            WorkflowLogger.endActivity(Status.FAILED);
-            throw new HyscaleException(ManifestErrorCodes.ERROR_WHILE_APPLYING_CUSTOM_SNIPPETS);
         }
-        kindVsCustomSnippets.removeAll(kind);
-        WorkflowLogger.endActivity(Status.DONE);
         return yamlString;
     }
-
-    public Map<ManifestMeta,String> fetchUnmergedCustomSnippets(Multimap<String,String> kindVsCustomSnippets){
-        if(kindVsCustomSnippets == null || kindVsCustomSnippets.isEmpty()){
-            return null;
-        }
-        Map<ManifestMeta,String> manifestMetaVsSnippet = new HashMap<>();
-        kindVsCustomSnippets.forEach((kind,snippet)->{
-            ManifestMeta manifestMeta = new ManifestMeta(kind);
-            manifestMetaVsSnippet.put(manifestMeta,snippet);
-        });
-        return manifestMetaVsSnippet;
-    }
-
 }
