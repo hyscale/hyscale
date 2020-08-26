@@ -118,7 +118,7 @@ public class HyscaleFilesUtilTests {
 
     @Test
     public void getFileNameTest() throws HyscaleException {
-        assertEquals(SAMPLE_FILE_NAME, HyscaleFilesUtil.getFileName(sampleFilePath));
+        assertEquals(TEST_FILE_NAME, HyscaleFilesUtil.getFileName(testFilePath));
     }
     
     

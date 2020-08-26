@@ -36,7 +36,7 @@ public class LogProcessorTests {
     private static final String LOG_FILE_PATH = "/tmp/logs/logs.txt";
     private static final LogProcessor logProcessor = new LogProcessor();
     private static final String ENCODING = "UTF-8";
-    private static final String logFileContent = "logger running" + "\n" + "logger running";
+    private static final String logFileContent = "logger running" + System.lineSeparator() + "logger running";
     private static File file;
     private static ByteArrayOutputStream os = new ByteArrayOutputStream();
 
