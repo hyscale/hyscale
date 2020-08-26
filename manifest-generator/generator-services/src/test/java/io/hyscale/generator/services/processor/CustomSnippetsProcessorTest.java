@@ -34,7 +34,7 @@ import java.util.stream.Stream;
 
 @SpringBootTest
 @Ignore
-public class CustomSnippetsProcessorTest {
+class CustomSnippetsProcessorTest {
     @Autowired
     CustomSnippetsProcessor customSnippetsProcessor;
 

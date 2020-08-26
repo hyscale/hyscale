@@ -18,6 +18,7 @@ package io.hyscale.servicespec.commons.fields;
 /**
  * Defines fields for hyscale service spec
  */
+@SuppressWarnings("java:S115")
 public class HyscaleSpecFields {
 
 	public static final String name = "name";

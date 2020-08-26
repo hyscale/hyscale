@@ -15,27 +15,12 @@
  */
 package io.hyscale.generator.services.provider;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.collect.Multimap;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.Status;
-import io.hyscale.generator.services.exception.ManifestErrorCodes;
-import io.hyscale.generator.services.model.ManifestGeneratorActivity;
 import io.hyscale.generator.services.processor.CustomSnippetsProcessor;
-import io.hyscale.plugin.framework.models.ManifestMeta;
-import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
-import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Custom K8s Snippets
@@ -46,8 +31,6 @@ import java.util.Map;
  */
 @Component
 public class CustomSnippetsProvider {
-
-    private static final Logger logger = LoggerFactory.getLogger(CustomSnippetsProvider.class);
 
     @Autowired
     CustomSnippetsProcessor customSnippetsProcessor;

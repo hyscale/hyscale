@@ -140,6 +140,7 @@ public class PluginProcessor {
         return yamlString;
     }
 
+    @SuppressWarnings("java:S1135")
     private void warningMessageForCustomSnippets(Multimap<String,String> kindVsCustomSnippets){
         //TODO Support all new resource kinds
         if(kindVsCustomSnippets != null && !kindVsCustomSnippets.isEmpty()){

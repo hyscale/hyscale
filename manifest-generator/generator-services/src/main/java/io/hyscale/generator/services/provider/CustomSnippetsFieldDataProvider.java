@@ -37,7 +37,7 @@ public class CustomSnippetsFieldDataProvider implements FieldMetaDataProvider {
     private static final Logger logger = LoggerFactory.getLogger(CustomSnippetsFieldDataProvider.class);
     private static Properties properties = new Properties();
 
-    private static Map<String, String> fieldData = new HashMap<String, String>();
+    private static Map<String, String> fieldData = new HashMap<>();
 
     static {
         try {
