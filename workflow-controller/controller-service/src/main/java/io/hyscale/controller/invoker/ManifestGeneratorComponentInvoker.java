@@ -86,7 +86,6 @@ public class ManifestGeneratorComponentInvoker extends ComponentInvoker<Workflow
         } catch (HyscaleException e) {
             logger.error("Error while generating manifest for service: {}", serviceName, e);
             context.setFailed(true);
-            WorkflowLogger.header(ControllerActivity.MANIFEST_GENERATION_FAILED, e.getMessage());
             throw e;
         } finally {
             context.addAttribute(WorkflowConstants.MANIFESTS_PATH,

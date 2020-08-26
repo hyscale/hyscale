@@ -18,6 +18,7 @@ package io.hyscale.servicespec.commons.fields;
 /**
  * Defines fields for hyscale service spec
  */
+@SuppressWarnings("java:S115")
 public class HyscaleSpecFields {
 
 	public static final String name = "name";
@@ -42,6 +43,7 @@ public class HyscaleSpecFields {
 	public static final String runCommands = "runCommands";
 	public static final String runCommandsScript = "runCommandsScript";
 	public static final String startCommand = "startCommand";
+	public static final String k8sSnippets = "k8sSnippets";
 	public static final String replicas = "replicas";
 	public static final String memory = "memory";
 	public static final String cpu = "cpu";
