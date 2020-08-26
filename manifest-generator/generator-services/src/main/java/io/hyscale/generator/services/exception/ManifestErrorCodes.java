@@ -26,7 +26,7 @@ public enum ManifestErrorCodes implements HyscaleError {
     INVALID_SIZE_FORMAT("Invalid size format {} "),
     INSUFFICIENT_MEMORY("Insufficient memory {}"),
     INVALID_FORMAT_CPUTHRESHOLD("Invalid format for cpuThreshold , use : <number>% "),
-    ERROR_WHILE_APPLYING_CUSTOM_SNIPPETS("Error while applying K8s Patches");
+    ERROR_WHILE_APPLYING_CUSTOM_SNIPPETS("Error while applying K8s Snippets");
 
     private String message;
     private int code;

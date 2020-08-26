@@ -40,12 +40,12 @@ public class CustomSnippetsProcessorTest {
 
     private static Stream<Arguments> input() throws HyscaleException{
         return Stream.of(Arguments.of(getList("Deployment"),
-                getList("./src/test/resources/processor/k8sPatches/init-containers.yaml")),
+                getList("./src/test/resources/processor/k8sSnippets/init-containers.yaml")),
                 Arguments.of(getList("Pod"),
-                        getList("./src/test/resources/processor/k8sPatches/pod-security-context.yaml")),
+                        getList("./src/test/resources/processor/k8sSnippets/pod-security-context.yaml")),
                 Arguments.of(getList("Deployment","Pod"),
-                        getList("./src/test/resources/processor/k8sPatches/init-containers.yaml",
-                                "./src/test/resources/processor/k8sPatches/pod-security-context.yaml")));
+                        getList("./src/test/resources/processor/k8sSnippets/init-containers.yaml",
+                                "./src/test/resources/processor/k8sSnippets/pod-security-context.yaml")));
     }
 
     @ParameterizedTest

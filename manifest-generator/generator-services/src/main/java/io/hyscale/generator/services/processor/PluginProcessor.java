@@ -82,7 +82,7 @@ public class PluginProcessor {
         String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
         List<Manifest> manifestList = new ArrayList<>();
         TypeReference<List<String>> listTypeReference = new TypeReference<List<String>>() {};
-        List<String> k8sSnippetFilePaths= serviceSpec.get(HyscaleSpecFields.k8sPatches,listTypeReference);
+        List<String> k8sSnippetFilePaths= serviceSpec.get(HyscaleSpecFields.k8sSnippets,listTypeReference);
         // Fetching Custom Snippets for various kinds
         Multimap<String,String> kindVsCustomSnippets  = customSnippetsProcessor.processCustomSnippetFiles(k8sSnippetFilePaths);
 
@@ -144,8 +144,8 @@ public class PluginProcessor {
         //TODO Support all new resource kinds
         if(kindVsCustomSnippets != null && !kindVsCustomSnippets.isEmpty()){
             Set<String> kinds = kindVsCustomSnippets.keySet();
-            String ignoreKindsForK8sPatches = String.join(",", kinds);
-            WorkflowLogger.warn(ManifestGeneratorActivity.IGNORING_CUSTOM_SNIPPET,ignoreKindsForK8sPatches);
+            String ignoreKindsForCustomSnippets = String.join(",", kinds);
+            WorkflowLogger.warn(ManifestGeneratorActivity.IGNORING_CUSTOM_SNIPPET,ignoreKindsForCustomSnippets);
         }
     }
 
