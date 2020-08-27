@@ -1,0 +1,4 @@
+environment: dev
+overrides: checkoutservice
+
+cpu: 100m-200m

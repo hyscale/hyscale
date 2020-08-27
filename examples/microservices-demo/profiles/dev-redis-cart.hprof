@@ -1,0 +1,4 @@
+environment: dev
+overrides: redis-cart
+
+cpu: 70m-125m

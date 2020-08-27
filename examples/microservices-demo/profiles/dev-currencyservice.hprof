@@ -1,0 +1,4 @@
+environment: dev
+overrides: currencyservice
+
+cpu: 100m-200m

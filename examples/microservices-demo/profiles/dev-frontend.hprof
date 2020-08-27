@@ -1,0 +1,4 @@
+environment: dev
+overrides: frontend
+
+cpu: 100m-200m

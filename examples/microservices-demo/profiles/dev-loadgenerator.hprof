@@ -1,0 +1,4 @@
+environment: dev
+overrides: loadgenerator
+
+cpu: 300m-500m
