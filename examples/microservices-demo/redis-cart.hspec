@@ -1,0 +1,19 @@
+name: redis-cart
+
+image:
+     registry: registry.hub.docker.com
+     name: library/redis
+     tag: alpine
+
+ports:
+   - port: 6379
+   
+volumes:
+   - name: redis-data
+     path: /tmp/
+     size: 1Gi
+   
+props:
+   PORT: "9555"
+
+memory: 200Mi-256Mi

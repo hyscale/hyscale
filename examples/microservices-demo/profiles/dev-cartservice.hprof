@@ -1,0 +1,4 @@
+environment: dev
+overrides: cartservice
+
+cpu: 200m-300m

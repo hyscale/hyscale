@@ -1,0 +1,20 @@
+name: checkoutservice
+
+image:
+     registry: gcr.io
+     name: google-samples/microservices-demo/checkoutservice
+     tag: v0.2.0
+
+props:
+    PORT: "5050"
+    PRODUCT_CATALOG_SERVICE_ADDR: "productcatalogservice:3550"
+    SHIPPING_SERVICE_ADDR: "shippingservice:50051"
+    PAYMENT_SERVICE_ADDR: "paymentservice:50051"
+    EMAIL_SERVICE_ADDR: "emailservice:5000"
+    CURRENCY_SERVICE_ADDR: "currencyservice:7000"
+    CART_SERVICE_ADDR: "cartservice:7070"
+    
+ports:
+   - port: 5050
+
+memory: 64Mi-128Mi

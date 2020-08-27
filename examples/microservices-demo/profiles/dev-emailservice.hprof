@@ -1,0 +1,4 @@
+environment: dev
+overrides: emailservice
+
+cpu: 100m-200m
