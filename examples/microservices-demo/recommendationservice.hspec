@@ -12,5 +12,4 @@ props:
 ports:
    - port: 8080
 
-cpu: 100m-200m
 memory: 220Mi-450Mi

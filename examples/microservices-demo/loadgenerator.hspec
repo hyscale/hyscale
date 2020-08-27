@@ -9,5 +9,4 @@ props:
     FRONTEND_ADDR: "frontend:8080"
     USERS: "10"
     
-cpu: 300m-500m
 memory: 256Mi-512Mi

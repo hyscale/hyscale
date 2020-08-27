@@ -23,5 +23,4 @@ ports:
 
 external: true
 
-cpu: 100m-200m
 memory: 64Mi-128Mi

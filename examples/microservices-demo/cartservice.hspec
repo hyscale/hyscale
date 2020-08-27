@@ -13,5 +13,4 @@ props:
 ports:
    - port: 7070
 
-cpu: 200m-300m
 memory: 64Mi-128Mi

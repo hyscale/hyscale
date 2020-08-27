@@ -16,5 +16,4 @@ volumes:
 props:
    PORT: "9555"
 
-cpu: 70m-125m
 memory: 200Mi-256Mi
