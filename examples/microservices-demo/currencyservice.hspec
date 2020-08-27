@@ -1,0 +1,15 @@
+name: currencyservice
+
+image:
+     registry: gcr.io
+     name: google-samples/microservices-demo/currencyservice
+     tag: v0.2.0
+
+props: 
+    PORT: "7000"
+    
+ports:
+   - port: 7000
+
+cpu: 100m-200m
+memory: 64Mi-128Mi

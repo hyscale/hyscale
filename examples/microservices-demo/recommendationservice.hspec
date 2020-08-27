@@ -1,0 +1,16 @@
+name: recommendationservice
+
+image:
+     registry: gcr.io
+     name: google-samples/microservices-demo/recommendationservice
+     tag: v0.2.0
+
+props:
+    PORT: "8080"
+    PRODUCT_CATALOG_SERVICE_ADDR: "productcatalogservice:3550"
+
+ports:
+   - port: 8080
+
+cpu: 100m-200m
+memory: 220Mi-450Mi

@@ -1,0 +1,13 @@
+name: loadgenerator
+
+image:
+     registry: gcr.io
+     name: google-samples/microservices-demo/loadgenerator
+     tag: v0.2.0
+
+props:
+    FRONTEND_ADDR: "frontend:8080"
+    USERS: "10"
+    
+cpu: 300m-500m
+memory: 256Mi-512Mi

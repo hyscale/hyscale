@@ -1,0 +1,15 @@
+name: productcatalogservice
+
+image:
+     registry: gcr.io
+     name: google-samples/microservices-demo/productcatalogservice
+     tag: v0.2.0
+
+props:
+    PORT: "3550"
+
+ports:
+   - port: 3550
+
+cpu: 100m-200m
+memory: 64Mi-128Mi

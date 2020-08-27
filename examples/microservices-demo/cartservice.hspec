@@ -1,0 +1,17 @@
+name: cartservice
+
+image:
+     registry: gcr.io
+     name: google-samples/microservices-demo/cartservice
+     tag: v0.2.0
+     
+props: 
+   REDIS_ADDR: "redis-cart:6379"
+   PORT: "7070"
+   LISTEN_ADDR: "0.0.0.0"
+   
+ports:
+   - port: 7070
+
+cpu: 200m-300m
+memory: 64Mi-128Mi
