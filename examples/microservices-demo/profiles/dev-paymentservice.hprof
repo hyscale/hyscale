@@ -1,0 +1,4 @@
+environment: dev
+overrides: paymentservice
+
+cpu: 768Mi
