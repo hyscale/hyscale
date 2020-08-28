@@ -71,7 +71,7 @@ func parse(args []string) *container.CliSpec {
 
 func checkForDocker() bool {
 	dockerVerified := false
-	cmd := exec.Command("docker", "--version", "2>/dev/null")
+	cmd := exec.Command("docker", "--version")
 	out, err := cmd.Output()
 	if err != nil {
 		log.Fatal(errors.New(dockerRequireMsg))
