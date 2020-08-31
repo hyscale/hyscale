@@ -1,4 +1,4 @@
 environment: dev
 overrides: paymentservice
 
-cpu: 768Mi
+cpu: 100m-200m
