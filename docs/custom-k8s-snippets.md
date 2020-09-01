@@ -7,7 +7,8 @@ Allowing the end user to attach their own k8s yaml snippets to the Hspec provide
 
 ### Introducing 'k8sSnippets'
 
-We have introduced a new field "k8sSnippets" in Hspec where in the user will provide paths for List of k8s snippets that needs to be patched on the generated manifest files. 
+We have introduced a new field "k8sSnippets" in Hspec where in the user will provide paths for List of k8s snippets that needs to be patched on the generated manifest files. Refer k8sSnippets in [hyscale spec reference](https://github.com/hyscale/hspec/blob/master/docs/hyscale-spec-reference.md#k8ssnippets).
+
 A simple hspec with custom k8s snippets looks like :
 
 ```yaml
@@ -40,4 +41,31 @@ replicas:
 k8sSnippets:
   - ./snippets/init-container-snippet.yaml
   - ./snippets/security-context-snippet.yaml
+```
+### Writing a Custom K8s Snippet file
+
+To understand how a custom k8s snippet file looks like, lets take an example where a user wants to add init container support for their deployment.
+
+Here is a tree structure for the corresponding sample deployment yaml with init container support:
+
+![deployment tree](images/sample-deployment-yaml-tree.png)
+
+To obtain a custom k8s snippet for init-containers out of this, the user doesn't need to provide this entire stretch of k8s deployment yaml. 
+
+They can just provide the kind and snippet that contains init-container information in a valid yaml file.
+
+![init-container-snippet-tree](images/k8s-init-container-snippet.png)
+
+Example Snippet:
+```
+kind: Deployment
+spec:
+  template:
+      spec:
+      initContainers:
+      - name: init-myservice
+          image: busybox:1.28
+          command:
+          - "/bin/sleep"
+          - "60"
 ```
