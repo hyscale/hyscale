@@ -1,13 +1,13 @@
-# Custom K8s Snippets in Hyscale
+# Custom K8s Snippets in HyScale
 #### Description
 
-Hyscale generates K8s manifest yamls with respect to Hspec that satisfies the majority of application use cases with exception to few kubernetes concepts.The thought behind Custom K8s Snippets is to eliminate the effect of current/temporary limitations of Hyscale over user’s K8s requirements and approach regarding application use cases.
+HyScale generates K8s manifest yamls with respect to hspec that satisfies the majority of application use cases with exception to few kubernetes concepts.The thought behind Custom K8s Snippets is to eliminate the effect of current/temporary limitations of HyScale over user’s K8s requirements and approach regarding application use cases.
 
-Allowing the end user to attach their own k8s yaml snippets to the Hspec provides a choice to customize or override on top of generated manifests by Hyscale. Also ensuring that the usage of Hspec and deploy using Hyscale should not restrict an end user from utilizing any K8s Features which are yet to be abstracted by Hyscale.
+Allowing the end user to attach their own k8s yaml snippets to the Hspec provides a choice to customize or override on top of generated manifests by HyScale. Also ensuring that the usage of Hspec and deploy using HyScale should not restrict an end user from utilizing any K8s Features which are yet to be abstracted by HyScale.
 
 ### Introducing 'k8sSnippets'
 
-We have introduced a new field "k8sSnippets" in Hspec where in the user will provide paths for List of k8s snippets that needs to be patched on the generated manifest files. Refer k8sSnippets in [hyscale spec reference](https://github.com/hyscale/hspec/blob/master/docs/hyscale-spec-reference.md#k8ssnippets).
+We have introduced a new field "k8sSnippets" in hspec where in the user will provide paths for List of k8s snippets that needs to be patched on the generated manifest files. Refer k8sSnippets in [HyScale spec reference](https://github.com/hyscale/hspec/blob/master/docs/hyscale-spec-reference.md#k8ssnippets).
 
 A simple hspec with custom k8s snippets looks like :
 
