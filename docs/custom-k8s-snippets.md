@@ -53,7 +53,7 @@ They can just provide the kind and snippet that contains init-container informat
 ![init-container-snippet-tree](images/k8s-init-container-snippet.png)
 
 Example Snippet:
-```
+```yaml
 kind: Deployment
 spec:
   template:
@@ -71,7 +71,7 @@ Based on the Kind, the following k8s snippet is patched onto the respective gene
 ![workflow](images/custom-k8s-snippets.png)
 
 Here is a sample output of k8s deployment manifest which is generated post applying init-container custom k8s snippet:
-```
+```yaml
 apiVersion: "apps/v1"
 kind: "Deployment"
 metadata:
