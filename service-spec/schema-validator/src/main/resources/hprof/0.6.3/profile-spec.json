@@ -1,0 +1,154 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "description": "Profile Spec declares the changes required in-service specification for a particular environment.",
+  "definitions": {
+    "io.hyscale.api.map.string": {
+      "description": "Describes the key-value pair of any attribute",
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean"
+        ]
+      }
+    },
+    "io.hyscale.api.list.string": {
+      "description": "Describes the keys of any attribute",
+      "type": "array",
+      "items": {
+        "type": [
+          "string",
+          "number"
+        ],
+        "description": "string key"
+      }
+    },
+    "io.hyscale.api.replicas.Replicas": {
+      "description": "Defines the replicas of the service",
+      "required": [
+        "max",
+        "cpuThreshold"
+      ],
+      "type": "object",
+      "properties": {
+        "min": {
+          "type": "integer",
+          "description": "specifies the min no.of replicas required for this service "
+        },
+        "max": {
+          "type": "integer",
+          "description": "specifies the max no.of replicas required for this service "
+        },
+        "cpuThreshold": {
+          "type": "string",
+          "pattern": "\\d+%",
+          "description": "specifies the cpu threshold in percentage for the replicas to scale "
+        }
+      }
+    }
+  },
+  "required": [
+    "environment",
+    "overrides"
+  ],
+  "properties": {
+    "replicas": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "$ref": "#/definitions/io.hyscale.api.replicas.Replicas"
+        }
+      ],
+      "description": "defines the number of replicas that this service should run",
+      "default": 1
+    },
+    "volumes": {
+      "type": "array",
+      "description": "The Volumes array",
+      "items": {
+        "type": "object",
+        "description": "describes provision and attachment of volume",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "name of the volume"
+          },
+          "size": {
+            "type": "string",
+            "description": "size of volume",
+            "default": "1g"
+          },
+          "storageClass": {
+            "type": "string",
+            "description": "defines the class for storage provider of your cluster volumes"
+          }
+        }
+      }
+    },
+    "secrets": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/io.hyscale.api.list.string"
+        },
+        {
+          "$ref": "#/definitions/io.hyscale.api.map.string"
+        }
+      ],
+      "description": "defines all secrets"
+    },
+    "props": {
+      "description": "props is an unstructured key value map",
+      "$ref": "#/definitions/io.hyscale.api.map.string"
+    },
+    "memory": {
+      "description": "Defines the range of memory the service has to use in the container for this environment",
+      "type": "string",
+      "pattern": "(\\d+(Ki|Mi|Gi|Ti|Pi|Ei|[numkMGTPE]|))+(-\\d+(Ki|Mi|Gi|Ti|Pi|Ei|[numkMGTPE]|))*"
+    },
+    "cpu": {
+      "description": "Defines the range of cpu the service has to use in the container for this environment",
+      "type": "string",
+      "pattern": "([\\d.\\d]+m)+(-[\\d.\\d]+m)*"
+    },
+    "agents": {
+      "description": "Describes the list of sidecars to be attached to the service",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Describes the name of the sidecar"
+          },
+          "props": {
+            "$ref": "#/definitions/io.hyscale.api.map.string",
+            "description": "Describes the properties of the service sidecar as key-value pairs "
+          },
+          "secrets": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/io.hyscale.api.list.string"
+              },
+              {
+                "$ref": "#/definitions/io.hyscale.api.map.string"
+              }
+            ],
+            "description": "Describes the secrets of the profile that have to be overrided "
+          }
+        },
+        "description": "defines the agent with its properties"
+      },
+      "type": "array"
+    },
+    "k8sSnippets": {
+     "description": "Define the list of k8sSnippets that needs to patched in the generated manifest files",
+     "$ref": "#/definitions/io.hyscale.api.list.string"
+    }
+  }
+}
