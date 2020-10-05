@@ -5,8 +5,6 @@
 
 set -e
 
-kubectl config view --flatten > /tmp/kubeconfig
-
 ekscluster_context=$(kubectl config current-context)
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
