@@ -115,7 +115,7 @@ public abstract class PodParentHandler<T> {
                 break;
         }
         desiredReplicas = desiredReplicas < 0 ? 0 : desiredReplicas;
-        logger.debug("Preparing the scale patch , desirec replicas {} ", desiredReplicas);
+        logger.debug("Preparing the scale patch , desired replicas {} ", desiredReplicas);
 
         return desiredReplicas;
     }

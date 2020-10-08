@@ -19,10 +19,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.HyscaleContextUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.model.PodStatusUtil;
-import io.hyscale.troubleshooting.integration.actions.DefaultAction;
-import io.hyscale.troubleshooting.integration.actions.FixCrashingApplication;
-import io.hyscale.troubleshooting.integration.actions.ImagePullBackOffAction;
-import io.hyscale.troubleshooting.integration.actions.ServiceNotDeployedAction;
+import io.hyscale.troubleshooting.integration.actions.*;
 import io.hyscale.troubleshooting.integration.models.FailedResourceKey;
 import io.hyscale.troubleshooting.integration.models.Node;
 import io.hyscale.deployer.services.model.PodStatus;
@@ -63,7 +60,7 @@ public class PodStatusCondition implements Node<TroubleshootingContext> {
         }
 
         List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos().getOrDefault(ResourceKind.POD.getKind(), null);
-        if (resourceInfos == null) {
+        if (resourceInfos == null || resourceInfos.isEmpty()) {
             if (context.isTrace()) {
                 logger.debug("Cannot find any pods for the service {}", context.getServiceInfo().getServiceName());
             }
@@ -128,6 +125,8 @@ public class PodStatusCondition implements Node<TroubleshootingContext> {
                 return ArePodsReady.class;
             case COMPLETED:
                 return FixCrashingApplication.class;
+            case TERMINATING:
+                return ParentStatusCondition.class;
             case DEFAULT:
                 return defaultActionClass;
         }

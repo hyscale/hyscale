@@ -377,7 +377,17 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         if (statefulSet == null) {
             return null;
         }
-        return buildStatusFromMetadata(statefulSet.getMetadata(), ResourceStatus.getServiceStatus(status(statefulSet)));
+        ResourceStatus resourceStatus = status(statefulSet);
+        DeploymentStatus.ServiceStatus serviceStatus = ResourceStatus.getServiceStatus(resourceStatus);
+        if (resourceStatus.equals(ResourceStatus.PENDING)) {
+            if (statefulSet.getSpec().getReplicas() <= statefulSet.getStatus().getReadyReplicas()){
+                serviceStatus = DeploymentStatus.ServiceStatus.SCALING_DOWN;
+            }
+        }
+        if (statefulSet.getSpec().getReplicas() == 0 && resourceStatus.equals(ResourceStatus.STABLE)){
+            serviceStatus = DeploymentStatus.ServiceStatus.NOT_RUNNING;
+        }
+        return buildStatusFromMetadata(statefulSet.getMetadata(), serviceStatus);
     }
 
     @Override
@@ -463,28 +473,25 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         }
         String name = v1StatefulSet.getMetadata().getName();
         int currentReplicas = v1StatefulSet.getSpec().getReplicas();
+        String lastAppliedConfig = v1StatefulSet.getMetadata().getAnnotations()
+                .get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
+        V1StatefulSet latAppliedStateFulSet = gson.fromJson(lastAppliedConfig, V1StatefulSet.class);
         // No need of scaling
-        if (currentReplicas == value) {
+        if (currentReplicas == value && latAppliedStateFulSet.getSpec().getReplicas() == value) {
             WorkflowLogger.persist(DeployerActivity.DESIRED_STATE, String.valueOf(value));
             return true;
         }
-        V1Scale exisiting = new V1ScaleBuilder()
-                .withSpec(new V1ScaleSpec().replicas(currentReplicas))
-                .build();
-        AppsV1Api appsV1Api = new AppsV1Api(apiClient);
+        latAppliedStateFulSet.getSpec().setReplicas(value);
         ActivityContext activityContext = new ActivityContext(DeployerActivity.SCALING_SERVICE);
         WorkflowLogger.startActivity(activityContext);
         boolean status = false;
         try {
-            V1Scale scale = new V1ScaleBuilder()
-                    .withSpec(new V1ScaleSpec().replicas(value))
-                    .build();
-            appsV1Api.patchNamespacedStatefulSetScale(name, namespace, K8sResourcePatchUtil.getJsonPatch(exisiting, scale, V1Scale.class), TRUE, null, null, null);
+            patch(apiClient, name, namespace, latAppliedStateFulSet);
             status = waitForDesiredState(apiClient, name, namespace, activityContext);
-        } catch (ApiException e) {
-            logger.error("Error while applying PATCH scale to {} due to : {} code :{}", name, e.getResponseBody(), e.getCode(), e);
+        } catch (HyscaleException e) {
+            logger.error("Error while applying PATCH scale to {} due to : {} code :{}", name, e.getMessage(), e.getCode(), e);
             WorkflowLogger.endActivity(Status.FAILED);
-            HyscaleException ex = new HyscaleException(DeployerErrorCodes.ERROR_WHILE_SCALING, e.getResponseBody());
+            HyscaleException ex = new HyscaleException(DeployerErrorCodes.ERROR_WHILE_SCALING, e.getMessage());
             throw ex;
         } finally {
             if (status) {

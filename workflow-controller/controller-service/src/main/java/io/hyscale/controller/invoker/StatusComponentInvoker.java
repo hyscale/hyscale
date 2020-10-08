@@ -102,12 +102,14 @@ public class StatusComponentInvoker extends ComponentInvoker<WorkflowContext> {
          */
         context.setServiceName(serviceStatus.getServiceName());
         List<DiagnosisReport> diagnosisReports = null;
-        if (DeploymentStatus.ServiceStatus.NOT_DEPLOYED.equals(serviceStatus.getServiceStatus())) {
-            TroubleshootingContext toubleshootingContext = new TroubleshootingContext();
-            serviceNotDeployedAction.process(toubleshootingContext);
-            diagnosisReports = toubleshootingContext.getDiagnosisReports();
-        } else if (!DeploymentStatus.ServiceStatus.RUNNING.equals(serviceStatus.getServiceStatus())) {
-            diagnosisReports = troubleshoot(context);
+        if (!DeploymentStatus.ServiceStatus.SCALING_DOWN.equals(serviceStatus.getServiceStatus())) {
+            if (DeploymentStatus.ServiceStatus.NOT_DEPLOYED.equals(serviceStatus.getServiceStatus())) {
+                TroubleshootingContext toubleshootingContext = new TroubleshootingContext();
+                serviceNotDeployedAction.process(toubleshootingContext);
+                diagnosisReports = toubleshootingContext.getDiagnosisReports();
+            } else if (!DeploymentStatus.ServiceStatus.RUNNING.equals(serviceStatus.getServiceStatus())) {
+                diagnosisReports = troubleshoot(context);
+            }
         }
         return TroubleshootUtil.getTroubleshootMessage(diagnosisReports);
     }
