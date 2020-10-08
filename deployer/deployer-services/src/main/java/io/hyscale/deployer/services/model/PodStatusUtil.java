@@ -34,6 +34,9 @@ public class PodStatusUtil {
         if (initContainerAggStatus != null) {
             return initContainerAggStatus;
         }
+        if(v1Pod.getMetadata().getDeletionTimestamp() != null){
+            return PodStatus.TERMINATING.getStatus();
+        }
         String containerAggStatus = validateAndGetContainerStatuses(v1Pod.getStatus().getContainerStatuses(), false);
         return containerAggStatus != null ? containerAggStatus : v1Pod.getStatus().getPhase();
     }
@@ -46,6 +49,9 @@ public class PodStatusUtil {
                 v1Pod.getStatus().getInitContainerStatuses());
         if (initContainerAggStatus != null) {
             return initContainerAggStatus;
+        }
+        if(v1Pod.getMetadata().getDeletionTimestamp() != null){
+            return PodStatus.TERMINATING.getStatus();
         }
         String containerAggStatus = validateAndGetContainerStatuses(v1Pod.getStatus().getContainerStatuses(), true);
         return containerAggStatus != null ? containerAggStatus : v1Pod.getStatus().getPhase();

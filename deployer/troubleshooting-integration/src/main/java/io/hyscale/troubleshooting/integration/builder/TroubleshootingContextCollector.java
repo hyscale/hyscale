@@ -120,10 +120,10 @@ public class TroubleshootingContextCollector {
     }
 
     private Collection<? extends TroubleshootingContext.ResourceInfo> filterPodsByHash(List<TroubleshootingContext.ResourceInfo> podResourceInfos, String podTemplateHash) {
-        if ((podResourceInfos == null || podResourceInfos.isEmpty()) || StringUtils.isBlank(podTemplateHash)) {
-            return Collections.emptyList();
-        }
         List<TroubleshootingContext.ResourceInfo> result = new ArrayList<>();
+        if ((podResourceInfos == null || podResourceInfos.isEmpty()) || StringUtils.isBlank(podTemplateHash)) {
+            return result;
+        }
         for (TroubleshootingContext.ResourceInfo podResource : podResourceInfos) {
             if (podResource != null && podResource.getResource() != null) {
                 V1Pod pod = (V1Pod) podResource.getResource();
