@@ -338,8 +338,8 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
         }
         try {
             CoreV1Api coreClient = new CoreV1Api(apiClient);
-            Call call = coreClient.readNamespacedPodLogCall(podName, namespace, containerName, false, null, DeployerConstants.TRUE, false, null,
-                    readLines, true, null);
+            Call call = coreClient.readNamespacedPodLogCall(podName, namespace, containerName, Boolean.FALSE, Boolean.TRUE,
+                    null,DeployerConstants.TRUE, Boolean.FALSE, null,readLines, Boolean.TRUE, null);
             Response response = call.execute();
             if (!response.isSuccessful()) {
                 LOGGER.error("Failed to get Pod logs for service {} in namespace {} : {}", serviceName, namespace,
