@@ -29,6 +29,7 @@ module commons {
 	exports io.hyscale.commons.io;
 
 	requires com.fasterxml.jackson.annotation;
+        requires com.google.gson;
 	requires client.java.api;
 	requires com.fasterxml.jackson.core;
 	requires com.fasterxml.jackson.databind;
@@ -42,6 +43,6 @@ module commons {
 	requires java.annotation;
 	requires java.json;
 	requires commons.exec;
-    requires gson;
+   
     requires spring.core;
 }
