@@ -212,3 +212,7 @@ Application name must consist of lower case alphanumeric characters or '-' with 
 Basic unit of your application deployment. 
 A service name must consist of lower case alphanumeric characters or '-', it should start with an alphabetic character, and can end with an alphanumeric character. Regex used for validation is
 *`[a-z]([-a-z0-9]*[a-z0-9])?`*   
+
+## Environment Variables
+
+`HYS_LOG_LEVEL` - log level for hyscale tool logs. default is `info` for example, if you want to set log level to `debug` execute `export HYS_LOG_LEVEL=debug`. 

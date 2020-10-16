@@ -45,6 +45,8 @@ const (
 	dockerConfigDirEnv     = "DOCKER_CONFIG"
 	lbReadyTimeoutEnv      = "HYS_LB_READY_TIMEOUT"
 	workflowLoggerDisabled = "WORKFLOW_LOGGER_DISABLED"
+	//LogLevel for hyscale tool logs default is info
+	LogLevel = "HYS_LOG_LEVEL"
 	//EqualsTo is used for constructing environment varibles
 	EqualsTo               = "="
 	containerFileSeparator = "/"
@@ -187,6 +189,11 @@ func getEnvs(user *user.User) *map[string]string {
 	lbTimeout := os.Getenv(lbReadyTimeoutEnv)
 	if lbTimeout != "" {
 		envs[lbReadyTimeoutEnv] = lbTimeout
+	}
+
+	logLevel := os.Getenv(LogLevel)
+	if logLevel != "" {
+		envs[LogLevel] = logLevel
 	}
 	return &envs
 }

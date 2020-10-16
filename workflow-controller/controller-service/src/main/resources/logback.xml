@@ -18,7 +18,7 @@
 	<logger name="org.springframework.boot.autoconfigure.logging">
 		<level value="ERROR" />
 	</logger>
-	<root level="debug">
+	<root level="${HYS_LOG_LEVEL:-info}">
 		<appender-ref ref="RollingFile" />
 	</root>
 </configuration>
