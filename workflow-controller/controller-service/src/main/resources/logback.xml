@@ -1,13 +1,15 @@
 <configuration scan="true">
-
 	<appender name="RollingFile"
-		class="ch.qos.logback.core.rolling.RollingFileAppender">
+			  class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${HYSCALECTL_LOGS_DIR}/logfile.log</file>
 		<rollingPolicy
-			class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>${HYSCALECTL_LOGS_DIR}/logfile.%d{yyyy-MM-dd}.log
+				class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>${HYSCALECTL_LOGS_DIR}/logfile.%d{yyyy-MM-dd}.%i.log
 			</fileNamePattern>
+
+			<maxFileSize>1MB</maxFileSize>
 			<maxHistory>30</maxHistory>
-			<totalSizeCap>1MB</totalSizeCap>
+			<totalSizeCap>30MB</totalSizeCap>
 		</rollingPolicy>
 		<encoder>
 			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level - %msg%n</pattern>
