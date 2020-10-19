@@ -476,17 +476,14 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         String lastAppliedConfig = v1StatefulSet.getMetadata().getAnnotations()
                 .get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
         V1StatefulSet latAppliedStateFulSet = gson.fromJson(lastAppliedConfig, V1StatefulSet.class);
-        // No need of scaling
-        if (currentReplicas == value && latAppliedStateFulSet.getSpec().getReplicas() == value) {
-            WorkflowLogger.persist(DeployerActivity.DESIRED_STATE, String.valueOf(value));
-            return true;
-        }
-        latAppliedStateFulSet.getSpec().setReplicas(value);
         ActivityContext activityContext = new ActivityContext(DeployerActivity.SCALING_SERVICE);
         WorkflowLogger.startActivity(activityContext);
         boolean status = false;
         try {
-            patch(apiClient, name, namespace, latAppliedStateFulSet);
+            if (!(currentReplicas == value && latAppliedStateFulSet.getSpec().getReplicas() == value)) {
+                latAppliedStateFulSet.getSpec().setReplicas(value);
+                patch(apiClient, name, namespace, latAppliedStateFulSet);
+            }
             status = waitForDesiredState(apiClient, name, namespace, activityContext);
         } catch (HyscaleException e) {
             logger.error("Error while applying PATCH scale to {} due to : {} code :{}", name, e.getMessage(), e.getCode(), e);
