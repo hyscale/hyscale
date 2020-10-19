@@ -74,6 +74,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 			WorkflowLogger.endActivity(Status.FAILED);
 			throw ex;
 		}
+		LOGGER.info("Created Secret {} in namespace {}", name, namespace);
 		WorkflowLogger.endActivity(Status.DONE);
 		return v1Secret;
 	}
@@ -107,6 +108,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 			WorkflowLogger.endActivity(Status.FAILED);
 			throw ex;
 		}
+		LOGGER.info("Updated Secret {} in namespace {}", name, namespace);
 		WorkflowLogger.endActivity(Status.DONE);
 		return true;
 	}
@@ -209,6 +211,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 			WorkflowLogger.endActivity(activityContext, Status.FAILED);
 			throw ex;
 		}
+		LOGGER.info("Deleted Secret {} in namespace {}", name, namespace);
 		WorkflowLogger.endActivity(activityContext, Status.DONE);
 		return true;
 	}

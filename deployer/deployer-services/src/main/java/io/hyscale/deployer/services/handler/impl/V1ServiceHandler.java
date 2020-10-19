@@ -78,6 +78,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
             WorkflowLogger.endActivity(Status.FAILED);
             throw ex;
         }
+        LOGGER.info("Created Service {} in namespace {}", name, namespace);
         WorkflowLogger.endActivity(Status.DONE);
         return v1Service;
     }
@@ -113,7 +114,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
             WorkflowLogger.endActivity(Status.FAILED);
             throw ex;
         }
-
+        LOGGER.info("Updated Service {} in namespace {}", name, namespace);
         WorkflowLogger.endActivity(Status.DONE);
         return true;
     }
@@ -216,6 +217,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
             WorkflowLogger.endActivity(activityContext, Status.FAILED);
             throw ex;
         }
+        LOGGER.info("Deleted Service {} in namespace {}",name, namespace);
         WorkflowLogger.endActivity(activityContext, Status.DONE);
         return true;
     }

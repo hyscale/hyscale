@@ -65,6 +65,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         }
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_DEPLOYMENT);
         AppsV1Api appsV1Api = new AppsV1Api(apiClient);
+        String name = resource.getMetadata().getName();
         V1Deployment v1Deployment = null;
         try {
             resource.getMetadata().putAnnotationsItem(
@@ -79,6 +80,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
             WorkflowLogger.endActivity(Status.FAILED);
             throw ex;
         }
+        LOGGER.info("Created Deployment {} in namespace {}",name,namespace);
         WorkflowLogger.endActivity(Status.DONE);
         return v1Deployment;
     }
@@ -112,6 +114,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
             WorkflowLogger.endActivity(Status.FAILED);
             throw ex;
         }
+        LOGGER.info("Updated Deployment {} in namespace {}",name,namespace);
         WorkflowLogger.endActivity(Status.DONE);
         return true;
     }
@@ -240,6 +243,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
             WorkflowLogger.endActivity(activityContext, Status.FAILED);
             throw ex;
         }
+        LOGGER.info("Deleted Deployment {} in namespace {}",name, namespace);
         WorkflowLogger.endActivity(activityContext, Status.DONE);
         return true;
     }
