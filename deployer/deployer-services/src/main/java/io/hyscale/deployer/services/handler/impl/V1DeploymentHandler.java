@@ -461,17 +461,14 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         String lastAppliedConfig = v1Deployment.getMetadata().getAnnotations()
                 .get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
         V1Deployment lastAppliedDeployment = GsonProviderUtil.getPrettyGsonBuilder().fromJson(lastAppliedConfig, V1Deployment.class);
-        // No need of scaling
-        if (currentReplicas == value && lastAppliedDeployment.getSpec().getReplicas() == value) {
-            WorkflowLogger.persist(DeployerActivity.DESIRED_STATE, String.valueOf(value));
-            return true;
-        }
-        lastAppliedDeployment.getSpec().setReplicas(value);
         ActivityContext activityContext = new ActivityContext(DeployerActivity.SCALING_SERVICE);
         WorkflowLogger.startActivity(activityContext);
         boolean status = false;
         try {
-            patch(apiClient, name, namespace, lastAppliedDeployment);
+            if (!(currentReplicas == value && lastAppliedDeployment.getSpec().getReplicas() == value)) {
+                lastAppliedDeployment.getSpec().setReplicas(value);
+                patch(apiClient, name, namespace, lastAppliedDeployment);
+            }
             status = waitForDesiredState(apiClient, name, namespace, activityContext);
         } catch (HyscaleException e) {
             LOGGER.error("Error while applying PATCH scale to {} due to : {} code :{}", name, e.getMessage(), e.getCode(), e);
