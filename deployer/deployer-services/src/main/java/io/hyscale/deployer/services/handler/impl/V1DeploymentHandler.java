@@ -454,12 +454,12 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         String lastAppliedConfig = v1Deployment.getMetadata().getAnnotations()
                 .get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
         V1Deployment lastAppliedDeployment = gson.fromJson(lastAppliedConfig, V1Deployment.class);
-        lastAppliedDeployment.getSpec().setReplicas(value);
         ActivityContext activityContext = new ActivityContext(DeployerActivity.SCALING_SERVICE);
         WorkflowLogger.startActivity(activityContext);
         boolean status = false;
         try {
             if (!(currentReplicas == value && lastAppliedDeployment.getSpec().getReplicas() == value)) {
+                lastAppliedDeployment.getSpec().setReplicas(value);
                 patch(apiClient, name, namespace, lastAppliedDeployment);
             }
             status = waitForDesiredState(apiClient, name, namespace, activityContext);
