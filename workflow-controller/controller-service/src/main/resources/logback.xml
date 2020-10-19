@@ -7,9 +7,9 @@
 			<fileNamePattern>${HYSCALECTL_LOGS_DIR}/logfile.%d{yyyy-MM-dd}.%i.log
 			</fileNamePattern>
 
-			<maxFileSize>1MB</maxFileSize>
-			<maxHistory>30</maxHistory>
-			<totalSizeCap>30MB</totalSizeCap>
+			<maxFileSize>10MB</maxFileSize>
+			<maxHistory>10</maxHistory>
+			<totalSizeCap>100MB</totalSizeCap>
 		</rollingPolicy>
 		<encoder>
 			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level - %msg%n</pattern>
