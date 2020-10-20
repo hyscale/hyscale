@@ -3,7 +3,7 @@ WORKDIR /hyscale
 COPY . .
 RUN  mvn clean install
 
-FROM openjdk:11.0.7-jre-slim-buster
+FROM openjdk:11.0.8-jre-slim-buster
 ENV DOCKERVERSION=18.06.2-ce
 RUN apt update \
     && apt-get install -y --no-install-recommends wget \
