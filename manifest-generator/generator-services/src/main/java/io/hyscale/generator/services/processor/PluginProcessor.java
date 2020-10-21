@@ -119,7 +119,11 @@ public class PluginProcessor {
                 WorkflowLogger.endActivity(Status.FAILED);
             }
         });
-        warningMessageForCustomSnippets(kindVsCustomSnippets);
+
+        List<Manifest> customSnippetsManifestList = getManifestsFromCustomSnippets(manifestDir,kindVsCustomSnippets);
+        if(customSnippetsManifestList != null && !customSnippetsManifestList.isEmpty()){
+            manifestList.addAll(customSnippetsManifestList);
+        }
         return manifestList;
     }
 
@@ -140,14 +144,26 @@ public class PluginProcessor {
         return yamlString;
     }
 
-    @SuppressWarnings("java:S1135")
-    private void warningMessageForCustomSnippets(Multimap<String,String> kindVsCustomSnippets){
-        //TODO Support all new resource kinds
-        if(kindVsCustomSnippets != null && !kindVsCustomSnippets.isEmpty()){
-            Set<String> kinds = kindVsCustomSnippets.keySet();
-            String ignoreKindsForCustomSnippets = String.join(",", kinds);
-            WorkflowLogger.warn(ManifestGeneratorActivity.IGNORING_CUSTOM_SNIPPET,ignoreKindsForCustomSnippets);
+    private List<Manifest> getManifestsFromCustomSnippets(String manifestDir, Multimap<String,String> kindVsCustomSnippets){
+        if(kindVsCustomSnippets == null || kindVsCustomSnippets.isEmpty()){
+            return null;
         }
+        List<Manifest> manifestList = new ArrayList<>();
+        kindVsCustomSnippets.forEach((kind,customSnippet)->{
+            WorkflowLogger.startActivity(ManifestGeneratorActivity.GENERATING_MANIFEST, kind);
+            ManifestMeta manifestMeta = new ManifestMeta(kind);
+            YAMLManifest yamlManifest = null;
+            try {
+                yamlManifest = manifestFileGenerator.getYamlManifest(manifestDir, customSnippet,
+                        manifestMeta);
+                WorkflowLogger.endActivity(Status.DONE);
+            } catch (HyscaleException e) {
+                logger.error("Failed to process manifest {}", kind, e);
+                WorkflowLogger.endActivity(Status.FAILED);
+            }
+            manifestList.add(yamlManifest);
+        });
+        return manifestList;
     }
 
     public Map<ManifestMeta, ManifestNode> process(ServiceSpec serviceSpec, ManifestContext manifestContext) {
