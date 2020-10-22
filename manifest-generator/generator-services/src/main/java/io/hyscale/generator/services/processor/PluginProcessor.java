@@ -146,7 +146,7 @@ public class PluginProcessor {
 
     private List<Manifest> getManifestsFromCustomSnippets(String manifestDir, Multimap<String,String> kindVsCustomSnippets){
         if(kindVsCustomSnippets == null || kindVsCustomSnippets.isEmpty()){
-            return null;
+            return Collections.emptyList();
         }
         List<Manifest> manifestList = new ArrayList<>();
         kindVsCustomSnippets.forEach((kind,customSnippet)->{
