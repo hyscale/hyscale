@@ -86,6 +86,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
             WorkflowLogger.endActivity(Status.FAILED);
             throw ex;
         }
+        LOGGER.info("Created Statefulset {} in namespace {}",name,namespace);
         WorkflowLogger.endActivity(Status.DONE);
         return statefulSet;
     }
@@ -121,6 +122,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
             WorkflowLogger.endActivity(Status.FAILED);
             throw ex;
         }
+        LOGGER.info("Updated Statefulset {} in namespace {}",name,namespace);
         WorkflowLogger.endActivity(Status.DONE);
         return true;
     }
@@ -254,7 +256,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
             WorkflowLogger.endActivity(activityContext, Status.FAILED);
             throw ex;
         }
-        LOGGER.debug("Deleting StatefulSet done");
+        LOGGER.info("Deleted StatefulSet {} in namespace {} ",name, namespace);
         WorkflowLogger.endActivity(activityContext, Status.DONE);
         return true;
     }

@@ -71,6 +71,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
             WorkflowLogger.endActivity(Status.FAILED);
             throw ex;
         }
+        LOGGER.info("Created ConfigMap {} in namespace {}", name, namespace);
         WorkflowLogger.endActivity(Status.DONE);
         return configMap;
     }
@@ -106,7 +107,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
             WorkflowLogger.endActivity(Status.FAILED);
             throw ex;
         }
-
+        LOGGER.info("Updated ConfigMap {} in namespace {}", name, namespace);
         WorkflowLogger.endActivity(Status.DONE);
         return true;
     }
@@ -215,6 +216,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
             WorkflowLogger.endActivity(activityContext, Status.FAILED);
             throw ex;
         }
+        LOGGER.info("Deleted ConfigMap {} in namespace {}", name, namespace);
         WorkflowLogger.endActivity(activityContext, Status.DONE);
         return true;
     }
