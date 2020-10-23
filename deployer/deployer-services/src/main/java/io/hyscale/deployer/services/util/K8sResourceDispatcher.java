@@ -16,7 +16,9 @@
 package io.hyscale.deployer.services.util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.hyscale.commons.models.AnnotationKey;
@@ -26,6 +28,7 @@ import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.manager.AnnotationsUpdateManager;
+import io.hyscale.deployer.services.model.CustomObject;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -93,7 +96,8 @@ public class K8sResourceDispatcher {
             throw new HyscaleException(DeployerErrorCodes.MANIFEST_REQUIRED);
         }
         createNamespaceIfNotExists();
-        
+
+        Map<String, CustomObject> kindVsObject = getCustomObjects(manifests);
         List<KubernetesResource> k8sResources = getSortedResources(manifests);
         
         for (KubernetesResource k8sResource : k8sResources) {
@@ -114,13 +118,35 @@ public class K8sResourceDispatcher {
             }
         }
     }
+
+    private Map<String,CustomObject> getCustomObjects(List<Manifest> manifests) throws HyscaleException {
+        Map<String,CustomObject> kindVsObject = new HashMap<>();
+
+                for (Manifest manifest : manifests) {
+                try {
+                    CustomObject object = KubernetesResourceUtil.getK8sCustomObjectResource(manifest,namespace);
+                    if(object != null){
+                        logger.debug("Adding kind - "+object.getKind());
+                        kindVsObject.put(object.getKind(),object);
+                    }
+                } catch (Exception e) {
+                    HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST);
+                    logger.error("Error while applying manifests to kubernetes", ex);
+                    throw ex;
+                }
+            }
+        return kindVsObject;
+    }
     
     private List<KubernetesResource> getSortedResources(List<Manifest> manifests) throws HyscaleException{
         List<KubernetesResource> k8sResources = new ArrayList<>();
         
         for (Manifest manifest : manifests) {
             try {
-                k8sResources.add(KubernetesResourceUtil.getKubernetesResource(manifest, namespace));
+                KubernetesResource kubernetesResource = KubernetesResourceUtil.getKubernetesResource(manifest, namespace);
+                if(kubernetesResource != null){
+                        k8sResources.add(kubernetesResource);
+                }
             } catch (Exception e) {
                 HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST);
                 logger.error("Error while applying manifests to kubernetes", ex);

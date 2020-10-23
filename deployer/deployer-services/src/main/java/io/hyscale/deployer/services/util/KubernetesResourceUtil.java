@@ -15,15 +15,22 @@
  */
 package io.hyscale.deployer.services.util;
 
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 import io.hyscale.commons.models.KubernetesResource;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.commons.models.YAMLManifest;
+import io.hyscale.deployer.services.model.CustomObject;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.util.Yaml;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.constructor.ConstructorException;
 
 /**
  * Utility for generic kubernetes resource
@@ -33,6 +40,7 @@ public class KubernetesResourceUtil {
 
     private static final String GET_KIND = "getKind";
     private static final String GET_METADATA = "getMetadata";
+    private static final Logger logger = LoggerFactory.getLogger(KubernetesResourceUtil.class);
     
     private KubernetesResourceUtil() {}
 
@@ -44,7 +52,13 @@ public class KubernetesResourceUtil {
         }
         KubernetesResource resource = new KubernetesResource();
         YAMLManifest yamlManifest = (YAMLManifest) manifest;
-        Object obj = Yaml.load(yamlManifest.getManifest());
+        Object obj = null;
+        try{
+            obj = Yaml.load(yamlManifest.getManifest());
+        }catch (ConstructorException e){
+            logger.error("Failed to load manifest returning null");
+            return null;
+        }
         Method kindMethod = obj.getClass().getMethod(GET_KIND);
         String kind = (String) kindMethod.invoke(obj);
 
@@ -56,6 +70,18 @@ public class KubernetesResourceUtil {
         resource.setKind(kind);
         resource.setResource(obj);
         return resource;
+    }
+
+    public static CustomObject getK8sCustomObjectResource(Manifest manifest, String namespace)
+            throws IOException {
+        if (manifest == null) {
+                return null;
+            }
+        YAMLManifest yamlManifest = (YAMLManifest) manifest;
+        Map<String, Object> data = (Map) Yaml.getSnakeYaml().load((Reader)(new FileReader(yamlManifest.getManifest())));
+        CustomObject customObject = new CustomObject();
+        customObject.putAll(data);
+        return customObject;
     }
 
     public static V1ObjectMeta getObjectMeta(Object object)
