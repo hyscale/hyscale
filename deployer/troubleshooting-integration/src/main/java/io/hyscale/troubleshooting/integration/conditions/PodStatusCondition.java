@@ -126,9 +126,9 @@ public class PodStatusCondition implements Node<TroubleshootingContext> {
                 return ArePodsReady.class;
             case COMPLETED:
                 return FixCrashingApplication.class;
-            case RUN_CONTAINER_ERROR:
             case TERMINATING:
                 return ParentStatusCondition.class;
+            case RUN_CONTAINER_ERROR:
             case DEFAULT:
                 return defaultActionClass;
             default:
