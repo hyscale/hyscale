@@ -19,6 +19,7 @@ import io.kubernetes.client.common.KubernetesObject;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  *  CustomObject is an implementation of KubernetesObject carrying
@@ -29,8 +30,11 @@ public class CustomObject extends HashMap<String, Object> implements KubernetesO
 
     @Override
     public V1ObjectMeta getMetadata() {
-        //TODO build metadata using map data
-        return new V1ObjectMeta();
+        Map<String,Object> metaMap = (Map) get("metadata");
+        V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
+        v1ObjectMeta.setName(metaMap.get("name").toString());
+        v1ObjectMeta.setNamespace(metaMap.get("namespace").toString());
+        return v1ObjectMeta;
     }
 
     @Override
