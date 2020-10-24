@@ -48,8 +48,6 @@ public abstract class GenericK8sClient {
 
     public abstract CustomObject get(CustomObject resource);
 
-    public abstract void getAll();
-
     private String getApiGroup(String apiVersion) {
         if (apiVersion == null || apiVersion == "") {
             return apiVersion;
