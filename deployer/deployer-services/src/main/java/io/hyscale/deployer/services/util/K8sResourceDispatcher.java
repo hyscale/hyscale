@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.deployer.services.broker.K8sResourceBroker;
 import io.hyscale.deployer.services.builder.NamespaceBuilder;
+import io.hyscale.deployer.services.client.GenericK8sClient;
+import io.hyscale.deployer.services.client.K8sResourceClient;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
@@ -97,9 +99,9 @@ public class K8sResourceDispatcher {
         }
         createNamespaceIfNotExists();
 
-        Map<String, CustomObject> kindVsObject = getCustomObjects(manifests);
+        Map<String, CustomObject> kindVsCustomObject = getCustomObjects(manifests);
         List<KubernetesResource> k8sResources = getSortedResources(manifests);
-        
+
         for (KubernetesResource k8sResource : k8sResources) {
             AnnotationsUpdateManager.update(k8sResource, AnnotationKey.LAST_UPDATED_AT,
                     DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
@@ -112,10 +114,30 @@ public class K8sResourceDispatcher {
                     } else {
                         resourceBroker.create(lifeCycleHandler, k8sResource.getResource());
                     }
+                    kindVsCustomObject.remove(k8sResource.getKind());
                 } catch (HyscaleException ex) {
-                    logger.error("Failed to apply resource :{} Reason :: {}", k8sResource.getKind(), ex.getMessage(), ex);
+                    logger.error("Failed to apply resource :{} Reason :: {}", k8sResource.getKind(), ex.getMessage(),ex);
                 }
             }
+        }
+        if(kindVsCustomObject != null && !kindVsCustomObject.isEmpty()){
+            kindVsCustomObject.forEach((kind,object)->{
+                // Using Generic K8s Client
+                GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).
+                        withNamespace(namespace).forKind(object);
+                if(genericK8sClient != null){
+                    try{
+                        if(genericK8sClient.get(object) == null){
+                            logger.debug("Creating resource with Generic client for Kind - "+kind);
+                            genericK8sClient.create(object);
+                        }else{
+                            //TODO Update resource
+                        }
+                    }catch (HyscaleException ex){
+                        logger.error("Failed to apply resource :{} Reason :: {}", kind, ex.getMessage());
+                    }
+                }
+            });
         }
     }
 
