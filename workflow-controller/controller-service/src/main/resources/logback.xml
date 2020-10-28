@@ -1,4 +1,14 @@
 <configuration scan="true">
+
+	<logger name="com.jayway.jsonpath" level="ERROR" />
+	<logger name="com.github.dockerjava" level="ERROR"/>
+	<logger name="org.apache" level="ERROR" />
+	<logger name="org.springframework" level="WARN"/>
+	<logger name="org.hibernate.validator" level="WARN"/>
+	<logger name="org.springframework.boot.autoconfigure.logging">
+		<level value="ERROR" />
+	</logger>
+
 	<appender name="RollingFile"
 			  class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<file>${HYSCALECTL_LOGS_DIR}/logfile.log</file>
@@ -12,14 +22,11 @@
 			<totalSizeCap>100MB</totalSizeCap>
 		</rollingPolicy>
 		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level - %msg%n</pattern>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %c{3} - %msg%n</pattern>
 		</encoder>
 	</appender>
 
-	<logger name="com.jayway.jsonpath" level="ERROR" />
-	<logger name="org.springframework.boot.autoconfigure.logging">
-		<level value="ERROR" />
-	</logger>
+
 	<root level="${HYS_LOG_LEVEL:-info}">
 		<appender-ref ref="RollingFile" />
 	</root>
