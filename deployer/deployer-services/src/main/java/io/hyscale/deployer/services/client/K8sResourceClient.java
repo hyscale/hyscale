@@ -71,6 +71,18 @@ public class K8sResourceClient extends GenericK8sClient {
 
     @Override
     public CustomObject get(CustomObject resource) {
+        if(resource == null){
+            return null;
+        }
+        logger.debug("Fetching "+resource.getKind());
+        if(resource.getMetadata() != null){
+            String name = resource.getMetadata().getName();
+            KubernetesApiResponse<CustomObject> response = genericClient.get(namespace,name);
+            if(response != null && response.getObject()!=null){
+                logger.debug("Custom object - "+response.getObject());
+                return response.getObject();
+            }
+        }
         return null;
     }
 }
