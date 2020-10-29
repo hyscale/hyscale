@@ -216,4 +216,5 @@ A service name must consist of lower case alphanumeric characters or '-', it sho
 ## Environment Variables
 
 `HYS_LOG_LEVEL` - Log level for hyscale tool logs. Default is set to `info`. To change log level to `debug` execute `export HYS_LOG_LEVEL=debug`.
+
 `HYS_LOG_SIZE` - Folder size cap for hyscale tool logs. Default is set to `100MB`. To change total size cap execute `export HYS_LOG_SIZE=<size>` (minimum size cap is 10MB).
