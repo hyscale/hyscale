@@ -47,6 +47,8 @@ const (
 	workflowLoggerDisabled = "WORKFLOW_LOGGER_DISABLED"
 	//LogLevel for hyscale tool logs default is info
 	LogLevel = "HYS_LOG_LEVEL"
+	//LogSize for hyscale tool logs default is 100MB
+	LogSize = "HYS_LOG_SIZE"
 	//EqualsTo is used for constructing environment varibles
 	EqualsTo               = "="
 	containerFileSeparator = "/"
@@ -194,6 +196,11 @@ func getEnvs(user *user.User) *map[string]string {
 	logLevel := os.Getenv(LogLevel)
 	if logLevel != "" {
 		envs[LogLevel] = logLevel
+	}
+
+	logSize := os.Getenv(LogSize)
+	if logSize != "" {
+	    envs[LogSize] = logSize
 	}
 	return &envs
 }
