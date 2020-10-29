@@ -6,7 +6,7 @@ This is a minor release for improvements in HyScale logs and other minor fixes.
 
 * [Fix for Improved Logging](https://github.com/hyscale/hyscale/issues/322)
 * [Fix for Log configuration: Size and Time based Rolling Policy with modifiable values for limiting total size cap for logs](https://github.com/hyscale/hyscale/issues/323)
-* Fix for minor scaling releated issues
+* Fix for minor scaling related issues
 
 # v0.9.8 Release
 
