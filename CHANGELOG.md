@@ -2,9 +2,6 @@
 
 This is a minor release for improvements in HyScale logs and other minor fixes.
 
-### Features:
-* [Updated kubernetes-client version to 9.0.0 from 8.0.2](https://github.com/hyscale/hyscale/issues/280)
-
 ### Fixes
 
 * [Fix for Improved Logging](https://github.com/hyscale/hyscale/issues/322)
