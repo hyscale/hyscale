@@ -60,8 +60,26 @@ public class K8sResourceClient extends GenericK8sClient {
     }
 
     @Override
-    public void update(CustomObject resource) {
+    public void update(CustomObject resource) throws HyscaleException {
+        if(resource == null){
+            return;
+        }
+        String kind = resource.getKind();
+        WorkflowLogger.startActivity(DeployerActivity.DEPLOYING,kind);
 
+        KubernetesApiResponse<CustomObject> response = genericClient.update(resource);
+        if(response!=null){
+            if(response.isSuccess()){
+                logger.info("Successfully updated resource "+kind);
+                WorkflowLogger.endActivity(Status.DONE);
+                return;
+            }else{
+                logger.error("Failed reason: "+response.getStatus().getReason()+"\n" +
+                        "Message: "+response.getStatus().getMessage());
+            }
+        }
+        WorkflowLogger.endActivity(Status.FAILED);
+        throw new HyscaleException(DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE);
     }
 
     @Override
