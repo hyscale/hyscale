@@ -127,11 +127,13 @@ public class K8sResourceDispatcher {
                         withNamespace(namespace).forKind(object);
                 if(genericK8sClient != null){
                     try{
-                        if(genericK8sClient.get(object) == null){
+                        if(genericK8sClient.get(object) != null){
+                            logger.debug("Updating resource with Generic client for Kind - "+kind);
+                            genericK8sClient.update(object);
+                        }else{
+
                             logger.debug("Creating resource with Generic client for Kind - "+kind);
                             genericK8sClient.create(object);
-                        }else{
-                            //TODO Update resource
                         }
                     }catch (HyscaleException ex){
                         logger.error("Failed to apply resource :{} Reason :: {}", kind, ex.getMessage());

@@ -84,7 +84,20 @@ public class K8sResourceClient extends GenericK8sClient {
 
     @Override
     public void delete(CustomObject resource) {
-
+        if(resource == null){
+            return;
+        }
+        String kind = resource.getKind();
+        // Deleting activity
+        String name = resource.getMetadata().getName();
+        KubernetesApiResponse<CustomObject> response = genericClient.delete(namespace,name);
+        if(response!=null){
+            if(response.isSuccess()){
+                logger.info("Successfully deleted resource "+kind);
+                logger.debug("Failed reason: "+response.getStatus().getReason());
+                logger.debug(response.getStatus().getMessage());
+            }
+        }
     }
 
     @Override
