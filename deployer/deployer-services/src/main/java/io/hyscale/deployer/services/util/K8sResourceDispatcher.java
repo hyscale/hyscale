@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.hyscale.commons.models.AnnotationKey;
+import io.hyscale.commons.models.Status;
 import io.hyscale.deployer.services.broker.K8sResourceBroker;
 import io.hyscale.deployer.services.builder.NamespaceBuilder;
 import io.hyscale.deployer.services.client.GenericK8sClient;
@@ -127,15 +128,23 @@ public class K8sResourceDispatcher {
                         withNamespace(namespace).forKind(object);
                 if(genericK8sClient != null){
                     try{
+                        WorkflowLogger.startActivity(DeployerActivity.DEPLOYING,kind);
                         if(genericK8sClient.get(object) != null){
                             logger.debug("Updating resource with Generic client for Kind - "+kind);
-                            genericK8sClient.patch(object);
+                            if(!genericK8sClient.patch(object)){
+                                // Delete and Create if failed to Patch
+                                if(genericK8sClient.delete(object)) {
+                                    genericK8sClient.create(object);
+                                    WorkflowLogger.endActivity(Status.DONE);
+                                }
+                            }
                         }else{
-
                             logger.debug("Creating resource with Generic client for Kind - "+kind);
                             genericK8sClient.create(object);
+                            WorkflowLogger.endActivity(Status.DONE);
                         }
                     }catch (HyscaleException ex){
+                        WorkflowLogger.endActivity(Status.FAILED);
                         logger.error("Failed to apply resource :{} Reason :: {}", kind, ex.getMessage());
                     }
                 }

@@ -20,6 +20,8 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.Status;
 import io.hyscale.commons.utils.GsonProviderUtil;
+import io.hyscale.commons.utils.ThreadPoolUtil;
+import io.hyscale.deployer.services.constants.DeployerConstants;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.model.CustomObject;
 import io.hyscale.deployer.services.model.DeployerActivity;
@@ -46,7 +48,6 @@ public class K8sResourceClient extends GenericK8sClient {
             return;
         }
         String kind = resource.getKind();
-        WorkflowLogger.startActivity(DeployerActivity.DEPLOYING,kind);
         Map<String,Object> metaMap = (Map) resource.get("metadata");
         Map<String,String> annotations = new HashMap<>();
         annotations.put(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
@@ -57,14 +58,12 @@ public class K8sResourceClient extends GenericK8sClient {
         if(response!=null){
             if(response.isSuccess()){
                 logger.info("Successfully created resource "+kind);
-                WorkflowLogger.endActivity(Status.DONE);
                 return;
             }else{
-                logger.error("Failed reason: "+response.getStatus().getReason()+"\n" +
+                logger.error("Failed to create, reason: "+response.getStatus().getReason()+"\n" +
                         "Message: "+response.getStatus().getMessage());
             }
         }
-        WorkflowLogger.endActivity(Status.FAILED);
         throw new HyscaleException(DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE);
     }
 
@@ -74,73 +73,89 @@ public class K8sResourceClient extends GenericK8sClient {
             return;
         }
         String kind = resource.getKind();
-        WorkflowLogger.startActivity(DeployerActivity.DEPLOYING,kind);
+        Map<String,Object> metaMap = (Map) resource.get("metadata");
+        Map<String,String> annotations = new HashMap<>();
+        annotations.put(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
+                GsonProviderUtil.getPrettyGsonBuilder().toJson(resource));
+        metaMap.put("annotations",annotations);
 
         KubernetesApiResponse<CustomObject> response = genericClient.update(resource);
         if(response!=null){
             if(response.isSuccess()){
                 logger.info("Successfully updated resource "+kind);
-                WorkflowLogger.endActivity(Status.DONE);
                 return;
             }else{
                 logger.error("Failed reason: "+response.getStatus().getReason()+"\n" +
                         "Message: "+response.getStatus().getMessage());
             }
         }
-        WorkflowLogger.endActivity(Status.FAILED);
         throw new HyscaleException(DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE);
     }
 
     @Override
-    public void patch(CustomObject resource) throws HyscaleException {
+    public boolean patch(CustomObject resource) throws HyscaleException {
         if(resource == null){
-            return;
+            return false;
         }
         String kind = resource.getKind();
-        WorkflowLogger.startActivity(DeployerActivity.DEPLOYING,kind);
         String name = resource.getMetadata().getName();
         CustomObject customObject = get(resource);
         if(customObject != null){
-            logger.info("CO - "+customObject);
             String lastAppliedConfig = customObject.getMetadata().getAnnotations()
                     .get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
-            Object patchObject = K8sResourcePatchUtil.getJsonPatch(GsonProviderUtil.getPrettyGsonBuilder().fromJson(lastAppliedConfig, CustomObject.class),
-                    resource, CustomObject.class);
-            V1Patch v1Patch = new V1Patch(patchObject.toString());
-            String patchType = "jsonPatch";
-            KubernetesApiResponse<CustomObject> response = genericClient.patch(name,patchType,v1Patch);
-            if(response!=null){
-                if(response.isSuccess()){
-                    logger.info("Successfully patched resource "+kind);
-                    WorkflowLogger.endActivity(Status.DONE);
-                    return;
-                }else{
-                    logger.error("Failed reason: "+response.getStatus().getReason()+"\n" +
-                            "Message: "+response.getStatus().getMessage());
+            Object patchObject = null;
+            try {
+                patchObject = K8sResourcePatchUtil.getJsonPatch(GsonProviderUtil.getPrettyGsonBuilder().fromJson(lastAppliedConfig, CustomObject.class),
+                        resource, CustomObject.class);
+                V1Patch v1Patch = new V1Patch(patchObject.toString());
+                KubernetesApiResponse<CustomObject> response = genericClient.patch(name,null,v1Patch);
+                if(response!=null){
+                    if(response.isSuccess()){
+                        logger.info("Successfully patched resource "+kind);
+                        return true;
+                    }else{
+                        logger.error("Failed to Patch, reason: "+response.getStatus().getReason()+"\n" +
+                                "Message: "+response.getStatus().getMessage());
+                    }
                 }
+            } catch (HyscaleException e) {
+                throw new HyscaleException(DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE);
             }
-            WorkflowLogger.endActivity(Status.FAILED);
-            throw new HyscaleException(DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE);
+
         }
+        return false;
     }
 
     @Override
-    public void delete(CustomObject resource) {
+    public boolean delete(CustomObject resource) {
         if(resource == null){
-            return;
+            return false;
         }
         String kind = resource.getKind();
-        // Deleting activity
-        //TODO Add workflow loggers
         String name = resource.getMetadata().getName();
         KubernetesApiResponse<CustomObject> response = genericClient.delete(namespace,name);
         if(response!=null){
             if(response.isSuccess()){
                 logger.info("Successfully deleted resource "+kind);
+                waitForResourceDeletion(resource);
+                return true;
             }else{
-                logger.debug("Failed reason: "+response.getStatus().getReason());
-                logger.debug(response.getStatus().getMessage());
+                logger.error("Failed to delete resource "+kind+"\nReason : "+response.getStatus().getReason());
             }
+        }
+        return false;
+    }
+
+    private void waitForResourceDeletion(CustomObject resource) {
+        if(resource == null){
+            return;
+        }
+        long startTime = System.currentTimeMillis();
+        while((System.currentTimeMillis() - startTime < DeployerConstants.MAX_WAIT_TIME_IN_MILLISECONDS)){
+            CustomObject customObject = get(resource);
+            if(customObject == null){ return; }
+            logger.debug("Resource {} found to be existing, waiting for resource deletion", resource);
+            ThreadPoolUtil.sleepSilently(DeployerConstants.DELETE_SLEEP_INTERVAL_IN_MILLIS);
         }
     }
 

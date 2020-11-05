@@ -60,9 +60,9 @@ public abstract class GenericK8sClient {
 
     public abstract void update(CustomObject resource) throws HyscaleException;
 
-    public abstract void patch(CustomObject resource) throws HyscaleException;
+    public abstract boolean patch(CustomObject resource) throws HyscaleException;
 
-    public abstract void delete(CustomObject resource);
+    public abstract boolean delete(CustomObject resource);
 
     public abstract CustomObject get(CustomObject resource);
 
