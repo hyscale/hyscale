@@ -129,7 +129,7 @@ public class K8sResourceDispatcher {
                     try{
                         if(genericK8sClient.get(object) != null){
                             logger.debug("Updating resource with Generic client for Kind - "+kind);
-                            genericK8sClient.update(object);
+                            genericK8sClient.patch(object);
                         }else{
 
                             logger.debug("Creating resource with Generic client for Kind - "+kind);
