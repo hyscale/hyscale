@@ -17,17 +17,19 @@ package io.hyscale.deployer.services.client;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.Status;
-import io.hyscale.deployer.core.model.ResourceOperation;
+import io.hyscale.commons.utils.GsonProviderUtil;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
-import io.hyscale.deployer.services.model.CustomListObject;
 import io.hyscale.deployer.services.model.CustomObject;
 import io.hyscale.deployer.services.model.DeployerActivity;
-import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.util.generic.KubernetesApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class K8sResourceClient extends GenericK8sClient {
     private static final Logger logger = LoggerFactory.getLogger(K8sResourceClient.class);
@@ -43,6 +45,11 @@ public class K8sResourceClient extends GenericK8sClient {
         }
         String kind = resource.getKind();
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING,kind);
+        Map<String,Object> metaMap = (Map) resource.get("metadata");
+        Map<String,String> annotations = new HashMap<>();
+        annotations.put(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
+                GsonProviderUtil.getPrettyGsonBuilder().toJson(resource));
+        metaMap.put("annotations",annotations);
 
         KubernetesApiResponse<CustomObject> response = genericClient.create(resource);
         if(response!=null){

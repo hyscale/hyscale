@@ -15,6 +15,8 @@
  */
 package io.hyscale.deployer.services.model;
 
+import io.hyscale.commons.models.AnnotationKey;
+import io.hyscale.commons.utils.GsonProviderUtil;
 import io.kubernetes.client.common.KubernetesObject;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 
@@ -34,6 +36,7 @@ public class CustomObject extends HashMap<String, Object> implements KubernetesO
         V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
         v1ObjectMeta.setName(metaMap.get("name").toString());
         v1ObjectMeta.setNamespace(metaMap.get("namespace").toString());
+        v1ObjectMeta.setAnnotations((Map) metaMap.get("annotations"));
         return v1ObjectMeta;
     }
 
