@@ -27,7 +27,8 @@ public enum AnnotationKey {
     DEFAULT_STORAGE_CLASS("storageclass.kubernetes.io/is-default-class"),
     DEFAULT_BETA_STORAGE_CLASS("storageclass.beta.kubernetes.io/is-default-class"),
     LAST_UPDATED_AT("hyscale.io/last-updated-at"),
-    CHECKSUM("hyscale.io/checksum");
+    CHECKSUM("hyscale.io/checksum"),
+    HYSCALE_APPLIED_KINDS("hyscale.io/applied-kinds");
     
 
     private String annotation;

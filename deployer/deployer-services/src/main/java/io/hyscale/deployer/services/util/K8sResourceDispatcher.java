@@ -15,10 +15,7 @@
  */
 package io.hyscale.deployer.services.util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import io.hyscale.commons.models.AnnotationKey;
@@ -103,9 +100,16 @@ public class K8sResourceDispatcher {
         Map<String, CustomObject> kindVsCustomObject = getCustomObjects(manifests);
         List<KubernetesResource> k8sResources = getSortedResources(manifests);
 
+        List<String> appliedKinds = new ArrayList<>();
+        appliedKinds.addAll(kindVsCustomObject.keySet());
+        logger.debug("applied resource kinds - "+appliedKinds);
+
         for (KubernetesResource k8sResource : k8sResources) {
             AnnotationsUpdateManager.update(k8sResource, AnnotationKey.LAST_UPDATED_AT,
                     DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+            if(k8sResource.getKind().equalsIgnoreCase("deployment") || k8sResource.getKind().equalsIgnoreCase("statefulset")){
+                AnnotationsUpdateManager.update(k8sResource,AnnotationKey.HYSCALE_APPLIED_KINDS,appliedKinds.toString());
+            }
             ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(k8sResource.getKind());
             if (lifeCycleHandler != null && k8sResource.getResource() != null && k8sResource.getV1ObjectMeta() != null) {
                 try {
