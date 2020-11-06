@@ -38,7 +38,7 @@ jobs:
          project_version=`cat pom.xml | grep "<version>.*</version>" | head -1 |awk -F'[><]' '{print $3}'`
          echo ::set-output name=RELEASE_VERSION::$(echo $project_version)
          echo ::set-output name=RELEASE_NAME::$(cat pom.xml | grep "<release.name>.*</release.name>" | head -1 |awk -F'[><]' '{print $3}')
-         mvn deploy:deploy-file -DrepositoryId=github -Durl=https://maven.pkg.github.com/srujankujmar/hyscale -Dfile=/var/tmp/hyscale.jar -DgroupId=io.hyscale -DartifactId=hyscale -Dversion=$project_version
+         mvn deploy:deploy-file -DrepositoryId=github -Durl=https://maven.pkg.github.com/hyscale/hyscale -Dfile=/var/tmp/hyscale.jar -DgroupId=io.hyscale -DartifactId=hyscale -Dversion=$project_version
          mv /var/tmp/hyscale /var/tmp/hyscale-$project_version-linux
          mv /var/tmp/mac/hyscale /var/tmp/hyscale-$project_version-darwin
          mv /var/tmp/win/hyscale.exe /var/tmp/hyscale-$project_version-windows.exe
