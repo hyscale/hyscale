@@ -24,8 +24,8 @@ public class CustomListObject implements KubernetesListObject {
 
     private String kind;
     private String apiVersion;
-    private V1ListMeta v1ListMeta;
-    private List<CustomObject> customObjectList;
+    private V1ListMeta metadata;
+    private List<CustomObject> items;
 
     public CustomListObject(String kind,String apiVersion){
         this.kind = kind;
@@ -34,12 +34,12 @@ public class CustomListObject implements KubernetesListObject {
 
     @Override
     public V1ListMeta getMetadata() {
-        return v1ListMeta;
+        return metadata;
     }
 
     @Override
     public List<CustomObject> getItems() {
-        return customObjectList;
+        return items;
     }
 
     @Override
@@ -53,14 +53,14 @@ public class CustomListObject implements KubernetesListObject {
     }
 
     public List<CustomObject> getCustomObjectList() {
-        return customObjectList;
+        return items;
     }
 
-    public void setCustomObjectList(List<CustomObject> customObjectList) {
-        this.customObjectList = customObjectList;
+    public void setCustomObjectList(List<CustomObject> items) {
+        this.items = items;
     }
 
     public void addItem(CustomObject customObject){
-        this.customObjectList.add(customObject);
+        this.items.add(customObject);
     }
 }

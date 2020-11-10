@@ -30,6 +30,13 @@ import java.util.Map;
 
 public class CustomObject extends HashMap<String, Object> implements KubernetesObject {
 
+    public CustomObject(){ }
+
+    public CustomObject(String kind, String apiVersion){
+        this.put("kind",kind);
+        this.put("apiVersion",apiVersion);
+    }
+
     @Override
     public V1ObjectMeta getMetadata() {
         Map<String,Object> metaMap = (Map) get("metadata");

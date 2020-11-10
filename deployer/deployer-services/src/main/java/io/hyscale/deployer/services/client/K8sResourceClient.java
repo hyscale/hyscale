@@ -15,6 +15,8 @@
  */
 package io.hyscale.deployer.services.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AnnotationKey;
@@ -23,6 +25,7 @@ import io.hyscale.commons.utils.GsonProviderUtil;
 import io.hyscale.commons.utils.ThreadPoolUtil;
 import io.hyscale.deployer.services.constants.DeployerConstants;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
+import io.hyscale.deployer.services.model.CustomListObject;
 import io.hyscale.deployer.services.model.CustomObject;
 import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
@@ -33,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class K8sResourceClient extends GenericK8sClient {
@@ -167,12 +171,30 @@ public class K8sResourceClient extends GenericK8sClient {
         logger.debug("Fetching "+resource.getKind());
         if(resource.getMetadata() != null){
             String name = resource.getMetadata().getName();
-            KubernetesApiResponse<CustomObject> response = genericClient.get(namespace,name);
-            if(response != null && response.getObject()!=null){
-                logger.debug("Custom object - "+response.getObject());
-                return response.getObject();
-            }
+            return getResourceByName(name);
         }
         return null;
     }
+
+    @Override
+    public CustomObject getResourceByName(String name) {
+        if(name == null || name.isBlank()){
+            return null;
+        }
+        KubernetesApiResponse<CustomObject> response = genericClient.get(namespace,name);
+        if(response != null && response.getObject()!=null){
+            return response.getObject();
+        }
+        return null;
+    }
+
+    @Override
+    public List<CustomObject> getAll(){
+        KubernetesApiResponse<CustomListObject> response = genericClient.list(namespace);
+        if(response!=null){
+            return response.getObject().getItems();
+        }
+        return null;
+    }
+
 }

@@ -25,6 +25,8 @@ import org.bouncycastle.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 
 public abstract class GenericK8sClient {
 
@@ -47,7 +49,6 @@ public abstract class GenericK8sClient {
     public GenericK8sClient forKind(CustomObject resource){
         String kind = resource.getKind();
         String apiVersion = resource.getApiVersion();
-
         this.genericClient = new GenericKubernetesApi<CustomObject, CustomListObject>(
                 CustomObject.class, CustomListObject.class, getApiGroup(apiVersion),
                 getApiVersion(apiVersion),
@@ -65,6 +66,10 @@ public abstract class GenericK8sClient {
     public abstract boolean delete(CustomObject resource);
 
     public abstract CustomObject get(CustomObject resource);
+
+    public abstract CustomObject getResourceByName(String name);
+
+    public abstract List<CustomObject> getAll();
 
     private String getApiGroup(String apiVersion) {
         if (apiVersion == null || apiVersion == "") {
