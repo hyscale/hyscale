@@ -73,7 +73,6 @@ public enum ResourceKind {
         }
         for (ResourceKind resourceKind : ResourceKind.values()) {
             String res = resourceKind.getKind();
-            res.isBlank();
             if (res.equalsIgnoreCase(kind)) {
                 return resourceKind;
             }

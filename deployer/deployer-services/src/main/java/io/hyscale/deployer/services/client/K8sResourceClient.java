@@ -15,19 +15,14 @@
  */
 package io.hyscale.deployer.services.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AnnotationKey;
-import io.hyscale.commons.models.Status;
 import io.hyscale.commons.utils.GsonProviderUtil;
 import io.hyscale.commons.utils.ThreadPoolUtil;
 import io.hyscale.deployer.services.constants.DeployerConstants;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.model.CustomListObject;
 import io.hyscale.deployer.services.model.CustomObject;
-import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
 import io.kubernetes.client.custom.V1Patch;
 import io.kubernetes.client.openapi.ApiClient;
@@ -61,11 +56,10 @@ public class K8sResourceClient extends GenericK8sClient {
         KubernetesApiResponse<CustomObject> response = genericClient.create(resource);
         if(response!=null){
             if(response.isSuccess()){
-                logger.info("Successfully created resource "+kind);
+                logger.info("Successfully created resource {}",kind);
                 return;
             }else{
-                logger.error("Failed to create, reason: "+response.getStatus().getReason()+"\n" +
-                        "Message: "+response.getStatus().getMessage());
+                logger.error("Failed to create, reason: {}\n Message: {}",response.getStatus().getReason(),response.getStatus().getMessage());
             }
         }
         throw new HyscaleException(DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE);
@@ -86,11 +80,10 @@ public class K8sResourceClient extends GenericK8sClient {
         KubernetesApiResponse<CustomObject> response = genericClient.update(resource);
         if(response!=null){
             if(response.isSuccess()){
-                logger.info("Successfully updated resource "+kind);
+                logger.info("Successfully updated resource {}",kind);
                 return;
             }else{
-                logger.error("Failed reason: "+response.getStatus().getReason()+"\n" +
-                        "Message: "+response.getStatus().getMessage());
+                logger.error("Failed to update, reason: {}\n Message: {}",response.getStatus().getReason(),response.getStatus().getMessage());
             }
         }
         throw new HyscaleException(DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE);
@@ -115,11 +108,10 @@ public class K8sResourceClient extends GenericK8sClient {
                 KubernetesApiResponse<CustomObject> response = genericClient.patch(name,null,v1Patch);
                 if(response!=null){
                     if(response.isSuccess()){
-                        logger.info("Successfully patched resource "+kind);
+                        logger.info("Successfully patched resource {}",kind);
                         return true;
                     }else{
-                        logger.error("Failed to Patch, reason: "+response.getStatus().getReason()+"\n" +
-                                "Message: "+response.getStatus().getMessage());
+                        logger.error("Failed to patch, reason: {}\n Message: {}",response.getStatus().getReason(),response.getStatus().getMessage());
                     }
                 }
             } catch (HyscaleException e) {
@@ -140,11 +132,11 @@ public class K8sResourceClient extends GenericK8sClient {
         KubernetesApiResponse<CustomObject> response = genericClient.delete(namespace,name);
         if(response!=null){
             if(response.isSuccess()){
-                logger.info("Successfully deleted resource "+kind);
+                logger.info("Successfully deleted resource {}",kind);
                 waitForResourceDeletion(resource);
                 return true;
             }else{
-                logger.error("Failed to delete resource "+kind+"\nReason : "+response.getStatus().getReason());
+                logger.error("Failed to delete resource {} \nReason : {}",kind,response.getStatus().getReason());
             }
         }
         return false;
@@ -168,7 +160,7 @@ public class K8sResourceClient extends GenericK8sClient {
         if(resource == null){
             return null;
         }
-        logger.debug("Fetching "+resource.getKind());
+        logger.debug("Fetching {}",resource.getKind());
         if(resource.getMetadata() != null){
             String name = resource.getMetadata().getName();
             return getResourceByName(name);

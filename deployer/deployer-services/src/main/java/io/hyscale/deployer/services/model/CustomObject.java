@@ -15,8 +15,6 @@
  */
 package io.hyscale.deployer.services.model;
 
-import io.hyscale.commons.models.AnnotationKey;
-import io.hyscale.commons.utils.GsonProviderUtil;
 import io.kubernetes.client.common.KubernetesObject;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 

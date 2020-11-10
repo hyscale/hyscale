@@ -22,15 +22,11 @@ import io.hyscale.deployer.services.model.CustomObject;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.util.generic.GenericKubernetesApi;
 import org.bouncycastle.util.Strings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 
 public abstract class GenericK8sClient {
-
-    private static final Logger logger = LoggerFactory.getLogger(GenericK8sClient.class);
 
     private ApiClient apiClient;
     protected String namespace;
@@ -49,7 +45,7 @@ public abstract class GenericK8sClient {
     public GenericK8sClient forKind(CustomObject resource){
         String kind = resource.getKind();
         String apiVersion = resource.getApiVersion();
-        this.genericClient = new GenericKubernetesApi<CustomObject, CustomListObject>(
+        this.genericClient = new GenericKubernetesApi<>(
                 CustomObject.class, CustomListObject.class, getApiGroup(apiVersion),
                 getApiVersion(apiVersion),
                 kind.toLowerCase() + "s",apiClient);
@@ -72,7 +68,7 @@ public abstract class GenericK8sClient {
     public abstract List<CustomObject> getAll();
 
     private String getApiGroup(String apiVersion) {
-        if (apiVersion == null || apiVersion == "") {
+        if (apiVersion == null || apiVersion.equalsIgnoreCase("")) {
             return apiVersion;
         }
         String[] groups = Strings.split(apiVersion, '/');
@@ -80,7 +76,7 @@ public abstract class GenericK8sClient {
     }
 
     private static String getApiVersion(String apiVersion) {
-        if (apiVersion == null || apiVersion == "") {
+        if (apiVersion == null || apiVersion.equalsIgnoreCase("")) {
             return apiVersion;
         }
         String[] groups = Strings.split(apiVersion, '/');

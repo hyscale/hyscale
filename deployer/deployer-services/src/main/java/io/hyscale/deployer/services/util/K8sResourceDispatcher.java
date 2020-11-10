@@ -15,11 +15,14 @@
  */
 package io.hyscale.deployer.services.util;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
+import io.hyscale.commons.constants.K8SRuntimeConstants;
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AnnotationKey;
+import io.hyscale.commons.models.KubernetesResource;
+import io.hyscale.commons.models.Manifest;
 import io.hyscale.commons.models.Status;
+import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.broker.K8sResourceBroker;
 import io.hyscale.deployer.services.builder.NamespaceBuilder;
 import io.hyscale.deployer.services.client.GenericK8sClient;
@@ -27,24 +30,18 @@ import io.hyscale.deployer.services.client.K8sResourceClient;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
+import io.hyscale.deployer.services.handler.impl.NamespaceHandler;
 import io.hyscale.deployer.services.manager.AnnotationsUpdateManager;
 import io.hyscale.deployer.services.model.CustomObject;
 import io.hyscale.deployer.services.model.DeployerActivity;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.models.V1Namespace;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.hyscale.commons.constants.K8SRuntimeConstants;
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.KubernetesResource;
-import io.hyscale.commons.models.Manifest;
-import io.hyscale.commons.utils.ResourceSelectorUtil;
-import io.hyscale.deployer.core.model.ResourceKind;
-import io.hyscale.deployer.services.handler.impl.NamespaceHandler;
-import io.kubernetes.client.openapi.ApiClient;
-import io.kubernetes.client.openapi.models.V1Namespace;
+import java.util.*;
 
 /**
  * Handles generic resource level operation such as apply, undeploy among others
@@ -102,7 +99,7 @@ public class K8sResourceDispatcher {
 
         List<String> appliedKinds = new ArrayList<>();
         appliedKinds.addAll(kindVsCustomObject.keySet());
-        logger.debug("applied resource kinds - "+appliedKinds);
+        logger.debug("applied resource kinds - {}",appliedKinds);
 
         for (KubernetesResource k8sResource : k8sResources) {
             AnnotationsUpdateManager.update(k8sResource, AnnotationKey.LAST_UPDATED_AT,
@@ -134,7 +131,7 @@ public class K8sResourceDispatcher {
                     try{
                         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING,kind);
                         if(genericK8sClient.get(object) != null){
-                            logger.debug("Updating resource with Generic client for Kind - "+kind);
+                            logger.debug("Updating resource with Generic client for Kind - {}",kind);
                             if(!genericK8sClient.patch(object)){
                                 // Delete and Create if failed to Patch
                                 if(genericK8sClient.delete(object)) {
@@ -143,7 +140,7 @@ public class K8sResourceDispatcher {
                                 }
                             }
                         }else{
-                            logger.debug("Creating resource with Generic client for Kind - "+kind);
+                            logger.debug("Creating resource with Generic client for Kind - {}",kind);
                             genericK8sClient.create(object);
                             WorkflowLogger.endActivity(Status.DONE);
                         }
@@ -165,7 +162,7 @@ public class K8sResourceDispatcher {
      * @throws HyscaleException if failed to delete any resource
      */
     public void undeploy(String appName, String serviceName) throws HyscaleException {
-        logger.info("Undeploy initiated for service - "+serviceName);
+        logger.info("Undeploy initiated for service - {}",serviceName);
         if (StringUtils.isBlank(appName)) {
             logger.error("No applicaton found for undeployment");
             throw new HyscaleException(DeployerErrorCodes.APPLICATION_REQUIRED);
@@ -186,7 +183,7 @@ public class K8sResourceDispatcher {
         }
         if(appliedKindsList!=null && !appliedKindsList.isEmpty()){
             for(String kind : appliedKindsList){
-                logger.info("Cleaning up -"+kind);
+                logger.info("Cleaning up - {}",kind);
                 WorkflowLogger.startActivity(DeployerActivity.DELETING,kind);
                 ResourceKind resourceKind = ResourceKind.fromString(kind);
                 genericK8sClient = new K8sResourceClient(apiClient).
@@ -220,12 +217,12 @@ public class K8sResourceDispatcher {
                 try {
                     CustomObject object = KubernetesResourceUtil.getK8sCustomObjectResource(manifest,namespace);
                     if(object != null){
-                        logger.debug("Adding kind - "+object.getKind());
+                        logger.debug("Adding kind - {}",object.getKind());
                         kindVsObject.put(object.getKind(),object);
                     }
                 } catch (Exception e) {
                     HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST);
-                    logger.error("Error while applying manifests to kubernetes", ex);
+                    logger.error("Error while applying manifests to kubernetes {}", ex);
                     throw ex;
                 }
             }
@@ -243,7 +240,7 @@ public class K8sResourceDispatcher {
                 }
             } catch (Exception e) {
                 HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST);
-                logger.error("Error while applying manifests to kubernetes", ex);
+                logger.error("Error while applying manifests to kubernetes {}", ex);
                 throw ex;
             }
         }

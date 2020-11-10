@@ -52,10 +52,6 @@ public class CustomListObject implements KubernetesListObject {
         return kind;
     }
 
-    public List<CustomObject> getCustomObjectList() {
-        return items;
-    }
-
     public void setCustomObjectList(List<CustomObject> items) {
         this.items = items;
     }
