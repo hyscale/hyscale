@@ -156,6 +156,63 @@ public class K8sResourceDispatcher {
         }
     }
 
+    /**
+     * Undeploy resources from cluster
+     * Deletes all resources in a service
+     *
+     * @param appName
+     * @param serviceName
+     * @throws HyscaleException if failed to delete any resource
+     */
+    public void undeploy(String appName, String serviceName) throws HyscaleException {
+        logger.info("Undeploy initiated for service - "+serviceName);
+        if (StringUtils.isBlank(appName)) {
+            logger.error("No applicaton found for undeployment");
+            throw new HyscaleException(DeployerErrorCodes.APPLICATION_REQUIRED);
+        }
+        CustomObject workloadObject = new CustomObject(ResourceKind.DEPLOYMENT.getKind(),"apps/v1");
+        GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).
+                withNamespace(namespace).forKind(workloadObject);
+        CustomObject service = genericK8sClient.getResourceByName(serviceName);
+        List<String> appliedKindsList = null;
+        List<String> failedResources = new ArrayList<>();
+        boolean resourcesDeleted = true;
+        if(service != null){
+            if(service.getMetadata() != null){
+                Map<String,String> annotations = service.getMetadata().getAnnotations();
+                String appliedKindsStr = annotations.get(AnnotationKey.HYSCALE_APPLIED_KINDS.getAnnotation());
+                appliedKindsList = Arrays.asList(appliedKindsStr.substring(1,appliedKindsStr.length()-1).replaceAll("\\s","").split(","));
+            }
+        }
+        if(appliedKindsList!=null && !appliedKindsList.isEmpty()){
+            for(String kind : appliedKindsList){
+                logger.info("Cleaning up -"+kind);
+                WorkflowLogger.startActivity(DeployerActivity.DELETING,kind);
+                ResourceKind resourceKind = ResourceKind.fromString(kind);
+                genericK8sClient = new K8sResourceClient(apiClient).
+                        withNamespace(namespace).forKind(new CustomObject(resourceKind.getKind(),resourceKind.getApiVersion()));
+                List<CustomObject> resources =  genericK8sClient.getAll();
+                for(CustomObject resource : resources){
+                    resource.put("kind",kind);
+                    boolean result = genericK8sClient.delete(resource);
+                    logger.debug("Undeployment status for resource {} is {}", kind, result);
+                    resourcesDeleted = resourcesDeleted && result;
+                }
+                if(resourcesDeleted){ WorkflowLogger.endActivity(Status.DONE); }
+                else{
+                    failedResources.add(kind);
+                    WorkflowLogger.endActivity(Status.FAILED);
+                }
+            }
+        }else if(!failedResources.isEmpty()){
+            String[] args = new String[failedResources.size()];
+            failedResources.toArray(args);
+            throw new HyscaleException(DeployerErrorCodes.FAILED_TO_DELETE_RESOURCE, args);
+        }else{
+            WorkflowLogger.info(DeployerActivity.NO_RESOURCES_TO_UNDEPLOY);
+        }
+    }
+
     private Map<String,CustomObject> getCustomObjects(List<Manifest> manifests) throws HyscaleException {
         Map<String,CustomObject> kindVsObject = new HashMap<>();
 
@@ -213,59 +270,6 @@ public class K8sResourceDispatcher {
         if (v1Namespace == null) {
             logger.debug("Namespace: {}, does not exist, creating", namespace);
             namespaceHandler.create(apiClient, NamespaceBuilder.build(namespace), namespace);
-        }
-    }
-
-
-    /**
-     * Undeploy resources from cluster
-     * Deletes all resources for which clean up is enabled based on appName and serviceName
-     *
-     * @param appName
-     * @param serviceName
-     * @throws HyscaleException if failed to delete any resource
-     */
-    public void undeploy(String appName, String serviceName) throws HyscaleException {
-        if (StringUtils.isBlank(appName)) {
-            logger.error("No applicaton found for undeployment");
-            throw new HyscaleException(DeployerErrorCodes.APPLICATION_REQUIRED);
-        }
-        List<String> failedResources = new ArrayList<>();
-
-        String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
-        List<ResourceLifeCycleHandler> handlersList = ResourceHandlers.getAllHandlers();
-        if (handlersList == null) {
-            return;
-        }
-        // Sort handlers based on weight
-        List<ResourceLifeCycleHandler> sortedHandlersList = handlersList.stream()
-                .sorted((handler1, handler2) -> handler1.getWeight() - handler2.getWeight())
-                .collect(Collectors.toList());
-        boolean resourceDeleted = false;
-        for (ResourceLifeCycleHandler lifeCycleHandler : sortedHandlersList) {
-            if (lifeCycleHandler == null) {
-                continue;
-            }
-            String resourceKind = lifeCycleHandler.getKind();
-            if (lifeCycleHandler.cleanUp()) {
-                try {
-                    boolean result = lifeCycleHandler.deleteBySelector(apiClient, selector, true, namespace, true);
-                    logger.debug("Undeployment status for resource {} is {}", resourceKind, result);
-                    resourceDeleted = resourceDeleted || result;
-                } catch (HyscaleException ex) {
-                    logger.error("Failed to undeploy resource {}", resourceKind, ex);
-                    failedResources.add(resourceKind);
-                }
-
-            }
-        }
-        if (!failedResources.isEmpty()) {
-            String[] args = new String[failedResources.size()];
-            failedResources.toArray(args);
-            throw new HyscaleException(DeployerErrorCodes.FAILED_TO_DELETE_RESOURCE, args);
-        }
-        if (!resourceDeleted) {
-            WorkflowLogger.info(DeployerActivity.NO_RESOURCES_TO_UNDEPLOY);
         }
     }
 
