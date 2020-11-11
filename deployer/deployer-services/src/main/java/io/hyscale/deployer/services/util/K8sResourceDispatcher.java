@@ -22,6 +22,7 @@ import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.KubernetesResource;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.commons.models.Status;
+import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.broker.K8sResourceBroker;
 import io.hyscale.deployer.services.builder.NamespaceBuilder;
@@ -40,6 +41,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.util.*;
 
@@ -126,7 +129,7 @@ public class K8sResourceDispatcher {
             kindVsCustomObject.forEach((kind,object)->{
                 // Using Generic K8s Client
                 GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).
-                        withNamespace(namespace).forKind(object);
+                        withNamespace(namespace).forKind(ResourceKind.fromString(kind));
                 if(genericK8sClient != null){
                     try{
                         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING,kind);
@@ -153,42 +156,39 @@ public class K8sResourceDispatcher {
         }
     }
 
-    /**
-     * Undeploy resources from cluster
-     * Deletes all resources in a service
-     *
-     * @param appName
-     * @param serviceName
-     * @throws HyscaleException if failed to delete any resource
-     */
-    public void undeploy(String appName, String serviceName) throws HyscaleException {
-        logger.info("Undeploy initiated for service - {}",serviceName);
-        if (StringUtils.isBlank(appName)) {
-            logger.error("No applicaton found for undeployment");
-            throw new HyscaleException(DeployerErrorCodes.APPLICATION_REQUIRED);
+
+    private MultiValueMap<String,String> getAppliedKindsMapForServices(List<CustomObject> workloadResources){
+        MultiValueMap<String,String> serviceVsAppliedKinds = new LinkedMultiValueMap();
+        if(workloadResources != null && !workloadResources.isEmpty()){
+            workloadResources.stream().filter(Objects::nonNull).forEach((resource)->{
+                if(resource.getMetadata() != null){
+                    String name = resource.getMetadata().getName();
+                    Map<String,String> annotations = resource.getMetadata().getAnnotations();
+                    String appliedKindsStr = annotations.get(AnnotationKey.HYSCALE_APPLIED_KINDS.getAnnotation());
+                    List<String> appliedKindsList = Arrays.asList(appliedKindsStr.substring(1,appliedKindsStr.length()-1).replaceAll("\\s","").split(","));
+                    serviceVsAppliedKinds.put(name,appliedKindsList);
+                }
+            });
+            return serviceVsAppliedKinds;
         }
-        CustomObject workloadObject = new CustomObject(ResourceKind.DEPLOYMENT.getKind(),"apps/v1");
-        GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).
-                withNamespace(namespace).forKind(workloadObject);
-        CustomObject service = genericK8sClient.getResourceByName(serviceName);
-        List<String> appliedKindsList = null;
-        List<String> failedResources = new ArrayList<>();
+        return null;
+    }
+
+        private void deleteResources(String labelSelector, List<String> appliedKindsList) throws HyscaleException {
         boolean resourcesDeleted = true;
-        if(service != null){
-            if(service.getMetadata() != null){
-                Map<String,String> annotations = service.getMetadata().getAnnotations();
-                String appliedKindsStr = annotations.get(AnnotationKey.HYSCALE_APPLIED_KINDS.getAnnotation());
-                appliedKindsList = Arrays.asList(appliedKindsStr.substring(1,appliedKindsStr.length()-1).replaceAll("\\s","").split(","));
-            }
-        }
+
+        List<String> failedResources = new ArrayList<>();
         if(appliedKindsList!=null && !appliedKindsList.isEmpty()){
             for(String kind : appliedKindsList){
                 logger.info("Cleaning up - {}",kind);
-                WorkflowLogger.startActivity(DeployerActivity.DELETING,kind);
                 ResourceKind resourceKind = ResourceKind.fromString(kind);
-                genericK8sClient = new K8sResourceClient(apiClient).
-                        withNamespace(namespace).forKind(new CustomObject(resourceKind.getKind(),resourceKind.getApiVersion()));
-                List<CustomObject> resources =  genericK8sClient.getAll();
+                GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).
+                        withNamespace(namespace).forKind(resourceKind);
+                List<CustomObject> resources =  genericK8sClient.getBySelector(labelSelector);
+                if(resources == null || resources.isEmpty()){
+                    continue;
+                }
+                WorkflowLogger.startActivity(DeployerActivity.DELETING,kind);
                 for(CustomObject resource : resources){
                     resource.put("kind",kind);
                     boolean result = genericK8sClient.delete(resource);
@@ -208,6 +208,65 @@ public class K8sResourceDispatcher {
         }else{
             WorkflowLogger.info(DeployerActivity.NO_RESOURCES_TO_UNDEPLOY);
         }
+    }
+
+    /**
+     * Undeploy resources from cluster
+     * Deletes all resources belonging to all services in an app environment
+     * @param appName
+     * @throws HyscaleException
+     */
+    public void undeployApp(String appName) throws HyscaleException {
+        logger.info("Undeploy initiated for application - {}",appName);
+        if (StringUtils.isBlank(appName)) {
+            logger.error("No applicaton found for undeployment");
+            throw new HyscaleException(DeployerErrorCodes.APPLICATION_REQUIRED);
+        }
+        List<CustomObject> workloadResources = new ArrayList<>();
+        GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).
+                withNamespace(namespace).forKind(ResourceKind.DEPLOYMENT);
+        workloadResources.addAll(genericK8sClient.getAll());
+
+        genericK8sClient = new K8sResourceClient(apiClient).
+                withNamespace(namespace).forKind(ResourceKind.STATEFUL_SET);
+        workloadResources.addAll(genericK8sClient.getAll());
+
+        MultiValueMap<String,String> appliedKindsMapForServices = getAppliedKindsMapForServices(workloadResources);
+
+        if(appliedKindsMapForServices != null && !appliedKindsMapForServices.isEmpty()){
+            for (Map.Entry<String, List<String>> entry : appliedKindsMapForServices.entrySet()) {
+                List<String> appliedKindsList = entry.getValue();
+                String selector = ResourceSelectorUtil.getServiceSelector(appName,null);
+                deleteResources(selector, appliedKindsList);
+            }
+        }
+    }
+
+    /**
+     * Undeploy resources from cluster
+     * Deletes all resources in a service
+     *
+     * @param appName
+     * @param serviceName
+     * @throws HyscaleException if failed to delete any resource
+     */
+    public void undeployService(String appName, String serviceName) throws HyscaleException {
+        logger.info("Undeploy initiated for service - {}",serviceName);
+        if (StringUtils.isBlank(appName)) {
+            logger.error("No applicaton found for undeployment");
+            throw new HyscaleException(DeployerErrorCodes.APPLICATION_REQUIRED);
+        }
+        List<CustomObject> workloadResources = new ArrayList<>();
+        GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).
+                withNamespace(namespace).forKind(ResourceKind.DEPLOYMENT);
+        workloadResources.add(genericK8sClient.getResourceByName(serviceName));
+        genericK8sClient = new K8sResourceClient(apiClient).
+                withNamespace(namespace).forKind(ResourceKind.STATEFUL_SET);
+        workloadResources.add(genericK8sClient.getResourceByName(serviceName));
+
+        List<String> appliedKindsList = getAppliedKindsMapForServices(workloadResources).get(serviceName);
+        String selector = ResourceSelectorUtil.getServiceSelector(appName,serviceName);
+        deleteResources(selector,appliedKindsList);
     }
 
     private Map<String,CustomObject> getCustomObjects(List<Manifest> manifests) throws HyscaleException {

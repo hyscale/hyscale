@@ -225,7 +225,11 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
         K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(
                 clientProvider.get((K8sAuthorisation) context.getAuthConfig()));
         try {
-            resourceDispatcher.withNamespace(namespace).undeploy(appName, serviceName);
+            if(serviceName!=null && !serviceName.isBlank()){
+                resourceDispatcher.withNamespace(namespace).undeployService(appName, serviceName);
+            }else{
+                resourceDispatcher.withNamespace(namespace).undeployApp(appName);
+            }
             event = new UnDeployEvent(ActivityState.DONE, serviceMetadata, namespace);
         } catch (HyscaleException e) {
             logger.error("Error while undeploying service in namespace {} , error {} ", namespace, e.toString());

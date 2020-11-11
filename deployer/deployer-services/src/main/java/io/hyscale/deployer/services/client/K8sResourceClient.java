@@ -27,6 +27,7 @@ import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
 import io.kubernetes.client.custom.V1Patch;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.util.generic.KubernetesApiResponse;
+import io.kubernetes.client.util.generic.options.ListOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -183,6 +184,17 @@ public class K8sResourceClient extends GenericK8sClient {
     @Override
     public List<CustomObject> getAll(){
         KubernetesApiResponse<CustomListObject> response = genericClient.list(namespace);
+        if(response!=null){
+            return response.getObject().getItems();
+        }
+        return null;
+    }
+
+    @Override
+    public List<CustomObject> getBySelector(String selector) {
+        ListOptions listOptions = new ListOptions();
+        listOptions.setLabelSelector(selector);
+        KubernetesApiResponse<CustomListObject> response = genericClient.list(namespace,listOptions);
         if(response!=null){
             return response.getObject().getItems();
         }
