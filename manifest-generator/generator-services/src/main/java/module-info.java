@@ -41,4 +41,5 @@ module manifestGenerator {
 	requires transitive pluginframework;
 	requires transitive service_spec_commons;
 	requires com.fasterxml.jackson.dataformat.yaml;
+    requires client.java;
 }
