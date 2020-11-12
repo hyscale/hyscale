@@ -81,6 +81,11 @@ public class KubernetesResourceUtil {
         Map<String, Object> data = (Map) Yaml.getSnakeYaml().load((Reader)(new FileReader(yamlManifest.getManifest())));
         CustomObject customObject = new CustomObject();
         customObject.putAll(data);
+        Map<String,Object> metaMap = (Map) customObject.get("metadata");
+        if(metaMap.get("namespace")==null){
+            // Adding namespace in metadata if not provided
+            metaMap.put("namespace",namespace);
+        }
         return customObject;
     }
 

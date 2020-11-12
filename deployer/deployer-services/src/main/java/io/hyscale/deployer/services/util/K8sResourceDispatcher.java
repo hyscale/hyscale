@@ -257,14 +257,17 @@ public class K8sResourceDispatcher {
             throw new HyscaleException(DeployerErrorCodes.APPLICATION_REQUIRED);
         }
         List<CustomObject> workloadResources = new ArrayList<>();
+        List<String> appliedKindsList = null;
         GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).
                 withNamespace(namespace).forKind(ResourceKind.DEPLOYMENT);
         workloadResources.add(genericK8sClient.getResourceByName(serviceName));
         genericK8sClient = new K8sResourceClient(apiClient).
                 withNamespace(namespace).forKind(ResourceKind.STATEFUL_SET);
         workloadResources.add(genericK8sClient.getResourceByName(serviceName));
-
-        List<String> appliedKindsList = getAppliedKindsMapForServices(workloadResources).get(serviceName);
+        MultiValueMap<String,String> appliedKindsMapForServices = getAppliedKindsMapForServices(workloadResources);
+        if(appliedKindsMapForServices != null){
+            appliedKindsList = appliedKindsMapForServices.get(serviceName);
+        }
         String selector = ResourceSelectorUtil.getServiceSelector(appName,serviceName);
         deleteResources(selector,appliedKindsList);
     }
