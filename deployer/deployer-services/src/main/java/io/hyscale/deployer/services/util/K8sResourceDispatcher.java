@@ -125,6 +125,10 @@ public class K8sResourceDispatcher {
                 }
             }
         }
+        applyCustomResources(kindVsCustomObject);
+    }
+
+    private void applyCustomResources(Map<String, CustomObject> kindVsCustomObject){
         if(kindVsCustomObject != null && !kindVsCustomObject.isEmpty()){
             kindVsCustomObject.forEach((kind,object)->{
                 // Using Generic K8s Client
