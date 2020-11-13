@@ -17,6 +17,7 @@ package io.hyscale.deployer.services.client;
 
 import io.hyscale.commons.constants.K8SRuntimeConstants;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.deployer.core.model.CustomResourceKind;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.model.CustomListObject;
 import io.hyscale.deployer.services.model.CustomObject;
@@ -43,7 +44,7 @@ public abstract class GenericK8sClient {
         return this;
     }
 
-    public GenericK8sClient forKind(ResourceKind resourceKind){
+    public GenericK8sClient forKind(CustomResourceKind resourceKind){
         String apiVersion = resourceKind.getApiVersion();
         this.genericClient = new GenericKubernetesApi<>(
                 CustomObject.class, CustomListObject.class, getApiGroup(apiVersion),

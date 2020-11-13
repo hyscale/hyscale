@@ -23,6 +23,7 @@ import io.hyscale.commons.models.KubernetesResource;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.commons.models.Status;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
+import io.hyscale.deployer.core.model.CustomResourceKind;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.broker.K8sResourceBroker;
 import io.hyscale.deployer.services.builder.NamespaceBuilder;
@@ -99,14 +100,12 @@ public class K8sResourceDispatcher {
 
         Map<String, CustomObject> kindVsCustomObject = getCustomObjects(manifests);
         List<KubernetesResource> k8sResources = getSortedResources(manifests);
-
-        List<String> appliedKinds = new ArrayList<>();
-        appliedKinds.addAll(kindVsCustomObject.keySet());
-        logger.debug("applied resource kinds - {}",appliedKinds);
+        List<String> appliedKinds = buildAppliedKindsAnnotation(kindVsCustomObject);
 
         for (KubernetesResource k8sResource : k8sResources) {
             AnnotationsUpdateManager.update(k8sResource, AnnotationKey.LAST_UPDATED_AT,
                     DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+
             if(k8sResource.getKind().equalsIgnoreCase("deployment") || k8sResource.getKind().equalsIgnoreCase("statefulset")){
                 AnnotationsUpdateManager.update(k8sResource,AnnotationKey.HYSCALE_APPLIED_KINDS,appliedKinds.toString());
             }
@@ -128,12 +127,21 @@ public class K8sResourceDispatcher {
         applyCustomResources(kindVsCustomObject);
     }
 
+    private List<String> buildAppliedKindsAnnotation(Map<String, CustomObject> kindVsCustomObject){
+        List<String> appliedKinds = new ArrayList<>();
+        kindVsCustomObject.forEach((kind,customObject)->{
+            String kindVsApiVersion = kind+":"+customObject.getApiVersion();
+            appliedKinds.add(kindVsApiVersion);
+        });
+        return appliedKinds;
+    }
+
     private void applyCustomResources(Map<String, CustomObject> kindVsCustomObject){
         if(kindVsCustomObject != null && !kindVsCustomObject.isEmpty()){
             kindVsCustomObject.forEach((kind,object)->{
                 // Using Generic K8s Client
                 GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).
-                        withNamespace(namespace).forKind(ResourceKind.fromString(kind));
+                        withNamespace(namespace).forKind(new CustomResourceKind(kind,object.getApiVersion()));
                 if(genericK8sClient != null){
                     try{
                         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING,kind);
@@ -161,8 +169,9 @@ public class K8sResourceDispatcher {
     }
 
 
-    private MultiValueMap<String,String> getAppliedKindsMapForServices(List<CustomObject> workloadResources){
-        MultiValueMap<String,String> serviceVsAppliedKinds = new LinkedMultiValueMap();
+    private MultiValueMap<String,CustomResourceKind> getAppliedKindsMapForServices(List<CustomObject> workloadResources){
+        MultiValueMap<String, CustomResourceKind> serviceVsAppliedResourceKinds = new LinkedMultiValueMap<>();
+
         if(workloadResources != null && !workloadResources.isEmpty()){
             workloadResources.stream().filter(Objects::nonNull).forEach((resource)->{
                 if(resource.getMetadata() != null){
@@ -170,38 +179,45 @@ public class K8sResourceDispatcher {
                     Map<String,String> annotations = resource.getMetadata().getAnnotations();
                     String appliedKindsStr = annotations.get(AnnotationKey.HYSCALE_APPLIED_KINDS.getAnnotation());
                     List<String> appliedKindsList = Arrays.asList(appliedKindsStr.substring(1,appliedKindsStr.length()-1).replaceAll("\\s","").split(","));
-                    serviceVsAppliedKinds.put(name,appliedKindsList);
+                    List<CustomResourceKind> customResourceKinds = new ArrayList<>();
+                    for(String appliedKind : appliedKindsList){
+                        String[] csr = appliedKind.split(":");
+                        String kind = csr[0];
+                        String apiVersion = csr[1];
+                        CustomResourceKind customResourceKind = new CustomResourceKind(kind,apiVersion);
+                        customResourceKinds.add(customResourceKind);
+                    }
+                    serviceVsAppliedResourceKinds.put(name,customResourceKinds);
                 }
             });
-            return serviceVsAppliedKinds;
+            return serviceVsAppliedResourceKinds;
         }
         return null;
     }
 
-        private void deleteResources(String labelSelector, List<String> appliedKindsList) throws HyscaleException {
+        private void deleteResources(String labelSelector, List<CustomResourceKind> appliedKindsList) throws HyscaleException {
         boolean resourcesDeleted = true;
 
         List<String> failedResources = new ArrayList<>();
         if(appliedKindsList!=null && !appliedKindsList.isEmpty()){
-            for(String kind : appliedKindsList){
-                logger.info("Cleaning up - {}",kind);
-                ResourceKind resourceKind = ResourceKind.fromString(kind);
+            for(CustomResourceKind customResource : appliedKindsList){
+                logger.info("Cleaning up - {}",customResource.getKind());
                 GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).
-                        withNamespace(namespace).forKind(resourceKind);
+                        withNamespace(namespace).forKind(customResource);
                 List<CustomObject> resources =  genericK8sClient.getBySelector(labelSelector);
                 if(resources == null || resources.isEmpty()){
                     continue;
                 }
-                WorkflowLogger.startActivity(DeployerActivity.DELETING,kind);
+                WorkflowLogger.startActivity(DeployerActivity.DELETING,customResource.getKind());
                 for(CustomObject resource : resources){
-                    resource.put("kind",kind);
+                    resource.put("kind",customResource.getKind());
                     boolean result = genericK8sClient.delete(resource);
-                    logger.debug("Undeployment status for resource {} is {}", kind, result);
+                    logger.debug("Undeployment status for resource {} is {}", customResource.getKind(), result);
                     resourcesDeleted = resourcesDeleted && result;
                 }
                 if(resourcesDeleted){ WorkflowLogger.endActivity(Status.DONE); }
                 else{
-                    failedResources.add(kind);
+                    failedResources.add(customResource.getKind());
                     WorkflowLogger.endActivity(Status.FAILED);
                 }
             }
@@ -227,19 +243,20 @@ public class K8sResourceDispatcher {
             throw new HyscaleException(DeployerErrorCodes.APPLICATION_REQUIRED);
         }
         List<CustomObject> workloadResources = new ArrayList<>();
+        CustomResourceKind customResourceKind = new CustomResourceKind(ResourceKind.DEPLOYMENT.getKind(),"apps/v1");
         GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).
-                withNamespace(namespace).forKind(ResourceKind.DEPLOYMENT);
+                withNamespace(namespace).forKind(customResourceKind);
         workloadResources.addAll(genericK8sClient.getAll());
-
+        customResourceKind.setKind(ResourceKind.STATEFUL_SET.getKind());
         genericK8sClient = new K8sResourceClient(apiClient).
-                withNamespace(namespace).forKind(ResourceKind.STATEFUL_SET);
+                withNamespace(namespace).forKind(customResourceKind);
         workloadResources.addAll(genericK8sClient.getAll());
 
-        MultiValueMap<String,String> appliedKindsMapForServices = getAppliedKindsMapForServices(workloadResources);
+        MultiValueMap<String,CustomResourceKind> appliedKindsMapForServices = getAppliedKindsMapForServices(workloadResources);
 
         if(appliedKindsMapForServices != null && !appliedKindsMapForServices.isEmpty()){
-            for (Map.Entry<String, List<String>> entry : appliedKindsMapForServices.entrySet()) {
-                List<String> appliedKindsList = entry.getValue();
+            for (Map.Entry<String, List<CustomResourceKind>> entry : appliedKindsMapForServices.entrySet()) {
+                List<CustomResourceKind> appliedKindsList = entry.getValue();
                 String selector = ResourceSelectorUtil.getServiceSelector(appName,null);
                 deleteResources(selector, appliedKindsList);
             }
@@ -261,14 +278,18 @@ public class K8sResourceDispatcher {
             throw new HyscaleException(DeployerErrorCodes.APPLICATION_REQUIRED);
         }
         List<CustomObject> workloadResources = new ArrayList<>();
-        List<String> appliedKindsList = null;
+        List<CustomResourceKind> appliedKindsList = null;
+        CustomResourceKind customResourceKind = new CustomResourceKind(ResourceKind.DEPLOYMENT.getKind(),"apps/v1");
         GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).
-                withNamespace(namespace).forKind(ResourceKind.DEPLOYMENT);
+                withNamespace(namespace).forKind(customResourceKind);
         workloadResources.add(genericK8sClient.getResourceByName(serviceName));
+        customResourceKind.setKind(ResourceKind.STATEFUL_SET.getKind());
         genericK8sClient = new K8sResourceClient(apiClient).
-                withNamespace(namespace).forKind(ResourceKind.STATEFUL_SET);
+                withNamespace(namespace).forKind(customResourceKind);
+
         workloadResources.add(genericK8sClient.getResourceByName(serviceName));
-        MultiValueMap<String,String> appliedKindsMapForServices = getAppliedKindsMapForServices(workloadResources);
+
+        MultiValueMap<String,CustomResourceKind> appliedKindsMapForServices = getAppliedKindsMapForServices(workloadResources);
         if(appliedKindsMapForServices != null){
             appliedKindsList = appliedKindsMapForServices.get(serviceName);
         }
