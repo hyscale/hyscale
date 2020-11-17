@@ -31,9 +31,7 @@ import io.kubernetes.client.util.generic.options.ListOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class K8sResourceClient extends GenericK8sClient {
     private static final Logger logger = LoggerFactory.getLogger(K8sResourceClient.class);
@@ -187,7 +185,7 @@ public class K8sResourceClient extends GenericK8sClient {
         if(response!=null){
             return response.getObject().getItems();
         }
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -198,7 +196,7 @@ public class K8sResourceClient extends GenericK8sClient {
         if(response!=null){
             return response.getObject().getItems();
         }
-        return null;
+        return Collections.emptyList();
     }
 
 }

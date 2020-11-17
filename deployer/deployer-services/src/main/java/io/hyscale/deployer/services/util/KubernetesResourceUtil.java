@@ -45,7 +45,7 @@ public class KubernetesResourceUtil {
     private KubernetesResourceUtil() {}
 
     public static KubernetesResource getKubernetesResource(Manifest manifest, String namespace)
-            throws NoSuchMethodException, IOException, IllegalAccessException,
+            throws NoSuchMethodException, IllegalAccessException,
             InvocationTargetException {
         if (manifest == null) {
             return null;
@@ -55,7 +55,7 @@ public class KubernetesResourceUtil {
         Object obj = null;
         try{
             obj = Yaml.load(yamlManifest.getManifest());
-        }catch (ConstructorException e){
+        }catch (ConstructorException | IOException e){
             logger.error("Failed to load manifest returning null");
             return null;
         }

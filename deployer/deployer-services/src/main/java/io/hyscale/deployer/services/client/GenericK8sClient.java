@@ -18,7 +18,6 @@ package io.hyscale.deployer.services.client;
 import io.hyscale.commons.constants.K8SRuntimeConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.deployer.core.model.CustomResourceKind;
-import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.model.CustomListObject;
 import io.hyscale.deployer.services.model.CustomObject;
 import io.kubernetes.client.openapi.ApiClient;
@@ -34,7 +33,7 @@ public abstract class GenericK8sClient {
     protected String namespace;
     protected GenericKubernetesApi<CustomObject, CustomListObject> genericClient;
 
-    public GenericK8sClient(ApiClient apiClient){
+    protected GenericK8sClient(ApiClient apiClient){
         this.apiClient = apiClient;
         this.namespace = K8SRuntimeConstants.DEFAULT_NAMESPACE;
     }

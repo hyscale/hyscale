@@ -147,12 +147,12 @@ public class K8sResourceDispatcher {
                         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING,kind);
                         if(genericK8sClient.get(object) != null){
                             logger.debug("Updating resource with Generic client for Kind - {}",kind);
-                            if(!genericK8sClient.patch(object)){
+                            boolean isPatched = genericK8sClient.patch(object);
+                            if(!isPatched){
                                 // Delete and Create if failed to Patch
-                                if(genericK8sClient.delete(object)) {
-                                    genericK8sClient.create(object);
-                                    WorkflowLogger.endActivity(Status.DONE);
-                                }
+                                genericK8sClient.delete(object);
+                                genericK8sClient.create(object);
+                                WorkflowLogger.endActivity(Status.DONE);
                             }
                         }else{
                             logger.debug("Creating resource with Generic client for Kind - {}",kind);
@@ -173,7 +173,7 @@ public class K8sResourceDispatcher {
         MultiValueMap<String, CustomResourceKind> serviceVsAppliedResourceKinds = new LinkedMultiValueMap<>();
 
         if(workloadResources != null && !workloadResources.isEmpty()){
-            workloadResources.stream().filter(Objects::nonNull).forEach((resource)->{
+            workloadResources.stream().filter(Objects::nonNull).forEach(resource->{
                 if(resource.getMetadata() != null){
                     String name = resource.getMetadata().getName();
                     Map<String,String> annotations = resource.getMetadata().getAnnotations();
@@ -309,7 +309,7 @@ public class K8sResourceDispatcher {
                     }
                 } catch (Exception e) {
                     HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST);
-                    logger.error("Error while applying manifests to kubernetes {}", ex);
+                    logger.error("Error while applying manifests to kubernetes", ex);
                     throw ex;
                 }
             }
@@ -327,7 +327,7 @@ public class K8sResourceDispatcher {
                 }
             } catch (Exception e) {
                 HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST);
-                logger.error("Error while applying manifests to kubernetes {}", ex);
+                logger.error("Error while applying manifests to kubernetes", ex);
                 throw ex;
             }
         }
