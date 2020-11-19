@@ -371,10 +371,8 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         }
         ResourceStatus resourceStatus = status(deployment);
         DeploymentStatus.ServiceStatus serviceStatus = ResourceStatus.getServiceStatus(resourceStatus);
-        if (resourceStatus.equals(ResourceStatus.PENDING)) {
-            if (deployment.getSpec().getReplicas() <= deployment.getStatus().getReadyReplicas()){
-                serviceStatus = DeploymentStatus.ServiceStatus.SCALING_DOWN;
-            }
+        if (resourceStatus.equals(ResourceStatus.PENDING) && deployment.getStatus().getReadyReplicas() != null && deployment.getSpec().getReplicas() <= deployment.getStatus().getReadyReplicas()) {
+            serviceStatus = DeploymentStatus.ServiceStatus.SCALING_DOWN;
         }
         if (deployment.getSpec().getReplicas() == 0 && resourceStatus.equals(ResourceStatus.STABLE)){
             serviceStatus = DeploymentStatus.ServiceStatus.NOT_RUNNING;
@@ -476,8 +474,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
             status = waitForDesiredState(apiClient, name, namespace, activityContext);
         } catch (HyscaleException e) {
             LOGGER.error("Error while applying PATCH scale to {} due to : {} code :{}", name, e.getMessage(), e.getCode(), e);
-            HyscaleException ex = new HyscaleException(DeployerErrorCodes.ERROR_WHILE_SCALING, e.getMessage());
-            throw ex;
+            throw new HyscaleException(DeployerErrorCodes.ERROR_WHILE_SCALING, e.getMessage());
         } finally {
             if (status) {
                 WorkflowLogger.endActivity(activityContext, Status.DONE);
