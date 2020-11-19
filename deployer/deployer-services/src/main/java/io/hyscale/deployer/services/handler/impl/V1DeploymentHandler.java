@@ -360,12 +360,10 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         }
         ResourceStatus resourceStatus = status(deployment);
         DeploymentStatus.ServiceStatus serviceStatus = ResourceStatus.getServiceStatus(resourceStatus);
-        if (resourceStatus.equals(ResourceStatus.PENDING)) {
-            if (deployment.getSpec().getReplicas() <= deployment.getStatus().getReadyReplicas()){
-                serviceStatus = DeploymentStatus.ServiceStatus.SCALING_DOWN;
-            }
+        if (resourceStatus.equals(ResourceStatus.PENDING) && deployment.getStatus().getReadyReplicas() != null && deployment.getSpec().getReplicas() <= deployment.getStatus().getReadyReplicas()) {
+            serviceStatus = DeploymentStatus.ServiceStatus.SCALING_DOWN;
         }
-        if (deployment.getSpec().getReplicas() == 0 && resourceStatus.equals(ResourceStatus.STABLE)){
+        if (deployment.getSpec().getReplicas() == 0 && resourceStatus.equals(ResourceStatus.STABLE)) {
             serviceStatus = DeploymentStatus.ServiceStatus.NOT_RUNNING;
         }
         return buildStatusFromMetadata(deployment.getMetadata(), serviceStatus);
