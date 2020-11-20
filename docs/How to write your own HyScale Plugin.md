@@ -10,7 +10,7 @@ For example:
 
    To implement Data backup using k8s snapshot resource you can create your own `SnapShotManifestGeneration` Plugin.
 
-## Writing your custom Manifest Generation Plugin
+## Writing your own custom plugin
 
 Before jumping into custom plugin creation, let's look at an overview of HyScale Architecture:
 
