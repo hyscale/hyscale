@@ -1,3 +1,19 @@
+HyScale implements an intent driven manifest generation. It translates given user intents to respective kubernetes manifest snippets. Hyscale is built over an extensible plugin based architecture where each plugin is responsible to translate a given user intent. 
+
+HyScale does k8s manifest generation executing plugins in a specific order. HyScale comes with a set of built-in manifest generation plugins which covers the majority of the general use-cases.
+
+If you have a custom and specific use-case and want to extend HyScale, you can achieve it by writing a new custom `Manifest Generation Plugin`.
+
+And if you feel your newly developed custom plugin is helpful for others and serves a generic use case. You can feel free to [contribute](#Plugin-contribution)
+
+For example:
+
+   To implement Data backup using k8s snapshot resource you can create your own `SnapShotManifestGeneration` Plugin.
+
+## Writing your custom Manifest Generation Plugin
+
+Before jumping into custom plugin creation, let's look at an overview of HyScale Architecture:
+
 ### Architecture Overview
 
 ![architecture](images/architecture.jpg)
