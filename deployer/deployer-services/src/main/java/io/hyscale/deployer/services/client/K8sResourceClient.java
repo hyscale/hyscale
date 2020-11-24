@@ -35,6 +35,7 @@ import java.util.*;
 
 public class K8sResourceClient extends GenericK8sClient {
     private static final Logger logger = LoggerFactory.getLogger(K8sResourceClient.class);
+    private static final String annotations = "annotations";
 
     public K8sResourceClient(ApiClient apiClient) {
         super(apiClient);
@@ -46,16 +47,20 @@ public class K8sResourceClient extends GenericK8sClient {
             return;
         }
         String kind = resource.getKind();
+        String name = resource.getMetadata().getName();
         Map<String,Object> metaMap = (Map) resource.get("metadata");
-        Map<String,String> annotations = new HashMap<>();
-        annotations.put(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
+
+        if(metaMap.get(annotations) == null){
+            metaMap.put(annotations,new HashMap<String,String>());
+        }
+        Map<String,String> annotationsMap = (Map) metaMap.get(K8sResourceClient.annotations);
+        annotationsMap.put(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
                 GsonProviderUtil.getPrettyGsonBuilder().toJson(resource));
-        metaMap.put("annotations",annotations);
 
         KubernetesApiResponse<CustomObject> response = genericClient.create(resource);
         if(response!=null){
             if(response.isSuccess()){
-                logger.info("Successfully created resource {}",kind);
+                logger.info("Successfully created resource : {}, name : {} ",kind,name);
                 return;
             }else{
                 logger.error("Failed to create, reason: {}\n Message: {}",response.getStatus().getReason(),response.getStatus().getMessage());
@@ -70,16 +75,19 @@ public class K8sResourceClient extends GenericK8sClient {
             return;
         }
         String kind = resource.getKind();
+        String name = resource.getMetadata().getName();
         Map<String,Object> metaMap = (Map) resource.get("metadata");
-        Map<String,String> annotations = new HashMap<>();
-        annotations.put(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
+        if(metaMap.get(annotations) == null){
+            metaMap.put(annotations,new HashMap<String,String>());
+        }
+        Map<String,String> annotationsMap = (Map) metaMap.get(K8sResourceClient.annotations);
+        annotationsMap.put(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
                 GsonProviderUtil.getPrettyGsonBuilder().toJson(resource));
-        metaMap.put("annotations",annotations);
 
         KubernetesApiResponse<CustomObject> response = genericClient.update(resource);
         if(response!=null){
             if(response.isSuccess()){
-                logger.info("Successfully updated resource {}",kind);
+                logger.info("Successfully updated resource : {} name : {}",kind,name);
                 return;
             }else{
                 logger.error("Failed to update, reason: {}\n Message: {}",response.getStatus().getReason(),response.getStatus().getMessage());
@@ -89,14 +97,14 @@ public class K8sResourceClient extends GenericK8sClient {
     }
 
     @Override
-    public boolean patch(CustomObject resource) throws HyscaleException {
+    public boolean patch(CustomObject resource) {
         if(resource == null){
             return false;
         }
         String kind = resource.getKind();
         String name = resource.getMetadata().getName();
         CustomObject customObject = get(resource);
-        if(customObject != null){
+        if(customObject != null && customObject.getMetadata() != null && customObject.getMetadata().getAnnotations() != null){
             String lastAppliedConfig = customObject.getMetadata().getAnnotations()
                     .get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
             Object patchObject = null;
@@ -113,8 +121,10 @@ public class K8sResourceClient extends GenericK8sClient {
                         logger.error("Failed to patch, reason: {}\n Message: {}",response.getStatus().getReason(),response.getStatus().getMessage());
                     }
                 }
-            } catch (HyscaleException e) {
-                throw new HyscaleException(DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE);
+            } catch (Exception e) {
+                logger.error("Error while creating patch for resource kind : {}, name : {}, error : {}", kind,
+                        name, e.toString());
+                return false;
             }
 
         }
@@ -131,7 +141,7 @@ public class K8sResourceClient extends GenericK8sClient {
         KubernetesApiResponse<CustomObject> response = genericClient.delete(namespace,name);
         if(response!=null){
             if(response.isSuccess()){
-                logger.info("Successfully deleted resource {}",kind);
+                logger.info("Successfully deleted resource : {}, name : {}",kind,name);
                 waitForResourceDeletion(resource);
                 return true;
             }else{

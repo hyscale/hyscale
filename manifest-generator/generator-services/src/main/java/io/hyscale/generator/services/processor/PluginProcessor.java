@@ -174,11 +174,15 @@ public class PluginProcessor {
         Map<String,Object> metadata = (Map) data.get("metadata");
         Map<String,Object> spec = (Map) data.get("spec");
         if(metadata.get("labels")==null){
-            metadata.put("labels",DefaultLabelBuilder.build(serviceMetadata));
+            metadata.put("labels",new HashMap<String,String>());
         }
+        Map<String,String> labels = (Map) metadata.get("labels");
+        labels.putAll(DefaultLabelBuilder.build(serviceMetadata));
         if(spec.get("selector") == null){
-            spec.put("selector",DefaultLabelBuilder.build(serviceMetadata));
+            spec.put("selector",new HashMap<String,String>());
         }
+        Map<String,String> selector = (Map) spec.get("selector");
+        selector.putAll(DefaultLabelBuilder.build(serviceMetadata));
         return Yaml.dump(data);
     }
 

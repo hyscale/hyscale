@@ -82,7 +82,7 @@ public class KubernetesResourceUtil {
         CustomObject customObject = new CustomObject();
         customObject.putAll(data);
         Map<String,Object> metaMap = (Map) customObject.get("metadata");
-        if(metaMap.get("namespace")==null){
+        if(metaMap.get("namespace")==null && namespace!=null){
             // Adding namespace in metadata if not provided
             metaMap.put("namespace",namespace);
         }

@@ -32,8 +32,8 @@ public class CustomObject extends HashMap<String, Object> implements KubernetesO
     public V1ObjectMeta getMetadata() {
         Map<String,Object> metaMap = (Map) get("metadata");
         V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
-        v1ObjectMeta.setName(metaMap.get("name").toString());
-        v1ObjectMeta.setNamespace(metaMap.get("namespace").toString());
+        v1ObjectMeta.setName((String) metaMap.get("name"));
+        v1ObjectMeta.setNamespace((String) metaMap.get("namespace"));
         v1ObjectMeta.setAnnotations((Map) metaMap.get("annotations"));
         return v1ObjectMeta;
     }
