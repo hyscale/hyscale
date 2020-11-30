@@ -24,7 +24,6 @@ import com.google.common.collect.Multimap;
 import io.hyscale.commons.models.*;
 import io.hyscale.generator.services.builder.DefaultLabelBuilder;
 import io.hyscale.generator.services.provider.CustomSnippetsProvider;
-import io.kubernetes.client.util.Yaml;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +48,7 @@ import io.hyscale.plugin.framework.models.ManifestMeta;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+import org.yaml.snakeyaml.Yaml;
 
 @Component
 public class PluginProcessor {
@@ -151,9 +151,14 @@ public class PluginProcessor {
             return Collections.emptyList();
         }
         List<Manifest> manifestList = new ArrayList<>();
+        Yaml yaml = new Yaml();
         kindVsCustomSnippets.forEach((kind,customSnippet)->{
             WorkflowLogger.startActivity(ManifestGeneratorActivity.GENERATING_MANIFEST, kind);
             ManifestMeta manifestMeta = new ManifestMeta(kind);
+            Map<String, Object> data = (Map) yaml.load(customSnippet);
+            Map<String,Object> metadata = (Map) data.get("metadata");
+            String name = (String) metadata.get("name");
+            manifestMeta.setIdentifier(name);
             YAMLManifest yamlManifest = null;
             customSnippet = addHyscaleLabelsForCustomSnippets(customSnippet,serviceMetaData);
             try {
@@ -170,7 +175,8 @@ public class PluginProcessor {
     }
 
     private String addHyscaleLabelsForCustomSnippets(String snippet, ServiceMetadata serviceMetadata){
-        Map<String, Object> data = (Map) Yaml.getSnakeYaml().load(snippet);
+        Yaml yaml = new Yaml();
+        Map<String, Object> data = (Map) yaml.load(snippet);
         Map<String,Object> metadata = (Map) data.get("metadata");
         Map<String,Object> spec = (Map) data.get("spec");
         if(metadata.get("labels")==null){
@@ -183,7 +189,7 @@ public class PluginProcessor {
         }
         Map<String,String> selector = (Map) spec.get("selector");
         selector.putAll(DefaultLabelBuilder.build(serviceMetadata));
-        return Yaml.dump(data);
+        return yaml.dump(data);
     }
 
     public Map<ManifestMeta, ManifestNode> process(ServiceSpec serviceSpec, ManifestContext manifestContext) {

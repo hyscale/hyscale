@@ -82,7 +82,7 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 		boolean isMsgPrinted = false;
 		String selector = ResourceSelectorUtil.getSelector(appName, envName, serviceName);
 		try{
-			MultiValueMap<CustomResourceKind,String> newResourcesMap = getResourcesMap(manifestList);
+			MultiValueMap<String,String> kindVsResourcesManifestMap = getResourcesMap(manifestList);
 			PodParentUtil podParentUtil = new PodParentUtil(apiClient,namespace);
 			PodParent podParent = podParentUtil.getPodParentForService(serviceName);
 			if(podParent == null){
@@ -99,9 +99,11 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 				if(existingResources == null || existingResources.isEmpty()){
 					continue;
 				}
-				List<String> newResources = newResourcesMap.get(customResourceKind) != null
-						? newResourcesMap.get(customResourceKind)
+				List<String> newResources = kindVsResourcesManifestMap.get(customResourceKind.getKind()) != null
+						? kindVsResourcesManifestMap.get(customResourceKind.getKind())
 						: new ArrayList<String>();
+
+				//TODO implement Lazy Deletion
 				for(CustomObject existingResource : existingResources){
 					try{
 						String name = existingResource.getMetadata().getName();
@@ -138,15 +140,15 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 		logger.error("Error while cleaning up stale resources, error {}", th.getMessage());
 	}
 
-	private MultiValueMap<CustomResourceKind,String> getResourcesMap(List<Manifest> manifestList) throws IOException {
-		MultiValueMap<CustomResourceKind,String> kindVsResourceNames = new LinkedMultiValueMap<>();
+	private MultiValueMap<String,String> getResourcesMap(List<Manifest> manifestList) throws IOException {
+		MultiValueMap<String,String> kindVsResourceNames = new LinkedMultiValueMap<>();
 		for(Manifest manifest : manifestList){
 			CustomObject resource = KubernetesResourceUtil.getK8sCustomObjectResource(manifest,null);
 			if(resource == null || resource.getMetadata() == null ){
 				continue;
 			}
 			CustomResourceKind resourceKind = new CustomResourceKind(resource.getKind(),resource.getApiVersion());
-			kindVsResourceNames.add(resourceKind,resource.getMetadata().getName());
+			kindVsResourceNames.add(resourceKind.getKind(),resource.getMetadata().getName());
 		}
 		return kindVsResourceNames;
 	}

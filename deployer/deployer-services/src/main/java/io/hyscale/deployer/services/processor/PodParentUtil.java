@@ -30,7 +30,6 @@ import java.util.*;
 public class PodParentUtil {
 
     private static final String podParentApiVersion = "apps/v1";
-    private static final String serviceApiVersion = "v1";
 
     private ApiClient apiClient;
     private String namespace;
@@ -59,14 +58,23 @@ public class PodParentUtil {
     public Map<String,PodParent> getServiceVsPodParentMap(String appName){
         String selector = ResourceSelectorUtil.getServiceSelector(appName,null);
         Map<String,PodParent> serviceVsPodParents = new HashMap<>();
-        GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).
-                withNamespace(namespace).forKind(new CustomResourceKind(ResourceKind.SERVICE.getKind(),serviceApiVersion));
-        List<CustomObject> servicesList = genericK8sClient.getBySelector(selector);
-        if(servicesList != null){
-            for(CustomObject customObject :servicesList){
+        GenericK8sClient genericK8sClient = null;
+        List<CustomObject> workloadResources = new ArrayList<>();
+        genericK8sClient = new K8sResourceClient(apiClient).
+                withNamespace(namespace).forKind(new CustomResourceKind(ResourceKind.DEPLOYMENT.getKind(),podParentApiVersion));
+        //Fetch Deployments
+        workloadResources.addAll(genericK8sClient.getBySelector(selector));
+
+        genericK8sClient = new K8sResourceClient(apiClient).
+                withNamespace(namespace).forKind(new CustomResourceKind(ResourceKind.STATEFUL_SET.getKind(),podParentApiVersion));
+        // Fetch StatefulSets
+        workloadResources.addAll(genericK8sClient.getBySelector(selector));
+
+        if(workloadResources != null && !workloadResources.isEmpty()){
+            for(CustomObject customObject :workloadResources){
                 if(customObject.getMetadata() != null){
                     String serviceName = customObject.getMetadata().getName();
-                    PodParent podParent = getPodParentForService(serviceName);
+                    PodParent podParent = new PodParent(customObject.getKind(),customObject);
                     serviceVsPodParents.put(serviceName,podParent);
                 }
             }
