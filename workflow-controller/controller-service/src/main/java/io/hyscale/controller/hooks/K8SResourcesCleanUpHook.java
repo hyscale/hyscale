@@ -16,14 +16,16 @@
 package io.hyscale.controller.hooks;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import io.hyscale.commons.component.InvokerHook;
+import io.hyscale.deployer.core.model.CustomResourceKind;
+import io.hyscale.deployer.core.model.ResourceKind;
+import io.hyscale.deployer.services.client.GenericK8sClient;
+import io.hyscale.deployer.services.client.K8sResourceClient;
+import io.hyscale.deployer.services.model.CustomObject;
+import io.hyscale.deployer.services.model.PodParent;
+import io.hyscale.deployer.services.processor.PodParentUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,20 +34,17 @@ import org.springframework.stereotype.Component;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.K8sAuthorisation;
-import io.hyscale.commons.models.KubernetesResource;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.model.WorkflowContext;
-import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
-import io.hyscale.deployer.services.handler.ResourceHandlers;
-import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.hyscale.deployer.services.util.KubernetesResourceUtil;
 import io.kubernetes.client.openapi.ApiClient;
-import io.kubernetes.client.openapi.models.V1ObjectMeta;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 /**
  * Hook to remove stale resources from K8s cluster
@@ -64,11 +63,11 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 	 * 1.	Create map of resources in manifest
 	 * 2.	For each Resource where clean up is enabled except PVC:
 	 * 		1. Fetch resource from K8s based on selector
-	 * 		2. if doesnot exist in map delete
+	 * 		2. if does not exist in map delete
 	 */
 	@Override
 	public void preHook(WorkflowContext context) throws HyscaleException {
-		logger.debug("Starting stale kubernetes resource cleanup");
+		logger.info("Starting stale kubernetes resource cleanup");
 		ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
 		String serviceName = context.getServiceName();
 		String appName = context.getAppName();
@@ -80,64 +79,51 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 			logger.debug("No resources to cleanup");
 			return;
 		}
+		boolean isMsgPrinted = false;
 		String selector = ResourceSelectorUtil.getSelector(appName, envName, serviceName);
-
-		try {
-
-			Map<ResourceKind, List<String>> newResourcesMap = getResourcesMap(manifestList);
-			boolean isMsgPrinted = false;
-			List<ResourceLifeCycleHandler> handlersList = ResourceHandlers.getAllHandlers();
-			if (handlersList == null) {
+		try{
+			MultiValueMap<String,String> kindVsResourcesManifestMap = getResourcesMap(manifestList);
+			PodParentUtil podParentUtil = new PodParentUtil(apiClient,namespace);
+			PodParent podParent = podParentUtil.getPodParentForService(serviceName);
+			if(podParent == null){
 				return;
 			}
-			// Sort handlers based on weight
-			List<ResourceLifeCycleHandler> sortedHandlersList = handlersList.stream()
-					.sorted((ResourceLifeCycleHandler handler1, ResourceLifeCycleHandler handler2) -> {
-						return handler1.getWeight() - handler2.getWeight();
-					}).collect(Collectors.toList());
-
-			for (ResourceLifeCycleHandler lifeCycleHandler : sortedHandlersList) {
-				if (lifeCycleHandler == null || !lifeCycleHandler.cleanUp()) {
+			List<CustomResourceKind> appliedKindsList = podParentUtil.getAppliedKindsList(podParent);
+			for(CustomResourceKind customResourceKind : appliedKindsList){
+				if(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind().equalsIgnoreCase(customResourceKind.getKind())){
 					continue;
 				}
-				// TODO - Different approach for clean up - dependent resource handling
-				if (ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind().equalsIgnoreCase(lifeCycleHandler.getKind())) {
+				GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).withNamespace(namespace)
+						.forKind(customResourceKind);
+				List<CustomObject> existingResources = genericK8sClient.getBySelector(selector);
+				if(existingResources == null || existingResources.isEmpty()){
 					continue;
 				}
-				ResourceKind resourceKind = ResourceKind.fromString(lifeCycleHandler.getKind());
-				List<String> newResources = newResourcesMap.get(resourceKind) != null
-						? newResourcesMap.get(resourceKind)
+				List<String> newResources = kindVsResourcesManifestMap.get(customResourceKind.getKind()) != null
+						? kindVsResourcesManifestMap.get(customResourceKind.getKind())
 						: new ArrayList<String>();
 
-				List existingResources = lifeCycleHandler.getBySelector(apiClient, selector, true, namespace);
-				if (existingResources == null || existingResources.isEmpty()) {
-					continue;
-				}
-
-				for (Object existingResource : existingResources) {
-					try {
-						V1ObjectMeta v1ObjectMeta = KubernetesResourceUtil.getObjectMeta(existingResource);
-						String name = v1ObjectMeta.getName();
-
+				//TODO implement Lazy Deletion
+				for(CustomObject existingResource : existingResources){
+					try{
+						String name = existingResource.getMetadata().getName();
 						if (!newResources.contains(name)) {
 							if (!isMsgPrinted) {
 								WorkflowLogger.header(ControllerActivity.CLEANING_UP_RESOURCES);
 								isMsgPrinted = true;
 							}
-							lifeCycleHandler.delete(apiClient, name, namespace, true);
+							genericK8sClient.delete(existingResource);
 						}
-					} catch (Exception e) {
-						// Ignore error and continue
-						logger.error("Error while cleaning up stale resource: {}, error: {}", resourceKind.getKind(),
+					}catch (Exception e){
+						logger.error("Error while cleaning up stale resource: {}, error: {}", customResourceKind.getKind(),
 								e.getMessage());
 					}
 				}
-
 			}
-			if (isMsgPrinted) {
-			    WorkflowLogger.footer();
+			if(isMsgPrinted){
+				WorkflowLogger.footer();
 			}
-		} catch (Exception e) {
+		}catch (Exception e){
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_READ_MANIFEST);
 			logger.error("Error while cleaning stale kubernetes resources, error: {}", ex.getMessage());
 			return;
@@ -154,26 +140,17 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 		logger.error("Error while cleaning up stale resources, error {}", th.getMessage());
 	}
 
-	private Map<ResourceKind, List<String>> getResourcesMap(List<Manifest> manifestList)
-			throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException,
-			InvocationTargetException, IOException {
-		Map<ResourceKind, List<String>> resourcesMap = new HashMap<ResourceKind, List<String>>();
-		for (Manifest manifest : manifestList) {
-			KubernetesResource k8sResource = KubernetesResourceUtil.getKubernetesResource(manifest, null);
-			if (k8sResource == null || k8sResource.getV1ObjectMeta() == null) {
+	private MultiValueMap<String,String> getResourcesMap(List<Manifest> manifestList) throws IOException {
+		MultiValueMap<String,String> kindVsResourceNames = new LinkedMultiValueMap<>();
+		for(Manifest manifest : manifestList){
+			CustomObject resource = KubernetesResourceUtil.getK8sCustomObjectResource(manifest,null);
+			if(resource == null || resource.getMetadata() == null ){
 				continue;
 			}
-			ResourceKind resourceKind = ResourceKind.fromString(k8sResource.getKind());
-			if (resourceKind == null) {
-				continue;
-			}
-			if (resourcesMap.get(resourceKind) == null) {
-				resourcesMap.put(resourceKind, new ArrayList<String>());
-			}
-			resourcesMap.get(resourceKind).add(k8sResource.getV1ObjectMeta().getName());
+			CustomResourceKind resourceKind = new CustomResourceKind(resource.getKind(),resource.getApiVersion());
+			kindVsResourceNames.add(resourceKind.getKind(),resource.getMetadata().getName());
 		}
-
-		return resourcesMap;
+		return kindVsResourceNames;
 	}
 
 }

@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Multimap;
+import io.hyscale.commons.models.*;
+import io.hyscale.generator.services.builder.DefaultLabelBuilder;
 import io.hyscale.generator.services.provider.CustomSnippetsProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -35,10 +37,6 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.Manifest;
-import io.hyscale.commons.models.ManifestContext;
-import io.hyscale.commons.models.Status;
-import io.hyscale.commons.models.YAMLManifest;
 import io.hyscale.generator.services.config.ManifestConfig;
 import io.hyscale.generator.services.generator.ManifestFileGenerator;
 import io.hyscale.generator.services.model.ManifestGeneratorActivity;
@@ -50,6 +48,7 @@ import io.hyscale.plugin.framework.models.ManifestMeta;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+import org.yaml.snakeyaml.Yaml;
 
 @Component
 public class PluginProcessor {
@@ -119,7 +118,14 @@ public class PluginProcessor {
                 WorkflowLogger.endActivity(Status.FAILED);
             }
         });
-        warningMessageForCustomSnippets(kindVsCustomSnippets);
+        ServiceMetadata serviceMetadata = new ServiceMetadata();
+        serviceMetadata.setAppName(manifestContext.getAppName());
+        serviceMetadata.setEnvName(manifestContext.getEnvName());
+        serviceMetadata.setServiceName(serviceName);
+        List<Manifest> customSnippetsManifestList = getManifestsFromCustomSnippets(serviceMetadata, manifestDir, kindVsCustomSnippets);
+        if(customSnippetsManifestList != null && !customSnippetsManifestList.isEmpty()){
+             manifestList.addAll(customSnippetsManifestList);
+        }
         return manifestList;
     }
 
@@ -140,14 +146,50 @@ public class PluginProcessor {
         return yamlString;
     }
 
-    @SuppressWarnings("java:S1135")
-    private void warningMessageForCustomSnippets(Multimap<String,String> kindVsCustomSnippets){
-        //TODO Support all new resource kinds
-        if(kindVsCustomSnippets != null && !kindVsCustomSnippets.isEmpty()){
-            Set<String> kinds = kindVsCustomSnippets.keySet();
-            String ignoreKindsForCustomSnippets = String.join(",", kinds);
-            WorkflowLogger.warn(ManifestGeneratorActivity.IGNORING_CUSTOM_SNIPPET,ignoreKindsForCustomSnippets);
+    private List<Manifest> getManifestsFromCustomSnippets(ServiceMetadata serviceMetaData, String manifestDir, Multimap<String,String> kindVsCustomSnippets){
+        if(kindVsCustomSnippets == null || kindVsCustomSnippets.isEmpty()){
+            return Collections.emptyList();
         }
+        List<Manifest> manifestList = new ArrayList<>();
+        Yaml yaml = new Yaml();
+        kindVsCustomSnippets.forEach((kind,customSnippet)->{
+            WorkflowLogger.startActivity(ManifestGeneratorActivity.GENERATING_MANIFEST, kind);
+            ManifestMeta manifestMeta = new ManifestMeta(kind);
+            Map<String, Object> data = (Map) yaml.load(customSnippet);
+            Map<String,Object> metadata = (Map) data.get("metadata");
+            String name = (String) metadata.get("name");
+            manifestMeta.setIdentifier(name);
+            YAMLManifest yamlManifest = null;
+            customSnippet = addHyscaleLabelsForCustomSnippets(customSnippet,serviceMetaData);
+            try {
+                yamlManifest = manifestFileGenerator.getYamlManifest(manifestDir, customSnippet,
+                        manifestMeta);
+                WorkflowLogger.endActivity(Status.DONE);
+            } catch (HyscaleException e) {
+                logger.error("Failed to process manifest {}", kind, e);
+                WorkflowLogger.endActivity(Status.FAILED);
+            }
+            manifestList.add(yamlManifest);
+        });
+        return manifestList;
+    }
+
+    private String addHyscaleLabelsForCustomSnippets(String snippet, ServiceMetadata serviceMetadata){
+        Yaml yaml = new Yaml();
+        Map<String, Object> data = (Map) yaml.load(snippet);
+        Map<String,Object> metadata = (Map) data.get("metadata");
+        Map<String,Object> spec = (Map) data.get("spec");
+        if(metadata.get("labels")==null){
+            metadata.put("labels",new HashMap<String,String>());
+        }
+        Map<String,String> labels = (Map) metadata.get("labels");
+        labels.putAll(DefaultLabelBuilder.build(serviceMetadata));
+        if(spec.get("selector") == null){
+            spec.put("selector",new HashMap<String,String>());
+        }
+        Map<String,String> selector = (Map) spec.get("selector");
+        selector.putAll(DefaultLabelBuilder.build(serviceMetadata));
+        return yaml.dump(data);
     }
 
     public Map<ManifestMeta, ManifestNode> process(ServiceSpec serviceSpec, ManifestContext manifestContext) {

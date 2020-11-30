@@ -80,6 +80,7 @@ public class VolumeCleanUpHook implements InvokerHook<WorkflowContext> {
 		for (Manifest manifest : mainfestList) {
 			try {
 				KubernetesResource k8sResource = KubernetesResourceUtil.getKubernetesResource(manifest, namespace);
+				if(k8sResource == null) continue;
 				ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(k8sResource.getKind());
 				if (lifeCycleHandler != null) {
 					if (ResourceKind.STATEFUL_SET.getKind().equalsIgnoreCase(lifeCycleHandler.getKind())) {
