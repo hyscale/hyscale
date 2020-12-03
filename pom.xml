@@ -127,7 +127,7 @@
 		</dependency>
 		<!-- Test dependencies end -->
 	</dependencies>
-    
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -165,7 +165,7 @@
                 <artifactId>sonar-maven-plugin</artifactId>
                 <version>3.7.0.1746</version>
             </dependency>
-        </dependencies>            
+        </dependencies>
     </dependencyManagement>
 
 	<build>
@@ -247,6 +247,22 @@
 		</pluginManagement>
 
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<detectOfflineLinks>false</detectOfflineLinks>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>com.mycila.maven-license-plugin</groupId>
 				<artifactId>maven-license-plugin</artifactId>

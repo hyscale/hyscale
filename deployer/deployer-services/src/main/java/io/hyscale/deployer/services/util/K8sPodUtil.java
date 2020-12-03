@@ -205,7 +205,6 @@ public class K8sPodUtil {
 
 
     /**
-     * @param v1Pod
      * @param restartPodCount
      * @return If pod restart count is greater than to given restartPodCount then it will return true, else false
      */

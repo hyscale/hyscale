@@ -37,7 +37,6 @@ public class ExceptionHelper {
     
     /**
      * @param resourceKind
-     * @param ApiException
      * @param operation
      * @return String - resource kind, fail message, ApiException code, cause message
      */
