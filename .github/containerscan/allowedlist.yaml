@@ -10,6 +10,9 @@ general:
     - CVE-2019-20454
     - CVE-2019-3843
     - CVE-2019-3844
+    - CVE-2020-29562
+    - CVE-2020-29573
+    - CVE-2020-1971
   bestPracticeViolations:
     - CIS-DI-0001
     - DKL-DI-0006
