@@ -98,3 +98,5 @@ spec:
          - name: "init-myservice"
             image: "busybox:1.28”
 ```
+### Undeploy
+Undeploy service will cleanup all the resources applied through custom k8s snippets and cleanup would be as per Kubernetes behavior.
