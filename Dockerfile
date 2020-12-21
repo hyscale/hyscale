@@ -13,14 +13,14 @@ ENV GPG_KEY_ENV=$GPG_KEY
 ENV GPG_PASSPHRASE=$GPG_PASS
 ENV MAVEN_EXEC_ENV=$MAVEN_EXEC
 WORKDIR /hyscale
-RUN apt-get install gpg \
+RUN apt-get install gpg -y \
     && apt-get clean
 COPY . .
 RUN mkdir -p ~/.gnupg/ && echo "$GPG_KEY_ENV"| base64 --decode > ~/.gnupg/private.key \
     && gpg --batch --import ~/.gnupg/private.key \
     && mvn $MAVEN_EXEC_ENV
 
-FROM openjdk:11.0.8-jre-slim-buster
+FROM openjdk:11.0.9.1-jre-slim-buster
 ENV DOCKERVERSION=18.06.2-ce
 RUN apt update \
     && apt-get install -y --no-install-recommends wget \
