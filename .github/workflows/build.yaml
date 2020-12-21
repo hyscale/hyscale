@@ -30,6 +30,10 @@ jobs:
           ./scripts/build_image.sh
       env:
         DOCKER_REPO: 'hyscaledev'
+        MAVEN_USERNAME: ${{ secrets.HYS_OSSRH_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.HYS_OSSRH_TOKEN }}
+        GPG_KEY_ARG: ${{ secrets.HYS_GPG_KEY }}
+        GPG_PASSPHRASE: ${{ secrets.HYS_GPG_PASSPHRASE }}
 
     - name: Build Images for release
       run: |
@@ -39,6 +43,10 @@ jobs:
           fi
       env:
         DOCKER_REPO: 'hyscale'
+        MAVEN_USERNAME: ${{ secrets.HYS_OSSRH_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.HYS_OSSRH_TOKEN }}
+        GPG_KEY_ARG: ${{ secrets.HYS_GPG_KEY }}
+        GPG_PASSPHRASE: ${{ secrets.HYS_GPG_PASSPHRASE }}
 
     - uses: azure/container-scan@v0
       if: github.ref == 'refs/heads/master' || contains(github.ref, 'release/HyScale')

@@ -1,7 +1,24 @@
 FROM maven:3.6.1-jdk-11 as base
+ARG GPG_KEY=GPG_KEY_TO_PUBLISH_JAR
+ARG MAVEN_USER=MAVEN_USER_TO_PUBLISH_JAR
+ARG MAVEN_PASS=MAVEN_PASSWORD_TO_PUBLISH_JAR
+ARG GPG_PASS=GPG_PASSPHRASE_TO_PUBLISH_JAR
+ARG MAVEN_EXEC="clean install"
+ENV server-id=ossrh
+ENV server-username=$MAVEN_USER
+ENV server-password=$MAVEN_PASS
+ENV MAVEN_USERNAME=$MAVEN_USER
+ENV MAVEN_PASSWORD=$MAVEN_PASS
+ENV GPG_KEY_ENV=$GPG_KEY
+ENV GPG_PASSPHRASE=$GPG_PASS
+ENV MAVEN_EXEC_ENV=$MAVEN_EXEC
 WORKDIR /hyscale
+RUN apt-get install gpg \
+    && apt-get clean
 COPY . .
-RUN  mvn clean install
+RUN mkdir -p ~/.gnupg/ && echo "$GPG_KEY_ENV"| base64 --decode > ~/.gnupg/private.key \
+    && gpg --batch --import ~/.gnupg/private.key \
+    && mvn $MAVEN_EXEC_ENV
 
 FROM openjdk:11.0.8-jre-slim-buster
 ENV DOCKERVERSION=18.06.2-ce
