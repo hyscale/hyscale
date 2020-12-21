@@ -21,6 +21,27 @@
 		<module>packaging</module>
 	</modules>
 
+	<scm>
+                <connection>scm:git:git://github.com/hyscale/hyscale.git</connection>
+                <developerConnection>scm:git:ssh://github.com:hyscale/hyscale.git</developerConnection>
+                <url>http://github.com/hyscale/hyscale</url>
+        </scm>
+
+        <description>Hyscale Project</description>
+
+        <distributionManagement>
+          <snapshotRepository>
+             <id>ossrh</id>
+             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+             <layout>default</layout>
+          </snapshotRepository>
+          <repository>
+             <id>ossrh</id>
+             <name>Central Repository OSSRH</name>
+             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+          </repository>
+        </distributionManagement>
+
 	<name>hyscale</name>
 	<url>https://www.hyscale.io/</url>
 
@@ -69,8 +90,27 @@
                 <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
                 <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
                 <sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
-                <sonar.language>java</sonar.language>
+		<sonar.language>java</sonar.language>
+		<gpg.keyname>DF746A6D535E11DD94DBCD6CD2F9DAAD5AA5A3B4</gpg.keyname>
+                <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
 	</properties>
+
+	<licenses>
+          <license>
+                <name>The Apache Software License, Version 2.0</name>
+                <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+                <distribution>repo</distribution>
+          </license>
+        </licenses>
+
+        <developers>
+          <developer>
+                <name>The Hyscale Authors</name>
+                <email>connect@hyscale.io</email>
+                <organization>Hyscale</organization>
+                <organizationUrl>https://www.hyscale.io/</organizationUrl>
+         </developer>
+       </developers>
 
 	<dependencies>
 		<dependency>
@@ -179,6 +219,47 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
+                                        <groupId>org.sonatype.plugins</groupId>
+                                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                                        <version>1.6.8</version>
+                                </plugin>
+                                <plugin>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-release-plugin</artifactId>
+                                        <version>2.5.3</version>
+                                </plugin>
+                                <plugin>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-deploy-plugin</artifactId>
+                                        <version>2.8.2</version>
+                                </plugin>
+                                <plugin>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-source-plugin</artifactId>
+                                        <version>2.2.1</version>
+                                        <executions>
+                                          <execution>
+                                            <id>attach-sources</id>
+                                            <goals>
+                                              <goal>jar-no-fork</goal>
+                                            </goals>
+                                          </execution>
+                                        </executions>
+                                </plugin>
+                                <plugin>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-javadoc-plugin</artifactId>
+                                        <version>2.9.1</version>
+                                        <executions>
+                                          <execution>
+                                            <id>attach-javadocs</id>
+                                            <goals>
+                                              <goal>jar</goal>
+                                            </goals>
+                                          </execution>
+                                        </executions>
+                                </plugin>
+				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-clean-plugin</artifactId>
 					<version>2.4.1</version>
@@ -248,6 +329,19 @@
 
 		<plugins>
 			<plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-source-plugin</artifactId>
+                                <version>2.2.1</version>
+                                <executions>
+                                  <execution>
+                                    <id>attach-sources</id>
+                                    <goals>
+                                      <goal>jar-no-fork</goal>
+                                    </goals>
+                                  </execution>
+                                </executions>
+                        </plugin>
+			<plugin>
 				<groupId>com.mycila.maven-license-plugin</groupId>
 				<artifactId>maven-license-plugin</artifactId>
 				<configuration>
@@ -311,4 +405,37 @@
                         </plugin>
 		</plugins>
 	</build>
+	<profiles>
+          <profile>
+            <id>release-sign-artifacts</id>
+            <activation>
+               <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+              <plugins>
+                <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-gpg-plugin</artifactId>
+                  <version>1.6</version>
+                  <executions>
+                    <execution>
+                      <id>sign-artifacts</id>
+                      <phase>verify</phase>
+                      <goals>
+                        <goal>sign</goal>
+                      </goals>
+                      <configuration>
+                        <!-- This is necessary for gpg to not try to use the pinentry programs -->
+                        <gpgArguments>
+                          <arg>--pinentry-mode</arg>
+                          <arg>loopback</arg>
+                        </gpgArguments>
+                      </configuration>
+                    </execution>
+                  </executions>
+                </plugin>
+              </plugins>
+            </build>
+          </profile>
+        </profiles>
 </project>
