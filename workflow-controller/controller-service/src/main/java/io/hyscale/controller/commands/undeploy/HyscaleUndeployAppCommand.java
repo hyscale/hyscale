@@ -49,9 +49,9 @@ import picocli.CommandLine.Option;
  *  whenever the command is executed the {@link #call()}
  *  method will be invoked
  *
- * @option namespace  name of the namespace from which the
- * 					  app has to be undeployed
- * @option appName    name of the app to be undeployed
+ * Options:
+ *  namespace - name of the namespace from which the app has to be undeployed
+ *  appName - name of the app to be undeployed
  *
  * Eg: hyscale undeploy app -a sample -n dev
  *
@@ -59,7 +59,7 @@ import picocli.CommandLine.Option;
  * configured kubernetes cluster.
  * Undeploys all the resources except the pvcs from the cluster related 
  * to the app from the namespace.
- * @Note Note: Undeploy does not clear the namespace
+ * Note: Undeploy does not clear the namespace
  *
  */
 @Command(name = "app", description = "Undeploys app from the kubernetes cluster")

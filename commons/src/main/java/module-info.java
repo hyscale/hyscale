@@ -27,9 +27,10 @@ module commons {
 	exports io.hyscale.commons.framework.events.publisher;
 	exports io.hyscale.commons.commands.provider;
 	exports io.hyscale.commons.io;
+	exports io.hyscale.commons.validator;
 
 	requires com.fasterxml.jackson.annotation;
-        requires com.google.gson;
+	requires com.google.gson;
 	requires client.java.api;
 	requires com.fasterxml.jackson.core;
 	requires com.fasterxml.jackson.databind;

@@ -62,13 +62,13 @@ import javax.validation.constraints.Pattern;
  * This class executes 'hyscale deploy service' command
  * It is a sub-command of the 'hyscale deploy' command
  *
- * @option namespace  name of the namespace in which the service to be deployed
- * @option appName   name of the app to logically group your services
- * @option serviceSpecs   list of service specs that are to be deployed
- * @option profiles list of profiles for services
- * @option profile profile name to look for. Profile file should be present for all services in service spec
- * (profiles and profile are mutually exclusive)
- * @option verbose  prints the verbose output of the deployment
+ Options:
+ *  namespace - name of the namespace in which the service to be deployed
+ *  appName - name of the app to logically group your services
+ *  serviceSpecs - list of service specs that are to be deployed
+ *  profiles - list of profiles for services
+ *  profile - profile name to look for. Profile file should be present for all services in service spec (profiles and profile are mutually exclusive)
+ *  verbose - prints the verbose output of the deployment
  * <p>
  * Eg 1: hyscale deploy service -f svca.hspec -f svcb.hspec -p dev-svca.hprof -n dev -a sample
  * Eg 2: hyscale deploy service -f svca.hspec -f svcb.hspec -P dev -n dev -a sample

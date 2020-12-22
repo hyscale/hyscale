@@ -13,17 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.deployer.events.listener;
+module schema.validator {
+    exports io.hyscale.schema.validator;
 
-
-import io.hyscale.deployer.events.model.PodStageEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.stereotype.Component;
-
-@Component
-public class PodStageListener implements ApplicationListener<PodStageEvent> {
-
-    @Override
-    public void onApplicationEvent(PodStageEvent event) {
-    }
+    requires commons;
+    requires spring.beans;
+    requires slf4j.api;
+    requires org.apache.commons.io;
+    requires com.fasterxml.jackson.databind;
+    requires jackson.coreutils;
+    requires spring.context;
+    requires json.schema.core;
+    requires spring.boot;
+    requires json.schema.validator;
+    requires btf;
+    requires client.java.api;
 }

@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * This class checks for any Unschedulable pod or any pod with {@link PodCondition#POD_SCHEDULED}
  * condition = true . In either of the cases the pod is not scheduled to any node. To know more
- * about pod condition, refer {@see https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-conditions}
+ * about <a href="https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-conditions">pod condition</a>
  */
 
 @Component

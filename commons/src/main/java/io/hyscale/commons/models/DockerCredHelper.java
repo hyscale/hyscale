@@ -49,7 +49,7 @@ public class DockerCredHelper {
     /**
      * Fetches the credentials from credstore given registryUrl, Helper name.
      * <p>
-     * Takes image registry creates command "docker-credential-<helper> get"
+     * Takes image registry creates command "docker-credential-{@literal<helper>} get"
      * executes with registry url as input and fetches credentials from the
      * credsStore entity pattern if found.
      *

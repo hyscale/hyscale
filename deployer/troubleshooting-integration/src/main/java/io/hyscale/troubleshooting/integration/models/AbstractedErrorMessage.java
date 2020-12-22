@@ -15,7 +15,7 @@
  */
 package io.hyscale.troubleshooting.integration.models;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public enum AbstractedErrorMessage implements IMessage, IReason {
 

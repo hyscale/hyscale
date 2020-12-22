@@ -55,7 +55,7 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
  * Responsible for
  * <ol>
  * <li>Copying supporting files to the path relative to dockerfile </li>
- * <li>Handles the configuration commands & runCommands to dockerfile</li>
+ * <li>Handles the configuration commands and runCommands to dockerfile</li>
  * <li> Generates Dockerfile content</li>
  * <li> Persists the dockerfile at
  * USER.HOME/hyscale/apps/[appName]/[serviceName/generated-files/dockerfiles</li>

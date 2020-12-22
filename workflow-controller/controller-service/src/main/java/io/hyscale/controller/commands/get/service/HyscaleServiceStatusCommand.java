@@ -49,9 +49,10 @@ import picocli.CommandLine.Option;
  * This class executes 'hyscale get service status' command.
  * It is a sub-command of the 'hyscale get service' command
  *
- * @option serviceList list of service names
- * @option namespace  namespace in which the app is deployed
- * @option appName   name of the app
+ * Options:
+ *   serviceList - list of service names
+ *   namespace - namespace in which the app is deployed
+ *   appName - name of the app
  * <p>
  * Eg: hyscale get service status -s s1 -n dev -a sample
  * <p>
