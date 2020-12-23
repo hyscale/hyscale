@@ -47,5 +47,4 @@ module deployer.services {
     requires spring.beans;
     requires spring.core;
     requires zjsonpatch;
-    requires org.bouncycastle.provider;
 }
