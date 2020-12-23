@@ -22,7 +22,6 @@ import io.hyscale.deployer.services.model.CustomListObject;
 import io.hyscale.deployer.services.model.CustomObject;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.util.generic.GenericKubernetesApi;
-import org.bouncycastle.util.Strings;
 
 import java.util.List;
 
@@ -73,7 +72,7 @@ public abstract class GenericK8sClient {
         if (apiVersion == null || apiVersion.equalsIgnoreCase("")) {
             return apiVersion;
         }
-        String[] groups = Strings.split(apiVersion, '/');
+        String[] groups = apiVersion.split("/");
         return groups.length == 2 ? groups[0] : "";
     }
 
@@ -81,7 +80,7 @@ public abstract class GenericK8sClient {
         if (apiVersion == null || apiVersion.equalsIgnoreCase("")) {
             return apiVersion;
         }
-        String[] groups = Strings.split(apiVersion, '/');
+        String[] groups = apiVersion.split("/");
         return groups.length == 2 ? groups[1] : groups[0];
     }
 }
