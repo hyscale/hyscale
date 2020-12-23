@@ -84,7 +84,7 @@ public class KubernetesVolumeUtil {
 	/**
 	 * Get volume name from pvc
 	 * pvc name = volume_name-service_name-index
-	 * @param pvcName
+	 * @param pvc
 	 * @return volumeName
 	 */
 	public static String getVolumeName(V1PersistentVolumeClaim pvc) {

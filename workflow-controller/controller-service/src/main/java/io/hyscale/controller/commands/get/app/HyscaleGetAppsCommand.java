@@ -54,8 +54,6 @@ import picocli.CommandLine.Option;
  * whenever the command is executed the {@link #call()}
  * method will be invoked
  * <p>
- * TODO @option wide - to display extra information
- * <p>
  * Eg: hyscale get apps
  * <p>
  * Displays all the apps along with namespace deployed on the cluster.

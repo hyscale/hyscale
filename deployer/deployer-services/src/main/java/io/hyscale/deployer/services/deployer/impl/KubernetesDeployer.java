@@ -308,7 +308,6 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
      *                   filter pods based on pod-template-hash from replica set
      *                   return replica info for filtered pods
      *                   3. Else return replica info for all pods
-     *                   </p>
      */
     @Override
     public List<ReplicaInfo> getReplicas(K8sAuthorisation authConfig, String appName, String serviceName, String namespace,

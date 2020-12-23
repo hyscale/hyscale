@@ -48,9 +48,9 @@ import picocli.CommandLine.Option;
 /**
  * This class executes the 'hyscale get app status' command
  * It is a sub-command of the 'hyscale get app' command
- *
- * @option namespace  namespace in which the app is deployed
- * @option appName   name of the app
+ * Options:
+ *  namespace - namespace in which the app is deployed
+ *  appName - name of the app
  * <p>
  * Fetches the deployment status {@link DeploymentStatus} of each service in the app
  * Displays app data in a table format to the user.

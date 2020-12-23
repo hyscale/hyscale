@@ -45,11 +45,12 @@ import picocli.CommandLine.Option;
  * This class executes the 'hyscale get service logs' command
  * It is a sub-command of the 'hyscale get service' command
  *
- * @option serviceName name of the service
- * @option namespace  namespace in which the app is deployed
- * @option appName   name of the app
- * @option tail  enable this option to tail the logs
- * @option line  last 'n' number of lines are retrieved from the service
+ Options :
+ *  serviceName - name of the service
+ *  namespace - namespace in which the app is deployed
+ *  appName - name of the app
+ *  tail - enable this option to tail the logs
+ *  line - last 'n' number of lines are retrieved from the service
  * <p>
  * Eg: hyscale get service logs -s s1 -n dev -a sample
  * <p>

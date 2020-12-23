@@ -47,10 +47,10 @@ import picocli.CommandLine.Option;
  * This class executes 'hyscale undeploy service' command
  * It is a sub-command of the 'hyscale undeploy' command
  *
- * @option namespace  name of the namespace from which the
- * service has to be undeployed
- * @option appName    name of the app in which the service is present
- * @option serviceList  list of service names to be undeployed
+ * Options:
+ *  namespace - name of the namespace from which the service has to be undeployed
+ *  appName - name of the app in which the service is present
+ *  serviceList - list of service names to be undeployed
  * <p>
  * Eg: hyscale undeploy service -s s1 -s s2 -a sample -n dev
  * <p>

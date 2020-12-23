@@ -56,18 +56,18 @@ import picocli.CommandLine.ArgGroup;
  * This class executes 'hyscale generate service manifests' command
  * It is a sub-command of the 'hyscale generate service' command
  *
- * @option appName  name of the app
- * @option serviceSpecs  list of service specs
- * @option profiles  list of profiles for services
- * @option profile profile name to look for. Profile file should be present for all services in service spec
- * (profiles and profile are mutually exclusive)
+ * Options:
+ *  appName - name of the app
+ *  serviceSpecs - list of service specs
+ *  profiles - list of profiles for services
+ *  profile - profile name to look for. Profile file should be present for all services in service spec (profiles and profile are mutually exclusive)
  * <p>
  * Eg 1: hyscale generate service manifests -f svc.hspec -f svcb.hspec -p dev-svc.hprof -a sample
  * Eg 2: hyscale generate service manifests -f svc.hspec -P dev -a sample
  * <p>
  * Performs a validation of input before starting manifest generation.
  * Generates the manifests from the given hspec and writes the manifests
- * to <USER.HOME/hyscale/apps/[<appName]/[serviceName]/generated-files/manifests/
+ * to  {@literal<USER.HOME>}/hyscale/apps/{@literal<appName>}/{@literal<serviceName>}/generated-files/manifests/
  * @see HyscaleGenerateServiceCommand
  * Every command/sub-command has to implement the Runnable so that
  * whenever the command is executed the {@link #call()}

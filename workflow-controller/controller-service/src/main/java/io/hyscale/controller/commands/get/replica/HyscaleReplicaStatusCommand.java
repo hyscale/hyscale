@@ -42,9 +42,10 @@ import java.util.concurrent.Callable;
  * This class executes 'hyscale get replica status' command.
  * It is a sub-command of the 'hyscale get replica' command
  *
- * @option service   service name
- * @option namespace namespace in which the app is deployed
- * @option appName   name of the app
+ * Options:
+    service - service name
+ *  namespace - namespace in which the app is deployed
+ *  appName - name of the app
  * <p>
  * Eg: hyscale get replica status -s s1 -n dev -a sample
  * <p>

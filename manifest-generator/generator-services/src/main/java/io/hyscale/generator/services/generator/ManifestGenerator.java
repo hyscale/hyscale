@@ -25,8 +25,7 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 /**
  * Interface to generate kubernetes manifests from the service spec
  * <p>Implementation Notes</p>
- * Implementations to this interface should generate a kubernetes manifest
- * @see {@link Manifest}
+ * Implementations to this interface should generate a kubernetes manifest {@link Manifest}
  *
  * @see <a href="https://github.com/hyscale/hyscale/blob/master/docs/contributor-guide.md#manifest-generator-module">Reference</a>
  * for more detailed reference of manifest generation
@@ -41,7 +40,7 @@ public interface ManifestGenerator {
      * @param serviceSpec servicespec
      * @param context     consist of parameters which control the manifest generation
      * @throws HyscaleException
-     * @return List<Manifest>
+     * @return Manifests List
      */
     public List<Manifest> generate(ServiceSpec serviceSpec, ManifestContext context) throws HyscaleException;
 }
