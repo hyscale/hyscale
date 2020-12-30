@@ -1,10 +1,10 @@
 # v0.9.8.3 Release
 
-This is a minor release for bug fixes for custom plugins.
+This is a minor release to fix custom plugin issues.
 
 ### Fixes
 
-* [Fix for custom plugins written to generate new kinds of resources in kubernetes are throwing NPE.](https://github.com/hyscale/hyscale/issues/357)
+* [Fix for deployment failures with custom plugins](https://github.com/hyscale/hyscale/issues/357)
 
 # v0.9.8.2 Release
 
