@@ -9,6 +9,7 @@
 *   Docker 
 *   Docker Login to all the registries
 *   Kubeconfig at `<user.home>`/.kube/config
+*   Java (jdk 11.0.9.1 and above)
 
 ### Architecture Overview
 
