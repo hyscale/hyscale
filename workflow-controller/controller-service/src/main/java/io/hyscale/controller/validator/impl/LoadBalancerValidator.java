@@ -26,8 +26,6 @@ import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Port;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -36,11 +34,8 @@ import java.util.List;
 @Component
 public class LoadBalancerValidator implements Validator<WorkflowContext> {
 
-    private static final Logger logger = LoggerFactory.getLogger(LoadBalancerValidator.class);
-
     @Override
     public boolean validate(WorkflowContext workflowContext) throws HyscaleException {
-        logger.debug("Validating volumes from the service spec");
         ServiceSpec serviceSpec = workflowContext.getServiceSpec();
         TypeReference<List<Port>> portsListTypeReference = new TypeReference<List<Port>>() {
         };
