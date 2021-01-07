@@ -518,4 +518,8 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
         return stable;
     }
 
+    @Override
+    public boolean isWorkLoad() {
+    	return true;
+    }
 }

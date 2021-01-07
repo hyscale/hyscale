@@ -15,6 +15,14 @@
  */
 package io.hyscale.deployer.services.client;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.utils.GsonProviderUtil;
@@ -27,11 +35,8 @@ import io.hyscale.deployer.services.util.K8sResourcePatchUtil;
 import io.kubernetes.client.custom.V1Patch;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.util.generic.KubernetesApiResponse;
+import io.kubernetes.client.util.generic.options.DeleteOptions;
 import io.kubernetes.client.util.generic.options.ListOptions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.*;
 
 public class K8sResourceClient extends GenericK8sClient {
     private static final Logger logger = LoggerFactory.getLogger(K8sResourceClient.class);
@@ -138,7 +143,11 @@ public class K8sResourceClient extends GenericK8sClient {
         }
         String kind = resource.getKind();
         String name = resource.getMetadata().getName();
-        KubernetesApiResponse<CustomObject> response = genericClient.delete(namespace,name);
+        DeleteOptions deleteOptions = new DeleteOptions();
+        deleteOptions.setKind("DeleteOptions");
+        deleteOptions.setApiVersion("v1");
+        deleteOptions.setPropagationPolicy("Foreground");
+        KubernetesApiResponse<CustomObject> response = genericClient.delete(namespace,name, deleteOptions);
         if(response!=null){
             if(response.isSuccess()){
                 logger.info("Successfully deleted resource : {}, name : {}",kind,name);
