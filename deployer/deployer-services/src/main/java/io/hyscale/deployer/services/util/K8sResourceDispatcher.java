@@ -110,10 +110,11 @@ public class K8sResourceDispatcher {
             AnnotationsUpdateManager.update(k8sResource, AnnotationKey.LAST_UPDATED_AT,
                     DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
 
-            if(k8sResource.getKind().equalsIgnoreCase("deployment") || k8sResource.getKind().equalsIgnoreCase("statefulset")){
-                AnnotationsUpdateManager.update(k8sResource,AnnotationKey.HYSCALE_APPLIED_KINDS,appliedKinds.toString());
-            }
             ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(k8sResource.getKind());
+			if (lifeCycleHandler.isWorkLoad()) {
+				AnnotationsUpdateManager.update(k8sResource, AnnotationKey.HYSCALE_APPLIED_KINDS,
+						appliedKinds.toString());
+			}
             if (lifeCycleHandler != null && k8sResource.getResource() != null && k8sResource.getV1ObjectMeta() != null) {
                 try {
                     String name = k8sResource.getV1ObjectMeta().getName();

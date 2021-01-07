@@ -15,36 +15,36 @@
  */
 package io.hyscale.deployer.services.processor;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import io.hyscale.commons.models.AnnotationKey;
+import io.hyscale.commons.utils.HyscaleContextUtil;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.CustomResourceKind;
-import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.client.GenericK8sClient;
 import io.hyscale.deployer.services.client.K8sResourceClient;
 import io.hyscale.deployer.services.model.CustomObject;
 import io.hyscale.deployer.services.model.PodParent;
 import io.kubernetes.client.openapi.ApiClient;
 
-import java.util.*;
-
 public class PodParentUtil {
-
-    private static final String podParentApiVersion = "apps/v1";
 
     private ApiClient apiClient;
     private String namespace;
-    private List<CustomResourceKind> workloadResources;
 
     public PodParentUtil(ApiClient apiClient, String namespace){
         this.apiClient = apiClient;
         this.namespace = namespace;
-        this.workloadResources = new ArrayList<>();
-        this.workloadResources.add(new CustomResourceKind(ResourceKind.DEPLOYMENT.getKind(), podParentApiVersion));
-        this.workloadResources.add(new CustomResourceKind(ResourceKind.STATEFUL_SET.getKind(), podParentApiVersion));
+        
     }
 
     public PodParent getPodParentForService(String serviceName){
-        for(CustomResourceKind customResourceKind : workloadResources){
+        for(CustomResourceKind customResourceKind : HyscaleContextUtil.getSpringBean(WorkloadKinds.class).get()) {
             GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).
                     withNamespace(namespace).forKind(customResourceKind);
             CustomObject resource = genericK8sClient.getResourceByName(serviceName);
@@ -60,16 +60,13 @@ public class PodParentUtil {
         Map<String,PodParent> serviceVsPodParents = new HashMap<>();
         GenericK8sClient genericK8sClient = null;
         List<CustomObject> workloadResources = new ArrayList<>();
-        genericK8sClient = new K8sResourceClient(apiClient).
-                withNamespace(namespace).forKind(new CustomResourceKind(ResourceKind.DEPLOYMENT.getKind(),podParentApiVersion));
-        //Fetch Deployments
-        workloadResources.addAll(genericK8sClient.getBySelector(selector));
-
-        genericK8sClient = new K8sResourceClient(apiClient).
-                withNamespace(namespace).forKind(new CustomResourceKind(ResourceKind.STATEFUL_SET.getKind(),podParentApiVersion));
-        // Fetch StatefulSets
-        workloadResources.addAll(genericK8sClient.getBySelector(selector));
-
+        
+		for (CustomResourceKind customResourceKind : HyscaleContextUtil.getSpringBean(WorkloadKinds.class).get()) {
+			genericK8sClient = new K8sResourceClient(apiClient).withNamespace(namespace).forKind(customResourceKind);
+			// Fetch Deployments
+			workloadResources.addAll(genericK8sClient.getBySelector(selector));
+		}
+        
         if(workloadResources != null && !workloadResources.isEmpty()){
             for(CustomObject customObject :workloadResources){
                 if(customObject.getMetadata() != null){

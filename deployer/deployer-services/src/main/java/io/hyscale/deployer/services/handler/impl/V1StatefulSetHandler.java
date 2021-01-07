@@ -544,4 +544,8 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         return stable;
     }
 
+    @Override
+    public boolean isWorkLoad() {
+    	return true;
+    }
 }
