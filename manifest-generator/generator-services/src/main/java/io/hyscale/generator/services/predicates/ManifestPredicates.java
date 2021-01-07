@@ -17,6 +17,7 @@ package io.hyscale.generator.services.predicates;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.generator.services.provider.PropsProvider;
 import io.hyscale.generator.services.utils.ReplicasUtil;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -30,6 +31,23 @@ import java.util.function.Predicate;
 public class ManifestPredicates {
     
     private ManifestPredicates() {}
+
+    public static Predicate<ServiceSpec>getLoadBalancerPredicate(){
+        return serviceSpec -> {
+            TypeReference<LoadBalancer> loadBalancerTypeReference = new TypeReference<LoadBalancer>() {
+            };
+            LoadBalancer loadBalancer = null;
+            try {
+                loadBalancer = serviceSpec.get(HyscaleSpecFields.loadBalancer, loadBalancerTypeReference);
+            } catch (HyscaleException e) {
+                return false;
+            }
+            if(loadBalancer != null){
+                return true;
+            }
+            return false;
+        };
+    }
 
     public static Predicate<ServiceSpec> getVolumesPredicate() {
         return serviceSpec -> {

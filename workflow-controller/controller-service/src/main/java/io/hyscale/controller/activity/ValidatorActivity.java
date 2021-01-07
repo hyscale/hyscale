@@ -40,7 +40,7 @@ public enum ValidatorActivity implements Activity {
     PROFILE_VALIDATION_FAILED("Profile validation failed for {}. {} "),
     CLUSTER_AUTHENTICATION_FAILED("Cluster authentication failed. Verify if cluster config is valid"),
     PORTS_MISMATCH("Ports declared in the load balancer should match with the ports mentioned in the hspec. Mismatched port : {}"),
-    EXTERNAL_CONFIGURED("When external is configured as true in hspec, Service can be accessed through ip of load balancer and its external ip.");
+    EXTERNAL_CONFIGURED("When external is configured as true in hspec, Service can be accessed through IP of load balancer and its external ip.");  //TODO Verify warning message
 
     private String message;
 

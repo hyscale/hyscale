@@ -21,3 +21,4 @@ io.hyscale.generator.services.plugins.AutoScalingPluginHandler
 io.hyscale.generator.services.plugins.AgentHandler
 io.hyscale.generator.services.plugins.LabelsAddonHandler
 io.hyscale.generator.services.plugins.PodAnnotationHandler
+io.hyscale.generator.services.plugins.LoadBalancerHandler
