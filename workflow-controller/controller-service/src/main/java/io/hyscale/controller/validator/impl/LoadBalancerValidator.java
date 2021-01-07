@@ -42,16 +42,27 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
     public boolean validate(WorkflowContext workflowContext) throws HyscaleException {
         logger.debug("Validating load balancer details from the service spec");
         ServiceSpec serviceSpec = workflowContext.getServiceSpec();
-        TypeReference<List<Port>> portsListTypeReference = new TypeReference<List<Port>>() {};
         TypeReference<LoadBalancer> loadBalancerTypeReference = new TypeReference<LoadBalancer>() {};
-        TypeReference<Boolean> booleanTypeReference = new TypeReference<Boolean>() {};
-        // Port Validation
-        // warn for external true
+
+        LoadBalancer loadBalancer = serviceSpec.get(HyscaleSpecFields.loadBalancer, loadBalancerTypeReference);
         // check for mandatory fields
+        checkForMandatoryFields(loadBalancer);
+        // Port Validation
+        if(!portValidation(serviceSpec,loadBalancer)){
+            //TODO message for validator?
+            return false;
+        }
+        // warn for external true
+        warnForExternalTrue(serviceSpec);
+
+        return true;
+    }
+
+    private boolean portValidation(ServiceSpec serviceSpec, LoadBalancer loadBalancer) throws HyscaleException {
+        TypeReference<List<Port>> portsListTypeReference = new TypeReference<List<Port>>() {};
         List<Port> portList = serviceSpec.get(HyscaleSpecFields.ports, portsListTypeReference);
         List<String> portNumbersList = new ArrayList<>();
         portList.forEach(each -> portNumbersList.add(each.getPort()));
-        LoadBalancer loadBalancer = serviceSpec.get(HyscaleSpecFields.loadBalancer, loadBalancerTypeReference);
         if (loadBalancer != null && loadBalancer.getMapping() != null) {
             List<String> lbPorts = new ArrayList<>();
             loadBalancer.getMapping().forEach(e -> lbPorts.add(e.getPort()));
@@ -62,10 +73,22 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
                 }
             }
         }
+        return true;
+    }
+
+    private void warnForExternalTrue(ServiceSpec serviceSpec) throws HyscaleException {
+        TypeReference<Boolean> booleanTypeReference = new TypeReference<Boolean>() {};
         Boolean isExternal = serviceSpec.get(HyscaleSpecFields.external, booleanTypeReference);
         if (isExternal != null && isExternal) {
             WorkflowLogger.persist(ValidatorActivity.EXTERNAL_CONFIGURED, LoggerTags.WARN);
         }
-        return true;
     }
+
+    private void checkForMandatoryFields(LoadBalancer loadBalancer){
+        //TODO
+        //controller Name
+        // type
+        // host
+    }
+
 }
