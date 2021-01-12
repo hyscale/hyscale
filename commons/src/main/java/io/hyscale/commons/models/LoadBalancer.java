@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class LoadBalancer {
     String type;
-    String controllerName;
+    String className;
     String host;
     boolean sticky;
     String tlsSecret;
@@ -35,12 +35,12 @@ public class LoadBalancer {
         this.type = type;
     }
 
-    public String getControllerName() {
-        return controllerName;
+    public String getClassName() {
+        return className;
     }
 
-    public void setControllerName(String controllerName) {
-        this.controllerName = controllerName;
+    public void setClassName(String className) {
+        this.className = className;
     }
 
     public String getHost() {

@@ -54,7 +54,11 @@ public class PluginTemplateProvider {
 
 
     public enum PluginTemplateType {
-        HPA("hpa.yaml.tpl");
+        HPA("hpa.yaml.tpl"),
+
+        NGINX("/loadBalancer/nginx/ingress.yaml.tpl"),
+
+        TRAEFIK("/loadBalancer/traefik/ingress.yaml.tpl");
     			
         String templateFile;
 

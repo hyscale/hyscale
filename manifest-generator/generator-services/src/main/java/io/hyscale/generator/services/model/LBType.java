@@ -15,6 +15,7 @@
  */
 package io.hyscale.generator.services.model;
 
+import io.hyscale.commons.utils.HyscaleContextUtil;
 import io.hyscale.generator.services.builder.IstioManifestBuilder;
 import io.hyscale.generator.services.builder.LoadBalancerBuilder;
 import io.hyscale.generator.services.builder.NginxManifestBuilder;
@@ -25,20 +26,20 @@ public enum LBType {
 
     NGINX("nginx"){
         @Override
-        public LoadBalancerBuilder getImplementation() {
-            return new NginxManifestBuilder();
+        public LoadBalancerBuilder getBuilder() {
+            return HyscaleContextUtil.getSpringBean(NginxManifestBuilder.class);
         }
     },
     TRAEFIK("traefik"){
         @Override
-        public LoadBalancerBuilder getImplementation() {
-            return new TraefikManifestBuilder();
+        public LoadBalancerBuilder getBuilder() {
+            return HyscaleContextUtil.getSpringBean(TraefikManifestBuilder.class);
         }
     },
     ISTIO("istio"){
         @Override
-        public LoadBalancerBuilder getImplementation() {
-            return new IstioManifestBuilder();
+        public LoadBalancerBuilder getBuilder() {
+            return HyscaleContextUtil.getSpringBean(IstioManifestBuilder.class);
         }
     };
 
@@ -62,7 +63,7 @@ public enum LBType {
         return null;
     }
 
-    public abstract LoadBalancerBuilder getImplementation();
+    public abstract LoadBalancerBuilder getBuilder();
 
 }
 

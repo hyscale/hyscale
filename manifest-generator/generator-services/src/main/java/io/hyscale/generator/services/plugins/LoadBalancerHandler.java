@@ -30,7 +30,7 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import java.util.ArrayList;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -40,6 +40,13 @@ public class LoadBalancerHandler implements ManifestHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(LoadBalancerHandler.class);
 
+    /**
+     *
+     * @param serviceSpec
+     * @param manifestContext
+     * @return
+     * @throws HyscaleException
+     */
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         if (!ManifestPredicates.getLoadBalancerPredicate().test(serviceSpec)) {
@@ -48,7 +55,7 @@ public class LoadBalancerHandler implements ManifestHandler {
         }
         LoadBalancer loadBalancer = serviceSpec.get(HyscaleSpecFields.loadBalancer, new TypeReference<LoadBalancer>(){});
         try {
-            return LBType.fromString(loadBalancer.getType()).getImplementation().build(manifestContext,serviceSpec);
+            return LBType.fromString(loadBalancer.getType()).getBuilder().build(manifestContext,serviceSpec,loadBalancer);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }

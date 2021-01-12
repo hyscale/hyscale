@@ -17,19 +17,22 @@ package io.hyscale.generator.services.builder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public class TraefikManifestBuilder implements LoadBalancerBuilder {
     private static final Logger logger = LoggerFactory.getLogger(TraefikManifestBuilder.class);
 
     @Override
-    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException, HyscaleException {
+    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec, LoadBalancer loadBalancer) throws JsonProcessingException, HyscaleException {
         logger.debug("Building Manifests for Traefik Ingress Resource");
         return null;
     }
