@@ -27,15 +27,15 @@ import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
 
 @SpringBootConfiguration
-@ComponentScan(basePackages = "io.hyscale.generator")
+@ComponentScan(basePackages = "io.hyscale.generator, io.hyscale.commons")
 @EnableAutoConfiguration
 public class ManifestGenTestConfiguration {
 
     @MockBean
     private SetupConfig setupConfig;
     
-    @MockBean
-    private MustacheTemplateResolver mustacheTemplateResolver;
+//    @MockBean
+//    private MustacheTemplateResolver mustacheTemplateResolver;
 
     @PostConstruct
     public void init() {

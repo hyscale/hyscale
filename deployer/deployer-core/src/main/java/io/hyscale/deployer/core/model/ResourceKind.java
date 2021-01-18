@@ -31,7 +31,8 @@ public enum ResourceKind {
     HORIZONTAL_POD_AUTOSCALER("HorizontalPodAutoscaler", 2),
     PERSISTENT_VOLUME_CLAIM("PersistentVolumeClaim", 2),
     EVENT("Event"),
-    VERSION("VersionInfo");
+    VERSION("VersionInfo"),
+    NETWORKPOLICY("NetworkPolicy");
 
     private String kind;
 

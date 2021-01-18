@@ -147,6 +147,27 @@ public enum ManifestResource {
         public Predicate<ServiceSpec> getPredicate() {
             return ManifestPredicates.isAutoScalingEnabled();
         }
+    },
+
+    NETWORK_POLICY("NetworkPolicy", "networking.k8s.io/v1") {
+        @Override
+        public String getName(ServiceMetadata serviceMetadata) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(NormalizationUtil.normalize(serviceMetadata.getAppName()));
+            sb.append(NormalizationUtil.normalize(serviceMetadata.getServiceName()));
+            sb.append(ManifestGenConstants.NETWORK_POLICY);
+            return sb.toString();
+        }
+
+        @Override
+        public Map<String, String> getLabels(ServiceMetadata serviceMetadata) {
+            return DefaultLabelBuilder.build(serviceMetadata);
+        }
+
+        @Override
+        public Predicate<ServiceSpec> getPredicate() {
+            return ManifestPredicates.isNetworkPolicyEnabled();
+        }
     };
 
     private String kind;

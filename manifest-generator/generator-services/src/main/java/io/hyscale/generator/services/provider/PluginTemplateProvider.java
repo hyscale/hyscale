@@ -19,13 +19,8 @@ import io.hyscale.commons.models.ConfigTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
-import java.net.URL;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 public class PluginTemplateProvider {
@@ -54,7 +49,8 @@ public class PluginTemplateProvider {
 
 
     public enum PluginTemplateType {
-        HPA("hpa.yaml.tpl");
+        HPA("hpa.yaml.tpl"),
+        NETWORK_POLICY("networkPolicy.yaml.tpl");
     			
         String templateFile;
 

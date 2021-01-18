@@ -18,37 +18,36 @@ package io.hyscale.deployer.services.client;
 import io.hyscale.commons.constants.K8SRuntimeConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.deployer.core.model.CustomResourceKind;
+import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.model.CustomListObject;
 import io.hyscale.deployer.services.model.CustomObject;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.util.generic.GenericKubernetesApi;
-
 import java.util.List;
-
 
 public abstract class GenericK8sClient {
 
     private ApiClient apiClient;
     protected String namespace;
     protected GenericKubernetesApi<CustomObject, CustomListObject> genericClient;
+    private String networkPolicyPlural = "networkpolicies";
 
-    protected GenericK8sClient(ApiClient apiClient){
+    protected GenericK8sClient(ApiClient apiClient) {
         this.apiClient = apiClient;
         this.namespace = K8SRuntimeConstants.DEFAULT_NAMESPACE;
     }
 
-    public GenericK8sClient withNamespace(String namespace){
+    public GenericK8sClient withNamespace(String namespace) {
         this.namespace = namespace;
         return this;
     }
 
-    public GenericK8sClient forKind(CustomResourceKind resourceKind){
+    public GenericK8sClient forKind(CustomResourceKind resourceKind) {
         String apiVersion = resourceKind.getApiVersion();
         this.genericClient = new GenericKubernetesApi<>(
                 CustomObject.class, CustomListObject.class, getApiGroup(apiVersion),
-                getApiVersion(apiVersion),
-                resourceKind.getKind().toLowerCase() + "s",apiClient);
-
+                getApiVersion(apiVersion), (resourceKind.getKind().equalsIgnoreCase(ResourceKind.NETWORKPOLICY.name().toLowerCase()))
+                        ? networkPolicyPlural : resourceKind.getKind().toLowerCase() + "s", apiClient);
         return this;
     }
 

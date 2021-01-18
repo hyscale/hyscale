@@ -1,0 +1,13 @@
+#Snippet for NetworkPolicy spec
+podSelector:
+  matchLabels:
+    hyscale.io/service-name: frontend
+policyTypes:
+  - Ingress
+  - Egress
+ingress:
+  - from: []
+    ports:
+    - port: 5050
+egress:
+  - {}
