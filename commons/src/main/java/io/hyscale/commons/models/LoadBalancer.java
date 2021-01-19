@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 public class LoadBalancer {
-    String type;
+    String provider;
     String className;
     String host;
     boolean sticky;
@@ -27,12 +27,12 @@ public class LoadBalancer {
     Map<String, String> headers;
     List<LoadBalancerMapping> mapping;
 
-    public String getType() {
-        return type;
+    public String getProvider() {
+        return provider;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setProvider(String provider) {
+        this.provider = provider;
     }
 
     public String getClassName() {

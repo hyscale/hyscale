@@ -16,24 +16,19 @@
 package io.hyscale.generator.services.model;
 
 import io.hyscale.commons.utils.HyscaleContextUtil;
-import io.hyscale.generator.services.builder.IstioManifestBuilder;
-import io.hyscale.generator.services.builder.LoadBalancerBuilder;
-import io.hyscale.generator.services.builder.NginxManifestBuilder;
-import io.hyscale.generator.services.builder.TraefikManifestBuilder;
+import io.hyscale.generator.services.builder.*;
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public enum LBType {
 
-    NGINX("nginx"){
+    INGRESS(IngressProvider.NGINX.getProvider(),IngressProvider.TRAEFIK.getProvider()){
         @Override
         public LoadBalancerBuilder getBuilder() {
-            return HyscaleContextUtil.getSpringBean(NginxManifestBuilder.class);
-        }
-    },
-    TRAEFIK("traefik"){
-        @Override
-        public LoadBalancerBuilder getBuilder() {
-            return HyscaleContextUtil.getSpringBean(TraefikManifestBuilder.class);
+            return HyscaleContextUtil.getSpringBean(IngressManifestBuilder.class);
         }
     },
     ISTIO("istio"){
@@ -43,21 +38,27 @@ public enum LBType {
         }
     };
 
-    private String type;
+    private List<String> lbProviders;
 
-    LBType(String type){
-        this.type = type;
+    LBType(String... providers){
+        this.lbProviders = new ArrayList<>();
+        this.lbProviders.addAll(Arrays.asList(providers));
     }
 
-    public String getType(){ return this.type; }
+    public List<String> getProviders(){
+        return this.lbProviders;
+    }
 
-    public static LBType fromString(String type) {
-        if (StringUtils.isBlank(type)) {
+    public static LBType getByProvider(String provider) {
+        if (StringUtils.isBlank(provider)) {
             return null;
         }
         for (LBType lbType : LBType.values()) {
-            if(lbType.getType().equalsIgnoreCase(type)){
-                return lbType;
+            List<String> lbProviders = lbType.getProviders();
+            for(String lbProvider : lbProviders){
+                if(lbProvider.equalsIgnoreCase(provider)){
+                    return lbType;
+                }
             }
         }
         return null;

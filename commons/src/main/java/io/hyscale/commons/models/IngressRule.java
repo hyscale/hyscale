@@ -16,25 +16,26 @@
 package io.hyscale.commons.models;
 
 import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.openapi.models.ExtensionsV1beta1HTTPIngressPath;
-import io.kubernetes.client.openapi.models.ExtensionsV1beta1HTTPIngressRuleValue;
-import io.kubernetes.client.openapi.models.ExtensionsV1beta1IngressBackend;
-import io.kubernetes.client.openapi.models.ExtensionsV1beta1IngressRule;
+import io.kubernetes.client.openapi.models.NetworkingV1beta1HTTPIngressPath;
+import io.kubernetes.client.openapi.models.NetworkingV1beta1HTTPIngressRuleValue;
+import io.kubernetes.client.openapi.models.NetworkingV1beta1IngressBackend;
+import io.kubernetes.client.openapi.models.NetworkingV1beta1IngressRule;
 
 import java.util.List;
 
-public class IngressRule extends ExtensionsV1beta1IngressRule {
+public class IngressRule extends NetworkingV1beta1IngressRule {
 
     public void setRule(String serviceName, String port, List<String> paths){
+
         if(paths!=null && !paths.isEmpty()){
-            this.http(new ExtensionsV1beta1HTTPIngressRuleValue());
+            this.http(new NetworkingV1beta1HTTPIngressRuleValue());
             paths.forEach((path)->{
-                ExtensionsV1beta1IngressBackend backend = new ExtensionsV1beta1IngressBackend();
-                backend.setServiceName(serviceName);
-                backend.setServicePort(new IntOrString(port));
-                ExtensionsV1beta1HTTPIngressPath extensionsV1beta1HTTPIngressPath = new ExtensionsV1beta1HTTPIngressPath().backend(backend);
-                extensionsV1beta1HTTPIngressPath.setPath(path);
-                this.getHttp().addPathsItem(extensionsV1beta1HTTPIngressPath);
+                NetworkingV1beta1IngressBackend v1beta1IngressBackend = new NetworkingV1beta1IngressBackend();
+                v1beta1IngressBackend.setServiceName(serviceName);
+                v1beta1IngressBackend.setServicePort(new IntOrString(port));
+                NetworkingV1beta1HTTPIngressPath v1beta1HTTPIngressPath = new NetworkingV1beta1HTTPIngressPath().backend(v1beta1IngressBackend);
+                v1beta1HTTPIngressPath.setPath(path);
+                this.getHttp().addPathsItem(v1beta1HTTPIngressPath);
             });
         }
     }

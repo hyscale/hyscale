@@ -55,7 +55,10 @@ public class LoadBalancerHandler implements ManifestHandler {
         }
         LoadBalancer loadBalancer = serviceSpec.get(HyscaleSpecFields.loadBalancer, new TypeReference<LoadBalancer>(){});
         try {
-            return LBType.fromString(loadBalancer.getType()).getBuilder().build(manifestContext,serviceSpec,loadBalancer);
+            LBType lbType = LBType.getByProvider(loadBalancer.getProvider());
+            if(lbType != null){
+                return lbType.getBuilder().build(manifestContext,serviceSpec,loadBalancer);
+            }
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }

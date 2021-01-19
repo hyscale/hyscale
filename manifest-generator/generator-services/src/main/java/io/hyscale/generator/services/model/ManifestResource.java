@@ -18,6 +18,7 @@ package io.hyscale.generator.services.model;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.generator.services.builder.DefaultLabelBuilder;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
@@ -146,6 +147,29 @@ public enum ManifestResource {
         @Override
         public Predicate<ServiceSpec> getPredicate() {
             return ManifestPredicates.isAutoScalingEnabled();
+        }
+    },
+
+    INGRESS("Ingress", "networking.k8s.io/v1beta1"){
+        @Override
+        public String getName(ServiceMetadata serviceMetadata) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(NormalizationUtil.normalize(serviceMetadata.getEnvName()));
+            sb.append(ManifestGenConstants.NAME_DELIMITER);
+            sb.append(NormalizationUtil.normalize(serviceMetadata.getServiceName()));
+            sb.append(ManifestGenConstants.NAME_DELIMITER);
+            sb.append(ToolConstants.INGRESS);
+            return sb.toString();
+        }
+
+        @Override
+        public Map<String, String> getLabels(ServiceMetadata serviceMetadata) {
+            return DefaultLabelBuilder.build(serviceMetadata);
+        }
+
+        @Override
+        public Predicate<ServiceSpec> getPredicate() {
+            return ManifestPredicates.getLoadBalancerPredicate();
         }
     };
 
