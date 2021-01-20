@@ -19,6 +19,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ConfigTemplate;
 import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
 import io.hyscale.generator.services.provider.PluginTemplateProvider;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
@@ -41,16 +42,16 @@ public class DestinationRuleSpecBuilder implements IstioResourcesManifestGenerat
     private MustacheTemplateResolver templateResolver;
 
     @Override
-    public ManifestSnippet generateManifest(ManifestContext manifestContext, ServiceSpec serviceSpec, LoadBalancer loadBalancer) throws HyscaleException {
+    public ManifestSnippet generateManifest(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
         ConfigTemplate virtualServiceTemplate = templateProvider.get(PluginTemplateProvider.PluginTemplateType.ISTIO_DESTINATION_RULE);
-        templateResolver.resolveTemplate(virtualServiceTemplate.getTemplatePath(), getContext(serviceSpec, manifestContext,loadBalancer));
+        templateResolver.resolveTemplate(virtualServiceTemplate.getTemplatePath(), getContext(serviceMetadata,loadBalancer));
         return null;
     }
 
-    private Map<String, Object> getContext(ServiceSpec serviceSpec, ManifestContext manifestContext, LoadBalancer loadBalancer) throws HyscaleException {
+    private Map<String, Object> getContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
         Map<String, Object> map = new HashMap<>();
         //Need to build entire context.
-        map.put(DESTINATION_RULE_NAME,serviceSpec.get(HyscaleSpecFields.name, String.class)+manifestContext.getEnvName());
+        map.put(DESTINATION_RULE_NAME,serviceMetadata.getServiceName()+serviceMetadata.getEnvName());
         map.put("loadBalancer",loadBalancer);
         return map;
     }

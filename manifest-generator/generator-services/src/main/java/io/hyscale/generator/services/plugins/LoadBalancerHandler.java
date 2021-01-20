@@ -20,6 +20,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.commons.models.ServiceMetadata;
+import io.hyscale.generator.services.generator.MetadataManifestSnippetGenerator;
 import io.hyscale.generator.services.model.LBType;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
@@ -57,7 +59,12 @@ public class LoadBalancerHandler implements ManifestHandler {
         try {
             LBType lbType = LBType.getByProvider(loadBalancer.getProvider());
             if(lbType != null){
-                return lbType.getBuilder().build(manifestContext,serviceSpec,loadBalancer);
+                ServiceMetadata serviceMetadata = new ServiceMetadata();
+                serviceMetadata.setAppName(manifestContext.getAppName());
+                serviceMetadata.setEnvName(manifestContext.getEnvName());
+                String serviceName = serviceSpec.get(HyscaleSpecFields.name,String.class);
+                serviceMetadata.setServiceName(serviceName);
+                return lbType.getBuilder().build(serviceMetadata,loadBalancer);
             }
         } catch (JsonProcessingException e) {
             e.printStackTrace();

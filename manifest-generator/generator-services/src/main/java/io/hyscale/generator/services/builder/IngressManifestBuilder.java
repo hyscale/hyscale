@@ -15,18 +15,13 @@
  */
 package io.hyscale.generator.services.builder;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.*;
-import io.hyscale.commons.utils.HyscaleContextUtil;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
 import io.hyscale.generator.services.model.IngressProvider;
-import io.hyscale.generator.services.model.LBType;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.provider.PluginTemplateProvider;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
-import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
-import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,28 +42,28 @@ public class IngressManifestBuilder implements LoadBalancerBuilder {
     private MustacheTemplateResolver templateResolver;
 
     @Override
-    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec, LoadBalancer loadBalancer) throws HyscaleException {
+    public List<ManifestSnippet> build(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
         logger.debug("Building Manifests for Ingress Resource");
         ConfigTemplate nginxIngressTemplate = templateProvider.get(PluginTemplateProvider.PluginTemplateType.INGRESS);
-        String yamlString = templateResolver.resolveTemplate(nginxIngressTemplate.getTemplatePath(), getIngressSpecContext(serviceSpec, manifestContext,loadBalancer));
+        String yamlString = templateResolver.resolveTemplate(nginxIngressTemplate.getTemplatePath(), getIngressSpecContext(serviceMetadata,loadBalancer));
         ManifestSnippet snippet = new ManifestSnippet();
         snippet.setKind(ManifestResource.INGRESS.getKind());
         snippet.setPath("spec");
         snippet.setSnippet(yamlString);
         List<ManifestSnippet> snippetList = new LinkedList<>();
         snippetList.add(snippet);
-        snippetList.add(getProviderSpecificMetadata(loadBalancer));
+        snippetList.add(getProviderSpecificMetadata(serviceMetadata,loadBalancer));
         return snippetList;
     }
 
-    private ManifestSnippet getProviderSpecificMetadata(LoadBalancer loadBalancer) throws HyscaleException {
+    private ManifestSnippet getProviderSpecificMetadata(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
         String provider = loadBalancer.getProvider();
-        return IngressProvider.fromString(provider).getMetadataBuilder().build(loadBalancer);
+        return IngressProvider.fromString(provider).getMetadataBuilder().build(serviceMetadata,loadBalancer);
     }
 
-    private Map<String,Object> getIngressSpecContext(ServiceSpec serviceSpec, ManifestContext manifestContext, LoadBalancer loadBalancer) throws HyscaleException {
+    private Map<String,Object> getIngressSpecContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
         Map<String, Object> context = new HashMap<>();
-        String serviceName = serviceSpec.get(HyscaleSpecFields.name,String.class);
+        String serviceName = serviceMetadata.getServiceName();
         context.put(RULES,getIngressRules(serviceName,loadBalancer));
         context.put(TLS,getIngressTLS(loadBalancer));
         return context;

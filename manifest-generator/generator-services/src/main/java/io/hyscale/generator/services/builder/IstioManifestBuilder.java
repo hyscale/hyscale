@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.generator.services.provider.PluginTemplateProvider;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
@@ -59,11 +60,11 @@ public class IstioManifestBuilder implements LoadBalancerBuilder {
     }
 
     @Override
-    public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec, LoadBalancer loadBalancer) throws JsonProcessingException, HyscaleException {
+    public List<ManifestSnippet> build(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws JsonProcessingException, HyscaleException {
         logger.debug("Building Manifests for Istio LB Resources");
         List<ManifestSnippet> manifestSnippets = new ArrayList<>();
         for(IstioResourcesManifestGenerator istioManifestGenerator: istioManifestGenerators){
-            manifestSnippets.add(istioManifestGenerator.generateManifest(manifestContext, serviceSpec, loadBalancer));
+            manifestSnippets.add(istioManifestGenerator.generateManifest(serviceMetadata, loadBalancer));
         }
         return Collections.emptyList();
     }

@@ -17,10 +17,7 @@ package io.hyscale.generator.services.builder;
 
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.models.ConfigTemplate;
-import io.hyscale.commons.models.LoadBalancer;
-import io.hyscale.commons.models.LoadBalancerMapping;
-import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.commons.models.*;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.provider.PluginTemplateProvider;
@@ -48,17 +45,17 @@ public class VirtualServiceBuilder implements IstioResourcesManifestGenerator{
     private MustacheTemplateResolver templateResolver;
 
     @Override
-    public ManifestSnippet generateManifest(ManifestContext manifestContext, ServiceSpec serviceSpec, LoadBalancer loadBalancer) throws HyscaleException {
+    public ManifestSnippet generateManifest(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
         ConfigTemplate virtualServiceTemplate = templateProvider.get(PluginTemplateProvider.PluginTemplateType.ISTIO_VIRTUAL_SERVICE);
-        templateResolver.resolveTemplate(virtualServiceTemplate.getTemplatePath(), getContext(serviceSpec, manifestContext,loadBalancer));
+        templateResolver.resolveTemplate(virtualServiceTemplate.getTemplatePath(), getContext(serviceMetadata,loadBalancer));
         //Generate Manifest snippet from the template
         return null;
     }
 
-    private Map<String, Object> getContext(ServiceSpec serviceSpec, ManifestContext manifestContext, LoadBalancer loadBalancer) throws HyscaleException {
+    private Map<String, Object> getContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
         Map<String, Object> map = new HashMap<>();
-        String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
-        String envName = manifestContext.getEnvName();
+        String serviceName = serviceMetadata.getServiceName();
+        String envName = serviceMetadata.getEnvName();
         map.put(VIRTUAL_SERVICE_NAME, getVirtualServiceName(serviceName, envName));
         List<String> hosts = new ArrayList<>();
         hosts.add(loadBalancer.getHost());

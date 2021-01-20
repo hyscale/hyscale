@@ -18,12 +18,13 @@ package io.hyscale.generator.services.builder;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ConfigTemplate;
 import io.hyscale.commons.models.LoadBalancer;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.provider.PluginTemplateProvider;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
-import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +33,10 @@ import java.util.Map;
 public class NginxMetaDataBuilder implements IngressMetaDataBuilder {
     private static String INGRESS_CLASS = "INGRESS_CLASS";
     private static String STICKY = "STICKY";
+    private static String INGRESS_NAME = "INGRESS_NAME";
+    private static String APP_NAME = "APP_NAME";
+    private static String ENV_NAME = "ENV_NAME";
+    private static String SERVICE_NAME = "SERVICE_NAME";
 
     @Autowired
     private PluginTemplateProvider templateProvider;
@@ -40,17 +45,17 @@ public class NginxMetaDataBuilder implements IngressMetaDataBuilder {
     private MustacheTemplateResolver templateResolver;
 
     @Override
-    public ManifestSnippet build(LoadBalancer loadBalancer) throws HyscaleException {
+    public ManifestSnippet build(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
         ManifestSnippet manifestSnippet = new ManifestSnippet();
         manifestSnippet.setKind(ManifestResource.INGRESS.getKind());
         manifestSnippet.setPath("metadata");
         ConfigTemplate nginxIngressTemplate = templateProvider.get(PluginTemplateProvider.PluginTemplateType.NGINX);
-        String yamlString = templateResolver.resolveTemplate(nginxIngressTemplate.getTemplatePath(), getContext(loadBalancer));
+        String yamlString = templateResolver.resolveTemplate(nginxIngressTemplate.getTemplatePath(), getContext(serviceMetadata,loadBalancer));
         manifestSnippet.setSnippet(yamlString);
         return manifestSnippet;
     }
 
-    private Map<String,Object> getContext(LoadBalancer loadBalancer){
+    private Map<String,Object> getContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer){
         Map<String, Object> context = new HashMap<>();
         if(loadBalancer.getClassName()!= null && !loadBalancer.getClassName().isBlank()){
             context.put(INGRESS_CLASS,loadBalancer.getClassName());
@@ -58,6 +63,10 @@ public class NginxMetaDataBuilder implements IngressMetaDataBuilder {
         if(loadBalancer.isSticky()){
             context.put(STICKY,"cookie");
         }
+        context.put(INGRESS_NAME,ManifestResource.INGRESS.getName(serviceMetadata));
+        context.put(APP_NAME,serviceMetadata.getAppName());
+        context.put(ENV_NAME,serviceMetadata.getEnvName());
+        context.put(SERVICE_NAME,serviceMetadata.getServiceName());
         return context;
     }
 }

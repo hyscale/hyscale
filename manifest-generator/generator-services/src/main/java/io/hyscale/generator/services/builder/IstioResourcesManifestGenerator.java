@@ -18,9 +18,10 @@ package io.hyscale.generator.services.builder;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 public interface IstioResourcesManifestGenerator {
-    ManifestSnippet generateManifest(ManifestContext manifestContext, ServiceSpec serviceSpec, LoadBalancer loadBalancer) throws HyscaleException;
+    ManifestSnippet generateManifest(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException;
 }

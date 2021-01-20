@@ -17,13 +17,14 @@ package io.hyscale.generator.services.builder;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.LoadBalancer;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TraefikMetaDataBuilder implements IngressMetaDataBuilder {
     @Override
-    public ManifestSnippet build(LoadBalancer loadBalancer) throws HyscaleException {
+    public ManifestSnippet build(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
         return null;
     }
 }
