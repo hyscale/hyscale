@@ -26,6 +26,7 @@ public class LoadBalancer {
     String tlsSecret;
     Map<String, String> headers;
     List<LoadBalancerMapping> mapping;
+    Map<String,String> labels;
 
     public String getProvider() {
         return provider;
@@ -81,5 +82,13 @@ public class LoadBalancer {
 
     public void setMapping(List<LoadBalancerMapping> mapping) {
         this.mapping = mapping;
+    }
+
+    public Map<String, String> getLabels() {
+        return labels;
+    }
+
+    public void setLabels(Map<String, String> labels) {
+        this.labels = labels;
     }
 }

@@ -20,9 +20,11 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.LoggerTags;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.LoadBalancer;
+import io.hyscale.commons.models.LoadBalancerMapping;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.generator.services.model.LBType;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Port;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
@@ -38,32 +40,51 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(LoadBalancerValidator.class);
 
+    /**
+     * Checks for the required mandatory fields.
+     * Checks for Ports mismatch
+     * Checks for external true.
+     *
+     * @param workflowContext
+     * @return
+     * @throws HyscaleException
+     */
     @Override
     public boolean validate(WorkflowContext workflowContext) throws HyscaleException {
         logger.debug("Validating load balancer details from the service spec");
         ServiceSpec serviceSpec = workflowContext.getServiceSpec();
-        TypeReference<LoadBalancer> loadBalancerTypeReference = new TypeReference<LoadBalancer>() {};
+        TypeReference<LoadBalancer> loadBalancerTypeReference = new TypeReference<LoadBalancer>() {
+        };
 
         LoadBalancer loadBalancer = serviceSpec.get(HyscaleSpecFields.loadBalancer, loadBalancerTypeReference);
-        // check for mandatory fields
-        checkForMandatoryFields(loadBalancer);
-        // Port Validation
-        if(!portValidation(serviceSpec,loadBalancer)){
-            //TODO message for validator?
-            return false;
+        if (loadBalancer != null) {
+            if (!validateMandatoryFields(loadBalancer)) {
+                return false;
+            }
+            if (!portValidation(serviceSpec, loadBalancer)) {
+                //message for validator?
+                return false;
+            }
+            warnForExternalTrue(serviceSpec);
         }
-        // warn for external true
-        warnForExternalTrue(serviceSpec);
-
         return true;
     }
 
+    /**
+     * Checks for Ports mismatch
+     *
+     * @param serviceSpec
+     * @param loadBalancer
+     * @return
+     * @throws HyscaleException
+     */
     private boolean portValidation(ServiceSpec serviceSpec, LoadBalancer loadBalancer) throws HyscaleException {
-        TypeReference<List<Port>> portsListTypeReference = new TypeReference<List<Port>>() {};
+        TypeReference<List<Port>> portsListTypeReference = new TypeReference<List<Port>>() {
+        };
         List<Port> portList = serviceSpec.get(HyscaleSpecFields.ports, portsListTypeReference);
         List<String> portNumbersList = new ArrayList<>();
         portList.forEach(each -> portNumbersList.add(each.getPort()));
-        if (loadBalancer != null && loadBalancer.getMapping() != null) {
+        if (loadBalancer.getMapping() != null) {
             List<String> lbPorts = new ArrayList<>();
             loadBalancer.getMapping().forEach(e -> lbPorts.add(e.getPort()));
             for (String lbPort : lbPorts) {
@@ -76,19 +97,72 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
         return true;
     }
 
+
+    /**
+     * @param serviceSpec
+     * @throws HyscaleException
+     */
     private void warnForExternalTrue(ServiceSpec serviceSpec) throws HyscaleException {
-        TypeReference<Boolean> booleanTypeReference = new TypeReference<Boolean>() {};
+        TypeReference<Boolean> booleanTypeReference = new TypeReference<Boolean>() {
+        };
         Boolean isExternal = serviceSpec.get(HyscaleSpecFields.external, booleanTypeReference);
         if (isExternal != null && isExternal) {
             WorkflowLogger.persist(ValidatorActivity.EXTERNAL_CONFIGURED, LoggerTags.WARN);
         }
     }
 
-    private void checkForMandatoryFields(LoadBalancer loadBalancer){
-        //TODO
-        //controller Name
-        // type
-        // host
+    /**
+     * Checks for the required mandatory fields.
+     *
+     * @param loadBalancer
+     */
+    private boolean validateMandatoryFields(LoadBalancer loadBalancer) {
+        boolean isMandatoryFieldsExists = true;
+        if (LBType.getByProvider(loadBalancer.getProvider()) == LBType.INGRESS && loadBalancer.getClassName() == null) {
+            isMandatoryFieldsExists = false;
+            WorkflowLogger.persist(ValidatorActivity.LB_CLASS_NAME_REQUIRED, LoggerTags.ERROR);
+        }
+        if (LBType.getByProvider(loadBalancer.getProvider()) == LBType.ISTIO && loadBalancer.getLabels() == null) {
+            isMandatoryFieldsExists = false;
+            WorkflowLogger.persist(ValidatorActivity.LB_GATEWAY_LABEL_REQUIRED, LoggerTags.ERROR);
+        }
+        if (loadBalancer.getHost() == null) {
+            isMandatoryFieldsExists = false;
+            WorkflowLogger.persist(ValidatorActivity.LB_HOST_REQUIRED, LoggerTags.ERROR);
+        }
+        if (loadBalancer.getProvider() == null) {
+            isMandatoryFieldsExists = false;
+            WorkflowLogger.persist(ValidatorActivity.LB_TYPE_REQUIRED, LoggerTags.ERROR);
+        }
+        if (loadBalancer.getMapping() == null || loadBalancer.getMapping().isEmpty()) {
+            isMandatoryFieldsExists = false;
+            WorkflowLogger.persist(ValidatorActivity.LB_MAPPING_REQUIRED, LoggerTags.ERROR);
+        }
+        if (loadBalancer.getMapping() != null && !loadBalancer.getMapping().isEmpty()) {
+            boolean isMappingFieldsExists = validateLoadBalancerMapping(loadBalancer.getMapping());
+            isMandatoryFieldsExists = isMappingFieldsExists && isMandatoryFieldsExists;
+        }
+        return isMandatoryFieldsExists;
     }
 
+    /**
+     * validate port and contextPaths in the loadBalancer mapping.
+     *
+     * @param mappings
+     */
+    public boolean validateLoadBalancerMapping(List<LoadBalancerMapping> mappings) {
+        boolean isMappingFieldsExists = true;
+        for (LoadBalancerMapping mapping : mappings) {
+            if (mapping.getPort() == null) {
+                isMappingFieldsExists = false;
+                WorkflowLogger.persist(ValidatorActivity.LB_PORT_REQUIRED, LoggerTags.ERROR, mapping.getContextPaths() != null ? "for contextPaths: " + String.join(",", mapping.getContextPaths()) : "");
+            }
+            if (mapping.getContextPaths() == null || mapping.getContextPaths().isEmpty()) {
+                isMappingFieldsExists = false;
+                WorkflowLogger.persist(ValidatorActivity.LB_CONTEXT_PATH_REQUIRED, LoggerTags.ERROR, mapping.getPort() != null ? "for port:" + mapping.getPort() : "");
+            }
+        }
+        return isMappingFieldsExists;
+    }
 }
+

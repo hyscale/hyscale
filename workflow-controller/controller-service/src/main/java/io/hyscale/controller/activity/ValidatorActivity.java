@@ -39,9 +39,17 @@ public enum ValidatorActivity implements Activity {
     SERVICE_SPEC_VALIDATION_FAILED("Service spec validation failed for {}. {} "),
     PROFILE_VALIDATION_FAILED("Profile validation failed for {}. {} "),
     CLUSTER_AUTHENTICATION_FAILED("Cluster authentication failed. Verify if cluster config is valid"),
-    PORTS_MISMATCH("Ports declared in the load balancer should match with the ports mentioned in the hspec. Mismatched port : {}"),
-    EXTERNAL_CONFIGURED("When external is configured as true in hspec, Service can be accessed through IP of load balancer and its external ip.");  //TODO Verify warning message
 
+    //Load balancer validation
+    PORTS_MISMATCH("Ports declared in the load balancer should match with the ports mentioned in the hspec. Mismatched port : {}"),
+    EXTERNAL_CONFIGURED("When external is configured as true in hspec, Service can be accessed through IP of load balancer and its external ip."),//TODO Verify warning message
+    LB_CLASS_NAME_REQUIRED("loadBalancer className is required."),
+    LB_GATEWAY_LABEL_REQUIRED("loadaBalancer gateway label is required for istio."),
+    LB_TYPE_REQUIRED("loadBalancer type is required."),
+    LB_HOST_REQUIRED("loadBalancer host is required."),
+    LB_MAPPING_REQUIRED("loadBalancer mapping is required."),
+    LB_PORT_REQUIRED("port is required {}."),
+    LB_CONTEXT_PATH_REQUIRED("contextPaths is required {}.");
     private String message;
 
     ValidatorActivity(String message) {

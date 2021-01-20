@@ -42,4 +42,8 @@ module manifestGenerator {
 	requires transitive service_spec_commons;
 	requires com.fasterxml.jackson.dataformat.yaml;
 	requires org.yaml.snakeyaml;
+	requires spring.context;
+	requires java.annotation;
+	requires spring.beans;
+	requires istio.model;
 }

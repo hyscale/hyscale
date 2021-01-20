@@ -36,5 +36,12 @@ public class ManifestGenConstants {
 	public static final String IMAGE_PULL_SECRET_NAME = "ImagePullSecretName";
 	
 	public static final String POD_CHECKSUM = "POD_CHECKSUM";
-	
+
+	//ISTIO loadBalancer fields.
+	public static final String ISTIO = "istio";
+
+	public static final String GATEWAY = "gateway";
+
+	public static final String VIRTUAL_SERVICE = "virtual-service";
+
 }

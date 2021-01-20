@@ -19,21 +19,52 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.generator.services.provider.PluginTemplateProvider;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Component
 public class IstioManifestBuilder implements LoadBalancerBuilder {
     private static final Logger logger = LoggerFactory.getLogger(IstioManifestBuilder.class);
 
+    @Autowired
+    private VirtualServiceBuilder virtualServiceBuilder;
+
+    @Autowired
+    private GatewayBuilder gatewayBuilder;
+
+    @Autowired
+    private  DestinationRuleSpecBuilder destinationRuleBuilder;
+
+    @Autowired
+    private PluginTemplateProvider templateProvider;
+
+    List<IstioResourcesManifestGenerator> istioManifestGenerators;
+
+    @PostConstruct
+    public void init() {
+        this.istioManifestGenerators = new ArrayList<>();
+        istioManifestGenerators.add(virtualServiceBuilder);
+        istioManifestGenerators.add(gatewayBuilder);
+        istioManifestGenerators.add(destinationRuleBuilder);
+    }
+
     @Override
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec, LoadBalancer loadBalancer) throws JsonProcessingException, HyscaleException {
         logger.debug("Building Manifests for Istio LB Resources");
-        return null;
+        List<ManifestSnippet> manifestSnippets = new ArrayList<>();
+        for(IstioResourcesManifestGenerator istioManifestGenerator: istioManifestGenerators){
+            manifestSnippets.add(istioManifestGenerator.generateManifest(manifestContext, serviceSpec, loadBalancer));
+        }
+        return Collections.emptyList();
     }
 }

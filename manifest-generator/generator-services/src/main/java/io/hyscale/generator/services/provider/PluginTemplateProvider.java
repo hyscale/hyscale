@@ -60,8 +60,14 @@ public class PluginTemplateProvider {
 
         NGINX("/loadBalancer/ingress/nginx/ingress-meta.yaml.tpl"),
 
-        TRAEFIK("/loadBalancer/ingress/traefik/ingress-meta.yaml.tpl");
-    			
+        TRAEFIK("/loadBalancer/ingress/traefik/ingress-meta.yaml.tpl"),
+
+        ISTIO_VIRTUAL_SERVICE("/loadBalancer/istio/virtualService.yaml.tpl"),
+
+        ISTIO_DESTINATION_RULE("/loadBalancer/istio/destinationRule.yaml.tpl"),
+
+        ISTIO_GATEWAY("/loadBalancer/istio/gateway.yaml.tpl");
+
         String templateFile;
 
         PluginTemplateType(String tplFile) {
