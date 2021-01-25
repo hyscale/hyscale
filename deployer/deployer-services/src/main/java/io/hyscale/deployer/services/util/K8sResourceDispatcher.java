@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Pramati Prism, Inc.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,11 +44,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Handles generic resource level operation such as apply, undeploy among others
@@ -101,20 +103,37 @@ public class K8sResourceDispatcher {
             throw new HyscaleException(DeployerErrorCodes.MANIFEST_REQUIRED);
         }
         createNamespaceIfNotExists();
+        try {
+            List<Manifest> manifestWithHandlers = new ArrayList<>();
+            List<Manifest> manifestWithoutHandlers = new ArrayList<>();
+            for (Manifest manifest : manifests) {
+                if ((ResourceHandlers.getHandlerOf(KubernetesResourceUtil.
+                        getKubernetesResource(manifest, namespace).getKind()) != null) ?
+                        manifestWithHandlers.add(manifest) : manifestWithoutHandlers.add(manifest)) ;
+            }
+            List<KubernetesResource> k8sResources = getSortedResources(manifestWithHandlers);
+            List<String> appliedKinds = buildAppliedKindsAnnotation(getCustomObjects(manifests));
+            MultiValueMap<String, CustomObject> kindVsCustomObjects = getCustomObjects(manifestWithoutHandlers);
+            applyK8sResources(k8sResources, appliedKinds);
+            applyCustomResources(kindVsCustomObjects);
+            logger.info("Successfully applied all Manifests");
+        } catch (Exception e) {
+            HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST);
+            logger.error("Error while applying manifests to kubernetes", ex);
+            throw ex;
+        }
+    }
 
-        MultiValueMap<String,CustomObject> kindVsCustomObjects = getCustomObjects(manifests);
-        List<KubernetesResource> k8sResources = getSortedResources(manifests);
-        List<String> appliedKinds = buildAppliedKindsAnnotation(kindVsCustomObjects);
-
+    public void applyK8sResources(List<KubernetesResource> k8sResources, List<String> appliedKinds) {
         for (KubernetesResource k8sResource : k8sResources) {
             AnnotationsUpdateManager.update(k8sResource, AnnotationKey.LAST_UPDATED_AT,
                     DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
 
             ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(k8sResource.getKind());
-			if (lifeCycleHandler.isWorkLoad()) {
-				AnnotationsUpdateManager.update(k8sResource, AnnotationKey.HYSCALE_APPLIED_KINDS,
-						appliedKinds.toString());
-			}
+            if (lifeCycleHandler.isWorkLoad()) {
+                AnnotationsUpdateManager.update(k8sResource, AnnotationKey.HYSCALE_APPLIED_KINDS,
+                        appliedKinds.toString());
+            }
             if (lifeCycleHandler != null && k8sResource.getResource() != null && k8sResource.getV1ObjectMeta() != null) {
                 try {
                     String name = k8sResource.getV1ObjectMeta().getName();
@@ -123,35 +142,34 @@ public class K8sResourceDispatcher {
                     } else {
                         resourceBroker.create(lifeCycleHandler, k8sResource.getResource());
                     }
-                    kindVsCustomObjects.remove(k8sResource.getKind());
                 } catch (HyscaleException ex) {
-                    logger.error("Failed to apply resource :{} Reason :: {}", k8sResource.getKind(), ex.getMessage(),ex);
+                    logger.error("Failed to apply resource :{} Reason :: {}", k8sResource.getKind(), ex.getMessage(), ex);
                 }
             }
         }
-        applyCustomResources(kindVsCustomObjects);
     }
 
     /**
      * Undeploy resources from cluster
      * Deletes all resources belonging to all services in an app environment
+     *
      * @param appName
      * @throws HyscaleException
      */
     public void undeployApp(String appName) throws HyscaleException {
-        logger.info("Undeploy initiated for application - {}",appName);
+        logger.info("Undeploy initiated for application - {}", appName);
         if (StringUtils.isBlank(appName)) {
             logger.error("No applicaton found for undeployment");
             throw new HyscaleException(DeployerErrorCodes.APPLICATION_REQUIRED);
         }
-        PodParentUtil podParentUtil = new PodParentUtil(apiClient,namespace);
-        Map<String,PodParent> serviceVsPodParents = podParentUtil.getServiceVsPodParentMap(appName);
-        if(serviceVsPodParents != null && !serviceVsPodParents.isEmpty()){
+        PodParentUtil podParentUtil = new PodParentUtil(apiClient, namespace);
+        Map<String, PodParent> serviceVsPodParents = podParentUtil.getServiceVsPodParentMap(appName);
+        if (serviceVsPodParents != null && !serviceVsPodParents.isEmpty()) {
             for (Map.Entry<String, PodParent> entry : serviceVsPodParents.entrySet()) {
                 PodParent podParent = entry.getValue();
                 List<CustomResourceKind> appliedKindsList = podParentUtil.getAppliedKindsList(podParent);
-                String selector = ResourceSelectorUtil.getServiceSelector(appName,null);
-                deleteResources(selector,appliedKindsList);
+                String selector = ResourceSelectorUtil.getServiceSelector(appName, null);
+                deleteResources(selector, appliedKindsList);
             }
         }
     }
@@ -165,53 +183,53 @@ public class K8sResourceDispatcher {
      * @throws HyscaleException if failed to delete any resource
      */
     public void undeployService(String appName, String serviceName) throws HyscaleException {
-        logger.info("Undeploy initiated for service - {}",serviceName);
+        logger.info("Undeploy initiated for service - {}", serviceName);
         if (StringUtils.isBlank(appName)) {
             logger.error("No applicaton found for undeployment");
             throw new HyscaleException(DeployerErrorCodes.APPLICATION_REQUIRED);
         }
-        PodParentUtil podParentUtil = new PodParentUtil(apiClient,namespace);
+        PodParentUtil podParentUtil = new PodParentUtil(apiClient, namespace);
         PodParent podParent = podParentUtil.getPodParentForService(serviceName);
         List<CustomResourceKind> appliedKindsList = podParentUtil.getAppliedKindsList(podParent);
-        String selector = ResourceSelectorUtil.getServiceSelector(appName,serviceName);
-        deleteResources(selector,appliedKindsList);
+        String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
+        deleteResources(selector, appliedKindsList);
     }
 
-    private List<String> buildAppliedKindsAnnotation(MultiValueMap<String, CustomObject> kindVsCustomObject){
-        if(kindVsCustomObject == null || kindVsCustomObject.isEmpty()){
+    private List<String> buildAppliedKindsAnnotation(MultiValueMap<String, CustomObject> kindVsCustomObject) {
+        if (kindVsCustomObject == null || kindVsCustomObject.isEmpty()) {
             return Collections.emptyList();
         }
         List<String> appliedKinds = new ArrayList<>();
-        kindVsCustomObject.forEach((kind,customObjects)->{
-            String kindVsApiVersion = kind+":"+customObjects.get(0).getApiVersion();
+        kindVsCustomObject.forEach((kind, customObjects) -> {
+            String kindVsApiVersion = kind + ":" + customObjects.get(0).getApiVersion();
             appliedKinds.add(kindVsApiVersion);
         });
         return appliedKinds;
     }
 
-    private void applyCustomResources(MultiValueMap<String, CustomObject> kindVsCustomObject){
-        if(kindVsCustomObject != null && !kindVsCustomObject.isEmpty()){
-            kindVsCustomObject.forEach((kind,customObjects)->{
-                for(CustomObject object : customObjects){
+    private void applyCustomResources(MultiValueMap<String, CustomObject> kindVsCustomObject) {
+        if (kindVsCustomObject != null && !kindVsCustomObject.isEmpty()) {
+            kindVsCustomObject.forEach((kind, customObjects) -> {
+                for (CustomObject object : customObjects) {
                     // Using Generic K8s Client
                     GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).
-                            withNamespace(namespace).forKind(new CustomResourceKind(kind,object.getApiVersion()));
-                    if(genericK8sClient != null){
-                        try{
-                            WorkflowLogger.startActivity(DeployerActivity.DEPLOYING,kind);
-                            if(genericK8sClient.get(object) != null && !genericK8sClient.patch(object)){
-                                logger.debug("Updating resource with Generic client for Kind - {}",kind);
+                            withNamespace(namespace).forKind(new CustomResourceKind(kind, object.getApiVersion()));
+                    if (genericK8sClient != null) {
+                        try {
+                            WorkflowLogger.startActivity(DeployerActivity.DEPLOYING, kind);
+                            if (genericK8sClient.get(object) != null && !genericK8sClient.patch(object)) {
+                                logger.debug("Updating resource with Generic client for Kind - {}", kind);
                                 // Delete and Create if failed to Patch
-                                logger.info("Deleting & Creating resource : {}",object.getKind());
+                                logger.info("Deleting & Creating resource : {}", object.getKind());
                                 genericK8sClient.delete(object);
                                 genericK8sClient.create(object);
                                 WorkflowLogger.endActivity(Status.DONE);
-                            }else{
-                                logger.debug("Creating resource with Generic client for Kind - {}",kind);
+                            } else {
+                                logger.debug("Creating resource with Generic client for Kind - {}", kind);
                                 genericK8sClient.create(object);
                                 WorkflowLogger.endActivity(Status.DONE);
                             }
-                        }catch (HyscaleException ex){
+                        } catch (HyscaleException ex) {
                             WorkflowLogger.endActivity(Status.FAILED);
                             logger.error("Failed to apply resource :{} Reason :: {}", kind, ex.getMessage());
                         }
@@ -225,45 +243,46 @@ public class K8sResourceDispatcher {
         boolean resourcesDeleted = true;
 
         List<String> failedResources = new ArrayList<>();
-        if(appliedKindsList!=null && !appliedKindsList.isEmpty()){
-            for(CustomResourceKind customResource : appliedKindsList){
-                logger.info("Cleaning up - {}",customResource.getKind());
+        if (appliedKindsList != null && !appliedKindsList.isEmpty()) {
+            for (CustomResourceKind customResource : appliedKindsList) {
+                logger.info("Cleaning up - {}", customResource.getKind());
                 GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).
                         withNamespace(namespace).forKind(customResource);
-                List<CustomObject> resources =  genericK8sClient.getBySelector(labelSelector);
-                if(resources == null || resources.isEmpty()){
+                List<CustomObject> resources = genericK8sClient.getBySelector(labelSelector);
+                if (resources == null || resources.isEmpty()) {
                     continue;
                 }
-                WorkflowLogger.startActivity(DeployerActivity.DELETING,customResource.getKind());
-                for(CustomObject resource : resources){
-                    resource.put("kind",customResource.getKind());
+                WorkflowLogger.startActivity(DeployerActivity.DELETING, customResource.getKind());
+                for (CustomObject resource : resources) {
+                    resource.put("kind", customResource.getKind());
                     boolean result = genericK8sClient.delete(resource);
                     logger.debug("Undeployment status for resource {} is {}", customResource.getKind(), result);
                     resourcesDeleted = resourcesDeleted && result;
                 }
-                if(resourcesDeleted){ WorkflowLogger.endActivity(Status.DONE); }
-                else{
+                if (resourcesDeleted) {
+                    WorkflowLogger.endActivity(Status.DONE);
+                } else {
                     failedResources.add(customResource.getKind());
                     WorkflowLogger.endActivity(Status.FAILED);
                 }
             }
-        }else if(!failedResources.isEmpty()){
+        } else if (!failedResources.isEmpty()) {
             String[] args = new String[failedResources.size()];
             failedResources.toArray(args);
             throw new HyscaleException(DeployerErrorCodes.FAILED_TO_DELETE_RESOURCE, args);
-        }else{
+        } else {
             WorkflowLogger.info(DeployerActivity.NO_RESOURCES_TO_UNDEPLOY);
         }
     }
 
-    private MultiValueMap<String,CustomObject> getCustomObjects(List<Manifest> manifests) throws HyscaleException {
-        MultiValueMap<String,CustomObject> kindVsObjects = new LinkedMultiValueMap<>();
+    private MultiValueMap<String, CustomObject> getCustomObjects(List<Manifest> manifests) throws HyscaleException {
+        MultiValueMap<String, CustomObject> kindVsObjects = new LinkedMultiValueMap<>();
         for (Manifest manifest : manifests) {
             try {
-                CustomObject object = KubernetesResourceUtil.getK8sCustomObjectResource(manifest,namespace);
-                if(object != null){
-                    logger.debug("Adding kind - {}",object.getKind());
-                    kindVsObjects.add(object.getKind(),object);
+                CustomObject object = KubernetesResourceUtil.getK8sCustomObjectResource(manifest, namespace);
+                if (object != null) {
+                    logger.debug("Adding kind - {}", object.getKind());
+                    kindVsObjects.add(object.getKind(), object);
                 }
             } catch (Exception e) {
                 HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST);
@@ -273,15 +292,15 @@ public class K8sResourceDispatcher {
         }
         return kindVsObjects;
     }
-    
-    private List<KubernetesResource> getSortedResources(List<Manifest> manifests) throws HyscaleException{
+
+    private List<KubernetesResource> getSortedResources(List<Manifest> manifests) throws HyscaleException {
         List<KubernetesResource> k8sResources = new ArrayList<>();
-        
+
         for (Manifest manifest : manifests) {
             try {
                 KubernetesResource kubernetesResource = KubernetesResourceUtil.getKubernetesResource(manifest, namespace);
-                if(kubernetesResource != null){
-                        k8sResources.add(kubernetesResource);
+                if (kubernetesResource != null) {
+                    k8sResources.add(kubernetesResource);
                 }
             } catch (Exception e) {
                 HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST);
@@ -292,7 +311,7 @@ public class K8sResourceDispatcher {
         // Sort resources to deploy secrets and configmaps before Pod Controller
         k8sResources.sort((resource1, resource2) -> ResourceHandlers.getHandlerOf(resource1.getKind()).getWeight()
                 - ResourceHandlers.getHandlerOf(resource2.getKind()).getWeight());
-        
+
         return k8sResources;
     }
 
