@@ -33,7 +33,9 @@ import java.util.*;
 public class IngressManifestBuilder implements LoadBalancerBuilder {
     private static final Logger logger = LoggerFactory.getLogger(IngressManifestBuilder.class);
     private static String RULES = "rules";
-    private static String TLS = "tls";
+    private static String LOADBALANCER = "loadBalancer";
+    private static String HOST = "host";
+    private static String SERVICENAME = "serviceName";
 
     @Autowired
     private PluginTemplateProvider templateProvider;
@@ -64,35 +66,9 @@ public class IngressManifestBuilder implements LoadBalancerBuilder {
     private Map<String,Object> getIngressSpecContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
         Map<String, Object> context = new HashMap<>();
         String serviceName = serviceMetadata.getServiceName();
-        context.put(RULES,getIngressRules(serviceName,loadBalancer));
-        context.put(TLS,getIngressTLS(loadBalancer));
+        context.put(LOADBALANCER,loadBalancer);
+        context.put(SERVICENAME,serviceName);
+        context.put(HOST,loadBalancer.getHost());
         return context;
-    }
-
-    private List<IngressRule> getIngressRules(String serviceName, LoadBalancer loadBalancer){
-
-        List<IngressRule> ingressRules = new ArrayList<>();
-        String host = loadBalancer.getHost();
-        if(loadBalancer.getMapping() != null && !loadBalancer.getMapping().isEmpty()){
-            loadBalancer.getMapping().forEach((mapping -> {
-                String port = mapping.getPort();
-                IngressRule ingressRule = new IngressRule();
-                ingressRule.setHost(host);
-                ingressRule.setRule(serviceName,port,mapping.getContextPaths());
-                ingressRules.add(ingressRule);
-            }));
-        }
-        return ingressRules;
-
-    }
-
-    private List<IngressTLS> getIngressTLS(LoadBalancer loadBalancer){
-        String host = loadBalancer.getHost();
-        List<IngressTLS> tls = new ArrayList<>();
-        String secretName = loadBalancer.getTlsSecret();
-        IngressTLS ingressTLS = new IngressTLS();
-        ingressTLS.setSecret(host,secretName);
-        tls.add(ingressTLS);
-        return tls;
     }
 }

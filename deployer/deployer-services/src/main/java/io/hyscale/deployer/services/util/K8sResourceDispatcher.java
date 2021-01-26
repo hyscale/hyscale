@@ -289,8 +289,8 @@ public class K8sResourceDispatcher {
             }
         }
         // Sort resources to deploy secrets and configmaps before Pod Controller
-        k8sResources.sort((resource1, resource2) -> ResourceHandlers.getHandlerOf(resource1.getKind()).getWeight()
-                - ResourceHandlers.getHandlerOf(resource2.getKind()).getWeight());
+      //  k8sResources.sort((resource1, resource2) -> ResourceHandlers.getHandlerOf(resource1.getKind()).getWeight()
+      //          - ResourceHandlers.getHandlerOf(resource2.getKind()).getWeight());
         
         return k8sResources;
     }

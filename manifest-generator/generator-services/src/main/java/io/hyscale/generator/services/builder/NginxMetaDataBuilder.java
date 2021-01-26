@@ -37,6 +37,7 @@ public class NginxMetaDataBuilder implements IngressMetaDataBuilder {
     private static String APP_NAME = "APP_NAME";
     private static String ENV_NAME = "ENV_NAME";
     private static String SERVICE_NAME = "SERVICE_NAME";
+    private static String SSL_REDIRECT = "SSL_REDIRECT";
 
     @Autowired
     private PluginTemplateProvider templateProvider;
@@ -57,16 +58,20 @@ public class NginxMetaDataBuilder implements IngressMetaDataBuilder {
 
     private Map<String,Object> getContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer){
         Map<String, Object> context = new HashMap<>();
+        context.put(INGRESS_NAME,ManifestResource.INGRESS.getName(serviceMetadata));
+        context.put(APP_NAME,serviceMetadata.getAppName());
+        context.put(ENV_NAME,serviceMetadata.getEnvName());
+        context.put(SERVICE_NAME,serviceMetadata.getServiceName());
+        context.put(SSL_REDIRECT,"false");
         if(loadBalancer.getClassName()!= null && !loadBalancer.getClassName().isBlank()){
             context.put(INGRESS_CLASS,loadBalancer.getClassName());
         }
         if(loadBalancer.isSticky()){
             context.put(STICKY,"cookie");
         }
-        context.put(INGRESS_NAME,ManifestResource.INGRESS.getName(serviceMetadata));
-        context.put(APP_NAME,serviceMetadata.getAppName());
-        context.put(ENV_NAME,serviceMetadata.getEnvName());
-        context.put(SERVICE_NAME,serviceMetadata.getServiceName());
+        if(loadBalancer.getTlsSecret()!= null && !loadBalancer.getTlsSecret().isBlank()){
+            context.put(SSL_REDIRECT,"true");
+        }
         return context;
     }
 }

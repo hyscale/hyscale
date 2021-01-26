@@ -1,20 +1,16 @@
 tls:
-{{#tls}}
   - hosts:
-    {{#hosts}}
-     - {{ . }}
-    {{/hosts}}
-    secretName: {{ secretName }}
-{{/tls}}
+     - {{ host }}
+    secretName: {{ loadBalancer.tlsSecret }}
 rules:
-{{#rules}}
   - http:
       paths:
-      {{#http.paths}}
+      {{#loadBalancer.mapping}}
+      {{#contextPaths}}
         - backend:
-           serviceName: {{ backend.serviceName }}
-           servicePort: {{ backend.servicePort }}
-          path : {{ path }}
-      {{/http.paths}}
+           serviceName: {{ serviceName }}
+           servicePort: {{ port }}
+          path : {{ . }}
+      {{/contextPaths}}
+      {{/loadBalancer.mapping}}
     host: {{ host }}
-{{/rules}}
