@@ -17,6 +17,7 @@ package io.hyscale.generator.services.plugins;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.generator.services.utils.ManifestContextTestUtil;
 import io.hyscale.generator.services.utils.ServiceSpecTestUtil;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
@@ -39,7 +40,7 @@ import java.util.stream.Stream;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class NetworkPoliciesHandlerTest {
+class NetworkPoliciesHandlerTest {
 
     @Autowired
     NetworkPoliciesHandler networkPoliciesHandler;
@@ -47,7 +48,7 @@ public class NetworkPoliciesHandlerTest {
     private static final Logger logger = LoggerFactory.getLogger(NetworkPoliciesHandlerTest.class);
 
     // This method sends parameters to the test method
-    private static Stream<Arguments> input() {
+    private static Stream<Arguments> input() throws HyscaleException {
         try {
             ClassLoader classloader = NetworkPoliciesHandlerTest.class.getClassLoader();
             return Stream.of(
@@ -62,14 +63,15 @@ public class NetworkPoliciesHandlerTest {
                     Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/network-policies/input/input-5.hspec"),
                             IOUtils.toString(Objects.requireNonNull(classloader.getResourceAsStream("plugins/network-policies/output/output-5.yaml")), StandardCharsets.UTF_8)));
         } catch (Exception e) {
-
-            return null;
+            HyscaleException ex = new HyscaleException(e, ManifestErrorCodes.ERROR_WHILE_CREATING_MANIFEST);
+            logger.error("Error while generating Manifest Files", ex);
+            throw ex;
         }
     }
 
     @ParameterizedTest
     @MethodSource("input")
-    public void testManifestGeneration(ServiceSpec serviceSpec, String output) throws HyscaleException {
+    void testManifestGeneration(ServiceSpec serviceSpec, String output) throws HyscaleException {
         ManifestContext manifestContext = ManifestContextTestUtil.getManifestContext(null);
         // Generate Manifests with Service Spec
         List<ManifestSnippet> manifestSnippetList = networkPoliciesHandler.handle(serviceSpec, manifestContext);

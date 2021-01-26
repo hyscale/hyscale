@@ -20,6 +20,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ConfigTemplate;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
+import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.provider.PluginTemplateProvider;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
@@ -28,14 +29,13 @@ import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.NetworkTrafficRule;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 
 @Component
 @ManifestPlugin(name = "NetworkPoliciesHandler")
@@ -54,18 +54,18 @@ public class NetworkPoliciesHandler implements ManifestHandler {
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         // Check if the Spec is External
-        if (serviceSpec.get(HyscaleSpecFields.external) == null || serviceSpec.get(HyscaleSpecFields.external, Boolean.class)) {
-            return null;
+        if (BooleanUtils.isTrue(serviceSpec.get(HyscaleSpecFields.external, Boolean.class))) {
+            return Collections.emptyList();
         }
         try {
             // All Network Traffic Rules Go Under Allow Traffic
             List<NetworkTrafficRule> networkTrafficRules = serviceSpec.get(HyscaleSpecFields.allowTraffic, new TypeReference<>() {
             });
+            logger.info("Started Network Policies Handler");
 
             // To Generate k8s YAML Template
             ConfigTemplate networkPoliciesTemplate = templateProvider.get(PluginTemplateProvider.PluginTemplateType.NETWORK_POLICY);
-            String yamlString = templateResolver.resolveTemplate(networkPoliciesTemplate.getTemplatePath(), getContext(networkTrafficRules, serviceSpec, manifestContext));
-
+            String yamlString = templateResolver.resolveTemplate(networkPoliciesTemplate.getTemplatePath(), getContext(networkTrafficRules, serviceSpec));
             ManifestSnippet snippet = new ManifestSnippet();
             snippet.setKind(ManifestResource.NETWORK_POLICY.getKind());
             snippet.setPath("spec");
@@ -73,14 +73,16 @@ public class NetworkPoliciesHandler implements ManifestHandler {
 
             List<ManifestSnippet> snippetList = new LinkedList<>();
             snippetList.add(snippet);
+            logger.info("Successfully generated manifest for Network Policy");
             return snippetList;
         } catch (Exception e) {
-            logger.info("Error while Generating Snippet", e);
-            return null;
+            HyscaleException ex = new HyscaleException(e, ManifestErrorCodes.ERROR_WHILE_CREATING_MANIFEST);
+            logger.error("Error while generating Manifest Files", ex);
+            throw ex;
         }
     }
 
-    public Map<String, Object> getContext(List<NetworkTrafficRule> networkTrafficRules, ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
+    public Map<String, Object> getContext(List<NetworkTrafficRule> networkTrafficRules, ServiceSpec serviceSpec) throws HyscaleException {
         Map<String, Object> context = new HashMap<>();
         String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
         context.put(SERVICE_NAME, serviceName);
