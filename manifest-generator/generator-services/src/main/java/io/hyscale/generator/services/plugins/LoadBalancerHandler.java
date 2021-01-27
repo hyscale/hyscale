@@ -21,7 +21,6 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.commons.models.ServiceMetadata;
-import io.hyscale.generator.services.generator.MetadataManifestSnippetGenerator;
 import io.hyscale.generator.services.model.LBType;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
@@ -51,7 +50,7 @@ public class LoadBalancerHandler implements ManifestHandler {
      */
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
-        if (!ManifestPredicates.getLoadBalancerPredicate().test(serviceSpec)) {
+        if (!ManifestPredicates.getLoadBalancerPredicate(LBType.INGRESS).test(serviceSpec) && !ManifestPredicates.getLoadBalancerPredicate(LBType.ISTIO).test(serviceSpec)) {
             logger.debug("Load Balancer information found to be empty while processing service spec data.");
             return Collections.emptyList();
         }
@@ -69,6 +68,6 @@ public class LoadBalancerHandler implements ManifestHandler {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        return null;
+        return Collections.emptyList();
     }
 }

@@ -18,13 +18,12 @@ package io.hyscale.generator.services.builder;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ConfigTemplate;
 import io.hyscale.commons.models.LoadBalancer;
-import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
+import io.hyscale.generator.services.constants.ManifestGenConstants;
+import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.provider.PluginTemplateProvider;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
-import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
-import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,9 +31,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class DestinationRuleSpecBuilder implements IstioResourcesManifestGenerator {
+public class DestinationRuleBuilder implements IstioResourcesManifestGenerator {
 
-    private static final String DESTINATION_RULE_NAME="DESTINATION_RULE_NAME";
+    private static final String HOST_NAME = "HOST_NAME";
+
     @Autowired
     private PluginTemplateProvider templateProvider;
 
@@ -43,16 +43,22 @@ public class DestinationRuleSpecBuilder implements IstioResourcesManifestGenerat
 
     @Override
     public ManifestSnippet generateManifest(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
-        ConfigTemplate virtualServiceTemplate = templateProvider.get(PluginTemplateProvider.PluginTemplateType.ISTIO_DESTINATION_RULE);
-        templateResolver.resolveTemplate(virtualServiceTemplate.getTemplatePath(), getContext(serviceMetadata,loadBalancer));
+        if(loadBalancer.isSticky()){
+            ConfigTemplate virtualServiceTemplate = templateProvider.get(PluginTemplateProvider.PluginTemplateType.ISTIO_DESTINATION_RULE);
+            String yaml = templateResolver.resolveTemplate(virtualServiceTemplate.getTemplatePath(), getContext(serviceMetadata, loadBalancer));
+            ManifestSnippet snippet = new ManifestSnippet();
+            snippet.setKind(ManifestResource.DESTINATION_RULE.getKind());
+            snippet.setPath("spec");
+            snippet.setSnippet(yaml);
+            return snippet;
+        }
         return null;
     }
 
-    private Map<String, Object> getContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
+    private Map<String, Object> getContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) {
         Map<String, Object> map = new HashMap<>();
-        //Need to build entire context.
-        map.put(DESTINATION_RULE_NAME,serviceMetadata.getServiceName()+serviceMetadata.getEnvName());
-        map.put("loadBalancer",loadBalancer);
+        map.put(HOST_NAME, serviceMetadata.getServiceName());
+        map.put(ManifestGenConstants.LOADBALANCER, loadBalancer);
         return map;
     }
 }

@@ -17,14 +17,14 @@ package io.hyscale.generator.services.builder;
 
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.models.*;
+import io.hyscale.commons.models.ConfigTemplate;
+import io.hyscale.commons.models.LoadBalancer;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
+import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.provider.PluginTemplateProvider;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
-import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
-import io.hyscale.servicespec.commons.model.service.ServiceSpec;
-import me.snowdrop.istio.api.networking.v1beta1.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -34,9 +34,16 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class VirtualServiceBuilder implements IstioResourcesManifestGenerator{
+public class VirtualServiceBuilder implements IstioResourcesManifestGenerator {
 
-    private static final String VIRTUAL_SERVICE_NAME ="VIRTUAL_SERVICE_NAME";
+    private static final String DEFAULT_MATCH_TYPE = "prefix";
+
+    private static final String MATCH_TYPE = "MATCH_TYPE";
+
+    private static final String GATEWAYS = "gateways";
+
+    private static final String HEADERS = "headers";
+
 
     @Autowired
     private PluginTemplateProvider templateProvider;
@@ -47,61 +54,32 @@ public class VirtualServiceBuilder implements IstioResourcesManifestGenerator{
     @Override
     public ManifestSnippet generateManifest(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
         ConfigTemplate virtualServiceTemplate = templateProvider.get(PluginTemplateProvider.PluginTemplateType.ISTIO_VIRTUAL_SERVICE);
-        templateResolver.resolveTemplate(virtualServiceTemplate.getTemplatePath(), getContext(serviceMetadata,loadBalancer));
-        //Generate Manifest snippet from the template
-        return null;
+        String yaml = templateResolver.resolveTemplate(virtualServiceTemplate.getTemplatePath(), getContext(serviceMetadata, loadBalancer));
+        ManifestSnippet snippet = new ManifestSnippet();
+        snippet.setKind(ManifestResource.VIRTUAL_SERVICE.getKind());
+        snippet.setPath("spec");
+        snippet.setSnippet(yaml);
+        return snippet;
     }
 
-    private Map<String, Object> getContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
+    private Map<String, Object> getContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) {
         Map<String, Object> map = new HashMap<>();
         String serviceName = serviceMetadata.getServiceName();
         String envName = serviceMetadata.getEnvName();
-        map.put(VIRTUAL_SERVICE_NAME, getVirtualServiceName(serviceName, envName));
         List<String> hosts = new ArrayList<>();
         hosts.add(loadBalancer.getHost());
-        map.put("hosts", hosts);
+        map.put(ManifestGenConstants.HOSTS, hosts);
         List<String> gateways = new ArrayList<>();
         gateways.add(getGatewayName(serviceName, envName));
-        map.put("gateways", gateways);
-        map.put("headers", loadBalancer.getHeaders().entrySet());
-        map.put("matchRequests", prepareHTTPMatchRequests(loadBalancer.getMapping().get(0)));
-        map.put("routes", prepareHTTPRouteDestination(loadBalancer.getMapping().get(0)));
+        map.put(GATEWAYS, gateways);
+        map.put(HEADERS, loadBalancer.getHeaders().entrySet());
+        map.put(ManifestGenConstants.LOADBALANCER, loadBalancer);
+        map.put("serviceName", serviceMetadata.getServiceName());
+        map.put(MATCH_TYPE, DEFAULT_MATCH_TYPE);
         return map;
-    }
-
-    public String getVirtualServiceName(String serviceName, String envName) {
-        return serviceName + ToolConstants.DASH + (envName != null ? envName + ToolConstants.DASH : "") + ManifestGenConstants.ISTIO + ToolConstants.DASH + ManifestGenConstants.VIRTUAL_SERVICE;
     }
 
     public String getGatewayName(String serviceName, String envName) {
         return serviceName + ToolConstants.DASH + (envName != null ? envName + ToolConstants.DASH : "") + ManifestGenConstants.ISTIO + ToolConstants.DASH + ManifestGenConstants.GATEWAY;
     }
-
-    public List<HTTPMatchRequest> prepareHTTPMatchRequests(LoadBalancerMapping mapping) {
-        List<HTTPMatchRequest> matchRequests = new ArrayList<>();
-        for (String path : mapping.getContextPaths()) {
-            HTTPMatchRequest matchRequest = new HTTPMatchRequest();
-            PrefixMatchType matchType = new PrefixMatchType();
-            matchType.setPrefix(path);
-            StringMatch uri = new StringMatch();
-            uri.setMatchType(matchType);
-            matchRequest.setUri(uri);
-            matchRequests.add(matchRequest);
-        }
-        return matchRequests;
-    }
-
-    public List<HTTPRouteDestination> prepareHTTPRouteDestination(LoadBalancerMapping mapping){
-        List<HTTPRouteDestination> routeDestinations = new ArrayList<>();
-        HTTPRouteDestination routeDestination = new HTTPRouteDestination();
-        Destination destination = new Destination();
-        destination.setHost("rating");
-        PortSelector port = new PortSelector();
-        port.setNumber(Integer.parseInt(mapping.getPort().substring(0,mapping.getPort().indexOf('/'))));
-        destination.setPort(port);
-        routeDestination.setDestination(destination);
-        routeDestinations.add(routeDestination);
-        return routeDestinations;
-    }
-
 }

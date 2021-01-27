@@ -45,5 +45,4 @@ module manifestGenerator {
 	requires spring.context;
 	requires java.annotation;
 	requires spring.beans;
-	requires istio.model;
 }

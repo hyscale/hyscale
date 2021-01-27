@@ -20,6 +20,7 @@ import java.util.List;
 public class LoadBalancerMapping {
     List<String> contextPaths;
     String port;
+    Integer portNumber;
 
     public List<String> getContextPaths() {
         return contextPaths;
@@ -35,5 +36,14 @@ public class LoadBalancerMapping {
 
     public void setPort(String port) {
         this.port = port;
+        setPortNumber(port);
+    }
+
+    public void setPortNumber(String port) {
+        this.portNumber = Integer.parseInt(port.substring(0, port.indexOf('/')));
+    }
+
+    public Integer getPortNumber(String port) {
+        return Integer.parseInt(port.substring(0, port.indexOf('/')));
     }
 }

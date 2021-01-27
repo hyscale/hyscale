@@ -38,10 +38,19 @@ public class ManifestGenConstants {
 	public static final String POD_CHECKSUM = "POD_CHECKSUM";
 
 	//ISTIO loadBalancer fields.
+
+	public static final String LOADBALANCER = "loadBalancer";
+
+	public static final String HOSTS = "hosts";
+
 	public static final String ISTIO = "istio";
 
 	public static final String GATEWAY = "gateway";
 
 	public static final String VIRTUAL_SERVICE = "virtual-service";
+
+	public static final String DESTINATION_RULE = "destination-rule";
+
+	public static final String NETWORKING_API_VERSION = "networking.istio.io/v1beta1";
 
 }

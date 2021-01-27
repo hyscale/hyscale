@@ -1,32 +1,32 @@
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
-metadata:
-  name: {{VIRTUAL_SERVICE_NAME}}
-spec:
-  hosts:
-  {{#hosts}}
-  - {{ . }}
-  {{/hosts}}
-  gateways:
-  {{#gateways}}
-  - {{ . }}
-  {{/gateways}}
-  http:
-  - match:
-    {{#matchRequests}}
-    - uri:
-       prefix: {{uri.matchType.prefix}}
-    {{/matchRequests}}
-    headers:
-      request:
-        set:
-         {{#headers}}
-         {{key}}: {{value}}
-         {{/headers}}
-    route:
-    {{#routes}}
-    - destination:
-        host: {{destination.host}}
-        port:
-          number: {{destination.port.number}}
-    {{/routes}}
+hosts:
+{{#hosts}}
+- {{ . }}
+{{/hosts}}
+gateways:
+{{#gateways}}
+- {{ . }}
+{{/gateways}}
+{{#loadBalancer.tlsSecret}}
+tls:
+{{/loadBalancer.tlsSecret}}
+{{^loadBalancer.tlsSecret}}
+http:
+{{/loadBalancer.tlsSecret}}
+{{#loadBalancer.mapping}}
+- match:
+{{#contextPaths}}
+  - uri:
+      {{MATCH_TYPE}}: {{.}}
+ {{/contextPaths}}
+  headers:
+    request:
+      set:
+        {{#headers}}
+        {{key}}: {{value}}
+        {{/headers}}
+  route:
+  - destination:
+      host: {{serviceName}}
+      port:
+        number: {{portNumber}}
+{{/loadBalancer.mapping}}

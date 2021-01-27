@@ -18,11 +18,9 @@ package io.hyscale.generator.services.builder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.LoadBalancer;
-import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.generator.services.provider.PluginTemplateProvider;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
-import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +28,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -44,7 +41,7 @@ public class IstioManifestBuilder implements LoadBalancerBuilder {
     private GatewayBuilder gatewayBuilder;
 
     @Autowired
-    private  DestinationRuleSpecBuilder destinationRuleBuilder;
+    private DestinationRuleBuilder destinationRuleBuilder;
 
     @Autowired
     private PluginTemplateProvider templateProvider;
@@ -66,6 +63,6 @@ public class IstioManifestBuilder implements LoadBalancerBuilder {
         for(IstioResourcesManifestGenerator istioManifestGenerator: istioManifestGenerators){
             manifestSnippets.add(istioManifestGenerator.generateManifest(serviceMetadata, loadBalancer));
         }
-        return Collections.emptyList();
+        return manifestSnippets;
     }
 }
