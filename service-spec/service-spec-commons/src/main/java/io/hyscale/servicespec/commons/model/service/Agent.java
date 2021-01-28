@@ -97,18 +97,4 @@ public class Agent {
 	public void setPorts(List<Port> ports) {
 		this.ports = ports;
 	}
-
-	@Override
-	public String toString() {
-		return "Agent{" +
-				"name='" + name + '\'' +
-				", image='" + image + '\'' +
-				", props=" + props +
-				", secrets=" + secrets +
-				", volumes=" + volumes +
-				", propsVolumePath='" + propsVolumePath + '\'' +
-				", secretsVolumePath='" + secretsVolumePath + '\'' +
-				", ports=" + ports +
-				'}';
-	}
 }
