@@ -5,6 +5,7 @@ podSelector:
 policyTypes:
   - Ingress
   - Egress
+{{#rules}}
 ingress:
   {{#rules}}
   - from: {{^from}}[]{{/from}}
@@ -20,3 +21,4 @@ ingress:
   {{/rules}}
 egress:
   - {}
+{{/rules}}
