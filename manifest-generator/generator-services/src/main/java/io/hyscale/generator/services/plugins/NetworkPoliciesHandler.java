@@ -22,6 +22,7 @@ import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
 import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.generator.services.model.ManifestResource;
+import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.generator.services.provider.PluginTemplateProvider;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
@@ -49,12 +50,13 @@ public class NetworkPoliciesHandler implements ManifestHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(NetworkPoliciesHandler.class);
     private static final String SERVICE_NAME = "service_name";
-    private static final String NETWORK_RULES = "rules";
+    private static final String NETWORK_TRAFFIC_RULES = "rules";
+    private static final String ENABLE_TRAFFIC = "enable";
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         // Check if the Spec is External
-        if (BooleanUtils.isTrue(serviceSpec.get(HyscaleSpecFields.external, Boolean.class))) {
+        if (BooleanUtils.isFalse(ManifestPredicates.isNetworkPolicyEnabled().test(serviceSpec))) {
             return Collections.emptyList();
         }
         try {
@@ -86,7 +88,8 @@ public class NetworkPoliciesHandler implements ManifestHandler {
         Map<String, Object> context = new HashMap<>();
         String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
         context.put(SERVICE_NAME, serviceName);
-        context.put(NETWORK_RULES, networkTrafficRules);
+        context.put(ENABLE_TRAFFIC,networkTrafficRules.isEmpty());
+        context.put(NETWORK_TRAFFIC_RULES, networkTrafficRules);
         return context;
     }
 }

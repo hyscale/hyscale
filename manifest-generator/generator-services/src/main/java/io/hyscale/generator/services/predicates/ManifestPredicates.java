@@ -21,6 +21,7 @@ import io.hyscale.generator.services.provider.PropsProvider;
 import io.hyscale.generator.services.utils.ReplicasUtil;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.*;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -186,6 +187,9 @@ public class ManifestPredicates {
         return serviceSpec -> {
             List<NetworkTrafficRule> allowTraffic;
             try {
+                if (BooleanUtils.isTrue(serviceSpec.get(HyscaleSpecFields.external, Boolean.class))) {
+                    return false;
+                }
                 allowTraffic = serviceSpec.get(HyscaleSpecFields.allowTraffic, new TypeReference<>() {
                 });
             } catch (HyscaleException e) {

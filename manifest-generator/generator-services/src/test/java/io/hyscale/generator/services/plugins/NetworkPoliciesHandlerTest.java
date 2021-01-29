@@ -61,7 +61,9 @@ class NetworkPoliciesHandlerTest {
                     Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/network-policies/input/input-4.hspec"),
                             IOUtils.toString(Objects.requireNonNull(classloader.getResourceAsStream("plugins/network-policies/output/output-4.yaml")), StandardCharsets.UTF_8)),
                     Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/network-policies/input/input-5.hspec"),
-                            IOUtils.toString(Objects.requireNonNull(classloader.getResourceAsStream("plugins/network-policies/output/output-5.yaml")), StandardCharsets.UTF_8)));
+                            IOUtils.toString(Objects.requireNonNull(classloader.getResourceAsStream("plugins/network-policies/output/output-5.yaml")), StandardCharsets.UTF_8)),
+                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/network-policies/input/input-6.hspec"),
+                            IOUtils.toString(Objects.requireNonNull(classloader.getResourceAsStream("plugins/network-policies/output/output-6.yaml")), StandardCharsets.UTF_8)));
         } catch (Exception e) {
             HyscaleException ex = new HyscaleException(e, ManifestErrorCodes.ERROR_WHILE_CREATING_MANIFEST);
             logger.error("Error while generating Manifest Files", ex);
@@ -80,6 +82,7 @@ class NetworkPoliciesHandlerTest {
     }
 
     public void verifyManifests(List<ManifestSnippet> manifestSnippetList, String output) {
+
         logger.info("Verifying Manifest and Yaml : {} ", output.replaceAll("\\s", "").equals(manifestSnippetList.get(0).getSnippet().replaceAll("\\s", "")));
         Assertions.assertEquals(manifestSnippetList.get(0).getSnippet().replaceAll("\\s", ""), output.replaceAll("\\s", ""));
     }
