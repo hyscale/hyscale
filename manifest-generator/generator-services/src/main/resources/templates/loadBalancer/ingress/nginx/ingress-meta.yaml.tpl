@@ -2,13 +2,23 @@ name: {{ INGRESS_NAME }}
 labels:
   hyscale.io/app-name: {{APP_NAME}}
   hyscale.io/service-name: {{SERVICE_NAME}}
+  {{#ENVIRONMENT_NAME}}
   hyscale.io/environment-name: {{ENVIRONMENT_NAME}}
-  hyscale.io/component-group: {{ INGRESS_GROUP }}
-  hyscale.io/ingress-provider: {{ INGRESS_PROVIDER }}
+  {{/ENVIRONMENT_NAME}}
 annotations:
   kubernetes.io/ingress.class: "{{INGRESS_CLASS}}"
-  kubernetes.io/ingress.allow-http: {{ ALLOW_HTTP }}
-  nginx.ingress.kubernetes.io/ssl-redirect: {{ SSL_REDIRECT }}
+  {{^ALLOW_HTTP }}
+  kubernetes.io/ingress.allow-http: "true"
+  {{/ALLOW_HTTP }}
+  {{#ALLOW_HTTP }}
+  kubernetes.io/ingress.allow-http: "false"
+  {{/ALLOW_HTTP }}
+  {{^SSL_REDIRECT }}
+  nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  {{/SSL_REDIRECT }}
+  {{#SSL_REDIRECT }}
+  nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  {{/SSL_REDIRECT }}
   nginx.ingress.kubernetes.io/use-regex: "true"
   nginx.ingress.kubernetes.io/affinity: {{ STICKY }}
   {{#CONFIGURATION_SNIPPET}}

@@ -1,7 +1,9 @@
+{{#loadBalancer.tlsSecret}}
 tls:
   - hosts:
      - {{ host }}
     secretName: {{ loadBalancer.tlsSecret }}
+{{/loadBalancer.tlsSecret}}
 rules:
   - http:
       paths:
@@ -9,7 +11,7 @@ rules:
       {{#contextPaths}}
         - backend:
            serviceName: {{ serviceName }}
-           servicePort: {{ port }}
+           servicePort: {{ portNumber }}
           path : {{ . }}
       {{/contextPaths}}
       {{/loadBalancer.mapping}}

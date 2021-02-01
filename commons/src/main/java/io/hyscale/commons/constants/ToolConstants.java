@@ -25,6 +25,8 @@ public class ToolConstants {
 
     public static final String COLON = ":";
 
+    public static final String SEMI_COLON = ";";
+
     public static final String DOUBLE_COLON = "::";
 
     public static final String COMMA = ",";
