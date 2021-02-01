@@ -38,7 +38,13 @@ public enum ValidatorActivity implements Activity {
     MISSING_DOCKER_REGISTRY_CREDENTIALS("Cannot find {} credentials. Do 'docker login {}' to continue with the deployment"),
     SERVICE_SPEC_VALIDATION_FAILED("Service spec validation failed for {}. {} "),
     PROFILE_VALIDATION_FAILED("Profile validation failed for {}. {} "),
-    CLUSTER_AUTHENTICATION_FAILED("Cluster authentication failed. Verify if cluster config is valid");
+    CLUSTER_AUTHENTICATION_FAILED("Cluster authentication failed. Verify if cluster config is valid"),
+
+    INVALID_NETWORK_TRAFFIC_RULES("Network Policy Validation failed due to Invalid Network Traffic Rules"),
+    INVALID_VALUE("Value not Valid for field : {} "),
+    PORT_NOT_EXPOSED("Network Policy Validation failed as Traffic Rule Port {} not Exposed ");
+
+
 
     private String message;
 
