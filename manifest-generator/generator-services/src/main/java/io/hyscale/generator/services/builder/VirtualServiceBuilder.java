@@ -15,7 +15,6 @@
  */
 package io.hyscale.generator.services.builder;
 
-import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ConfigTemplate;
 import io.hyscale.commons.models.LoadBalancer;
@@ -80,6 +79,6 @@ public class VirtualServiceBuilder implements IstioResourcesManifestGenerator {
     }
 
     public String getGatewayName(String serviceName, String envName) {
-        return serviceName + ToolConstants.DASH + (envName != null ? envName + ToolConstants.DASH : "") + ManifestGenConstants.ISTIO + ToolConstants.DASH + ManifestGenConstants.GATEWAY;
+        return (envName != null ? envName + ManifestGenConstants.NAME_DELIMITER : "") + serviceName + ManifestGenConstants.NAME_DELIMITER + ManifestGenConstants.ISTIO + ManifestGenConstants.NAME_DELIMITER + ManifestGenConstants.GATEWAY;
     }
 }

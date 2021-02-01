@@ -1,6 +1,6 @@
 selector:
 {{#labels}}
-{{key}}: {{value}}
+  {{key}}: {{value}}
 {{/labels}}
 servers:
 {{#loadBalancer.mapping}}
@@ -9,8 +9,8 @@ servers:
     - {{ . }}
   {{/hosts}}
   port:
-    number: {{portNumber}}
-    name: {{port}}
+    number: {{PORT_NUMBER}}
+    name: {{PROTOCOL}}
     protocol: {{PROTOCOL}}
   {{#loadBalancer.tlsSecret}}
   tls:

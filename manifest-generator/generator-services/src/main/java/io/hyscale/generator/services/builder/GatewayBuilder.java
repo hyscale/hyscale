@@ -39,6 +39,8 @@ public class GatewayBuilder implements IstioResourcesManifestGenerator {
     private static final String TLS_MODE = "TLS_MODE";
     private static final String DEFAULT_TLS_MODE = "SIMPLE";
     private static final String PROTOCOL = "PROTOCOL";
+    private static final String PORT_NUMBER = "PORT_NUMBER";
+    private static final Integer DEFAULT_GATEWAY_PORT = 80;
 
     @Autowired
     private PluginTemplateProvider templateProvider;
@@ -65,7 +67,7 @@ public class GatewayBuilder implements IstioResourcesManifestGenerator {
         hosts.add(loadBalancer.getHost());
         map.put(ManifestGenConstants.HOSTS, hosts);
         map.put(TLS_MODE, DEFAULT_TLS_MODE);
-        //Need to confirm.
+        map.put(PORT_NUMBER, DEFAULT_GATEWAY_PORT);
         map.put(PROTOCOL, loadBalancer.getTlsSecret() != null ? "HTTPS" : "HTTP");
         return map;
     }

@@ -65,7 +65,9 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
                 //message for validator?
                 return false;
             }
-            warnForExternalTrue(serviceSpec);
+            if (!checkForExternalTrue(serviceSpec)) {
+                return false;
+            }
         }
         return true;
     }
@@ -102,13 +104,15 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
      * @param serviceSpec
      * @throws HyscaleException
      */
-    private void warnForExternalTrue(ServiceSpec serviceSpec) throws HyscaleException {
-        TypeReference<Boolean> booleanTypeReference = new TypeReference<Boolean>() {
+    private boolean checkForExternalTrue(ServiceSpec serviceSpec) throws HyscaleException {
+        TypeReference<Boolean> booleanTypeReference = new TypeReference<>() {
         };
         Boolean isExternal = serviceSpec.get(HyscaleSpecFields.external, booleanTypeReference);
-        if (isExternal != null && isExternal) {
-            WorkflowLogger.persist(ValidatorActivity.EXTERNAL_CONFIGURED, LoggerTags.WARN);
+        if (isExternal != null && !isExternal) {
+            WorkflowLogger.persist(ValidatorActivity.EXTERNAL_CONFIGURED, LoggerTags.ERROR);
+            return false;
         }
+        return true;
     }
 
     /**

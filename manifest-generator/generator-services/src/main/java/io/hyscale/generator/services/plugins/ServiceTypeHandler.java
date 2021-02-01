@@ -15,6 +15,7 @@
  */
 package io.hyscale.generator.services.plugins;
 
+import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.K8sServiceType;
@@ -48,6 +49,15 @@ public class ServiceTypeHandler implements ManifestHandler {
             serviceTypeSnippet.setPath("spec.type");
 
             Boolean external = serviceSpec.get(HyscaleSpecFields.external, Boolean.class);
+            /**
+             * If loadBalancer is configured and external is specified as true in hspec, then Service type could be CLUSTER_IP.
+             * If loadBalancer is not configured, external is not specified or specified as false, then Service type could be CLUSTER_IP.
+             * Conclusion :  If loadBalancer is configured, service type will be CLUSTER_IP irrespective of the "external".
+             */
+            LoadBalancer loadBalancer = serviceSpec.get(HyscaleSpecFields.loadBalancer, LoadBalancer.class);
+            if (loadBalancer != null) {
+                external = false;
+            }
             K8sServiceType serviceType = getServiceType(external);
             String serviceTypeName = serviceType != null ? serviceType.getName() : K8sServiceType.CLUSTER_IP.getName();
             logger.debug("Processing Service Type {}.",serviceTypeName);
@@ -57,7 +67,6 @@ public class ServiceTypeHandler implements ManifestHandler {
         return manifestSnippetList;
     }
 
-    @SuppressWarnings("java:S2583")
     private K8sServiceType getServiceType(Boolean external) {
         if (BooleanUtils.toBoolean(external)) {
             if (checkForLoadBalancerType()) {

@@ -182,6 +182,8 @@ public enum ManifestResource {
             sb.append(ManifestGenConstants.NAME_DELIMITER);
             sb.append(NormalizationUtil.normalize(serviceMetadata.getServiceName()));
             sb.append(ManifestGenConstants.NAME_DELIMITER);
+            sb.append(ManifestGenConstants.ISTIO);
+            sb.append(ManifestGenConstants.NAME_DELIMITER);
             sb.append(ManifestGenConstants.GATEWAY);
             return sb.toString();
         }
@@ -205,6 +207,8 @@ public enum ManifestResource {
             sb.append(ManifestGenConstants.NAME_DELIMITER);
             sb.append(NormalizationUtil.normalize(serviceMetadata.getServiceName()));
             sb.append(ManifestGenConstants.NAME_DELIMITER);
+            sb.append(ManifestGenConstants.ISTIO);
+            sb.append(ManifestGenConstants.NAME_DELIMITER);
             sb.append(ManifestGenConstants.VIRTUAL_SERVICE);
             return sb.toString();
         }
@@ -227,6 +231,8 @@ public enum ManifestResource {
             sb.append(NormalizationUtil.normalize(serviceMetadata.getEnvName()));
             sb.append(ManifestGenConstants.NAME_DELIMITER);
             sb.append(NormalizationUtil.normalize(serviceMetadata.getServiceName()));
+            sb.append(ManifestGenConstants.NAME_DELIMITER);
+            sb.append(ManifestGenConstants.ISTIO);
             sb.append(ManifestGenConstants.NAME_DELIMITER);
             sb.append(ManifestGenConstants.DESTINATION_RULE);
             return sb.toString();
