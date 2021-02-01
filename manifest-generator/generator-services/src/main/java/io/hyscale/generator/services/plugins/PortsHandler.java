@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -46,8 +45,7 @@ public class PortsHandler implements ManifestHandler {
         TypeReference<List<Port>> listTypeReference = new TypeReference<>() {};
         List<Port> portList = serviceSpec.get(HyscaleSpecFields.ports, listTypeReference);
         String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
-        List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
-        return DefaultPortsBuilder.generatePortsManifest(portList, podSpecOwner, manifestSnippetList);
+        return DefaultPortsBuilder.generatePortsManifest(portList, podSpecOwner);
 
     }
 }

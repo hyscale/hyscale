@@ -15,13 +15,14 @@
  */
 package io.hyscale.generator.services.plugins;
 
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.anyString;
-
-import java.util.List;
-import java.util.stream.Stream;
-
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.commons.utils.MustacheTemplateResolver;
+import io.hyscale.generator.services.model.ManifestResource;
+import io.hyscale.generator.services.utils.ManifestContextTestUtil;
+import io.hyscale.generator.services.utils.ServiceSpecTestUtil;
+import io.hyscale.plugin.framework.models.ManifestSnippet;
+import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -32,16 +33,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.models.ManifestContext;
-import io.hyscale.commons.utils.MustacheTemplateResolver;
-import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.utils.ManifestContextTestUtil;
-import io.hyscale.generator.services.utils.ServiceSpecTestUtil;
-import io.hyscale.plugin.framework.models.ManifestSnippet;
-import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.springframework.boot.test.mock.mockito.MockBean;
+
+import java.util.List;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
 
 @SpringBootTest
 @TestInstance(Lifecycle.PER_CLASS)
@@ -50,7 +49,7 @@ class AutoScalingPluginHandlerTest {
     @Autowired
     private AutoScalingPluginHandler autoScalingPluginHandler;
 
-    @MockBean // Already mocked in configuration class
+    @MockBean
     private MustacheTemplateResolver mustacheTemplateResolver;
 
     private ServiceSpec noScalingSpec;

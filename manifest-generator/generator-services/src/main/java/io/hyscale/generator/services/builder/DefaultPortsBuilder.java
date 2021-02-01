@@ -32,15 +32,21 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * This class is to generate the default ports taken from the
+ * service spec for the manifest snippet.
+ * Handles Ports for Services as well as Agents.
+ */
 public class DefaultPortsBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultPortsBuilder.class);
 
-    public static List<ManifestSnippet> generatePortsManifest(List<Port> portList, String podSpecOwner,
-                                                              List<ManifestSnippet> manifestSnippetList) throws HyscaleException {
+    public static List<ManifestSnippet> generatePortsManifest(List<Port> portList, String podSpecOwner) throws HyscaleException {
+        List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         if (portList != null && !portList.isEmpty()) {
             Set<V1ContainerPort> v1ContainerPorts = Sets.newHashSet();
             Set<V1ServicePort> v1ServicePorts = Sets.newHashSet();

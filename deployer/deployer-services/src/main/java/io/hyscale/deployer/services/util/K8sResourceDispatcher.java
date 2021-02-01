@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Pramati Prism, Inc.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -103,14 +103,13 @@ public class K8sResourceDispatcher {
         List<String> appliedKinds = new ArrayList<>();
         List<CustomObject> customObjects = new ArrayList<>();
         List<KubernetesResource> kubernetesResourceList = new ArrayList<>();
-        try{
-            for(Manifest manifest : manifests){
+        try {
+            for (Manifest manifest : manifests) {
                 CustomObject customObject = KubernetesResourceUtil.getK8sCustomObjectResource(manifest, namespace);
                 appliedKinds.add(buildAppliedKindAnnotation(customObject));
-                if(ResourceHandlers.getHandlerOf(customObject.getKind()) != null){
+                if (ResourceHandlers.getHandlerOf(customObject.getKind()) != null) {
                     kubernetesResourceList.add(KubernetesResourceUtil.getKubernetesResource(manifest, namespace));
-                }
-                else {
+                } else {
                     customObjects.add(customObject);
                 }
             }
@@ -131,20 +130,22 @@ public class K8sResourceDispatcher {
                     DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
 
             ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(k8sResource.getKind());
-            if (lifeCycleHandler.isWorkLoad()) {
-                AnnotationsUpdateManager.update(k8sResource, AnnotationKey.HYSCALE_APPLIED_KINDS,
-                        appliedKinds.toString());
-            }
-            if (lifeCycleHandler != null && k8sResource.getResource() != null && k8sResource.getV1ObjectMeta() != null) {
-                try {
-                    String name = k8sResource.getV1ObjectMeta().getName();
-                    if (resourceBroker.get(lifeCycleHandler, name) != null) {
-                        resourceBroker.update(lifeCycleHandler, k8sResource, lifeCycleHandler.getUpdatePolicy());
-                    } else {
-                        resourceBroker.create(lifeCycleHandler, k8sResource.getResource());
+            if (lifeCycleHandler != null) {
+                if (lifeCycleHandler.isWorkLoad()) {
+                    AnnotationsUpdateManager.update(k8sResource, AnnotationKey.HYSCALE_APPLIED_KINDS,
+                            appliedKinds.toString());
+                }
+                if (k8sResource.getResource() != null && k8sResource.getV1ObjectMeta() != null) {
+                    try {
+                        String name = k8sResource.getV1ObjectMeta().getName();
+                        if (resourceBroker.get(lifeCycleHandler, name) != null) {
+                            resourceBroker.update(lifeCycleHandler, k8sResource, lifeCycleHandler.getUpdatePolicy());
+                        } else {
+                            resourceBroker.create(lifeCycleHandler, k8sResource.getResource());
+                        }
+                    } catch (HyscaleException ex) {
+                        logger.error("Failed to apply resource :{} Reason :: {}", k8sResource.getKind(), ex.getMessage(), ex);
                     }
-                } catch (HyscaleException ex) {
-                    logger.error("Failed to apply resource :{} Reason :: {}", k8sResource.getKind(), ex.getMessage(), ex);
                 }
             }
         }
@@ -196,55 +197,33 @@ public class K8sResourceDispatcher {
         deleteResources(selector, appliedKindsList);
     }
 
-/*
-    private List<String> buildAppliedKindsAnnotation(MultiValueMap<String, CustomObject> kindVsCustomObject) {
-        if (kindVsCustomObject == null || kindVsCustomObject.isEmpty()) {
-            return Collections.emptyList();
-        }
-        List<String> appliedKinds = new ArrayList<>();
-        kindVsCustomObject.forEach((kind, customObjects) -> {
-            String kindVsApiVersion = kind + ":" + customObjects.get(0).getApiVersion();
-            appliedKinds.add(kindVsApiVersion);
-        });
-        return appliedKinds;
-    }
-*/
-
-    private String buildAppliedKindAnnotation(CustomObject customObject){
+    private String buildAppliedKindAnnotation(CustomObject customObject) {
         return customObject.getKind() + ":" + customObject.getApiVersion();
     }
 
     private void applyCustomResources(List<CustomObject> customObjectList) {
-//        if (kindVsCustomObject != null && !kindVsCustomObject.isEmpty()) {
-//            kindVsCustomObject.forEach((kind, customObjects) -> {
-                for (CustomObject object : customObjectList) {
-                    // Using Generic K8s Client
-                    GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).
-                            withNamespace(namespace).forKind(new CustomResourceKind(object.getKind(), object.getApiVersion()));
-                    if (genericK8sClient != null) {
-                        try {
-                            WorkflowLogger.startActivity(DeployerActivity.DEPLOYING, object.getKind());
-                            if (genericK8sClient.get(object) != null && !genericK8sClient.patch(object)) {
-                                logger.debug("Updating resource with Generic client for Kind - {}", object.getKind());
-                                // Delete and Create if failed to Patch
-                                logger.info("Deleting & Creating resource : {}", object.getKind());
-                                genericK8sClient.delete(object);
-                                genericK8sClient.create(object);
-                                WorkflowLogger.endActivity(Status.DONE);
-                            } else {
-                                logger.debug("Creating resource with Generic client for Kind - {}", object.getKind());
-                                genericK8sClient.create(object);
-                                WorkflowLogger.endActivity(Status.DONE);
-                            }
-                        } catch (HyscaleException ex) {
-                            WorkflowLogger.endActivity(Status.FAILED);
-                            logger.error("Failed to apply resource :{} Reason :: {}", object.getKind(), ex.getMessage());
-                        }
-                    }
+        // Using Generic K8s Client
+        customObjectList.stream().forEach(object -> {
+            GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).
+                    withNamespace(namespace).forKind(new CustomResourceKind(object.getKind(), object.getApiVersion()));
+            try {
+                WorkflowLogger.startActivity(DeployerActivity.DEPLOYING, object.getKind());
+                if (genericK8sClient.get(object) != null && !genericK8sClient.patch(object)) {
+                    logger.debug("Updating resource with Generic client for Kind - {}", object.getKind());
+                    // Delete and Create if failed to Patch
+                    logger.info("Deleting & Creating resource : {}", object.getKind());
+                    genericK8sClient.delete(object);
+                } else {
+                    logger.debug("Creating resource with Generic client for Kind - {}", object.getKind());
                 }
-//            });
-        }
-    //}
+                genericK8sClient.create(object);
+                WorkflowLogger.endActivity(Status.DONE);
+            } catch (HyscaleException ex) {
+                WorkflowLogger.endActivity(Status.FAILED);
+                logger.error("Failed to apply resource :{} Reason :: {}", object.getKind(), ex.getMessage());
+            }
+        });
+    }
 
     private void deleteResources(String labelSelector, List<CustomResourceKind> appliedKindsList) throws HyscaleException {
         boolean resourcesDeleted = true;
@@ -298,27 +277,6 @@ public class K8sResourceDispatcher {
             }
         }
         return kindVsObjects;
-    }
-
-    private List<KubernetesResource> getSortedResources(List<Manifest> manifests) throws HyscaleException {
-        List<KubernetesResource> k8sResources = new ArrayList<>();
-        for (Manifest manifest : manifests) {
-            try {
-                KubernetesResource kubernetesResource = KubernetesResourceUtil.getKubernetesResource(manifest, namespace);
-                if (kubernetesResource != null) {
-                    k8sResources.add(kubernetesResource);
-                }
-            } catch (Exception e) {
-                HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST);
-                logger.error("Error while applying manifests to kubernetes", ex);
-                throw ex;
-            }
-        }
-        // Sort resources to deploy secrets and configmaps before Pod Controller
-        k8sResources.sort((resource1, resource2) -> ResourceHandlers.getHandlerOf(resource1.getKind()).getWeight()
-                - ResourceHandlers.getHandlerOf(resource2.getKind()).getWeight());
-
-        return k8sResources;
     }
 
     /**

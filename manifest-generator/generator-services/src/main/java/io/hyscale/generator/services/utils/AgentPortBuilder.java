@@ -24,7 +24,6 @@ import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.model.service.Agent;
 import io.hyscale.servicespec.commons.model.service.Port;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
-import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -40,7 +39,7 @@ public class AgentPortBuilder extends AgentHelper implements AgentBuilder {
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws HyscaleException {
         List<ManifestSnippet> manifestSnippetList = Lists.newArrayList();
         List<Agent> agents = getAgents(serviceSpec);
-        if (BooleanUtils.isTrue(agents.isEmpty())) {
+        if (agents.isEmpty()) {
             return manifestSnippetList;
         }
         List<Port> portList;
@@ -48,7 +47,7 @@ public class AgentPortBuilder extends AgentHelper implements AgentBuilder {
             portList = agent.getPorts();
             String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
             logger.info("Processing Ports for Agent {} ", agent.getName());
-            DefaultPortsBuilder.generatePortsManifest(portList, podSpecOwner, manifestSnippetList);
+            manifestSnippetList.addAll(DefaultPortsBuilder.generatePortsManifest(portList, podSpecOwner));
         }
         return manifestSnippetList;
     }

@@ -30,7 +30,6 @@ import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.NetworkTrafficRule;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
-import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +55,7 @@ public class NetworkPoliciesHandler implements ManifestHandler {
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         // Check if the Spec is External
-        if (BooleanUtils.isFalse(ManifestPredicates.isNetworkPolicyEnabled().test(serviceSpec))) {
+        if (!ManifestPredicates.isNetworkPolicyEnabled().test(serviceSpec)) {
             return Collections.emptyList();
         }
         try {
