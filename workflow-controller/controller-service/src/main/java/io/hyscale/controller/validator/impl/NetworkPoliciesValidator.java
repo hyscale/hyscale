@@ -55,26 +55,35 @@ public class NetworkPoliciesValidator implements Validator<WorkflowContext> {
         }
 
         if (!external) {
+            // allowTraffic field is empty array
             if (CollectionUtils.isEmpty(networkTrafficRules)) {
-                return true;
+                WorkflowLogger.persist(ValidatorActivity.NO_NETWORK_TRAFFIC_RULES, LoggerTags.ERROR);
+                return false;
             }
 
+            List<Port> servicePorts = serviceSpec.get(HyscaleSpecFields.ports, new TypeReference<>() {
+            });
+            List<Agent> agents = serviceSpec.get(HyscaleSpecFields.agents, new TypeReference<>() {
+            });
+            List<Integer> exposedPorts = servicePorts.stream().map(s -> Integer.parseInt(s.getPort().split("/")[0])).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(agents)) {
+                agents.stream().forEach(agent -> {
+                    agent.getPorts().stream().forEach(port -> {
+                        exposedPorts.add(Integer.parseInt(port.getPort().split("/")[0]));
+                    });
+                });
+            }
+
+            // Validate each traffic rule
             for (NetworkTrafficRule networkTrafficRule : networkTrafficRules) {
-                if (networkTrafficRule.getPorts() == null || networkTrafficRule.getFrom() == null) {
+                if (networkTrafficRule.getPorts() == null) {
                     logger.info("Network traffic Rules are not Valid");
                     WorkflowLogger.persist(ValidatorActivity.INVALID_NETWORK_TRAFFIC_RULES, LoggerTags.ERROR);
                     return false;
                 }
-                List<Port> portList = serviceSpec.get(HyscaleSpecFields.ports, new TypeReference<List<Port>>() {});
-                List<Agent> agents = serviceSpec.get(HyscaleSpecFields.agents, new TypeReference<List<Agent>>() {});
-                if(!CollectionUtils.isEmpty(agents)) {
-                    agents.stream().forEach(agent -> {
-                        portList.addAll(agent.getPorts());
-                    });
-                }
-                List<Integer> ports = portList.stream().map(s -> Integer.parseInt(s.getPort().split("/")[0])).collect(Collectors.toList());
+                // Rules is invalid if port is not exposed
                 for (Integer port : networkTrafficRule.getPorts()) {
-                    if (!ports.contains(port)) {
+                    if (!exposedPorts.contains(port)) {
                         logger.info("Cannot apply traffic rules to ports that are not exposed");
                         WorkflowLogger.persist(ValidatorActivity.PORT_NOT_EXPOSED, LoggerTags.ERROR, port.toString());
                         return false;

@@ -41,7 +41,9 @@ public enum ValidatorActivity implements Activity {
     CLUSTER_AUTHENTICATION_FAILED("Cluster authentication failed. Verify if cluster config is valid"),
 
     INVALID_NETWORK_TRAFFIC_RULES("Network Policy Validation failed due to Invalid Network Traffic Rules"),
+    NO_NETWORK_TRAFFIC_RULES("Network Traffic Rules are empty"),
     INVALID_VALUE("Value not Valid for field : {} "),
+    DUPLICATE_PORTS("Validation Failed as Duplicate Ports Found : {}"),
     PORT_NOT_EXPOSED("Network Policy Validation failed as Traffic Rule Port {} not Exposed ");
 
 

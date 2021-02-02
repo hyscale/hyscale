@@ -87,7 +87,10 @@ public class NetworkPoliciesHandler implements ManifestHandler {
         Map<String, Object> context = new HashMap<>();
         String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
         context.put(SERVICE_NAME, serviceName);
-        context.put(ENABLE_TRAFFIC,networkTrafficRules.isEmpty());
+        if (!networkTrafficRules.isEmpty()) {
+            networkTrafficRules.removeIf(rule -> rule.getFrom() == null);
+        }
+        context.put(ENABLE_TRAFFIC, networkTrafficRules.isEmpty());
         context.put(NETWORK_TRAFFIC_RULES, networkTrafficRules);
         return context;
     }

@@ -158,6 +158,9 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
     private StructuredOutputHandler outputHandler;
 
     @Autowired
+    private PortsValidator portsValidator;
+
+    @Autowired
     private NetworkPoliciesValidator networkPoliciesValidator;
 
     private List<Validator<WorkflowContext>> postValidators;
@@ -174,6 +177,7 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
         this.postValidators.add(manifestValidator);
         this.postValidators.add(clusterValidator);
         this.postValidators.add(volumeValidator);
+        this.postValidators.add(portsValidator);
         this.postValidators.add(networkPoliciesValidator);
         this.jsonArr = new JsonArray();
         this.jsonParser = new JsonParser();
