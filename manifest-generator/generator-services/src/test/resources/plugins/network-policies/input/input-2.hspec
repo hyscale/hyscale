@@ -1,7 +1,7 @@
 name: frontend
 image:
   registry: registry.hub.docker.com
-  name: shivapriya14/frontend # replace with your dockerhub username for {{username}}
+  name: username/frontend # replace with your dockerhub username for {{username}}
   tag: 4.0.1
 
 ports:

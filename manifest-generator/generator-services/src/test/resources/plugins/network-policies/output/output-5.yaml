@@ -4,10 +4,8 @@ podSelector:
     hyscale.io/service-name: frontend
 policyTypes:
   - Ingress
-  - Egress
+
 ingress:
   - from: []
     ports:
-    - port: 8080
-egress:
-  - {}
+      - port: 8080

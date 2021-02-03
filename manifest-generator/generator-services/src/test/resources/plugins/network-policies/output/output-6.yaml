@@ -4,4 +4,3 @@ podSelector:
     hyscale.io/service-name: frontend
 policyTypes:
   - Ingress
-  - Egress
