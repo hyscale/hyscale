@@ -1,3 +1,18 @@
+/**
+ * Copyright 2019 Pramati Prism, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.hyscale.generator.services.builder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,11 +26,13 @@ import io.kubernetes.client.openapi.models.V1TCPSocketAction;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Component
 public class DefaultHealthChecksBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultHealthChecksBuilder.class);
@@ -25,7 +42,11 @@ public class DefaultHealthChecksBuilder {
     private static final int DEFAULT_FAILURE_THRESHOLD_IN_SECONDS = 10;
     private static final String HTTPS = "HTTPS";
 
-    public static List<ManifestSnippet> generateHealthCheckSnippets(List<Port> portsList, String podSpecOwner) {
+    public List<ManifestSnippet> generateHealthCheckSnippets(List<Port> portsList, String podSpecOwner) {
+        return generateHealthCheckSnippets(portsList, podSpecOwner, 0);
+    }
+
+    public List<ManifestSnippet> generateHealthCheckSnippets(List<Port> portsList, String podSpecOwner, int containerIndex) {
 
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         if (portsList == null || portsList.isEmpty()) {
@@ -42,8 +63,8 @@ public class DefaultHealthChecksBuilder {
             v1Probe.setTimeoutSeconds(DEFAULT_TIMEOUT_IN_SECONDS);
             v1Probe.setFailureThreshold(DEFAULT_FAILURE_THRESHOLD_IN_SECONDS);
             try {
-                manifestSnippetList.add(buildReadinessProbe(v1Probe, podSpecOwner));
-                manifestSnippetList.add(buildLiveinessProbe(v1Probe, podSpecOwner));
+                manifestSnippetList.add(buildReadinessProbe(v1Probe, podSpecOwner, containerIndex));
+                manifestSnippetList.add(buildLivelinessProbe(v1Probe, podSpecOwner, containerIndex));
                 logger.debug("Processing HealthChecks done.");
             } catch (JsonProcessingException e) {
                 logger.error("Error while serializing health checks ", e);
@@ -53,7 +74,7 @@ public class DefaultHealthChecksBuilder {
         return manifestSnippetList;
     }
 
-    private static V1Probe getHealthProbe(List<Port> portsList) {
+    public V1Probe getHealthProbe(List<Port> portsList) {
         Optional<Port> httpHealthCheckPort = portsList.stream().filter(each -> each.getPort() != null
                 && each.getHealthCheck() != null && each.getHealthCheck().getHttpPath() != null).findFirst();
 
@@ -92,25 +113,25 @@ public class DefaultHealthChecksBuilder {
         return null;
     }
 
-    private static ManifestSnippet buildReadinessProbe(V1Probe v1Probe, String podSpecOwner) throws JsonProcessingException {
+    public ManifestSnippet buildReadinessProbe(V1Probe v1Probe, String podSpecOwner, int containerIndex) throws JsonProcessingException {
         if (v1Probe == null) {
             return null;
         }
         ManifestSnippet manifestSnippet = new ManifestSnippet();
         manifestSnippet.setSnippet(GsonSnippetConvertor.serialize(v1Probe));
         manifestSnippet.setKind(podSpecOwner);
-        manifestSnippet.setPath("spec.template.spec.containers[0].readinessProbe");
+        manifestSnippet.setPath("spec.template.spec.containers[" + containerIndex + "].readinessProbe");
         return manifestSnippet;
     }
 
-    private static ManifestSnippet buildLiveinessProbe(V1Probe v1Probe, String podSpecOwner) throws JsonProcessingException {
+    public ManifestSnippet buildLivelinessProbe(V1Probe v1Probe, String podSpecOwner, int containerIndex) throws JsonProcessingException {
         if (v1Probe == null) {
             return null;
         }
         ManifestSnippet manifestSnippet = new ManifestSnippet();
         manifestSnippet.setSnippet(GsonSnippetConvertor.serialize(v1Probe));
         manifestSnippet.setKind(podSpecOwner);
-        manifestSnippet.setPath("spec.template.spec.containers[0].livenessProbe");
+        manifestSnippet.setPath("spec.template.spec.containers[" + containerIndex + "].livenessProbe");
         return manifestSnippet;
     }
 

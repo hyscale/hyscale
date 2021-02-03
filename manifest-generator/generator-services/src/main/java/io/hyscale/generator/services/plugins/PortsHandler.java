@@ -28,6 +28,7 @@ import io.hyscale.servicespec.commons.model.service.Port;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -38,6 +39,9 @@ public class PortsHandler implements ManifestHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(PortsHandler.class);
 
+    @Autowired
+    DefaultPortsBuilder defaultPortsBuilder;
+
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext)
             throws HyscaleException {
@@ -45,7 +49,7 @@ public class PortsHandler implements ManifestHandler {
         TypeReference<List<Port>> listTypeReference = new TypeReference<>() {};
         List<Port> portList = serviceSpec.get(HyscaleSpecFields.ports, listTypeReference);
         String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
-        return DefaultPortsBuilder.generatePortsManifest(portList, podSpecOwner);
+        return defaultPortsBuilder.generatePortsManifest(portList, podSpecOwner);
 
     }
 }

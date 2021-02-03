@@ -27,14 +27,18 @@ import io.hyscale.servicespec.commons.model.service.Port;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class AgentHealthChecksBuilder extends AgentHelper implements AgentBuilder{
+public class AgentHealthChecksBuilder extends AgentHelper implements AgentBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(AgentHealthChecksBuilder.class);
+
+    @Autowired
+    DefaultHealthChecksBuilder defaultHealthChecksBuilder;
 
     @Override
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException, HyscaleException {
@@ -45,10 +49,11 @@ public class AgentHealthChecksBuilder extends AgentHelper implements AgentBuilde
         }
         String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         List<Port> portList;
+        int agentCount = 1;
         for (Agent agent : agents) {
             logger.info("Started Processing HealthChecks Builder for Agent : {} ", agent.getName());
             portList = agent.getPorts();
-            manifestSnippetList.addAll(DefaultHealthChecksBuilder.generateHealthCheckSnippets(portList, podSpecOwner));
+            manifestSnippetList.addAll(defaultHealthChecksBuilder.generateHealthCheckSnippets(portList, podSpecOwner, agentCount++));
         }
         return manifestSnippetList;
     }

@@ -26,6 +26,7 @@ import io.hyscale.servicespec.commons.model.service.Port;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -35,6 +36,9 @@ public class AgentPortBuilder extends AgentHelper implements AgentBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(AgentPortBuilder.class);
 
+    @Autowired
+    DefaultPortsBuilder defaultPortsBuilder;
+
     @Override
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws HyscaleException {
         List<ManifestSnippet> manifestSnippetList = Lists.newArrayList();
@@ -43,11 +47,12 @@ public class AgentPortBuilder extends AgentHelper implements AgentBuilder {
             return manifestSnippetList;
         }
         List<Port> portList;
+        int agentCount = 1;
         for (Agent agent : agents) {
             portList = agent.getPorts();
             String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
             logger.info("Processing Ports for Agent {} ", agent.getName());
-            manifestSnippetList.addAll(DefaultPortsBuilder.generatePortsManifest(portList, podSpecOwner));
+            manifestSnippetList.addAll(defaultPortsBuilder.generatePortsManifest(portList, podSpecOwner, agentCount++));
         }
         return manifestSnippetList;
     }

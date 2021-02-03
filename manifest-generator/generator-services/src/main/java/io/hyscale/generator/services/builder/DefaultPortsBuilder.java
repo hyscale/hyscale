@@ -31,6 +31,7 @@ import io.kubernetes.client.openapi.models.V1ServicePort;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,11 +42,16 @@ import java.util.Set;
  * service spec for the manifest snippet.
  * Handles Ports for Services as well as Agents.
  */
+@Component
 public class DefaultPortsBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultPortsBuilder.class);
 
-    public static List<ManifestSnippet> generatePortsManifest(List<Port> portList, String podSpecOwner) throws HyscaleException {
+    public List<ManifestSnippet> generatePortsManifest(List<Port> portList, String podSpecOwner) throws HyscaleException {
+        return generatePortsManifest(portList, podSpecOwner, 0);
+    }
+
+    public List<ManifestSnippet> generatePortsManifest(List<Port> portList, String podSpecOwner, int containerIndex) throws HyscaleException {
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         if (portList != null && !portList.isEmpty()) {
             Set<V1ContainerPort> v1ContainerPorts = Sets.newHashSet();
@@ -55,7 +61,7 @@ public class DefaultPortsBuilder {
                 V1ServicePort v1ServicePort = new V1ServicePort();
                 String[] portAndProtocol = each.getPort().split("/");
                 String protocol = DefaultPortsBuilder.ServiceProtocol.TCP.name();
-                
+
                 if (portAndProtocol.length > 1) {
                     protocol = DefaultPortsBuilder.ServiceProtocol.fromString(portAndProtocol[1]).name();
                 }
@@ -76,7 +82,7 @@ public class DefaultPortsBuilder {
             });
             try {
                 manifestSnippetList.add(buildServicePortsSnippet(v1ServicePorts));
-                manifestSnippetList.add(buildContainerPortsSnippet(v1ContainerPorts, podSpecOwner));
+                manifestSnippetList.add(buildContainerPortsSnippet(v1ContainerPorts, podSpecOwner, containerIndex));
                 logger.info("Successfully completed processing ports");
             } catch (Exception e) {
                 HyscaleException ex = new HyscaleException(e, ManifestErrorCodes.ERROR_WHILE_CREATING_MANIFEST);
@@ -87,11 +93,11 @@ public class DefaultPortsBuilder {
         return manifestSnippetList;
     }
 
-    private static ManifestSnippet buildContainerPortsSnippet(Set<V1ContainerPort> containerPorts, String podSpecOwner)
+    private static ManifestSnippet buildContainerPortsSnippet(Set<V1ContainerPort> containerPorts, String podSpecOwner, int containerIndex)
             throws JsonProcessingException {
         ManifestSnippet manifestSnippet = new ManifestSnippet();
         manifestSnippet.setKind(podSpecOwner);
-        manifestSnippet.setPath("spec.template.spec.containers[0].ports");
+        manifestSnippet.setPath("spec.template.spec.containers[" + containerIndex + "].ports");
         manifestSnippet.setSnippet(GsonSnippetConvertor.serialize(containerPorts));
         return manifestSnippet;
     }
