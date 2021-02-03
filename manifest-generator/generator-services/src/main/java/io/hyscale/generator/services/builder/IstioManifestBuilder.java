@@ -19,7 +19,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.ServiceMetadata;
-import io.hyscale.generator.services.provider.PluginTemplateProvider;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +41,6 @@ public class IstioManifestBuilder implements LoadBalancerBuilder {
 
     @Autowired
     private DestinationRuleBuilder destinationRuleBuilder;
-
-    @Autowired
-    private PluginTemplateProvider templateProvider;
 
     List<IstioResourcesManifestGenerator> istioManifestGenerators;
 
