@@ -36,18 +36,24 @@ import java.util.stream.Stream;
 class NetworkPoliciesValidatorTest {
 
     @Autowired
-    NetworkPoliciesValidator networkPoliciesValidator;
+    private NetworkPoliciesValidator networkPoliciesValidator;
 
     private static final Logger logger = LoggerFactory.getLogger(NetworkPoliciesValidatorTest.class);
 
     private static Stream<Arguments> input() throws HyscaleException {
         try {
             return Stream.of(
-                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-1.hspec")),
-                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-2.hspec")),
-                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-3.hspec")),
-                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-4.hspec")),
-                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-5.hspec")));
+                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-1.hspec"), true),
+                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-2.hspec"), true),
+                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-3.hspec"), true),
+                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-4.hspec"), true),
+                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-5.hspec"), true),
+                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-6.hspec"), false),
+                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-7.hspec"), false),
+                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-8.hspec"), true),
+                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-9.hspec"), false),
+                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-10.hspec"), false),
+                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-11.hspec"), false));
         } catch (Exception e) {
             HyscaleException ex = new HyscaleException(e, ManifestErrorCodes.ERROR_WHILE_CREATING_MANIFEST);
             logger.error("Error while generating Input Files", ex);
@@ -57,11 +63,10 @@ class NetworkPoliciesValidatorTest {
 
     @ParameterizedTest
     @MethodSource(value = "input")
-    void testNetworkPoliciesValidator(ServiceSpec serviceSpec) {
+    void testNetworkPoliciesValidator(ServiceSpec serviceSpec, boolean expectedOutput) {
         try {
             WorkflowContext context = new WorkflowContextBuilder(null).withService(serviceSpec).get();
-            System.out.println(networkPoliciesValidator.validate(context));
-            Assertions.assertTrue(networkPoliciesValidator.validate(context));
+            Assertions.assertEquals(expectedOutput, networkPoliciesValidator.validate(context));
         } catch (Exception e) {
 
         }

@@ -53,7 +53,8 @@ class PortsHandlerTest {
 
     private static Stream<Arguments> input() throws HyscaleException {
         return Stream.of(Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice-min.hspec")),
-                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice.hspec")));
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice.hspec")),
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice-2.hspec")));
     }
 
     @ParameterizedTest

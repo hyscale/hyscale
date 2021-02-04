@@ -63,7 +63,9 @@ class NetworkPoliciesHandlerTest {
                     Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/network-policies/input/input-5.hspec"),
                             IOUtils.toString(Objects.requireNonNull(classloader.getResourceAsStream("plugins/network-policies/output/output-5.yaml")), StandardCharsets.UTF_8)),
                     Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/network-policies/input/input-6.hspec"),
-                            IOUtils.toString(Objects.requireNonNull(classloader.getResourceAsStream("plugins/network-policies/output/output-6.yaml")), StandardCharsets.UTF_8)));
+                            IOUtils.toString(Objects.requireNonNull(classloader.getResourceAsStream("plugins/network-policies/output/output-6.yaml")), StandardCharsets.UTF_8)),
+                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/plugins/network-policies/input/input-7.hspec"),
+                            IOUtils.toString(Objects.requireNonNull(classloader.getResourceAsStream("plugins/network-policies/output/output-7.yaml")), StandardCharsets.UTF_8)));
         } catch (Exception e) {
             HyscaleException ex = new HyscaleException(e, ManifestErrorCodes.ERROR_WHILE_CREATING_MANIFEST);
             logger.error("Error while generating Manifest Files", ex);

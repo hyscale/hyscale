@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Pramati Prism, Inc.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,6 +30,9 @@ public class HyscaleStringUtilsTests {
     private static final char TAILING_CHAR = 'r';
     private static final String EXPECTED_CHAR_STRING = "hyscaleUse";
 
+    private static String[] singularWords = {"policy", "resource", "scarf", "knife", "mango", "backslash", "video"};
+    private static String[] pluralWords = {"policies", "resources", "scarves", "knives", "mangoes", "backslashes", "videos"};
+
     public static Stream<Arguments> getInputsForRemoveSuffixTest() {
         return Stream.of(Arguments.of(null, SUFFIX_STRING, null),
                 Arguments.of("", SUFFIX_STRING, ""),
@@ -37,6 +40,24 @@ public class HyscaleStringUtilsTests {
                 Arguments.of(SAMPLE_STRING, "", SAMPLE_STRING),
                 Arguments.of(SAMPLE_STRING, SUFFIX_STRING, EXPECTED_STRING));
     }
+
+    public static Stream<Arguments> singularToPluralTest() {
+        return Stream.of(Arguments.of(singularWords[0], pluralWords[0]),
+                Arguments.of(singularWords[1], pluralWords[1]),
+                Arguments.of(singularWords[2], pluralWords[2]),
+                Arguments.of(singularWords[3], pluralWords[3]),
+                Arguments.of(singularWords[4], pluralWords[4]),
+                Arguments.of(singularWords[5], pluralWords[5]),
+                Arguments.of(singularWords[6], pluralWords[6]));
+    }
+
+    @ParameterizedTest
+    @MethodSource(value = "singularToPluralTest")
+    void testPluralFunction(String singular, String plural) {
+        String output = HyscaleStringUtil.getPlural(singular);
+        assertEquals(plural, output);
+    }
+
 
     @ParameterizedTest
     @MethodSource(value = "getInputsForRemoveSuffixTest")
