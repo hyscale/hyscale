@@ -48,11 +48,11 @@ class VirtualServiceBuilderTest {
         try {
             return Stream.of(Arguments.of(
                     ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-istio.hspec"),
-                    FileUtils.readFileToString(new File(io.hyscale.generator.services.builder.Test.class.getResource("/builder/output/virtualService.yaml").getFile()), StandardCharsets.UTF_8)
+                    FileUtils.readFileToString(new File(VirtualServiceBuilderTest.class.getResource("/builder/output/virtualService.yaml").getFile()), StandardCharsets.UTF_8)
                     ),
                     Arguments.of(
                             ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-with-tls-istio.hspec"),
-                            FileUtils.readFileToString(new File(io.hyscale.generator.services.builder.Test.class.getResource("/builder/output/virtualService-with-tls.yaml").getFile()), StandardCharsets.UTF_8)
+                            FileUtils.readFileToString(new File(VirtualServiceBuilderTest.class.getResource("/builder/output/virtualService-with-tls.yaml").getFile()), StandardCharsets.UTF_8)
                     )
             );
         } catch (Exception e) {
