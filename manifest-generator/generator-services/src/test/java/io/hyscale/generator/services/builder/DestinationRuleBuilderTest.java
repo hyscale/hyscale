@@ -24,55 +24,53 @@ import io.hyscale.generator.services.utils.ServiceSpecTestUtil;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class GatewayBuilderTest {
-
-    private static final Logger logger = LoggerFactory.getLogger(GatewayBuilderTest.class);
+class DestinationRuleBuilderTest {
 
     @Autowired
-    private GatewayBuilder gatewayBuilder;
+    private DestinationRuleBuilder destinationRuleBuilder;
 
-    private static Stream<Arguments> input() throws HyscaleException {
-        try {
-            return Stream.of(Arguments.of(
-                    ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-istio.hspec"),
-                    FileUtils.readFileToString(new File(Test.class.getResource("/builder/output/gateway.yaml").getFile()), StandardCharsets.UTF_8)
-                    ),
-                    Arguments.of(
-                            ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-with-tls-istio.hspec"),
-                            FileUtils.readFileToString(new File(Test.class.getResource("/builder/output/gateway-with-tls.yaml").getFile()), StandardCharsets.UTF_8)
-                    )
-            );
-        } catch (Exception e) {
-            HyscaleException ex = new HyscaleException(e, ManifestErrorCodes.ERROR_WHILE_CREATING_MANIFEST);
-            ex.printStackTrace();
-            throw ex;
-        }
+    private ServiceMetadata serviceMetadata = new ServiceMetadata();
+
+    @BeforeAll
+    public void init() throws HyscaleException {
+        serviceMetadata.setAppName("book-info");
+        serviceMetadata.setServiceName("productpage");
+        serviceMetadata.setEnvName("dev");
     }
 
-    @ParameterizedTest
-    @MethodSource("input")
-    void testGenerateManifest(ServiceSpec serviceSpec, String output) throws HyscaleException {
-        ServiceMetadata serviceMetadata = new ServiceMetadata();
+    @Test
+    void testGenerateManifest() throws HyscaleException, IOException {
+        ServiceSpec serviceSpec = ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-with-tls-istio.hspec");
         LoadBalancer loadBalancer = ManifestContextTestUtil.getLoadBalancerFromSpec(serviceSpec);
-        ManifestSnippet manifestSnippet = gatewayBuilder.generateManifest(serviceMetadata, loadBalancer);
-        assertEquals(manifestSnippet.getSnippet().replaceAll("\\s", ""), output.replaceAll("\\s", ""));
+        ManifestSnippet manifestSnippet = destinationRuleBuilder.generateManifest(serviceMetadata, loadBalancer);
+        String outputYaml = FileUtils.readFileToString(new File(io.hyscale.generator.services.builder.Test.class.getResource("/builder/output/destinationRule.yaml").getFile()), StandardCharsets.UTF_8);
+        assertEquals(manifestSnippet.getSnippet().replaceAll("\\s", ""), outputYaml.replaceAll("\\s", ""));
+    }
+
+    @Test
+    void testGenerateManifes2() throws HyscaleException {
+        ServiceSpec serviceSpec = ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-istio.hspec");
+        LoadBalancer loadBalancer = ManifestContextTestUtil.getLoadBalancerFromSpec(serviceSpec);
+        ManifestSnippet manifestSnippet = destinationRuleBuilder.generateManifest(serviceMetadata, loadBalancer);
+        assertNull(manifestSnippet);
     }
 
 }

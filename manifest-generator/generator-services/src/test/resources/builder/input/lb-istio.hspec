@@ -7,7 +7,6 @@ loadBalancer:
      labels:
         istio: ingressgateway
      host: bookinfo.com
-     sticky: true
      mapping:
         - port : 9080/http
           contextPaths:

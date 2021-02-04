@@ -1,0 +1,20 @@
+hosts:
+  - bookinfo.com
+gateways:
+    - dev-productpage-istio-gateway
+http:
+- match:
+    - uri:
+        prefix: /productpage
+    - uri:
+        prefix: /login
+  headers:
+    request:
+      set:
+        hello: there
+        test: sample
+  route:
+    - destination:
+        host: productpage
+        port:
+          number: 9080

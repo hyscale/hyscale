@@ -28,8 +28,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -41,22 +39,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class GatewayBuilderTest {
-
-    private static final Logger logger = LoggerFactory.getLogger(GatewayBuilderTest.class);
+class VirtualServiceBuilderTest {
 
     @Autowired
-    private GatewayBuilder gatewayBuilder;
+    private VirtualServiceBuilder virtualServiceBuilder;
 
     private static Stream<Arguments> input() throws HyscaleException {
         try {
             return Stream.of(Arguments.of(
                     ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-istio.hspec"),
-                    FileUtils.readFileToString(new File(Test.class.getResource("/builder/output/gateway.yaml").getFile()), StandardCharsets.UTF_8)
+                    FileUtils.readFileToString(new File(io.hyscale.generator.services.builder.Test.class.getResource("/builder/output/virtualService.yaml").getFile()), StandardCharsets.UTF_8)
                     ),
                     Arguments.of(
                             ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-with-tls-istio.hspec"),
-                            FileUtils.readFileToString(new File(Test.class.getResource("/builder/output/gateway-with-tls.yaml").getFile()), StandardCharsets.UTF_8)
+                            FileUtils.readFileToString(new File(io.hyscale.generator.services.builder.Test.class.getResource("/builder/output/virtualService-with-tls.yaml").getFile()), StandardCharsets.UTF_8)
                     )
             );
         } catch (Exception e) {
@@ -70,8 +66,11 @@ class GatewayBuilderTest {
     @MethodSource("input")
     void testGenerateManifest(ServiceSpec serviceSpec, String output) throws HyscaleException {
         ServiceMetadata serviceMetadata = new ServiceMetadata();
+        serviceMetadata.setAppName("book-info");
+        serviceMetadata.setServiceName("productpage");
+        serviceMetadata.setEnvName("dev");
         LoadBalancer loadBalancer = ManifestContextTestUtil.getLoadBalancerFromSpec(serviceSpec);
-        ManifestSnippet manifestSnippet = gatewayBuilder.generateManifest(serviceMetadata, loadBalancer);
+        ManifestSnippet manifestSnippet = virtualServiceBuilder.generateManifest(serviceMetadata, loadBalancer);
         assertEquals(manifestSnippet.getSnippet().replaceAll("\\s", ""), output.replaceAll("\\s", ""));
     }
 

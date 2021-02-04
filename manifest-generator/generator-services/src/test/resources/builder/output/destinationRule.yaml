@@ -1,0 +1,5 @@
+host: productpage
+trafficPolicy:
+  loadBalancer:
+    consistentHash:
+      httpHeaderName: "x-user"

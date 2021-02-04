@@ -1,0 +1,9 @@
+selector:
+  istio: ingressgateway
+servers:
+- hosts:
+    - bookinfo.com
+  port:
+    number: 80
+    name: HTTP
+    protocol: HTTP

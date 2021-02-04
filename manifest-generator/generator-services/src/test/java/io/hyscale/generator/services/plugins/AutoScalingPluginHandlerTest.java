@@ -41,6 +41,7 @@ import io.hyscale.generator.services.utils.ManifestContextTestUtil;
 import io.hyscale.generator.services.utils.ServiceSpecTestUtil;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 @SpringBootTest
 @TestInstance(Lifecycle.PER_CLASS)
@@ -49,7 +50,7 @@ class AutoScalingPluginHandlerTest {
     @Autowired
     private AutoScalingPluginHandler autoScalingPluginHandler;
 
-    @Autowired // Already mocked in configuration class
+    @MockBean // Already mocked in configuration class
     private MustacheTemplateResolver mustacheTemplateResolver;
 
     private ServiceSpec noScalingSpec;

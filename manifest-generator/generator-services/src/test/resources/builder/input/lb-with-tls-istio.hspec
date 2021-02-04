@@ -1,0 +1,19 @@
+name: productpage
+external: true
+ports:
+  - port: 9080/http
+loadBalancer:
+     provider: istio
+     labels:
+        istio: ingressgateway
+     host: bookinfo.com
+     sticky: true
+     tlsSecret: bookinfo-tls-secret
+     mapping:
+        - port : 9080/http
+          contextPaths:
+               - "/productpage"
+               - "/login"
+     headers:
+         hello : there
+         test : sample
