@@ -15,31 +15,24 @@
  */
 package io.hyscale.commons.framework.patch;
 
-/**
- * Defines metadata for a field
- * like key used to distinguish objects
- * 
- * @author tushar
- *
- */
-public class FieldMetaData {
+import org.apache.commons.lang3.StringUtils;
 
-	private String key;
-	private PatchStrategy patchStrategy;
-
-	public String getKey() {
-		return key;
-	}
-
-	public void setKey(String key) {
-		this.key = key;
-	}
-
-    public PatchStrategy getPatchStrategy() {
-        return patchStrategy;
+public enum PatchStrategy {
+    MERGE, REPLACE;
+    
+    public static PatchStrategy fromString(String strategy) {
+        if (StringUtils.isEmpty(strategy)) {
+            return null;
+        }
+        for (PatchStrategy patchStrategy : PatchStrategy.values()) {
+            if (patchStrategy.toString().equalsIgnoreCase(strategy)) {
+                return patchStrategy;
+            }
+        }
+        return null;
     }
-
-    public void setPatchStrategy(PatchStrategy patchStrategy) {
-        this.patchStrategy = patchStrategy;
+    
+    public static PatchStrategy getDefault() {
+        return MERGE;
     }
 }

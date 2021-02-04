@@ -127,13 +127,18 @@ public class StrategicPatchTest {
     private static class TestFieldDataProvider implements FieldMetaDataProvider{
         
         private static Map<String, String> fieldMap = new HashMap<String, String>();
+        private static Map<String, String> strategyMap = new HashMap<>();
         static {
             fieldMap.put("patchTestModelList", "key");
+            strategyMap.put("testListReplace", "replace");
+            strategyMap.put("testListReplaceEmpty", "replace");
+            strategyMap.put("testListReplaceObject", "replace");
         }
         @Override
         public FieldMetaData getMetaData(String field) {
             FieldMetaData fieldMetaData = new FieldMetaData();
             fieldMetaData.setKey(fieldMap.get(field));
+            fieldMetaData.setPatchStrategy(PatchStrategy.fromString(strategyMap.get(field)));
             return fieldMetaData;
         }
         

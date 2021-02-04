@@ -35,5 +35,16 @@
   1,2,3
   ],
   "testNullField": null,
-  "testString": "newTestVal"
+  "testString": "newTestVal",
+  "testListReplace": [
+  4,5
+  ],
+  "testListReplaceEmpty": [],
+  "testListReplaceObject": [
+    {
+      "key": "key2",
+      "testVal1": "val21",
+      "testVal2": "val22"
+    }
+    ]
 }
