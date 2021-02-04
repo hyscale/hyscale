@@ -36,7 +36,7 @@ import java.util.List;
 public class HealthChecksHandler implements ManifestHandler {
 
     @Autowired
-    DefaultHealthChecksBuilder defaultHealthChecksBuilder;
+    private DefaultHealthChecksBuilder defaultHealthChecksBuilder;
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext context) throws HyscaleException {

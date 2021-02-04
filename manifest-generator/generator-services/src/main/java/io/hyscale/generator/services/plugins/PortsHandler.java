@@ -40,7 +40,7 @@ public class PortsHandler implements ManifestHandler {
     private static final Logger logger = LoggerFactory.getLogger(PortsHandler.class);
 
     @Autowired
-    DefaultPortsBuilder defaultPortsBuilder;
+    private DefaultPortsBuilder defaultPortsBuilder;
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext)

@@ -53,10 +53,7 @@ public class DefaultHealthChecksBuilder {
             logger.debug("Cannot handle HealthChecks as ports are empty.");
             return manifestSnippetList;
         }
-        // TODO supporting single health check
         V1Probe v1Probe = getHealthProbe(portsList);
-        // TODO set successful threshold
-
         if (v1Probe != null) {
             v1Probe.setInitialDelaySeconds(DEFAULT_INITIAL_DELAY_IN_SECONDS);
             v1Probe.setPeriodSeconds(DEFAULT_PERIOD_IN_SECONDS);

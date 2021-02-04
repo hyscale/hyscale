@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Pramati Prism, Inc.
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,10 +44,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Handles generic resource level operation such as apply, undeploy among others
@@ -128,24 +128,27 @@ public class K8sResourceDispatcher {
         for (KubernetesResource k8sResource : k8sResources) {
             AnnotationsUpdateManager.update(k8sResource, AnnotationKey.LAST_UPDATED_AT,
                     DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+            updateAndApplyResource(k8sResource, appliedKinds);
+        }
+    }
 
-            ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(k8sResource.getKind());
-            if (lifeCycleHandler != null) {
-                if (lifeCycleHandler.isWorkLoad()) {
-                    AnnotationsUpdateManager.update(k8sResource, AnnotationKey.HYSCALE_APPLIED_KINDS,
-                            appliedKinds.toString());
-                }
-                if (k8sResource.getResource() != null && k8sResource.getV1ObjectMeta() != null) {
-                    try {
-                        String name = k8sResource.getV1ObjectMeta().getName();
-                        if (resourceBroker.get(lifeCycleHandler, name) != null) {
-                            resourceBroker.update(lifeCycleHandler, k8sResource, lifeCycleHandler.getUpdatePolicy());
-                        } else {
-                            resourceBroker.create(lifeCycleHandler, k8sResource.getResource());
-                        }
-                    } catch (HyscaleException ex) {
-                        logger.error("Failed to apply resource :{} Reason :: {}", k8sResource.getKind(), ex.getMessage(), ex);
+    public void updateAndApplyResource(KubernetesResource k8sResource, List<String> appliedKinds) {
+        ResourceLifeCycleHandler lifeCycleHandler = ResourceHandlers.getHandlerOf(k8sResource.getKind());
+        if (lifeCycleHandler != null) {
+            if (lifeCycleHandler.isWorkLoad()) {
+                AnnotationsUpdateManager.update(k8sResource, AnnotationKey.HYSCALE_APPLIED_KINDS,
+                        appliedKinds.toString());
+            }
+            if (k8sResource.getResource() != null && k8sResource.getV1ObjectMeta() != null) {
+                try {
+                    String name = k8sResource.getV1ObjectMeta().getName();
+                    if (resourceBroker.get(lifeCycleHandler, name) != null) {
+                        resourceBroker.update(lifeCycleHandler, k8sResource, lifeCycleHandler.getUpdatePolicy());
+                    } else {
+                        resourceBroker.create(lifeCycleHandler, k8sResource.getResource());
                     }
+                } catch (HyscaleException ex) {
+                    logger.error("Failed to apply resource :{} Reason :: {}", k8sResource.getKind(), ex.getMessage(), ex);
                 }
             }
         }
@@ -259,24 +262,6 @@ public class K8sResourceDispatcher {
         } else {
             WorkflowLogger.info(DeployerActivity.NO_RESOURCES_TO_UNDEPLOY);
         }
-    }
-
-    private MultiValueMap<String, CustomObject> getCustomObjects(List<Manifest> manifests) throws HyscaleException {
-        MultiValueMap<String, CustomObject> kindVsObjects = new LinkedMultiValueMap<>();
-        for (Manifest manifest : manifests) {
-            try {
-                CustomObject object = KubernetesResourceUtil.getK8sCustomObjectResource(manifest, namespace);
-                if (object != null) {
-                    logger.debug("Adding kind - {}", object.getKind());
-                    kindVsObjects.add(object.getKind(), object);
-                }
-            } catch (Exception e) {
-                HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST);
-                logger.error("Error while applying manifests to kubernetes", ex);
-                throw ex;
-            }
-        }
-        return kindVsObjects;
     }
 
     /**

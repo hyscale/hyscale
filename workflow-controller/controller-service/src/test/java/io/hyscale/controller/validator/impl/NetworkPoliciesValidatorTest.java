@@ -33,7 +33,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.stream.Stream;
 
 @SpringBootTest
-public class NetworkPoliciesValidatorTest {
+class NetworkPoliciesValidatorTest {
 
     @Autowired
     NetworkPoliciesValidator networkPoliciesValidator;

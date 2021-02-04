@@ -37,7 +37,7 @@ public class AgentPortBuilder extends AgentHelper implements AgentBuilder {
     private static final Logger logger = LoggerFactory.getLogger(AgentPortBuilder.class);
 
     @Autowired
-    DefaultPortsBuilder defaultPortsBuilder;
+    private DefaultPortsBuilder defaultPortsBuilder;
 
     @Override
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws HyscaleException {

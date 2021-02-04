@@ -38,7 +38,7 @@ public class AgentHealthChecksBuilder extends AgentHelper implements AgentBuilde
     private static final Logger logger = LoggerFactory.getLogger(AgentHealthChecksBuilder.class);
 
     @Autowired
-    DefaultHealthChecksBuilder defaultHealthChecksBuilder;
+    private DefaultHealthChecksBuilder defaultHealthChecksBuilder;
 
     @Override
     public List<ManifestSnippet> build(ManifestContext manifestContext, ServiceSpec serviceSpec) throws JsonProcessingException, HyscaleException {

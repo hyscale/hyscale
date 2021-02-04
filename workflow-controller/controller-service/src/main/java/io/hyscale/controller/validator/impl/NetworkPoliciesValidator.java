@@ -17,6 +17,7 @@ package io.hyscale.controller.validator.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.io.StructuredOutputHandler;
 import io.hyscale.commons.logger.LoggerTags;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.validator.Validator;
@@ -29,9 +30,11 @@ import io.hyscale.servicespec.commons.model.service.Port;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,57 +43,76 @@ public class NetworkPoliciesValidator implements Validator<WorkflowContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(NetworkPoliciesValidator.class);
 
+    @Autowired
+    private StructuredOutputHandler structuredOutputHandler;
+
     @Override
     public boolean validate(WorkflowContext workflowContext) throws HyscaleException {
         logger.info("Validating Network Policies");
         ServiceSpec serviceSpec = workflowContext.getServiceSpec();
-        Boolean external = serviceSpec.get(HyscaleSpecFields.external, Boolean.class);
+        boolean external = serviceSpec.get(HyscaleSpecFields.external, Boolean.class);
         List<NetworkTrafficRule> networkTrafficRules = serviceSpec.get(HyscaleSpecFields.allowTraffic, new TypeReference<>() {
         });
 
         if (external && networkTrafficRules != null) {
             logger.info("External Cannot be True to Apply Network Traffic Rules");
+            addErrorMessage(ValidatorActivity.INVALID_VALUE, HyscaleSpecFields.external);
             WorkflowLogger.persist(ValidatorActivity.INVALID_VALUE, LoggerTags.ERROR, HyscaleSpecFields.external);
             return false;
         }
-
         if (!external) {
             // allowTraffic field is empty array
             if (CollectionUtils.isEmpty(networkTrafficRules)) {
+                addErrorMessage(ValidatorActivity.NO_NETWORK_TRAFFIC_RULES);
                 WorkflowLogger.persist(ValidatorActivity.NO_NETWORK_TRAFFIC_RULES, LoggerTags.ERROR);
                 return false;
             }
-
             List<Port> servicePorts = serviceSpec.get(HyscaleSpecFields.ports, new TypeReference<>() {
             });
             List<Agent> agents = serviceSpec.get(HyscaleSpecFields.agents, new TypeReference<>() {
             });
-            List<Integer> exposedPorts = servicePorts.stream().map(s -> Integer.parseInt(s.getPort().split("/")[0])).collect(Collectors.toList());
-            if (!CollectionUtils.isEmpty(agents)) {
-                agents.stream().forEach(agent -> {
-                    agent.getPorts().stream().forEach(port -> {
-                        exposedPorts.add(Integer.parseInt(port.getPort().split("/")[0]));
-                    });
-                });
+            List<Integer> exposedPorts = new ArrayList<>();
+            if (!CollectionUtils.isEmpty(servicePorts)) {
+                exposedPorts = servicePorts.stream().map(s -> Integer.parseInt(s.getPort().split("/")[0])).collect(Collectors.toList());
             }
+            List<Integer> finalExposedPorts = exposedPorts;
+            if (!CollectionUtils.isEmpty(agents)) {
+                agents.forEach(agent ->
+                        agent.getPorts().forEach(port ->
+                                finalExposedPorts.add(Integer.parseInt(port.getPort().split("/")[0]))
+                        )
+                );
+            }
+            return validateTrafficRules(networkTrafficRules, finalExposedPorts);
+        }
+        return true;
+    }
 
-            // Validate each traffic rule
-            for (NetworkTrafficRule networkTrafficRule : networkTrafficRules) {
-                if (networkTrafficRule.getPorts() == null) {
-                    logger.info("Network traffic Rules are not Valid");
-                    WorkflowLogger.persist(ValidatorActivity.INVALID_NETWORK_TRAFFIC_RULES, LoggerTags.ERROR);
+    //Check for Valid Network Traffic Rules
+    private boolean validateTrafficRules(List<NetworkTrafficRule> networkTrafficRules, List<Integer> exposedPorts) {
+        for (NetworkTrafficRule networkTrafficRule : networkTrafficRules) {
+            if (networkTrafficRule.getPorts() == null) {
+                logger.info("Network traffic Rules are not Valid");
+                addErrorMessage(ValidatorActivity.INVALID_NETWORK_TRAFFIC_RULES, (String) null);
+                WorkflowLogger.persist(ValidatorActivity.INVALID_NETWORK_TRAFFIC_RULES, LoggerTags.ERROR);
+                return false;
+            }
+            // Rules is invalid if port is not exposed
+            for (Integer port : networkTrafficRule.getPorts()) {
+                if (!exposedPorts.contains(port)) {
+                    logger.info("Cannot apply traffic rules to ports that are not exposed");
+                    addErrorMessage(ValidatorActivity.PORT_NOT_EXPOSED, port.toString());
+                    WorkflowLogger.persist(ValidatorActivity.PORT_NOT_EXPOSED, LoggerTags.ERROR, port.toString());
                     return false;
-                }
-                // Rules is invalid if port is not exposed
-                for (Integer port : networkTrafficRule.getPorts()) {
-                    if (!exposedPorts.contains(port)) {
-                        logger.info("Cannot apply traffic rules to ports that are not exposed");
-                        WorkflowLogger.persist(ValidatorActivity.PORT_NOT_EXPOSED, LoggerTags.ERROR, port.toString());
-                        return false;
-                    }
                 }
             }
         }
         return true;
+    }
+
+    private void addErrorMessage(ValidatorActivity validatorActivity, String... args) {
+        if (WorkflowLogger.isDisabled()) {
+            structuredOutputHandler.addErrorMessage(validatorActivity.getActivityMessage(), args);
+        }
     }
 }

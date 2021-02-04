@@ -46,17 +46,19 @@ public class PortsValidator implements Validator<WorkflowContext> {
         });
         List<Agent> agents = serviceSpec.get(HyscaleSpecFields.agents, new TypeReference<>() {
         });
-        List<Integer> exposedPorts = servicePorts.stream().map(s -> Integer.parseInt(s.getPort().split("/")[0])).collect(Collectors.toList());
-        // Check for duplicate ports being exposed in service or agents
-        if (!CollectionUtils.isEmpty(agents)) {
-            for (Agent agent : agents) {
-                for (Port port : agent.getPorts()) {
-                    if (exposedPorts.contains(Integer.parseInt(port.getPort().split("/")[0]))) {
-                        logger.info("Duplicate Port Exposed in Spec {} ", port.getPort());
-                        WorkflowLogger.persist(ValidatorActivity.DUPLICATE_PORTS, LoggerTags.ERROR, port.getPort());
-                        return false;
+        if(!CollectionUtils.isEmpty(servicePorts)) {
+            List<Integer> exposedPorts = servicePorts.stream().map(s -> Integer.parseInt(s.getPort().split("/")[0])).collect(Collectors.toList());
+            // Check for duplicate ports being exposed in service or agents
+            if (!CollectionUtils.isEmpty(agents)) {
+                for (Agent agent : agents) {
+                    for (Port port : agent.getPorts()) {
+                        if (exposedPorts.contains(Integer.parseInt(port.getPort().split("/")[0]))) {
+                            logger.info("Duplicate Port Exposed in Spec {} ", port.getPort());
+                            WorkflowLogger.persist(ValidatorActivity.DUPLICATE_PORTS, LoggerTags.ERROR, port.getPort());
+                            return false;
+                        }
+                        exposedPorts.add(Integer.parseInt(port.getPort().split("/")[0]));
                     }
-                    exposedPorts.add(Integer.parseInt(port.getPort().split("/")[0]));
                 }
             }
         }
