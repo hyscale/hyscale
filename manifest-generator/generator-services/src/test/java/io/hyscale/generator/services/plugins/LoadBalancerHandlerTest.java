@@ -15,16 +15,66 @@
  */
 package io.hyscale.generator.services.plugins;
 
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.commons.models.ServiceMetadata;
+import io.hyscale.generator.services.builder.IngressManifestBuilder;
+import io.hyscale.generator.services.builder.IstioManifestBuilder;
+import io.hyscale.generator.services.model.ManifestResource;
+import io.hyscale.generator.services.utils.ManifestContextTestUtil;
+import io.hyscale.generator.services.utils.ServiceSpecTestUtil;
+import io.hyscale.plugin.framework.models.ManifestSnippet;
+import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class LoadBalancerHandlerTest {
 
-    @Test
-    void handle() {
+    @Autowired
+    private LoadBalancerHandler loadBalancerHandler;
 
+    @Mock
+    private IngressManifestBuilder ingressManifestBuilder;
+
+    @Mock
+    private IstioManifestBuilder istioManifestBuilder;
+
+    @BeforeAll
+    void init() throws HyscaleException {
+        List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
+        manifestSnippetList.add(new ManifestSnippet());
+        Mockito.when(ingressManifestBuilder.build(ArgumentMatchers.any(ServiceMetadata.class), ArgumentMatchers.any())).thenReturn(manifestSnippetList);
+        Mockito.when(istioManifestBuilder.build(ArgumentMatchers.any(ServiceMetadata.class), ArgumentMatchers.any())).thenReturn(manifestSnippetList);
+    }
+
+    public static Stream<Arguments> input() throws HyscaleException {
+        return Stream.of(
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-istio.hspec"), false),
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-ingress.hspec"), false),
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice-min.hspec"), true));
+    }
+
+    @ParameterizedTest
+    @MethodSource(value = "input")
+    void testHandle(ServiceSpec serviceSpec, boolean expectedResult) throws HyscaleException {
+        ManifestContext manifestContext = ManifestContextTestUtil.getManifestContext(ManifestResource.DEPLOYMENT);
+        assertEquals(expectedResult, loadBalancerHandler.handle(serviceSpec, manifestContext).isEmpty());
     }
 }

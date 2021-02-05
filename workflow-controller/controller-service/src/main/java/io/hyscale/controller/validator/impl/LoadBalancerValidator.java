@@ -44,7 +44,6 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
      * Checks for the required mandatory fields.
      * Checks for Ports mismatch
      * Checks for external true.
-     *
      * @param workflowContext
      * @return
      * @throws HyscaleException
@@ -74,7 +73,6 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
 
     /**
      * Checks for Ports mismatch
-     *
      * @param serviceSpec
      * @param loadBalancer
      * @return
@@ -86,14 +84,12 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
         List<Port> portList = serviceSpec.get(HyscaleSpecFields.ports, portsListTypeReference);
         List<String> portNumbersList = new ArrayList<>();
         portList.forEach(each -> portNumbersList.add(each.getPort()));
-        if (loadBalancer.getMapping() != null) {
-            List<String> lbPorts = new ArrayList<>();
-            loadBalancer.getMapping().forEach(e -> lbPorts.add(e.getPort()));
-            for (String lbPort : lbPorts) {
-                if (!portNumbersList.contains(lbPort)) {
-                    WorkflowLogger.persist(ValidatorActivity.PORTS_MISMATCH, LoggerTags.ERROR, lbPort);
-                    return false;
-                }
+        List<String> lbPorts = new ArrayList<>();
+        loadBalancer.getMapping().forEach(e -> lbPorts.add(e.getPort()));
+        for (String lbPort : lbPorts) {
+            if (!portNumbersList.contains(lbPort)) {
+                WorkflowLogger.persist(ValidatorActivity.PORTS_MISMATCH, LoggerTags.ERROR, lbPort);
+                return false;
             }
         }
         return true;
@@ -117,7 +113,6 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
 
     /**
      * Checks for the required mandatory fields.
-     *
      * @param loadBalancer
      */
     private boolean validateMandatoryFields(LoadBalancer loadBalancer) {
@@ -151,7 +146,6 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
 
     /**
      * validate port and contextPaths in the loadBalancer mapping.
-     *
      * @param mappings
      */
     public boolean validateLoadBalancerMapping(List<LoadBalancerMapping> mappings) {

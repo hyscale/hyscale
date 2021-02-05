@@ -15,7 +15,6 @@
  */
 package io.hyscale.generator.services.builder;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.ServiceMetadata;
@@ -25,6 +24,6 @@ import java.util.List;
 
 public interface LoadBalancerBuilder {
 
-    public List<ManifestSnippet> build(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws JsonProcessingException, HyscaleException;
+    List<ManifestSnippet> build(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException;
 
 }

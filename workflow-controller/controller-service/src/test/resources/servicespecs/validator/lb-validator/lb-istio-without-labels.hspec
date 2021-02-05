@@ -1,0 +1,15 @@
+name: productpage
+external: false
+ports:
+  - port: 9000/http
+loadBalancer:
+     provider: istio
+     host: bookinfo.com
+     mapping:
+        - port : 9080/http
+          contextPaths:
+               - "/productpage"
+               - "/login"
+     headers:
+         hello : there
+         test : sample
