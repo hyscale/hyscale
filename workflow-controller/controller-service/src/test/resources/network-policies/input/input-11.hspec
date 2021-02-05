@@ -7,7 +7,6 @@ image:
 external: false
 
 allowTraffic:
-    from:
+  - from:
       - web-service
-      - xyz-service
 
