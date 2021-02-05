@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Pramati Prism, Inc.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -50,7 +50,10 @@ public class NetworkPoliciesValidator implements Validator<WorkflowContext> {
     public boolean validate(WorkflowContext workflowContext) throws HyscaleException {
         logger.info("Validating Network Policies");
         ServiceSpec serviceSpec = workflowContext.getServiceSpec();
-        boolean external = serviceSpec.get(HyscaleSpecFields.external, Boolean.class);
+        boolean external = false;
+        if (serviceSpec.get(HyscaleSpecFields.external, boolean.class) != null) {
+            external = serviceSpec.get(HyscaleSpecFields.external, boolean.class);
+        }
         List<NetworkTrafficRule> networkTrafficRules = serviceSpec.get(HyscaleSpecFields.allowTraffic, new TypeReference<>() {
         });
 
@@ -60,32 +63,32 @@ public class NetworkPoliciesValidator implements Validator<WorkflowContext> {
             WorkflowLogger.persist(ValidatorActivity.INVALID_VALUE, LoggerTags.ERROR, HyscaleSpecFields.external);
             return false;
         }
-        if (!external) {
-            // allowTraffic field is empty array
-            if (CollectionUtils.isEmpty(networkTrafficRules)) {
-                addErrorMessage(ValidatorActivity.NO_NETWORK_TRAFFIC_RULES);
-                WorkflowLogger.persist(ValidatorActivity.NO_NETWORK_TRAFFIC_RULES, LoggerTags.ERROR);
-                return false;
-            }
-            List<Port> servicePorts = serviceSpec.get(HyscaleSpecFields.ports, new TypeReference<>() {
-            });
-            List<Agent> agents = serviceSpec.get(HyscaleSpecFields.agents, new TypeReference<>() {
-            });
-            List<Integer> exposedPorts = new ArrayList<>();
-            if (!CollectionUtils.isEmpty(servicePorts)) {
-                exposedPorts = servicePorts.stream().map(s -> Integer.parseInt(s.getPort().split("/")[0])).collect(Collectors.toList());
-            }
-            List<Integer> finalExposedPorts = exposedPorts;
-            if (!CollectionUtils.isEmpty(agents)) {
-                agents.forEach(agent ->
-                        agent.getPorts().forEach(port ->
-                                finalExposedPorts.add(Integer.parseInt(port.getPort().split("/")[0]))
-                        )
-                );
-            }
-            return validateTrafficRules(networkTrafficRules, finalExposedPorts);
+        if (external) {
+            return true;
         }
-        return true;
+
+        //Validate Network Traffic Rules as External is False
+        List<Port> servicePorts = serviceSpec.get(HyscaleSpecFields.ports, new TypeReference<>() {
+        });
+        List<Agent> agents = serviceSpec.get(HyscaleSpecFields.agents, new TypeReference<>() {
+        });
+        List<Integer> exposedPorts = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(servicePorts)) {
+            exposedPorts = servicePorts.stream().map(s -> Integer.parseInt(s.getPort().split("/")[0])).collect(Collectors.toList());
+        }
+        List<Integer> finalExposedPorts = exposedPorts;
+        if (!CollectionUtils.isEmpty(agents)) {
+            agents.forEach(agent -> // add agents.getPorts null check
+                    {
+                        if (agent.getPorts() != null) {
+                            agent.getPorts().forEach(port ->
+                                    finalExposedPorts.add(Integer.parseInt(port.getPort().split("/")[0]))
+                            );
+                        }
+                    }
+            );
+        }
+        return validateTrafficRules(networkTrafficRules, finalExposedPorts);
     }
 
     //Check for Valid Network Traffic Rules
