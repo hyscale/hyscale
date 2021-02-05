@@ -24,8 +24,6 @@ ports:
 
 memory: 512Mi
 
-external: false
-
 allowTraffic:
   - ports:
       - 3306

@@ -41,6 +41,8 @@
   1,2,3
   ],
   "testNullField": "testVal",
+  "testNewList":[
+  1,2,3],
   "testString": "newTestVal",
   "testListReplace": [
   4,5
