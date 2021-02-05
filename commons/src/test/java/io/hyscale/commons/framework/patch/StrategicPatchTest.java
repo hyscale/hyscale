@@ -17,7 +17,6 @@ package io.hyscale.commons.framework.patch;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
@@ -79,9 +78,11 @@ public class StrategicPatchTest {
     }
 
     public static Stream<Arguments> getApplyExceptionInput() {
+        TestFieldDataProvider fieldDataProvider = new TestFieldDataProvider();
         return Stream.of(Arguments.of("{test:abc}", "{test:def test1:abc}", null, CommonErrorCode.INVALID_JSON_FORMAT),
                 Arguments.of("{test:def test1:abc}", "{test:abc}", null, CommonErrorCode.INVALID_JSON_FORMAT),
-                Arguments.of(sourceData, patchData, null, CommonErrorCode.STRATEGIC_MERGE_KEY_NOT_FOUND));
+                Arguments.of(sourceData, patchData, null, CommonErrorCode.STRATEGIC_MERGE_KEY_NOT_FOUND),
+                Arguments.of("{\"test\":[{\"test\":\"abc\"}]}", "{\"test\":[{\"test\":\"abc\"}]}", fieldDataProvider, CommonErrorCode.STRATEGIC_MERGE_KEY_NOT_FOUND));
     }
 
     @ParameterizedTest
