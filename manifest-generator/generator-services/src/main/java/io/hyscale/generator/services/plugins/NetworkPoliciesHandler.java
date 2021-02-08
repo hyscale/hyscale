@@ -37,6 +37,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+/**
+ * This class generates manifests to apply
+ * the network policy rules
+ * provided in the service spec.
+ */
+
 @Component
 @ManifestPlugin(name = "NetworkPoliciesHandler")
 public class NetworkPoliciesHandler implements ManifestHandler {

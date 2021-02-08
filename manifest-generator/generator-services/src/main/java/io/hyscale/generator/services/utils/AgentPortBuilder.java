@@ -31,6 +31,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * This class generates manifests to
+ * exposes all the Agent Ports.
+ */
+
 @Component
 public class AgentPortBuilder extends AgentHelper implements AgentBuilder {
 
@@ -46,13 +51,15 @@ public class AgentPortBuilder extends AgentHelper implements AgentBuilder {
         if (agents.isEmpty()) {
             return manifestSnippetList;
         }
+        String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         List<Port> portList;
         int agentCount = 1;
         for (Agent agent : agents) {
             portList = agent.getPorts();
-            String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
             logger.info("Processing Ports for Agent {} ", agent.getName());
-            manifestSnippetList.addAll(defaultPortsBuilder.generatePortsManifest(portList, podSpecOwner, agentCount++));
+            if (portList != null && !portList.isEmpty()) {
+                manifestSnippetList.addAll(defaultPortsBuilder.generatePortsManifest(portList, podSpecOwner, agentCount++));
+            }
         }
         return manifestSnippetList;
     }

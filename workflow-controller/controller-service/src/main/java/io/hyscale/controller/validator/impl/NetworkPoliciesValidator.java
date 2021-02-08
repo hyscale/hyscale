@@ -27,6 +27,7 @@ import io.hyscale.controller.provider.PortsProvider;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.NetworkTrafficRule;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,13 @@ import org.springframework.stereotype.Component;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
+
+/**
+ * This class covers different cases
+ * for validity of network traffic rules
+ * before they can be applied.
+ */
+
 
 @Component
 public class NetworkPoliciesValidator implements Validator<WorkflowContext> {
@@ -50,10 +58,7 @@ public class NetworkPoliciesValidator implements Validator<WorkflowContext> {
     public boolean validate(WorkflowContext workflowContext) throws HyscaleException {
         logger.info("Validating Network Policies");
         ServiceSpec serviceSpec = workflowContext.getServiceSpec();
-        boolean external = false;
-        if (serviceSpec.get(HyscaleSpecFields.external, boolean.class) != null) {
-            external = serviceSpec.get(HyscaleSpecFields.external, boolean.class);
-        }
+        boolean external = BooleanUtils.toBoolean(serviceSpec.get(HyscaleSpecFields.external, boolean.class));
         List<NetworkTrafficRule> networkTrafficRules = serviceSpec.get(HyscaleSpecFields.allowTraffic, new TypeReference<>() {
         });
 
@@ -78,14 +83,20 @@ public class NetworkPoliciesValidator implements Validator<WorkflowContext> {
                 WorkflowLogger.persist(ValidatorActivity.INVALID_NETWORK_TRAFFIC_RULES, LoggerTags.ERROR);
                 return false;
             }
-            // Rules is invalid if port is not exposed
+            // Rules are invalid if ports are not exposed
+            StringBuilder portsNotExposed = new StringBuilder();
+            boolean portsValid = true;
             for (Integer port : networkTrafficRule.getPorts()) {
-                if (CollectionUtils.isNotEmpty(exposedPorts) && !exposedPorts.contains(port)) {
+                if (CollectionUtils.isNotEmpty(exposedPorts) || !exposedPorts.contains(port)) {
                     logger.info("Cannot apply traffic rules to ports that are not exposed");
-                    addErrorMessage(ValidatorActivity.PORT_NOT_EXPOSED, port.toString());
-                    WorkflowLogger.persist(ValidatorActivity.PORT_NOT_EXPOSED, LoggerTags.ERROR, port.toString());
-                    return false;
+                    portsNotExposed.append(port.toString() + " ");
+                    portsValid = false;
                 }
+            }
+            if (!portsValid) {
+                addErrorMessage(ValidatorActivity.PORT_NOT_EXPOSED, portsNotExposed.toString());
+                WorkflowLogger.persist(ValidatorActivity.PORT_NOT_EXPOSED, LoggerTags.ERROR, portsNotExposed.toString());
+                return false;
             }
         }
         return true;

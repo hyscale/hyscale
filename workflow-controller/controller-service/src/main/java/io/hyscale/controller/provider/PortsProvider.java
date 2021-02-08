@@ -22,21 +22,26 @@ import io.hyscale.servicespec.commons.model.service.Agent;
 import io.hyscale.servicespec.commons.model.service.Port;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * This class provides a list of Exposed Ports from
+ * the service spec provided.
+ */
+
 @Component
 public class PortsProvider {
 
-    public List<Integer> getExposedPorts(ServiceSpec serviceSpec, boolean agentPorts) throws HyscaleException {
+    public List<Integer> getExposedPorts(ServiceSpec serviceSpec, boolean includeAgentPorts) throws HyscaleException {
         List<Port> servicePorts = serviceSpec.get(HyscaleSpecFields.ports, new TypeReference<>() {
         });
         List<Integer> exposedPorts = CollectionUtils.isEmpty(servicePorts) ? new ArrayList<>() :
                 servicePorts.stream().map(s -> Integer.parseInt(s.getPort().split("/")[0])).collect(Collectors.toList());
-        if (agentPorts) {
+        if (includeAgentPorts) {
             List<Agent> agents = serviceSpec.get(HyscaleSpecFields.agents, new TypeReference<>() {
             });
             if (!CollectionUtils.isEmpty(agents)) {
