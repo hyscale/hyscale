@@ -76,6 +76,8 @@ public class NetworkPoliciesValidator implements Validator<WorkflowContext> {
 
     //Check for Valid Network Traffic Rules
     private boolean validateTrafficRules(List<NetworkTrafficRule> networkTrafficRules, List<Integer> exposedPorts) {
+        StringBuilder portsNotExposed = new StringBuilder();
+        boolean portsValid = true;
         for (NetworkTrafficRule networkTrafficRule : networkTrafficRules) {
             if (networkTrafficRule.getPorts() == null) {
                 logger.info("Network traffic Rules are not Valid");
@@ -84,20 +86,18 @@ public class NetworkPoliciesValidator implements Validator<WorkflowContext> {
                 return false;
             }
             // Rules are invalid if ports are not exposed
-            StringBuilder portsNotExposed = new StringBuilder();
-            boolean portsValid = true;
             for (Integer port : networkTrafficRule.getPorts()) {
-                if (CollectionUtils.isNotEmpty(exposedPorts) || !exposedPorts.contains(port)) {
-                    logger.info("Cannot apply traffic rules to ports that are not exposed");
+                if (CollectionUtils.isEmpty(exposedPorts) || !exposedPorts.contains(port)) {
                     portsNotExposed.append(port.toString() + " ");
                     portsValid = false;
                 }
             }
-            if (!portsValid) {
-                addErrorMessage(ValidatorActivity.PORT_NOT_EXPOSED, portsNotExposed.toString());
-                WorkflowLogger.persist(ValidatorActivity.PORT_NOT_EXPOSED, LoggerTags.ERROR, portsNotExposed.toString());
-                return false;
-            }
+        }
+        if (!portsValid) {
+            logger.info("Cannot apply traffic rules to ports that are not exposed");
+            addErrorMessage(ValidatorActivity.PORT_NOT_EXPOSED, portsNotExposed.toString());
+            WorkflowLogger.persist(ValidatorActivity.PORT_NOT_EXPOSED, LoggerTags.ERROR, portsNotExposed.toString());
+            return false;
         }
         return true;
     }

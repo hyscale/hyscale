@@ -51,7 +51,7 @@ class NetworkPoliciesValidatorTest {
                     Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-6.hspec"), true),
                     Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-7.hspec"), false),
                     Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-8.hspec"), true),
-                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-9.hspec"), true),
+                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-9.hspec"), false),
                     Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-10.hspec"), false),
                     Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-11.hspec"), false),
                     Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-12.hspec"), true),
