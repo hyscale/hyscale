@@ -16,15 +16,66 @@
 package io.hyscale.generator.services.builder;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.models.ConfigTemplate;
 import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.ServiceMetadata;
+import io.hyscale.commons.utils.MustacheTemplateResolver;
+import io.hyscale.generator.services.model.ManifestResource;
+import io.hyscale.generator.services.provider.PluginTemplateProvider;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class TraefikMetaDataBuilder implements IngressMetaDataBuilder {
+
+    private static String INGRESS_NAME = "INGRESS_NAME";
+    private static String APP_NAME = "APP_NAME";
+    private static String ENV_NAME = "ENV_NAME";
+    private static String SERVICE_NAME = "SERVICE_NAME";
+    private static String INGRESS_CLASS = "INGRESS_CLASS";
+    private static String FRONTEND_ENTRYPOINTS = "FRONTEND_ENTRYPOINTS";
+    private static String REDIRECT_ENTRYPOINTS = "REDIRECT_ENTRYPOINTS";
+    private static String HEADERS_EXPRESSION = "HEADERS_EXPRESSION";
+
+    @Autowired
+    private PluginTemplateProvider templateProvider;
+
+    @Autowired
+    private MustacheTemplateResolver templateResolver;
+
     @Override
     public ManifestSnippet build(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
-        return null;
+        ManifestSnippet manifestSnippet = new ManifestSnippet();
+        manifestSnippet.setKind(ManifestResource.INGRESS.getKind());
+        manifestSnippet.setPath("metadata");
+        ConfigTemplate nginxIngressTemplate = templateProvider.get(PluginTemplateProvider.PluginTemplateType.TRAEFIK);
+        String yamlString = templateResolver.resolveTemplate(nginxIngressTemplate.getTemplatePath(), getContext(serviceMetadata,loadBalancer));
+        manifestSnippet.setSnippet(yamlString);
+        return manifestSnippet;
+    }
+
+    private Map<String, Object> getContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) {
+        Map<String, Object> context = new HashMap<>();
+        context.put(INGRESS_NAME,ManifestResource.INGRESS.getName(serviceMetadata));
+        context.put(APP_NAME,serviceMetadata.getAppName());
+        context.put(SERVICE_NAME,serviceMetadata.getServiceName());
+        context.put(ENV_NAME,serviceMetadata.getEnvName());
+        if(loadBalancer.getClassName()!= null && !loadBalancer.getClassName().isBlank()){
+            context.put(INGRESS_CLASS,loadBalancer.getClassName());
+            context.put(FRONTEND_ENTRYPOINTS,"http,https");
+            context.put(REDIRECT_ENTRYPOINTS,"https");
+        }
+        if(loadBalancer.getTlsSecret()!= null && !loadBalancer.getTlsSecret().isBlank()){
+            context.put(FRONTEND_ENTRYPOINTS,"http");
+            context.put(REDIRECT_ENTRYPOINTS,null);
+        }
+        if(loadBalancer.getHeaders()!=null ){
+            //TODO Add Headers
+        }
+        return context;
     }
 }

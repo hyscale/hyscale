@@ -1,8 +1,11 @@
 metadata:
   name: {{ INGRESS_NAME }}
   labels:
-    hyscale.io/platform-domain: {{ PLATFORM_DOMAIN }}
-    hyscale.io/ingress-provider: {{ INGRESS_PROVIDER }}
+    hyscale.io/app-name: {{APP_NAME}}
+    hyscale.io/service-name: {{SERVICE_NAME}}
+    {{#ENVIRONMENT_NAME}}
+    hyscale.io/environment-name: {{ENVIRONMENT_NAME}}
+    {{/ENVIRONMENT_NAME}}
   annotations:
     kubernetes.io/ingress.class: "{{INGRESS_CLASS}}"
     traefik.ingress.kubernetes.io/frontend-entry-points: {{ FRONTEND_ENTRYPOINTS }}
