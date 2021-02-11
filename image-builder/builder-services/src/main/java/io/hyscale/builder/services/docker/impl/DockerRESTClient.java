@@ -55,7 +55,6 @@ import io.hyscale.builder.core.models.BuildContext;
 import io.hyscale.builder.core.models.DockerImage;
 import io.hyscale.builder.core.models.ImageBuilderActivity;
 import io.hyscale.builder.services.config.ImageBuilderConfig;
-import io.hyscale.builder.services.constants.DockerImageConstants;
 import io.hyscale.builder.services.docker.HyscaleDockerClient;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
 import io.hyscale.builder.services.spring.DockerClientCondition;
@@ -215,7 +214,7 @@ public class DockerRESTClient implements HyscaleDockerClient {
         if (dockerfileModel == null) {
             throw new HyscaleException(ImageBuilderErrorCodes.DOCKERFILE_REQUIRED);
         }
-        File dockerfile = getDockerFile(dockerfileModel.getDockerfilePath());
+        File dockerfile = new File(dockerfileModel.getDockerfilePath());
         if (!dockerfile.exists() || dockerfile.isDirectory()) {
             throw new HyscaleException(ImageBuilderErrorCodes.DOCKERFILE_NOT_FOUND, dockerfile.getAbsolutePath());
         }
@@ -227,26 +226,22 @@ public class DockerRESTClient implements HyscaleDockerClient {
         Map<String, String> labels = imageMetadataProvider.getImageOwnerLabel();
 
         DockerClient dockerClient = getDockerClient();
-        BuildImageCmd buildImageCmd = dockerClient.buildImageCmd()
-                .withDockerfile(getDockerFile(dockerfile.getDockerfilePath()))
+        BuildImageCmd buildImageCmd = dockerClient.buildImageCmd();
+        if (dockerfile.getPath() != null) {
+            buildImageCmd.withBaseDirectory(new File(dockerfile.getPath()));
+        }
+        buildImageCmd.withDockerfile(new File(dockerfile.getDockerfilePath()))
                 .withPull(true)
                 .withNoCache(true)
                 .withLabels(labels)
                 .withTags(tags)
                 .withTarget(dockerfile.getTarget());
-        if (dockerfile.getPath() != null) {
-            buildImageCmd.withBaseDirectory(new File(dockerfile.getPath()));
-        }
         if (dockerfile.getArgs() != null && !dockerfile.getArgs().isEmpty()) {
             dockerfile.getArgs().entrySet().stream().forEach(each -> buildImageCmd.withBuildArg(each.getKey(), each.getValue()));
         }
         return buildImageCmd;
     }
 
-    private File getDockerFile(String dockerFilePath) {
-        return new File(dockerFilePath + ToolConstants.LINUX_FILE_SEPARATOR + DockerImageConstants.DOCKERFILE_NAME);
-    }
-    
     @Override
     public void pull(String image, BuildContext context) throws HyscaleException {
         ActivityContext pullActivity = new ActivityContext(ImageBuilderActivity.IMAGE_PULL);
