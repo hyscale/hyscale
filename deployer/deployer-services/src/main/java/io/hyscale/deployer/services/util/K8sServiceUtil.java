@@ -15,14 +15,21 @@
  */
 package io.hyscale.deployer.services.util;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
+import io.hyscale.deployer.core.model.CustomResourceKind;
+import io.hyscale.deployer.services.client.GenericK8sClient;
+import io.hyscale.deployer.services.client.K8sResourceClient;
+import io.hyscale.deployer.services.model.CustomObject;
 import io.hyscale.deployer.services.model.ServiceAddress;
+import io.hyscale.generator.services.model.LBType;
+import io.hyscale.generator.services.model.ManifestResource;
+import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.models.V1LoadBalancerIngress;
 import io.kubernetes.client.openapi.models.V1Service;
 import io.kubernetes.client.openapi.models.V1ServicePort;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Utility to process information from {@link V1Service}
@@ -78,4 +85,18 @@ public class K8sServiceUtil {
 	});
 	return portsList;
     }
+
+	public static ServiceAddress getLBServiceAddress(LBType lbType, ApiClient apiClient, String lbSelctor, String namespace) {
+		ServiceAddress serviceAddress = new ServiceAddress();
+		serviceAddress.setServiceIP(lbType.getServiceAddressPlaceHolder());
+		if (lbType.equals(LBType.INGRESS)) {
+			CustomResourceKind customResourceKind = new CustomResourceKind(ManifestResource.INGRESS.getKind(), ManifestResource.INGRESS.getApiVersion());
+			GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).withNamespace(namespace)
+					.forKind(customResourceKind);
+			List<CustomObject> customObjects = genericK8sClient.getBySelector(lbSelctor);
+			CustomObject ingressResource = customObjects.get(0);
+			//set service address of Ingress resource (if not null).
+		}
+		return serviceAddress;
+	}
 }

@@ -47,4 +47,5 @@ module deployer.services {
     requires spring.beans;
     requires spring.core;
     requires zjsonpatch;
+    requires manifestGenerator;
 }

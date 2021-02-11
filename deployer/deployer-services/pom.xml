@@ -40,5 +40,11 @@
 			<groupId>com.flipkart.zjsonpatch</groupId>
 			<artifactId>zjsonpatch</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.hyscale</groupId>
+			<artifactId>generator-services</artifactId>
+			<version>0.9.8.3</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 </project>

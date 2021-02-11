@@ -278,6 +278,9 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
                 if (workflowContext.getAttribute(WorkflowConstants.SERVICE_IP) != null) {
                     serviceStatus.setMessage(workflowContext.getAttribute(WorkflowConstants.SERVICE_IP).toString());
                 }
+                if (workflowContext.getAttribute(WorkflowConstants.SERVICE_URL) != null) {
+                    serviceStatus.setMessage(workflowContext.getAttribute(WorkflowConstants.SERVICE_URL).toString());
+                }
                 JsonObject json = (JsonObject) jsonParser.parse(GsonProviderUtil.getPrettyGsonBuilder().toJson(serviceStatus));
                 jsonArr.add(json);
             }
@@ -336,7 +339,11 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
                 ControllerActivity.DEPLOY_LOGS_AT);
         WorkflowLogger.footer();
         CommandUtil.logMetaInfo((String) workflowContext.getAttribute(WorkflowConstants.SERVICE_IP),
-                ControllerActivity.SERVICE_URL);
+                ControllerActivity.SERVICE_IP);
+        if (workflowContext.getAttribute(WorkflowConstants.SERVICE_URL) != null) {
+            CommandUtil.logMetaInfo((String) workflowContext.getAttribute(WorkflowConstants.SERVICE_URL),
+                    ControllerActivity.SERVICE_URL);
+        }
     }
 
     @PreDestroy

@@ -22,7 +22,7 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
-import io.hyscale.commons.models.K8sAuthorisation;
+import io.hyscale.commons.models.*;
 import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
 import io.hyscale.troubleshooting.integration.service.TroubleshootService;
 
@@ -39,9 +39,6 @@ import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.io.LogProcessor;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.DeploymentContext;
-import io.hyscale.commons.models.Manifest;
-import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.DeploymentContextBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
@@ -152,6 +149,10 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
             if (servicePorts != null) {
                 try {
                     ServiceAddress serviceAddress = deployer.getServiceAddress(deploymentContext);
+                    LoadBalancer loadBalancer = serviceSpec.get(HyscaleSpecFields.loadBalancer, LoadBalancer.class);
+                    if (loadBalancer != null) {
+                        context.addAttribute(WorkflowConstants.SERVICE_URL, loadBalancer.getHost());
+                    }
                     if (serviceAddress != null) {
                         context.addAttribute(WorkflowConstants.SERVICE_IP, serviceAddress.toString());
                     }

@@ -30,11 +30,21 @@ public enum LBType {
         public LoadBalancerBuilder getBuilder() {
             return HyscaleContextUtil.getSpringBean(IngressManifestBuilder.class);
         }
+
+        @Override
+        public String getServiceAddressPlaceHolder() {
+            return  "<External IP of Ingress controller service>";
+        }
     },
     ISTIO("istio"){
         @Override
         public LoadBalancerBuilder getBuilder() {
             return HyscaleContextUtil.getSpringBean(IstioManifestBuilder.class);
+        }
+
+        @Override
+        public String getServiceAddressPlaceHolder() {
+            return  "<External IP of istio-ingress-gateway>";
         }
     };
 
@@ -65,6 +75,8 @@ public enum LBType {
     }
 
     public abstract LoadBalancerBuilder getBuilder();
+
+    public abstract String getServiceAddressPlaceHolder();
 
 }
 

@@ -71,7 +71,7 @@ public class VirtualServiceBuilder implements IstioResourcesManifestGenerator {
         List<String> gateways = new ArrayList<>();
         gateways.add(getGatewayName(serviceName, envName));
         map.put(GATEWAYS, gateways);
-        map.put(HEADERS, loadBalancer.getHeaders().entrySet());
+        map.put(HEADERS, loadBalancer.getHeaders() != null ? loadBalancer.getHeaders().entrySet() : null);
         map.put(ManifestGenConstants.LOADBALANCER, loadBalancer);
         map.put("serviceName", serviceMetadata.getServiceName());
         map.put(MATCH_TYPE, DEFAULT_MATCH_TYPE);
