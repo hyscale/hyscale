@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Pramati Prism, Inc.
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,7 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.generator.services.builder.DefaultPortsBuilder;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Agent;
 import io.hyscale.servicespec.commons.model.service.Port;
@@ -29,10 +30,11 @@ import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Validates the both Service and
@@ -42,7 +44,11 @@ import java.util.stream.Collectors;
 
 @Component
 public class PortsValidator implements Validator<WorkflowContext> {
+
     private static final Logger logger = LoggerFactory.getLogger(PortsValidator.class);
+
+    @Autowired
+    DefaultPortsBuilder defaultPortsBuilder;
 
     @Override
     public boolean validate(WorkflowContext workflowContext) throws HyscaleException {
@@ -58,18 +64,20 @@ public class PortsValidator implements Validator<WorkflowContext> {
         if (CollectionUtils.isEmpty(servicePorts) || CollectionUtils.isEmpty(agents)) {
             return true;
         }
-        List<Integer> exposedPorts = servicePorts.stream().map(s -> Integer.parseInt(s.getPort().split("/")[0])).collect(Collectors.toList());
+        List<String> exposedPorts = new ArrayList<>();
+        servicePorts.stream().forEach(port -> exposedPorts.add(defaultPortsBuilder.updatePortProtocol(port).getPort()));
         StringBuilder duplicatePortsList = new StringBuilder();
         boolean portsValid = true;
         // Check for duplicate ports being exposed in service or agents
         for (Agent agent : agents) {
             if (CollectionUtils.isNotEmpty(agent.getPorts())) {
                 for (Port port : agent.getPorts()) {
-                    if (exposedPorts.contains(Integer.parseInt(port.getPort().split("/")[0]))) {
+                    port = defaultPortsBuilder.updatePortProtocol(port);
+                    if (exposedPorts.contains(port.getPort())) {
                         duplicatePortsList.append(port.getPort()).append(" ");
                         portsValid = false;
                     }
-                    exposedPorts.add(Integer.parseInt(port.getPort().split("/")[0]));
+                    exposedPorts.add(port.getPort());
                 }
             }
         }

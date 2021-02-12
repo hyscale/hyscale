@@ -23,14 +23,14 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class NetworkTrafficRule {
 
-    List<Integer> ports;
+    List<String> ports;
     List<String> from;
 
-    public List<Integer> getPorts() {
+    public List<String> getPorts() {
         return ports;
     }
 
-    public void setPorts(List<Integer> ports) {
+    public void setPorts(List<String> ports) {
         this.ports = ports;
     }
 

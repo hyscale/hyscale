@@ -6,13 +6,13 @@ image:
 
 ports:
   - port: 8080/tcp
-  - port: 5050/udp
- 
+  - port: 5050/tcp
+
 external: false
 
 allowTraffic:
   - ports:
-      - 8080
-      - 5050/udp
+      - 8080/udp
+      - 5050/http
     from:
       - web-service

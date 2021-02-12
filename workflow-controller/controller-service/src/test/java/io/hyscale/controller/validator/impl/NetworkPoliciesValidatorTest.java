@@ -56,7 +56,9 @@ class NetworkPoliciesValidatorTest {
                     Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-11.hspec"), false),
                     Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-12.hspec"), true),
                     Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-13.hspec"), true),
-                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-14.hspec"), true));
+                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-14.hspec"), true),
+                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-15.hspec"), false),
+                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/network-policies/input/input-16.hspec"), true));
         } catch (Exception e) {
             HyscaleException ex = new HyscaleException(e, ManifestErrorCodes.ERROR_WHILE_CREATING_MANIFEST);
             logger.error("Error while generating Input Files", ex);

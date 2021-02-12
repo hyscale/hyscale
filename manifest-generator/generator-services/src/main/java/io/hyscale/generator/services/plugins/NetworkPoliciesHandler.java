@@ -68,9 +68,14 @@ public class NetworkPoliciesHandler implements ManifestHandler {
             // All Network Traffic Rules Go Under Allow Traffic
             List<NetworkTrafficRule> networkTrafficRules = serviceSpec.get(HyscaleSpecFields.allowTraffic, new TypeReference<>() {
             });
-            logger.info("Started Network Policies Handler");
+
+            // Only Port Number required to generate traffic rules
+            networkTrafficRules.stream().forEach(rule ->
+                    rule.getPorts().stream().forEach(port ->
+                            rule.getPorts().set(rule.getPorts().indexOf(port), port.split("/")[0])));
 
             // To Generate k8s YAML Template
+            logger.info("Started Network Policies Handler");
             ConfigTemplate networkPoliciesTemplate = templateProvider.get(PluginTemplateProvider.PluginTemplateType.NETWORK_POLICY);
             String yamlString = templateResolver.resolveTemplate(networkPoliciesTemplate.getTemplatePath(), getContext(networkTrafficRules, serviceSpec));
             ManifestSnippet snippet = new ManifestSnippet();

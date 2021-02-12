@@ -5,14 +5,14 @@ image:
   tag: 4.0.1
 
 ports:
-  - port: 8080/tcp
-  - port: 5050/udp
- 
+  - port: 8080/udp
+  - port: 5050/http
+
 external: false
 
 allowTraffic:
   - ports:
-      - 8080
-      - 5050/udp
+      - 8080/udp
+      - 5050
     from:
       - web-service

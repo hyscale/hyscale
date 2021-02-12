@@ -46,6 +46,7 @@ import java.util.Set;
 public class DefaultPortsBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultPortsBuilder.class);
+    private static String seperator = "/";
 
     public List<ManifestSnippet> generatePortsManifest(List<Port> portList, String podSpecOwner) throws HyscaleException {
         return generatePortsManifest(portList, podSpecOwner, 0);
@@ -59,15 +60,10 @@ public class DefaultPortsBuilder {
             portList.stream().filter(port -> port != null && StringUtils.isNotBlank(port.getPort())).forEach(each -> {
                 V1ContainerPort v1ContainerPort = new V1ContainerPort();
                 V1ServicePort v1ServicePort = new V1ServicePort();
-                String[] portAndProtocol = each.getPort().split("/");
-                String protocol = DefaultPortsBuilder.ServiceProtocol.TCP.name();
-
-                if (portAndProtocol.length > 1) {
-                    protocol = DefaultPortsBuilder.ServiceProtocol.fromString(portAndProtocol[1]).name();
-                }
-                String portName = NormalizationUtil.normalize(portAndProtocol[0] + ManifestGenConstants.NAME_DELIMITER + protocol);
-                v1ContainerPort.setProtocol(protocol);
-                v1ServicePort.setProtocol(protocol);
+                String[] portAndProtocol = updatePortProtocol(each).getPort().split("/");
+                String portName = NormalizationUtil.normalize(portAndProtocol[0] + ManifestGenConstants.NAME_DELIMITER + portAndProtocol[1]);
+                v1ContainerPort.setProtocol(portAndProtocol[1]);
+                v1ServicePort.setProtocol(portAndProtocol[1]);
                 int portValue = Integer.parseInt(portAndProtocol[0]);
                 v1ContainerPort.setContainerPort(portValue);
                 v1ContainerPort.setName(portName);
@@ -91,6 +87,21 @@ public class DefaultPortsBuilder {
             }
         }
         return manifestSnippetList;
+    }
+
+    public Port updatePortProtocol(Port port) {
+        port.setPort(updatePortProtocol(port.getPort()));
+        return port;
+    }
+
+    public String updatePortProtocol(String port) {
+        String[] portAndProtocol = port.split("/");
+        String protocol = DefaultPortsBuilder.ServiceProtocol.TCP.getProtocolString();
+        if (portAndProtocol.length > 1) {
+            protocol = portAndProtocol[1].equalsIgnoreCase("udp") ? ServiceProtocol.UDP.getProtocolString()
+                    : DefaultPortsBuilder.ServiceProtocol.fromString(portAndProtocol[1]).getProtocolString();
+        }
+        return portAndProtocol[0] + seperator + protocol;
     }
 
     private static ManifestSnippet buildContainerPortsSnippet(Set<V1ContainerPort> containerPorts, String podSpecOwner, int containerIndex)

@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Pramati Prism, Inc.
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,12 +17,14 @@ package io.hyscale.controller.provider;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.generator.services.builder.DefaultPortsBuilder;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Agent;
 import io.hyscale.servicespec.commons.model.service.Port;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
-import org.springframework.stereotype.Component;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,18 +38,21 @@ import java.util.stream.Collectors;
 @Component
 public class PortsProvider {
 
-    public List<Integer> getExposedPorts(ServiceSpec serviceSpec, boolean includeAgentPorts) throws HyscaleException {
+    @Autowired
+    DefaultPortsBuilder defaultPortsBuilder;
+
+    public List<String> getExposedPorts(ServiceSpec serviceSpec, boolean includeAgentPorts) throws HyscaleException {
         List<Port> servicePorts = serviceSpec.get(HyscaleSpecFields.ports, new TypeReference<>() {
         });
-        List<Integer> exposedPorts = CollectionUtils.isEmpty(servicePorts) ? new ArrayList<>() :
-                servicePorts.stream().map(s -> Integer.parseInt(s.getPort().split("/")[0])).collect(Collectors.toList());
+        List<String> exposedPorts = CollectionUtils.isEmpty(servicePorts) ? new ArrayList<>() :
+                servicePorts.stream().map(port -> defaultPortsBuilder.updatePortProtocol(port).getPort()).collect(Collectors.toList());
         if (includeAgentPorts) {
             List<Agent> agents = serviceSpec.get(HyscaleSpecFields.agents, new TypeReference<>() {
             });
             if (!CollectionUtils.isEmpty(agents)) {
                 agents.stream().filter(each -> each.getPorts() != null).forEach(agent ->
-                    agent.getPorts().forEach(port ->
-                        exposedPorts.add(Integer.parseInt(port.getPort().split("/")[0]))));
+                        agent.getPorts().forEach(port ->
+                                exposedPorts.add(defaultPortsBuilder.updatePortProtocol(port).getPort())));
             }
         }
         return exposedPorts;
