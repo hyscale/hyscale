@@ -1,0 +1,16 @@
+name: redis
+
+image:
+  registry: registry.hub.docker.com
+  name: library/redis:4
+
+ports:
+  - port: 6379
+
+agents:
+  - name: redis-exporter
+    image: registry.hub.docker.com/oliver006/redis_exporter:latest
+    ports:
+      - port: 9121
+
+external : true

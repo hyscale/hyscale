@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Pramati Prism, Inc.
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -68,8 +68,8 @@ public class NetworkPoliciesValidator implements Validator<WorkflowContext> {
 
         if (external && networkTrafficRules != null) {
             logger.info("External Cannot be True to Apply Network Traffic Rules");
-            addErrorMessage(ValidatorActivity.INVALID_VALUE, HyscaleSpecFields.external);
-            WorkflowLogger.persist(ValidatorActivity.INVALID_VALUE, LoggerTags.ERROR, HyscaleSpecFields.external);
+            addErrorMessage(ValidatorActivity.INVALID_EXTERNAL_VALUE);
+            WorkflowLogger.persist(ValidatorActivity.INVALID_EXTERNAL_VALUE, LoggerTags.ERROR);
             return false;
         }
         if (external || CollectionUtils.isEmpty(networkTrafficRules)) {
@@ -85,8 +85,8 @@ public class NetworkPoliciesValidator implements Validator<WorkflowContext> {
         for (NetworkTrafficRule networkTrafficRule : networkTrafficRules) {
             if (networkTrafficRule.getPorts() == null) {
                 logger.info("Network traffic Rules are not Valid");
-                addErrorMessage(ValidatorActivity.INVALID_NETWORK_TRAFFIC_RULES, (String) null);
-                WorkflowLogger.persist(ValidatorActivity.INVALID_NETWORK_TRAFFIC_RULES, LoggerTags.ERROR);
+                addErrorMessage(ValidatorActivity.MISSING_PORTS, (String) null);
+                WorkflowLogger.persist(ValidatorActivity.MISSING_PORTS, LoggerTags.ERROR);
                 return false;
             }
             // Rules are invalid if ports are not exposed

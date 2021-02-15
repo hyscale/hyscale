@@ -52,7 +52,8 @@ class PortsValidatorTest {
                     Arguments.of(ServiceSpecTestUtil.getServiceSpec("/ports/input/input-7.hspec"), false),
                     Arguments.of(ServiceSpecTestUtil.getServiceSpec("/ports/input/input-8.hspec"), true),
                     Arguments.of(ServiceSpecTestUtil.getServiceSpec("/ports/input/input-9.hspec"), false),
-                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/ports/input/input-10.hspec"), false));
+                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/ports/input/input-10.hspec"), false),
+                    Arguments.of(ServiceSpecTestUtil.getServiceSpec("/ports/input/input-11.hspec"), true));
         } catch (Exception e) {
             HyscaleException ex = new HyscaleException(e, ControllerErrorCodes.INPUT_VALIDATION_FAILED);
             logger.error("Error while Reading Input Files", ex);

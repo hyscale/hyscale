@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Pramati Prism, Inc.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,7 @@ package io.hyscale.generator.services.builder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Sets;
+import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.NormalizationUtil;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
@@ -46,7 +47,6 @@ import java.util.Set;
 public class DefaultPortsBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultPortsBuilder.class);
-    private static String seperator = "/";
 
     public List<ManifestSnippet> generatePortsManifest(List<Port> portList, String podSpecOwner) throws HyscaleException {
         return generatePortsManifest(portList, podSpecOwner, 0);
@@ -90,18 +90,20 @@ public class DefaultPortsBuilder {
     }
 
     public Port updatePortProtocol(Port port) {
-        port.setPort(updatePortProtocol(port.getPort()));
+        if (port != null) {
+            port.setPort(updatePortProtocol(port.getPort()));
+        }
         return port;
     }
 
     public String updatePortProtocol(String port) {
-        String[] portAndProtocol = port.split("/");
-        String protocol = DefaultPortsBuilder.ServiceProtocol.TCP.getProtocolString();
-        if (portAndProtocol.length > 1) {
-            protocol = portAndProtocol[1].equalsIgnoreCase("udp") ? ServiceProtocol.UDP.getProtocolString()
-                    : DefaultPortsBuilder.ServiceProtocol.fromString(portAndProtocol[1]).getProtocolString();
+        if (port != null) {
+            String[] portAndProtocol = port.split(ToolConstants.PORTS_PROTOCOL_SEPARATOR);
+            String protocol = portAndProtocol.length > 1 ? ServiceProtocol.fromString(portAndProtocol[1]).getProtocolString()
+                    : DefaultPortsBuilder.ServiceProtocol.TCP.getProtocolString();
+            return portAndProtocol[0] + ToolConstants.PORTS_PROTOCOL_SEPARATOR + protocol;
         }
-        return portAndProtocol[0] + seperator + protocol;
+        return null;
     }
 
     private static ManifestSnippet buildContainerPortsSnippet(Set<V1ContainerPort> containerPorts, String podSpecOwner, int containerIndex)

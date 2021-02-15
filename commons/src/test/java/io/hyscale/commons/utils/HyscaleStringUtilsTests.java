@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Pramati Prism, Inc.
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,8 +30,10 @@ public class HyscaleStringUtilsTests {
     private static final char TAILING_CHAR = 'r';
     private static final String EXPECTED_CHAR_STRING = "hyscaleUse";
 
-    private static String[] singularWords = {"policy", "resource", "scarf", "knife", "mango", "backslash", "video"};
-    private static String[] pluralWords = {"policies", "resources", "scarves", "knives", "mangoes", "backslashes", "videos"};
+    private static String[] singularWords = {"policy", "resource", "scarf", "knife", "mango", "backslash",
+            "video", "outlay", "bus", "fix", "buzz", "beach"};
+    private static String[] pluralWords = {"policies", "resources", "scarves", "knives", "mangoes", "backslashes",
+            "videos", "outlays", "buses", "fixes", "buzzes", "beaches"};
 
     public static Stream<Arguments> getInputsForRemoveSuffixTest() {
         return Stream.of(Arguments.of(null, SUFFIX_STRING, null),
@@ -48,7 +50,12 @@ public class HyscaleStringUtilsTests {
                 Arguments.of(singularWords[3], pluralWords[3]),
                 Arguments.of(singularWords[4], pluralWords[4]),
                 Arguments.of(singularWords[5], pluralWords[5]),
-                Arguments.of(singularWords[6], pluralWords[6]));
+                Arguments.of(singularWords[6], pluralWords[6]),
+                Arguments.of(singularWords[7], pluralWords[7]),
+                Arguments.of(singularWords[8], pluralWords[8]),
+                Arguments.of(singularWords[9], pluralWords[9]),
+                Arguments.of(singularWords[10], pluralWords[10]),
+                Arguments.of(singularWords[11], pluralWords[11]));
     }
 
     @ParameterizedTest

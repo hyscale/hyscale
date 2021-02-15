@@ -16,6 +16,7 @@
 package io.hyscale.generator.services.plugins;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ConfigTemplate;
 import io.hyscale.commons.models.ManifestContext;
@@ -36,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class generates manifests to apply
@@ -70,9 +72,8 @@ public class NetworkPoliciesHandler implements ManifestHandler {
             });
 
             // Only Port Number required to generate traffic rules
-            networkTrafficRules.stream().forEach(rule ->
-                    rule.getPorts().stream().forEach(port ->
-                            rule.getPorts().set(rule.getPorts().indexOf(port), port.split("/")[0])));
+            networkTrafficRules.stream().forEach(rule -> rule
+                    .setPorts(rule.getPorts().stream().map(port -> port.split(ToolConstants.PORTS_PROTOCOL_SEPARATOR)[0]).collect(Collectors.toList())));
 
             // To Generate k8s YAML Template
             logger.info("Started Network Policies Handler");
