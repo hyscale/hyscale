@@ -24,8 +24,8 @@ package io.hyscale.commons.framework.patch;
  */
 public class FieldMetaData {
 
-	// replace/ merge strategy can be added
 	private String key;
+	private PatchStrategy patchStrategy;
 
 	public String getKey() {
 		return key;
@@ -34,4 +34,12 @@ public class FieldMetaData {
 	public void setKey(String key) {
 		this.key = key;
 	}
+
+    public PatchStrategy getPatchStrategy() {
+        return patchStrategy;
+    }
+
+    public void setPatchStrategy(PatchStrategy patchStrategy) {
+        this.patchStrategy = patchStrategy;
+    }
 }

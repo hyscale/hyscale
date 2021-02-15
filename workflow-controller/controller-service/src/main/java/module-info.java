@@ -59,4 +59,6 @@ module controller.service {
     requires deployerModel;
     requires builderservices;
     requires deployer.services;
+    requires java.annotation;
+    requires org.apache.commons.collections4;
 }

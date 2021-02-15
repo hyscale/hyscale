@@ -1,0 +1,23 @@
+name: frontend
+image:
+  registry: registry.hub.docker.com
+  name: username/frontend # replace with your dockerhub username for {{username}}
+  tag: 4.0.1
+
+ports:
+  - port: 8080/tcp
+  - port: 5050/tcp
+
+external: false
+
+allowTraffic:
+  - ports:
+      - 5050
+    from:
+      - web-service
+  - ports:
+      - 8080
+    from:
+      - xyz-service
+
+

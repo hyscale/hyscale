@@ -36,5 +36,17 @@
   "testField":"testVal"
   },
   "testNullField": "testVal",
-  "testString": "testVal"
+  "testString": "testVal",
+  "testListReplace": [
+  1,2,3
+  ],
+  "testListReplaceEmpty": [1,2,3],
+  "testListReplaceObject": [
+   {
+      "key": "key1",
+      "testVal1": "val1",
+      "testVal2": "val2"
+    }
+  ]
+  
 }

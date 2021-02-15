@@ -28,6 +28,7 @@ module manifestGenerator {
 	exports io.hyscale.generator.services.processor;
 	exports io.hyscale.generator.services.provider;
 	exports io.hyscale.generator.services.utils;
+	exports io.hyscale.generator.services.builder;
 
 	uses ManifestHandler;
 

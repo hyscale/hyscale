@@ -1,0 +1,20 @@
+name: frontend
+image:
+  registry: registry.hub.docker.com
+  name: username/frontend # replace with your dockerhub username for {{username}}
+  tag: 4.0.1
+
+ports:
+  - port: 8080/tcp
+
+agents:
+  - name: helloappsidecar
+    image: gcr.io/google-samples/hello-app:1.0
+    ports:
+      - port: 8080/http
+  - name: helloappsidecar2
+    image: gcr.io/google-samples/hello-app:1.0
+    ports:
+      - port: 5050/tcp
+
+external: true

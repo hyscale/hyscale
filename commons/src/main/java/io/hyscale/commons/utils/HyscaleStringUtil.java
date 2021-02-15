@@ -19,7 +19,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public class HyscaleStringUtil {
 
-    private HyscaleStringUtil() {}
+    private HyscaleStringUtil() {
+    }
 
     public static String removeSuffixStr(String input, String trailingStr) {
         if (StringUtils.isBlank(input) || StringUtils.isBlank(trailingStr)) {
@@ -43,6 +44,29 @@ public class HyscaleStringUtil {
             return null;
         }
         return removeSuffixStr(input.toString(), Character.toString(trailingChar));
+    }
+
+
+    public static String getPlural(String word) {
+        String consonants = "bcdfghjklmnpqrstvwxyzs";
+        boolean hasConsonant = consonants.contains(String.valueOf(word.charAt(word.length() - 2)));
+        String lastLetter = word.substring(0, word.length() - 1);
+        if (word.endsWith("s") || word.endsWith("x") || word.endsWith("z") || word.endsWith("ch") || word.endsWith("sh")) {
+            return word + "es";
+        }
+        if (word.endsWith("y") && hasConsonant) {
+            return lastLetter + "ies";
+        }
+        if (word.endsWith("f")) {
+            return lastLetter + "ves";
+        }
+        if (word.endsWith("fe")) {
+            return word.substring(0, word.length() - 2) + "ves";
+        }
+        if (word.endsWith("o") && hasConsonant) {
+            return word + "es";
+        }
+        return word + "s";
     }
 
 }
