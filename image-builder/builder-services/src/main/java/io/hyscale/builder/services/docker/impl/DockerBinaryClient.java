@@ -124,10 +124,10 @@ public class DockerBinaryClient implements HyscaleDockerClient {
         String appName = context.getAppName();
         String serviceName = context.getServiceName();
         boolean verbose = context.isVerbose();
-
-        String dockerBuildCommand = imageCommandProvider.dockerBuildCommand(appName, serviceName, tag, dockerfile.getDockerfilePath(),
-                dockerfile.getTarget(),
-                dockerfile.getArgs());
+        String buildPath = dockerfile.getPath() != null ? SetupConfig.getAbsolutePath(dockerfile.getPath()) : null;
+        String dockerfilePath = dockerfile.getDockerfilePath();
+        String dockerBuildCommand = imageCommandProvider.dockerBuildCommand(appName, serviceName, tag, dockerfilePath,
+                buildPath, dockerfile.getTarget(), dockerfile.getArgs());
 
         logger.debug("Docker build command {}", dockerBuildCommand);
 
@@ -136,8 +136,7 @@ public class DockerBinaryClient implements HyscaleDockerClient {
         context.setBuildLogs(logFilePath);
 
         // TODO keep continuation activity for user
-        boolean status = CommandExecutor.executeInDir(dockerBuildCommand, logFile,
-                dockerfile.getPath() != null ? SetupConfig.getAbsolutePath(dockerfile.getPath()) : null);
+        boolean status = CommandExecutor.executeInDir(dockerBuildCommand, logFile, buildPath);
         if (!status) {
             WorkflowLogger.endActivity(Status.FAILED);
             logger.error("Failed to build docker image");
