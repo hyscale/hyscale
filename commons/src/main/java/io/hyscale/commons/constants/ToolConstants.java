@@ -99,7 +99,7 @@ public class ToolConstants {
 
     public static final String INGRESS= "ingress";
   
-    public static final String PORTS_PROTOCOL_SEPARATOR = "/"
+    public static final String PORTS_PROTOCOL_SEPARATOR = "/";
 
     private ToolConstants() {}
 
