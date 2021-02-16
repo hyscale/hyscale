@@ -32,7 +32,7 @@ public enum ResourceKind {
     PERSISTENT_VOLUME_CLAIM("PersistentVolumeClaim", 2),
     EVENT("Event"),
     VERSION("VersionInfo"),
-    INGRESS("Ingress");
+    INGRESS("Ingress"),
     NETWORKPOLICY("NetworkPolicy");
 
     private String kind;

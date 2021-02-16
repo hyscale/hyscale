@@ -31,6 +31,7 @@ import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.utils.HyscaleContextUtil;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.CustomResourceKind;
+import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.client.GenericK8sClient;
 import io.hyscale.deployer.services.client.K8sResourceClient;
 import io.hyscale.deployer.services.model.CustomObject;

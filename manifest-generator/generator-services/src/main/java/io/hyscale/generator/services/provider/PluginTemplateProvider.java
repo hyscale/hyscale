@@ -61,7 +61,7 @@ public class PluginTemplateProvider {
 
         ISTIO_DESTINATION_RULE("/loadBalancer/istio/destinationRule.yaml.tpl"),
 
-        ISTIO_GATEWAY("/loadBalancer/istio/gateway.yaml.tpl");
+        ISTIO_GATEWAY("/loadBalancer/istio/gateway.yaml.tpl"),
 
         NETWORK_POLICY("networkPolicy.yaml.tpl");
     		
