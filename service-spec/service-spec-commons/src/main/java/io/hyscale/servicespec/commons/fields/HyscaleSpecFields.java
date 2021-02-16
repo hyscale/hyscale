@@ -94,6 +94,9 @@ public class HyscaleSpecFields {
 	public static final String max="max";
 	public static final String cpuThreshold ="cpuThreshold";
 
+	//Network Policies
+	public static final String allowTraffic="allowTraffic";
+
 	// JSON fields helper
 	public static final String arrayLeftBrace = "[";
 	public static final String arrayRightBrace = "]";

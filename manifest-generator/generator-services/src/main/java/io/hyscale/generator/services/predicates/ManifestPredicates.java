@@ -23,6 +23,7 @@ import io.hyscale.generator.services.provider.PropsProvider;
 import io.hyscale.generator.services.utils.ReplicasUtil;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.*;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -30,8 +31,9 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 public class ManifestPredicates {
-    
-    private ManifestPredicates() {}
+
+    private ManifestPredicates() {
+    }
 
     public static Predicate<ServiceSpec>getDestinationRUlePredicate(){
         return serviceSpec -> {
@@ -214,26 +216,43 @@ public class ManifestPredicates {
         };
     }
 
+    public static Predicate<ServiceSpec> isNetworkPolicyEnabled() {
+        return serviceSpec -> {
+            List<NetworkTrafficRule> allowTraffic;
+            try {
+                if (BooleanUtils.isTrue(serviceSpec.get(HyscaleSpecFields.external, Boolean.class))) {
+                    return false;
+                }
+                allowTraffic = serviceSpec.get(HyscaleSpecFields.allowTraffic, new TypeReference<>() {
+                });
+            } catch (HyscaleException e) {
+                return false;
+            }
+            return allowTraffic != null;
+        };
+    }
+
     public static Predicate<ServiceSpec> isAutoScalingEnabled() {
         return serviceSpec -> {
             return ManifestPredicates.isAutoScalingEnabledWithPrint().test(serviceSpec, false);
         };
     }
-    
+
     public static BiPredicate<ServiceSpec, Boolean> isAutoScalingEnabledWithPrint() {
-        return (serviceSpec, print)-> {
+        return (serviceSpec, print) -> {
             Replicas replicas = null;
             try {
                 replicas = serviceSpec.get(HyscaleSpecFields.replicas, Replicas.class);
             } catch (HyscaleException e) {
                 return false;
             }
-            
+
             if (ReplicasUtil.isAutoScalingEnabled(replicas, print)) {
                 return true;
             }
             return false;
         };
     }
+
 
 }

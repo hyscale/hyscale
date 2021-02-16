@@ -222,8 +222,9 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
             dockerfilePath = sb.toString();
             dockerfilePath = StringUtils.isNotBlank(dockerfilePath) ? SetupConfig.getAbsolutePath(dockerfilePath)
                     : SetupConfig.getAbsolutePath(".");
+            dockerfilePath = dockerfilePath + ToolConstants.LINUX_FILE_SEPARATOR + DockerImageConstants.DOCKERFILE_NAME;
         } else {
-            dockerfilePath = context.getDockerfileEntity().getDockerfile().getParent();
+            dockerfilePath = context.getDockerfileEntity().getDockerfile().getAbsolutePath();
         }
 
         return dockerfilePath;
@@ -294,8 +295,7 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
     }
 
     private void validateDockerfilePath(String dockerfilePath) throws HyscaleException {
-        File dockerfile = new File(
-                dockerfilePath + ToolConstants.LINUX_FILE_SEPARATOR + DockerImageConstants.DOCKERFILE_NAME);
+        File dockerfile = new File(dockerfilePath);
         if (!dockerfile.exists() || dockerfile.isDirectory()) {
             WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_BUILD);
             WorkflowLogger.endActivity(Status.FAILED);

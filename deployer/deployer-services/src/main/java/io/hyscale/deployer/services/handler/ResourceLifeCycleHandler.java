@@ -236,4 +236,7 @@ public interface ResourceLifeCycleHandler<T> {
         return ResourceUpdatePolicy.PATCH;
     }
 
+    default boolean isWorkLoad() {
+    	return false;
+    }
 }

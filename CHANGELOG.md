@@ -1,3 +1,11 @@
+# v0.9.8.4 Release
+
+This is a minor release to fix custom plugin issues.
+
+### Fixes
+
+* [Fix for undeployment failures with custom plugins](https://github.com/hyscale/hyscale/pull/364)
+
 # v0.9.8.3 Release
 
 This is a minor release to fix custom plugin issues.

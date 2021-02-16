@@ -31,6 +31,9 @@ public class ManifestGenTestConfiguration {
 
     @MockBean
     private SetupConfig setupConfig;
+    
+//    @MockBean
+//    private MustacheTemplateResolver mustacheTemplateResolver;
 
     @PostConstruct
     public void init() {

@@ -40,12 +40,6 @@ public enum ManifestResource {
         }
 
         @Override
-        public Map<String, String> getLabels(ServiceMetadata serviceMetadata) {
-            return DefaultLabelBuilder.build(serviceMetadata);
-
-        }
-
-        @Override
         public Predicate<ServiceSpec> getPredicate() {
             return ManifestPredicates.getVolumesPredicate();
         }
@@ -59,15 +53,8 @@ public enum ManifestResource {
         }
 
         @Override
-        public Map<String, String> getLabels(ServiceMetadata serviceMetadata) {
-            return DefaultLabelBuilder.build(serviceMetadata);
-        }
-
-        @Override
         public Predicate<ServiceSpec> getPredicate() {
-            return servicespec -> {
-                return !ManifestPredicates.getVolumesPredicate().test(servicespec);
-            };
+            return servicespec ->!ManifestPredicates.getVolumesPredicate().test(servicespec);
         }
     },
     CONFIG_MAP("ConfigMap", "v1") {
@@ -78,11 +65,6 @@ public enum ManifestResource {
             sb.append(ManifestGenConstants.NAME_DELIMITER);
             sb.append(NormalizationUtil.normalize(serviceMetadata.getServiceName()));
             return sb.toString();
-        }
-
-        @Override
-        public Map<String, String> getLabels(ServiceMetadata serviceMetadata) {
-            return DefaultLabelBuilder.build(serviceMetadata);
         }
 
         // TODO set this value to false by default on props plugin should be true
@@ -103,11 +85,6 @@ public enum ManifestResource {
         }
 
         @Override
-        public Map<String, String> getLabels(ServiceMetadata serviceMetadata) {
-            return DefaultLabelBuilder.build(serviceMetadata);
-        }
-
-        @Override
         public Predicate<ServiceSpec> getPredicate() {
             return ManifestPredicates.getSecretsPredicate();
         }
@@ -117,11 +94,6 @@ public enum ManifestResource {
         @Override
         public String getName(ServiceMetadata serviceMetadata) {
             return NormalizationUtil.normalize(serviceMetadata.getServiceName());
-        }
-
-        @Override
-        public Map<String, String> getLabels(ServiceMetadata serviceMetadata) {
-            return DefaultLabelBuilder.build(serviceMetadata);
         }
 
         @Override
@@ -141,13 +113,24 @@ public enum ManifestResource {
         }
 
         @Override
-        public Map<String, String> getLabels(ServiceMetadata serviceMetadata) {
-            return DefaultLabelBuilder.build(serviceMetadata);
+        public Predicate<ServiceSpec> getPredicate() {
+            return ManifestPredicates.isAutoScalingEnabled();
+        }
+    },
+
+    NETWORK_POLICY("NetworkPolicy", "networking.k8s.io/v1") {
+        @Override
+        public String getName(ServiceMetadata serviceMetadata) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(NormalizationUtil.normalize(serviceMetadata.getAppName()));
+            sb.append(ManifestGenConstants.NAME_DELIMITER);
+            sb.append(NormalizationUtil.normalize(serviceMetadata.getServiceName()));
+            return sb.toString();
         }
 
         @Override
         public Predicate<ServiceSpec> getPredicate() {
-            return ManifestPredicates.isAutoScalingEnabled();
+            return ManifestPredicates.isNetworkPolicyEnabled();
         }
     },
 
@@ -279,7 +262,9 @@ public enum ManifestResource {
 
     public abstract String getName(ServiceMetadata serviceMetadata);
 
-    public abstract Map<String, String> getLabels(ServiceMetadata serviceMetadata);
+    public Map<String, String> getLabels(ServiceMetadata serviceMetadata){
+        return DefaultLabelBuilder.build(serviceMetadata);
+    }
 
     public abstract Predicate<ServiceSpec> getPredicate();
 

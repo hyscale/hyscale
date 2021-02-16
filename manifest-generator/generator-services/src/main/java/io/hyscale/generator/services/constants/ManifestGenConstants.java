@@ -52,5 +52,6 @@ public class ManifestGenConstants {
 	public static final String DESTINATION_RULE = "destination-rule";
 
 	public static final String NETWORKING_API_VERSION = "networking.istio.io/v1beta1";
-
+  
+	public static final String NETWORK_POLICY = "networkpolicy";
 }

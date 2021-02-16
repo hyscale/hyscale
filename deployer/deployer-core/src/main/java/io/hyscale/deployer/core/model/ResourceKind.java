@@ -33,6 +33,7 @@ public enum ResourceKind {
     EVENT("Event"),
     VERSION("VersionInfo"),
     INGRESS("Ingress");
+    NETWORKPOLICY("NetworkPolicy");
 
     private String kind;
 

@@ -1,0 +1,6 @@
+#Snippet for NetworkPolicy spec
+podSelector:
+  matchLabels:
+    hyscale.io/service-name: frontend
+policyTypes:
+  - Ingress

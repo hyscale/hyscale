@@ -17,7 +17,6 @@ package io.hyscale.commons.framework.patch;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
@@ -79,9 +78,11 @@ public class StrategicPatchTest {
     }
 
     public static Stream<Arguments> getApplyExceptionInput() {
+        TestFieldDataProvider fieldDataProvider = new TestFieldDataProvider();
         return Stream.of(Arguments.of("{test:abc}", "{test:def test1:abc}", null, CommonErrorCode.INVALID_JSON_FORMAT),
                 Arguments.of("{test:def test1:abc}", "{test:abc}", null, CommonErrorCode.INVALID_JSON_FORMAT),
-                Arguments.of(sourceData, patchData, null, CommonErrorCode.STRATEGIC_MERGE_KEY_NOT_FOUND));
+                Arguments.of(sourceData, patchData, null, CommonErrorCode.STRATEGIC_MERGE_KEY_NOT_FOUND),
+                Arguments.of("{\"test\":[{\"test\":\"abc\"}]}", "{\"test\":[{\"test\":\"abc\"}]}", fieldDataProvider, CommonErrorCode.STRATEGIC_MERGE_KEY_NOT_FOUND));
     }
 
     @ParameterizedTest
@@ -127,13 +128,18 @@ public class StrategicPatchTest {
     private static class TestFieldDataProvider implements FieldMetaDataProvider{
         
         private static Map<String, String> fieldMap = new HashMap<String, String>();
+        private static Map<String, String> strategyMap = new HashMap<>();
         static {
             fieldMap.put("patchTestModelList", "key");
+            strategyMap.put("testListReplace", "replace");
+            strategyMap.put("testListReplaceEmpty", "replace");
+            strategyMap.put("testListReplaceObject", "replace");
         }
         @Override
         public FieldMetaData getMetaData(String field) {
             FieldMetaData fieldMetaData = new FieldMetaData();
             fieldMetaData.setKey(fieldMap.get(field));
+            fieldMetaData.setPatchStrategy(PatchStrategy.fromString(strategyMap.get(field)));
             return fieldMetaData;
         }
         

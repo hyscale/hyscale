@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import io.hyscale.commons.framework.patch.FieldMetaData;
 import io.hyscale.commons.framework.patch.FieldMetaDataProvider;
+import io.hyscale.commons.framework.patch.PatchStrategy;
 
 /**
  * Provides field data map which contains primary key field for an entity
@@ -38,8 +39,9 @@ public class MapFieldDataProvider implements FieldMetaDataProvider{
     private static final Logger logger = LoggerFactory.getLogger(MapFieldDataProvider.class);
     private static Properties properties = new Properties();
 
-    private static Map<String, String> fieldData = new HashMap<String, String>();
-
+    private static Map<String, String> fieldData = new HashMap<>();
+    private static Map<String, String> mergeStrategy = new HashMap<>();
+    
     static {
         try {
             properties.load(MapFieldDataProvider.class.getResourceAsStream("/properties/field-data.properties"));
@@ -51,12 +53,24 @@ public class MapFieldDataProvider implements FieldMetaDataProvider{
                 fieldData.put((String) entry.getKey(), (String) entry.getValue());
             }
         }
+        try {
+            properties.clear();
+            properties.load(MapFieldDataProvider.class.getResourceAsStream("/properties/field-data-merge-strategy.properties"));
+        } catch (Exception e) {
+            logger.error("Error while loading field data properties", e);
+        }
+        if (properties != null) {
+            for (Entry<Object, Object> entry : properties.entrySet()) {
+                mergeStrategy.put((String) entry.getKey(), (String) entry.getValue());
+            }
+        }
     }
 
     @Override
     public FieldMetaData getMetaData(String field) {
         FieldMetaData fieldMetaData = new FieldMetaData();
         fieldMetaData.setKey(fieldData.get(field));
+        fieldMetaData.setPatchStrategy(PatchStrategy.fromString(mergeStrategy.get(field)));
         return fieldMetaData;
     }
 }

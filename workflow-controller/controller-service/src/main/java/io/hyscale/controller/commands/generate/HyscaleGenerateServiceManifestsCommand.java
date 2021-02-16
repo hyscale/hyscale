@@ -25,9 +25,7 @@ import javax.validation.constraints.Pattern;
 
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.profile.ServiceSpecProcessor;
-import io.hyscale.controller.validator.impl.ManifestValidator;
-import io.hyscale.controller.validator.impl.RegistryValidator;
-import io.hyscale.controller.validator.impl.ServiceSpecInputValidator;
+import io.hyscale.controller.validator.impl.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +46,6 @@ import io.hyscale.controller.model.EffectiveServiceSpec;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.ServiceSpecUtil;
-import io.hyscale.controller.validator.impl.InputSpecPostValidator;
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 
@@ -112,6 +109,12 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
     @Autowired
     private ManifestValidator manifestValidator;
 
+    @Autowired
+    private PortsValidator portsValidator;
+
+    @Autowired
+    private NetworkPoliciesValidator networkPoliciesValidator;
+
     private List<Validator<WorkflowContext>> postValidators;
 
     @PostConstruct
@@ -119,6 +122,8 @@ public class HyscaleGenerateServiceManifestsCommand implements Callable<Integer>
         this.postValidators = new LinkedList<>();
         this.postValidators.add(registryValidator);
         this.postValidators.add(manifestValidator);
+        this.postValidators.add(portsValidator);
+        this.postValidators.add(networkPoliciesValidator);
     }
 
     @Override

@@ -106,7 +106,8 @@ public class StrategicPatch {
      * 2. If it is replacement value type, replace value in source
      * 3. If arrays type
      *  3.a. If replacement value type elements, merge the values without duplication
-     *  3.b. Else merge based on key provided, throws exception if key is not available
+     *  3.b. If merge strategy is replace, replace all items in the list
+     *  3.c. Else merge based on key provided, throws exception if key is not available
      * 4. For Others(JSONObject):
      *  4.a. If value in source is absent or replacement type, replace with patch value(Model change)
      *  4.b. Else Recursively call with JsonObject of source and patch
@@ -157,55 +158,81 @@ public class StrategicPatch {
             } else if (value.getValueType() == ValueType.ARRAY) {
 
                 JsonArray patchArray = value.asJsonArray();
-
                 JsonValue sourceJsonVal = effectiveMap.get(key);
-                Set<JsonValue> updatedJsonObj = new HashSet<>();
-                JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-                JsonArray sourceArray = null;
-                if (sourceJsonVal != null) {
-                    sourceArray = sourceJsonVal.asJsonArray();
-                    // Add pre-existing elements
-                    sourceArray.stream().forEach(each -> updatedJsonObj.add(each));
-                }
-
-                for (JsonValue patchValue : patchArray) {
-                    if (patchValue instanceof JsonObject) {
-                        JsonObject patchObj = patchValue.asJsonObject();
-                        if (fieldDataProvider == null) {
-                            throw getException(key);
-                        }
-                        FieldMetaData mergeKey = fieldDataProvider.getMetaData(key);
-                        if (mergeKey == null || StringUtils.isBlank(mergeKey.getKey())) {
-                            throw getException(key);
-                        }
-                        JsonObject sourceObj = getKeyObject(sourceArray, mergeKey.getKey(),
-                                patchObj.get(mergeKey.getKey()));
-
-                        if (sourceObj != null) {
-                            // remove element and add updated one
-                            updatedJsonObj.remove(sourceObj);
-                        }
-                        updatedJsonObj.add(mergeJsonObjects(sourceObj, patchValue.asJsonObject(), fieldDataProvider));
-                    } else {
-                        // replacement value type
-                        updatedJsonObj.add(patchValue);
-                    }
-                }
-                // update list items
-                updatedJsonObj.stream().forEach(each -> arrayBuilder.add(each));
-
-                effectiveMap.put(key, arrayBuilder.build());
+                JsonArray effectiveArray = handleArrayMerge(sourceJsonVal, patchArray, key, fieldDataProvider);
+                effectiveMap.put(key, effectiveArray);
             } else {
                 effectiveMap.put(key,
                         mergeJsonObjects(sourceJsonValue.asJsonObject(), value.asJsonObject(), fieldDataProvider));
             }
         }
-
         JsonObjectBuilder objBuilder = Json.createObjectBuilder();
         effectiveMap.entrySet().stream().forEach(each -> objBuilder.add(each.getKey(), each.getValue()));
         return objBuilder.build();
     }
+    
+    private static JsonArray handleArrayMerge(JsonValue sourceJsonVal, JsonArray patchArray, String key,
+            FieldMetaDataProvider fieldDataProvider) throws HyscaleException {
+        Set<JsonValue> updatedJsonObj = new HashSet<>();
+        JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+        PatchStrategy strategy = getPatchStrategy(fieldDataProvider, key);
+        
+        if (strategy == PatchStrategy.REPLACE) {
+            patchArray.stream().forEach(arrayBuilder::add);
+            return arrayBuilder.build();
+        }
+        JsonArray sourceArray = null;
+        if (sourceJsonVal != null) {
+            sourceArray = sourceJsonVal.asJsonArray();
+            // Add pre-existing elements
+            sourceArray.stream().forEach(updatedJsonObj::add);
+        }
 
+        for (JsonValue patchValue : patchArray) {
+            if (patchValue instanceof JsonObject) {
+                String objectKey = getObjectKey(fieldDataProvider, key);
+                JsonObject patchObj = patchValue.asJsonObject();
+                JsonObject sourceObj = getKeyObject(sourceArray, objectKey,
+                        patchObj.get(objectKey));
+
+                if (sourceObj != null) {
+                    // remove element and add updated one
+                    updatedJsonObj.remove(sourceObj);
+                }
+                updatedJsonObj.add(mergeJsonObjects(sourceObj, patchValue.asJsonObject(), fieldDataProvider));
+            } else {
+                // replacement value type
+                updatedJsonObj.add(patchValue);
+            }
+        }
+        // update list items
+        updatedJsonObj.stream().forEach(arrayBuilder::add);
+        return arrayBuilder.build();
+    }
+    
+    private static String getObjectKey(FieldMetaDataProvider fieldDataProvider, String key) throws HyscaleException {
+        if (fieldDataProvider == null) {
+            throw getException(key);
+        }
+        FieldMetaData fieldMetaData = fieldDataProvider.getMetaData(key);
+        if (fieldMetaData == null
+                || (StringUtils.isBlank(fieldMetaData.getKey()))) {
+            throw getException(key);
+        }
+        return fieldMetaData.getKey();
+    }
+
+    private static PatchStrategy getPatchStrategy(FieldMetaDataProvider fieldDataProvider, String key) {
+        if (fieldDataProvider == null) {
+            return PatchStrategy.getDefault();
+        }
+        FieldMetaData fieldMetadata = fieldDataProvider.getMetaData(key);
+        if (fieldMetadata != null && fieldMetadata.getPatchStrategy() != null) {
+            return fieldMetadata.getPatchStrategy();
+        }
+        return PatchStrategy.getDefault();
+    }
+    
     private static JsonObject getKeyObject(JsonArray objList, String key, JsonValue value) {
         if (objList == null || StringUtils.isBlank(key)) {
             return null;

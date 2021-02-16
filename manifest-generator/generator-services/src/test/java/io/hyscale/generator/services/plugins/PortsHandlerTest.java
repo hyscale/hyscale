@@ -15,29 +15,14 @@
  */
 package io.hyscale.generator.services.plugins;
 
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.reflect.TypeToken;
-
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.commons.utils.NormalizationUtil;
+import io.hyscale.generator.services.builder.DefaultPortsBuilder;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.plugins.PortsHandler.ServiceProtocol;
 import io.hyscale.generator.services.utils.ServiceSpecTestUtil;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.plugin.framework.util.GsonSnippetConvertor;
@@ -46,6 +31,19 @@ import io.hyscale.servicespec.commons.model.service.Port;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import io.kubernetes.client.openapi.models.V1ContainerPort;
 import io.kubernetes.client.openapi.models.V1ServicePort;
+import org.apache.commons.collections.CollectionUtils;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static org.junit.Assert.assertTrue;
 
 @SpringBootTest
 class PortsHandlerTest {
@@ -55,7 +53,8 @@ class PortsHandlerTest {
 
     private static Stream<Arguments> input() throws HyscaleException {
         return Stream.of(Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice-min.hspec")),
-                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice.hspec")));
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice.hspec")),
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice-2.hspec")));
     }
 
     @ParameterizedTest
@@ -80,11 +79,10 @@ class PortsHandlerTest {
     private void verifyManifests(List<ManifestSnippet> manifestList, List<Port> portList) throws IOException {
         Set<V1ContainerPort> v1ContainerPorts = getContainerPorts(manifestList);
         Set<V1ServicePort> v1ServicePorts = getServicePorts(manifestList);
-
         for (Port port : portList) {
             String[] portAndProtocol = port.getPort().split("/");
-            String protocol = portAndProtocol.length > 1 ? ServiceProtocol.fromString(portAndProtocol[1]).name()
-                    : ServiceProtocol.TCP.name();
+            String protocol = portAndProtocol.length > 1 ? DefaultPortsBuilder.ServiceProtocol.fromString(portAndProtocol[1]).getProtocolString()
+                    : DefaultPortsBuilder.ServiceProtocol.TCP.getProtocolString();
             int portValue = Integer.valueOf(portAndProtocol[0]);
             String portName = NormalizationUtil
                     .normalize(portAndProtocol[0] + ManifestGenConstants.NAME_DELIMITER + protocol);

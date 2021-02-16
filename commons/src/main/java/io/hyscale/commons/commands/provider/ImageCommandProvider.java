@@ -15,6 +15,7 @@
  */
 package io.hyscale.commons.commands.provider;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
@@ -45,6 +46,7 @@ public class ImageCommandProvider {
 	private static final String SPACE = " ";
 	private static final String DOCKER_BUILD = "docker build";
 	private static final String TAG_ARG = " -t ";
+	private static final String FILE_ARG = " -f ";
 	private static final String BUILD_ARGS = " --build-arg ";
 	private static final String REMOVE_IMAGE = "rmi";
 	private static final String PULL_COMMAND = "pull";
@@ -59,28 +61,43 @@ public class ImageCommandProvider {
 	@Autowired
 	private ImageMetadataProvider imageMetadataProvider;
 
-    public String dockerBuildCommand(String appName, String serviceName, String tag, String dockerFilePath) {
-        return dockerBuildCommand(appName, serviceName, tag, dockerFilePath, null, null);
-    }
-
-    // --label “imageowner=hyscale"
-    public String dockerBuildCommand(String appName, String serviceName, String tag, String dockerFilePath,String target,
-                                     Map<String, String> buildArgs) {
-		StringBuilder buildCommand = new StringBuilder();
-		buildCommand.append(DOCKER_BUILD);
-		if (target != null) {
-			buildCommand.append(SPACE).append(HYPHEN).append(HYPHEN).append(TARGET).append(SPACE).append(target);
-		}
-		buildCommand.append(SPACE).append(HYPHEN).append(HYPHEN).append(LABEL_ARGS).append(SPACE).append(IMAGE_OWNER)
-				.append(EQUALS).append(HYSCALE);
+	/**
+	 * Provides docker build command based on user input
+	 * If buildPath is provided than dockerfilePath should refer to the Dockerfile and not directory
+	 * Ex docker build -t hyscale.io/appName/serviceName:tag --label “imageowner=hyscale" -f dockerfilePath buildPath
+	 * @param appName: used to generate image name
+	 * @param serviceName: used to generate image name
+	 * @param tag
+	 * @param dockerFilePath: Path to dockerfile: Can be directory where dockerfile is or complete path
+	 * @param buildPath: Build Path 
+	 * @param target
+	 * @param buildArgs
+	 * @return docker build command
+	 */
+    public String dockerBuildCommand(String appName, String serviceName, String tag, String dockerFilePath,
+            String buildPath, String target, Map<String, String> buildArgs) {
+        StringBuilder buildCommand = new StringBuilder();
+        buildCommand.append(DOCKER_BUILD);
+        if (target != null) {
+            buildCommand.append(SPACE).append(HYPHEN).append(HYPHEN).append(TARGET).append(SPACE).append(target);
+        }
+        buildCommand.append(SPACE).append(HYPHEN).append(HYPHEN).append(LABEL_ARGS).append(SPACE).append(IMAGE_OWNER)
+                .append(EQUALS).append(HYSCALE);
 
         if (buildArgs != null && !buildArgs.isEmpty()) {
             buildCommand.append(getBuildArgs(buildArgs));
         }
         buildCommand.append(TAG_ARG);
         buildCommand.append(imageMetadataProvider.getBuildImageNameWithTag(appName, serviceName, tag));
-        dockerFilePath = StringUtils.isNotBlank(dockerFilePath) ? dockerFilePath : SetupConfig.getAbsolutePath(".");
-        buildCommand.append(SPACE).append(dockerFilePath).append(ToolConstants.FILE_SEPARATOR);
+        if (StringUtils.isNotBlank(buildPath)) {
+            buildCommand.append(FILE_ARG).append(dockerFilePath).append(SPACE).append(buildPath);
+        } else {
+            dockerFilePath = StringUtils.isNotBlank(dockerFilePath) ? dockerFilePath : SetupConfig.getAbsolutePath(".");
+            File dockerfile = new File(dockerFilePath);
+            dockerFilePath = dockerfile.isFile() ? dockerfile.getParent()
+                    : dockerFilePath + ToolConstants.FILE_SEPARATOR;
+            buildCommand.append(SPACE).append(dockerFilePath);
+        }
         return buildCommand.toString();
     }
     

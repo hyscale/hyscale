@@ -79,9 +79,8 @@ public class EffectiveServiceSpecBuilder {
         // Remove unrequired fields from the profile
         profile = ServiceSpecBuilderUtil.updateProfile(profile);
 
-        String strategicMergeJson = StrategicPatch.apply(serviceSpec, profile, fieldMetaDataProvider);
+        return StrategicPatch.apply(serviceSpec, profile, fieldMetaDataProvider);
 
-        return strategicMergeJson;
     }
 
     //TODO   integrating service spec and profile schema validation
