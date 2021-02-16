@@ -15,8 +15,6 @@
  */
 package io.hyscale.deployer.services.deployer.impl;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.framework.events.model.ActivityState;
 import io.hyscale.commons.framework.events.publisher.EventPublisher;
@@ -42,13 +40,16 @@ import io.hyscale.deployer.services.manager.ScaleServiceManager;
 import io.hyscale.deployer.services.model.*;
 import io.hyscale.deployer.services.processor.ClusterVersionProvider;
 import io.hyscale.deployer.services.processor.PodParentProvider;
+import io.hyscale.deployer.services.processor.PodParentUtil;
 import io.hyscale.deployer.services.processor.ServiceStatusProcessor;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.hyscale.deployer.services.util.*;
 import io.hyscale.generator.services.model.LBType;
-import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.kubernetes.client.openapi.ApiClient;
-import io.kubernetes.client.openapi.models.*;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.openapi.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1Volume;
+import io.kubernetes.client.openapi.models.V1VolumeMount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -250,14 +251,15 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
     }
 
     @Override
-    public ServiceAddress getServiceAddress(DeploymentContext context) throws HyscaleException {
-        ServiceAddress serviceAddress = null;
+    public ServiceAddress  getServiceAddress(DeploymentContext context) throws HyscaleException {
+        ServiceAddress serviceAddress;
         try {
             ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
             String selector = ResourceSelectorUtil.getServiceSelector(context.getAppName(), context.getServiceName());
-            LBType lbType = getLBTypeInSpec(apiClient, context);
-            if (lbType != null) {
-                return K8sServiceUtil.getLBServiceAddress(lbType, apiClient, selector, context.getNamespace());
+            PodParent podParent = podParentProvider.getPodParent(apiClient, context.getAppName(), context.getServiceName(), context.getNamespace());
+            LoadBalancer loadBalancer = PodParentUtil.getLoadBalancerInSpec(podParent);
+            if (loadBalancer != null) {
+                return K8sServiceUtil.getLBServiceAddress(LBType.getByProvider(loadBalancer.getProvider()), apiClient, selector, context.getNamespace());
             }
             V1ServiceHandler v1ServiceHandler = (V1ServiceHandler) ResourceHandlers
                     .getHandlerOf(ResourceKind.SERVICE.getKind());
@@ -268,33 +270,6 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
             throw e;
         }
         return serviceAddress;
-    }
-
-    /**
-     *
-     * @param apiClient
-     * @param context
-     * @return lbType
-     * @throws HyscaleException
-     */
-    private LBType getLBTypeInSpec(ApiClient apiClient, DeploymentContext context) throws HyscaleException {
-        PodParent podParent = podParentProvider.getPodParent(apiClient, context.getAppName(), context.getServiceName(), context.getNamespace());
-        V1ObjectMeta metadata = null;
-        if (ResourceKind.DEPLOYMENT.getKind().equalsIgnoreCase(podParent.getKind())) {
-            metadata = ((V1Deployment) podParent.getParent()).getMetadata();
-        }
-        if (ResourceKind.STATEFUL_SET.getKind().equalsIgnoreCase(podParent.getKind())) {
-            metadata = ((V1StatefulSet) podParent.getParent()).getMetadata();
-        }
-        if (metadata != null) {
-            JsonParser jsonParser = new JsonParser();
-            JsonObject lastAppliedConfigJson = (JsonObject) jsonParser.parse(metadata.getAnnotations().get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation()));
-            JsonObject serviceSpec = (JsonObject) jsonParser.parse(lastAppliedConfigJson.getAsJsonObject("metadata").getAsJsonObject("annotations").get(AnnotationKey.HYSCALE_SERVICE_SPEC.getAnnotation()).getAsString());
-            if (serviceSpec.get("loadBalancer") != null) {
-                return LBType.getByProvider(serviceSpec.getAsJsonObject(HyscaleSpecFields.loadBalancer).get("provider").getAsString());
-            }
-        }
-        return null;
     }
 
     @Override

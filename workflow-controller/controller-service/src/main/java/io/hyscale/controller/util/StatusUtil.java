@@ -34,7 +34,7 @@ public class StatusUtil {
         }
         String age = getAge(deploymentStatus.getAge());
         String statusMsg = deploymentStatus.getServiceStatus() != null ? deploymentStatus.getServiceStatus().getMessage() : null;
-        String[] rowData = new String[]{deploymentStatus.getServiceName(), statusMsg, age, deploymentStatus.getServiceAddress(),
+        String[] rowData = new String[]{deploymentStatus.getServiceName(), statusMsg, age, deploymentStatus.getServiceAddress(), deploymentStatus.getServiceURL(),
                 deploymentStatus.getMessage()};
         return rowData;
     }
@@ -46,6 +46,7 @@ public class StatusUtil {
                 .addField(TableFields.AGE.getFieldName(), TableFields.AGE.getLength())
                 .addField(TableFields.SERVICE_ADDRESS.getFieldName(),
                         isLarge ? TableFields.SERVICE_ADDRESS_LARGE.getLength() : TableFields.SERVICE_ADDRESS.getLength())
+                .addField(TableFields.SERVICE_URL.getFieldName(), TableFields.SERVICE_URL.getLength())
                 .addField(TableFields.MESSAGE.getFieldName(), TableFields.MESSAGE.getLength()).build();
 
         return table;

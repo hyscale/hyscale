@@ -15,7 +15,11 @@
  */
 package io.hyscale.deployer.services.processor;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import io.hyscale.commons.models.AnnotationKey;
+import io.hyscale.commons.models.LoadBalancer;
+import io.hyscale.commons.utils.GsonProviderUtil;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.CustomResourceKind;
 import io.hyscale.deployer.core.model.ResourceKind;
@@ -24,12 +28,19 @@ import io.hyscale.deployer.services.client.K8sResourceClient;
 import io.hyscale.deployer.services.model.CustomObject;
 import io.hyscale.deployer.services.model.PodParent;
 import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.models.V1Deployment;
+import io.kubernetes.client.openapi.models.V1ObjectMeta;
+import io.kubernetes.client.openapi.models.V1StatefulSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public class PodParentUtil {
 
     private static final String podParentApiVersion = "apps/v1";
+
+    private static final Logger logger = LoggerFactory.getLogger(PodParentUtil.class);
 
     private ApiClient apiClient;
     private String namespace;
@@ -102,5 +113,28 @@ public class PodParentUtil {
             }
         }
         return Collections.emptyList();
+    }
+
+    public static LoadBalancer getLoadBalancerInSpec(PodParent podParent) {
+        try {
+            V1ObjectMeta metadata = null;
+            if (ResourceKind.DEPLOYMENT.getKind().equalsIgnoreCase(podParent.getKind())) {
+                metadata = ((V1Deployment) podParent.getParent()).getMetadata();
+            }
+            if (ResourceKind.STATEFUL_SET.getKind().equalsIgnoreCase(podParent.getKind())) {
+                metadata = ((V1StatefulSet) podParent.getParent()).getMetadata();
+            }
+            if (metadata != null) {
+                JsonParser jsonParser = new JsonParser();
+                JsonObject lastAppliedConfigJson = (JsonObject) jsonParser.parse(metadata.getAnnotations().get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation()));
+                JsonObject serviceSpec = (JsonObject) jsonParser.parse(lastAppliedConfigJson.getAsJsonObject("metadata").getAsJsonObject("annotations").get(AnnotationKey.HYSCALE_SERVICE_SPEC.getAnnotation()).getAsString());
+                if (serviceSpec.get("loadBalancer") != null) {
+                    return GsonProviderUtil.getPrettyGsonBuilder().fromJson(serviceSpec.get("loadBalancer"), LoadBalancer.class);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error while retrieving loadBalancer configuration in service spec. Reason :", e);
+        }
+        return null;
     }
 }

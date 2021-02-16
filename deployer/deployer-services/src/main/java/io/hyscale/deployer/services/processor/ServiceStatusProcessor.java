@@ -18,7 +18,7 @@ package io.hyscale.deployer.services.processor;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
+import io.hyscale.commons.models.LoadBalancer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,6 +109,12 @@ public class ServiceStatusProcessor {
             ServiceAddress serviceAddress = deployer.getServiceAddress(context);
             if (serviceAddress != null) {
                 deploymentStatus.setServiceAddress(serviceAddress.toString());
+            }
+            ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
+            PodParent podParent = podParentProvider.getPodParent(apiClient, context.getAppName(), context.getServiceName(), context.getNamespace());
+            LoadBalancer loadBalancer = PodParentUtil.getLoadBalancerInSpec(podParent);
+            if (loadBalancer != null) {
+                deploymentStatus.setServiceURL(loadBalancer.getHost());
             }
         } catch (HyscaleException e) {
             logger.debug("Failed to get service address {} ", e.getHyscaleError());
