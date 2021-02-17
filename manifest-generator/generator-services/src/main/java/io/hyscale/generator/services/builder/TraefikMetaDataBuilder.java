@@ -32,14 +32,13 @@ import java.util.Map;
 @Component
 public class TraefikMetaDataBuilder implements IngressMetaDataBuilder {
 
-    private static String INGRESS_NAME = "INGRESS_NAME";
-    private static String APP_NAME = "APP_NAME";
-    private static String ENV_NAME = "ENV_NAME";
-    private static String SERVICE_NAME = "SERVICE_NAME";
-    private static String INGRESS_CLASS = "INGRESS_CLASS";
-    private static String FRONTEND_ENTRYPOINTS = "FRONTEND_ENTRYPOINTS";
-    private static String REDIRECT_ENTRYPOINTS = "REDIRECT_ENTRYPOINTS";
-    private static String HEADERS_EXPRESSION = "HEADERS_EXPRESSION";
+    private static final String INGRESS_NAME = "INGRESS_NAME";
+    private static final String APP_NAME = "APP_NAME";
+    private static final String ENV_NAME = "ENV_NAME";
+    private static final String SERVICE_NAME = "SERVICE_NAME";
+    private static final String INGRESS_CLASS = "INGRESS_CLASS";
+    private static final String FRONTEND_ENTRY_POINTS = "FRONTEND_ENTRY_POINTS";
+    private static final String REDIRECT_ENTRY_POINTS = "REDIRECT_ENTRY_POINTS";
 
     @Autowired
     private PluginTemplateProvider templateProvider;
@@ -66,12 +65,12 @@ public class TraefikMetaDataBuilder implements IngressMetaDataBuilder {
         context.put(ENV_NAME,serviceMetadata.getEnvName());
         if(loadBalancer.getClassName()!= null && !loadBalancer.getClassName().isBlank()){
             context.put(INGRESS_CLASS,loadBalancer.getClassName());
-            context.put(FRONTEND_ENTRYPOINTS,"http,https");
-            context.put(REDIRECT_ENTRYPOINTS,"https");
+            context.put(FRONTEND_ENTRY_POINTS,"http,https");
+            context.put(REDIRECT_ENTRY_POINTS,"https");
         }
         if(loadBalancer.getTlsSecret()!= null && !loadBalancer.getTlsSecret().isBlank()){
-            context.put(FRONTEND_ENTRYPOINTS,"http");
-            context.put(REDIRECT_ENTRYPOINTS,null);
+            context.put(FRONTEND_ENTRY_POINTS,"http");
+            context.put(REDIRECT_ENTRY_POINTS,null);
         }
         if(loadBalancer.getHeaders()!=null ){
             //TODO Add Headers

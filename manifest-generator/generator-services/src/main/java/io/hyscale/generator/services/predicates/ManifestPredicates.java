@@ -59,10 +59,7 @@ public class ManifestPredicates {
             } catch (HyscaleException e) {
                 return false;
             }
-            if(loadBalancer != null && (providerType == LBType.getByProvider(loadBalancer.getProvider()))){
-                return true;
-            }
-            return false;
+            return (loadBalancer != null && (providerType == LBType.getByProvider(loadBalancer.getProvider())));
         };
     }
 

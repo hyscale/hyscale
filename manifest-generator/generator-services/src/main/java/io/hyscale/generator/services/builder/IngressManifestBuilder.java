@@ -16,7 +16,9 @@
 package io.hyscale.generator.services.builder;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.models.*;
+import io.hyscale.commons.models.ConfigTemplate;
+import io.hyscale.commons.models.LoadBalancer;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
 import io.hyscale.generator.services.model.IngressProvider;
 import io.hyscale.generator.services.model.ManifestResource;
@@ -27,15 +29,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class IngressManifestBuilder implements LoadBalancerBuilder {
     private static final Logger logger = LoggerFactory.getLogger(IngressManifestBuilder.class);
-    private static String RULES = "rules";
-    private static String LOADBALANCER = "loadBalancer";
-    private static String HOST = "host";
-    private static String SERVICENAME = "serviceName";
+    private static final String LOAD_BALANCER = "loadBalancer";
+    private static final String HOST = "host";
+    private static final String SERVICE_NAME = "serviceName";
 
     @Autowired
     private PluginTemplateProvider templateProvider;
@@ -63,12 +67,12 @@ public class IngressManifestBuilder implements LoadBalancerBuilder {
         return IngressProvider.fromString(provider).getMetadataBuilder().build(serviceMetadata,loadBalancer);
     }
 
-    private Map<String,Object> getIngressSpecContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
+    private Map<String, Object> getIngressSpecContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) {
         Map<String, Object> context = new HashMap<>();
         String serviceName = serviceMetadata.getServiceName();
-        context.put(LOADBALANCER,loadBalancer);
-        context.put(SERVICENAME,serviceName);
-        context.put(HOST,loadBalancer.getHost());
+        context.put(LOAD_BALANCER, loadBalancer);
+        context.put(SERVICE_NAME, serviceName);
+        context.put(HOST, loadBalancer.getHost());
         return context;
     }
 }

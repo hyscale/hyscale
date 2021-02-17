@@ -20,14 +20,6 @@ import com.google.gson.JsonParser;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.utils.GsonProviderUtil;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.utils.HyscaleContextUtil;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.CustomResourceKind;
@@ -43,9 +35,9 @@ import io.kubernetes.client.openapi.models.V1StatefulSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PodParentUtil {
+import java.util.*;
 
-    private static final String podParentApiVersion = "apps/v1";
+public class PodParentUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(PodParentUtil.class);
 

@@ -44,8 +44,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +56,8 @@ import java.util.Map;
 public class K8sResourceDispatcher {
 
     private static final Logger logger = LoggerFactory.getLogger(K8sResourceDispatcher.class);
+
+    private static final String APPLY_MANIFEST_ERROR = "Error while applying manifests to kubernetes";
 
     private K8sResourceBroker resourceBroker;
     private ApiClient apiClient;
@@ -121,7 +121,7 @@ public class K8sResourceDispatcher {
 
         } catch (Exception e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST);
-            logger.error("Error while applying manifests to kubernetes", ex);
+            logger.error(APPLY_MANIFEST_ERROR, ex);
             throw ex;
         }
     }
@@ -264,46 +264,6 @@ public class K8sResourceDispatcher {
         } else {
             WorkflowLogger.info(DeployerActivity.NO_RESOURCES_TO_UNDEPLOY);
         }
-    }
-
-    private MultiValueMap<String,CustomObject> getCustomObjects(List<Manifest> manifests) throws HyscaleException {
-        MultiValueMap<String,CustomObject> kindVsObjects = new LinkedMultiValueMap<>();
-        for (Manifest manifest : manifests) {
-            try {
-                CustomObject object = KubernetesResourceUtil.getK8sCustomObjectResource(manifest,namespace);
-                if(object != null){
-                    logger.debug("Adding kind - {}",object.getKind());
-                    kindVsObjects.add(object.getKind(),object);
-                }
-            } catch (Exception e) {
-                HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST);
-                logger.error("Error while applying manifests to kubernetes", ex);
-                throw ex;
-            }
-        }
-        return kindVsObjects;
-    }
-    
-    private List<KubernetesResource> getSortedResources(List<Manifest> manifests) throws HyscaleException{
-        List<KubernetesResource> k8sResources = new ArrayList<>();
-        
-        for (Manifest manifest : manifests) {
-            try {
-                KubernetesResource kubernetesResource = KubernetesResourceUtil.getKubernetesResource(manifest, namespace);
-                if(kubernetesResource != null){
-                        k8sResources.add(kubernetesResource);
-                }
-            } catch (Exception e) {
-                HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST);
-                logger.error("Error while applying manifests to kubernetes", ex);
-                throw ex;
-            }
-        }
-        // Sort resources to deploy secrets and configmaps before Pod Controller
-      //  k8sResources.sort((resource1, resource2) -> ResourceHandlers.getHandlerOf(resource1.getKind()).getWeight()
-      //          - ResourceHandlers.getHandlerOf(resource2.getKind()).getWeight());
-        
-        return k8sResources;
     }
 
     /**

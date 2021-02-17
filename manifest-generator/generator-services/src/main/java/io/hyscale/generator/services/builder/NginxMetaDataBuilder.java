@@ -32,15 +32,14 @@ import java.util.Map;
 
 @Component
 public class NginxMetaDataBuilder implements IngressMetaDataBuilder {
-    private static String INGRESS_CLASS = "INGRESS_CLASS";
-    private static String STICKY = "STICKY";
-    private static String INGRESS_NAME = "INGRESS_NAME";
-    private static String APP_NAME = "APP_NAME";
-    private static String ENV_NAME = "ENV_NAME";
-    private static String SERVICE_NAME = "SERVICE_NAME";
-    private static String SSL_REDIRECT = "SSL_REDIRECT";
-    private static String ALLOW_HTTP = "ALLOW_HTTP";
-    private static String CONFIGURATION_SNIPPET = "CONFIGURATION_SNIPPET";
+    private static final String INGRESS_CLASS = "INGRESS_CLASS";
+    private static final String STICKY = "STICKY";
+    private static final String INGRESS_NAME = "INGRESS_NAME";
+    private static final String APP_NAME = "APP_NAME";
+    private static final String ENV_NAME = "ENV_NAME";
+    private static final String SERVICE_NAME = "SERVICE_NAME";
+    private static final String SSL_REDIRECT = "SSL_REDIRECT";
+    private static final String CONFIGURATION_SNIPPET = "CONFIGURATION_SNIPPET";
     @Autowired
     private PluginTemplateProvider templateProvider;
 
@@ -81,10 +80,8 @@ public class NginxMetaDataBuilder implements IngressMetaDataBuilder {
 
     private String getConfigurationSnippetAkaHeaders(Map<String,String> headers){
         StringBuilder configurationSnippet = new StringBuilder();
-        headers.forEach((key,value)->{
-            configurationSnippet.append("proxy_set_header").append(ToolConstants.SPACE).
-                    append(key).append(ToolConstants.SPACE).append(value).append(ToolConstants.SEMI_COLON);
-        });
+        headers.forEach((key, value) -> configurationSnippet.append("proxy_set_header").append(ToolConstants.SPACE).
+                append(key).append(ToolConstants.SPACE).append(value).append(ToolConstants.SEMI_COLON));
         return configurationSnippet.toString();
     }
 }
