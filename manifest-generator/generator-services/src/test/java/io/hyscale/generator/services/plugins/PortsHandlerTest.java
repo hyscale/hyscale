@@ -17,6 +17,8 @@ package io.hyscale.generator.services.plugins;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.reflect.TypeToken;
+
+import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.commons.utils.NormalizationUtil;
@@ -80,9 +82,9 @@ class PortsHandlerTest {
         Set<V1ContainerPort> v1ContainerPorts = getContainerPorts(manifestList);
         Set<V1ServicePort> v1ServicePorts = getServicePorts(manifestList);
         for (Port port : portList) {
-            String[] portAndProtocol = port.getPort().split("/");
-            String protocol = portAndProtocol.length > 1 ? DefaultPortsBuilder.ServiceProtocol.fromString(portAndProtocol[1]).getProtocolString()
-                    : DefaultPortsBuilder.ServiceProtocol.TCP.getProtocolString();
+            String[] portAndProtocol = port.getPort().split(ToolConstants.PORTS_PROTOCOL_SEPARATOR);
+            String protocol = portAndProtocol.length > 1 ? DefaultPortsBuilder.ServiceProtocol.fromString(portAndProtocol[1]).name()
+                    : DefaultPortsBuilder.ServiceProtocol.TCP.name();
             int portValue = Integer.valueOf(portAndProtocol[0]);
             String portName = NormalizationUtil
                     .normalize(portAndProtocol[0] + ManifestGenConstants.NAME_DELIMITER + protocol);
