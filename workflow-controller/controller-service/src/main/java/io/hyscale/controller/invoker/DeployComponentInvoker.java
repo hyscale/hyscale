@@ -149,12 +149,9 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
             if (servicePorts != null) {
                 try {
                     ServiceAddress serviceAddress = deployer.getServiceAddress(deploymentContext);
-                    LoadBalancer loadBalancer = serviceSpec.get(HyscaleSpecFields.loadBalancer, LoadBalancer.class);
-                    if (loadBalancer != null) {
-                        context.addAttribute(WorkflowConstants.SERVICE_URL, loadBalancer.getHost());
-                    }
                     if (serviceAddress != null) {
                         context.addAttribute(WorkflowConstants.SERVICE_IP, serviceAddress.toString());
+                        context.addAttribute(WorkflowConstants.SERVICE_URL, serviceAddress.getServiceURL());
                     }
                 } catch (HyscaleException e) {
                     logger.error("Error while getting service IP address {}, running troubleshoot", e.getMessage());

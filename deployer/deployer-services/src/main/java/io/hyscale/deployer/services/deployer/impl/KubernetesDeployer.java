@@ -44,7 +44,6 @@ import io.hyscale.deployer.services.processor.PodParentUtil;
 import io.hyscale.deployer.services.processor.ServiceStatusProcessor;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.hyscale.deployer.services.util.*;
-import io.hyscale.generator.services.model.LBType;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
 import io.kubernetes.client.openapi.models.V1Pod;
@@ -259,7 +258,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
             PodParent podParent = podParentProvider.getPodParent(apiClient, context.getAppName(), context.getServiceName(), context.getNamespace());
             LoadBalancer loadBalancer = PodParentUtil.getLoadBalancerInSpec(podParent);
             if (loadBalancer != null) {
-                return K8sServiceUtil.getLBServiceAddress(LBType.getByProvider(loadBalancer.getProvider()), apiClient, selector, context.getNamespace());
+                return K8sServiceUtil.getLBServiceAddress(loadBalancer, apiClient, selector, context.getNamespace());
             }
             V1ServiceHandler v1ServiceHandler = (V1ServiceHandler) ResourceHandlers
                     .getHandlerOf(ResourceKind.SERVICE.getKind());

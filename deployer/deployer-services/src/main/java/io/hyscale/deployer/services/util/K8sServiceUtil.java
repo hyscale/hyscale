@@ -17,6 +17,7 @@ package io.hyscale.deployer.services.util;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.deployer.core.model.CustomResourceKind;
 import io.hyscale.deployer.services.client.GenericK8sClient;
 import io.hyscale.deployer.services.client.K8sResourceClient;
@@ -94,26 +95,30 @@ public class K8sServiceUtil {
 	return portsList;
     }
 
-	public static ServiceAddress getLBServiceAddress(LBType lbType, ApiClient apiClient, String lbSelector, String namespace) {
+	public static ServiceAddress getLBServiceAddress(LoadBalancer loadBalancer, ApiClient apiClient, String lbSelector, String namespace) {
 		ServiceAddress serviceAddress = new ServiceAddress();
-		serviceAddress.setServiceIP(lbType.getServiceAddressPlaceHolder());
-		if (lbType.equals(LBType.INGRESS)) {
-			try {
-				CustomResourceKind customResourceKind = new CustomResourceKind(ManifestResource.INGRESS.getKind(), ManifestResource.INGRESS.getApiVersion());
-				GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).withNamespace(namespace).forKind(customResourceKind);
-				List<CustomObject> customObjects = genericK8sClient.getBySelector(lbSelector);
-				CustomObject ingressResource = customObjects.get(0);
-				//set service address of Ingress resource
-				if (ingressResource.get("status") != null) {
-					JsonParser jsonParser = new JsonParser();
-					JsonObject status = (JsonObject) jsonParser.parse(String.valueOf(ingressResource.get("status")));
-					if (status.get(LOAD_BALANCER) != null && status.getAsJsonObject(LOAD_BALANCER).get("ingress") != null) {
-						JsonObject ingress = status.getAsJsonObject(LOAD_BALANCER).getAsJsonArray("ingress").get(0).getAsJsonObject();
-						serviceAddress.setServiceIP(ingress.get("ip").getAsString());
+		LBType lbType = LBType.getByProvider(loadBalancer.getProvider());
+		if (lbType != null) {
+			serviceAddress.setServiceIP(lbType.getServiceAddressPlaceHolder());
+			serviceAddress.setServiceURL(loadBalancer.getHost());
+			if (lbType.equals(LBType.INGRESS)) {
+				try {
+					CustomResourceKind customResourceKind = new CustomResourceKind(ManifestResource.INGRESS.getKind(), ManifestResource.INGRESS.getApiVersion());
+					GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).withNamespace(namespace).forKind(customResourceKind);
+					List<CustomObject> customObjects = genericK8sClient.getBySelector(lbSelector);
+					CustomObject ingressResource = customObjects.get(0);
+					//set service address of Ingress resource
+					if (ingressResource.get("status") != null) {
+						JsonParser jsonParser = new JsonParser();
+						JsonObject status = (JsonObject) jsonParser.parse(String.valueOf(ingressResource.get("status")));
+						if (status.get(LOAD_BALANCER) != null && status.getAsJsonObject(LOAD_BALANCER).get("ingress") != null) {
+							JsonObject ingress = status.getAsJsonObject(LOAD_BALANCER).getAsJsonArray("ingress").get(0).getAsJsonObject();
+							serviceAddress.setServiceIP(ingress.get("ip").getAsString());
+						}
 					}
+				} catch (Exception e) {
+					logger.error("Error while retrieving Ingress IP address for selector {} in namespace {}. Reason :", lbSelector, namespace, e);
 				}
-			} catch (Exception e) {
-				logger.error("Error while retrieving Ingress IP address for selector {} in namespace {}. Reason :", lbSelector, namespace, e);
 			}
 		}
 		return serviceAddress;
