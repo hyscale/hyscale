@@ -1,12 +1,12 @@
 /**
  * Copyright 2019 Pramati Prism, Inc.
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -60,10 +60,11 @@ public class DefaultPortsBuilder {
             portList.stream().filter(port -> port != null && StringUtils.isNotBlank(port.getPort())).forEach(each -> {
                 V1ContainerPort v1ContainerPort = new V1ContainerPort();
                 V1ServicePort v1ServicePort = new V1ServicePort();
-                String[] portAndProtocol = updatePortProtocol(each).getPort().split("/");
+                String[] portAndProtocol = updatePortProtocol(each).getPort().split(ToolConstants.PORTS_PROTOCOL_SEPARATOR);
                 String portName = NormalizationUtil.normalize(portAndProtocol[0] + ManifestGenConstants.NAME_DELIMITER + portAndProtocol[1]);
-                v1ContainerPort.setProtocol(portAndProtocol[1]);
-                v1ServicePort.setProtocol(portAndProtocol[1]);
+                String protocol = portAndProtocol[1].toUpperCase();
+                v1ContainerPort.setProtocol(protocol);
+                v1ServicePort.setProtocol(protocol);
                 int portValue = Integer.parseInt(portAndProtocol[0]);
                 v1ContainerPort.setContainerPort(portValue);
                 v1ContainerPort.setName(portName);
