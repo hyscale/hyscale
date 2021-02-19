@@ -1,3 +1,15 @@
+# v0.9.9 Release
+
+This is a minor release is for network policies support and agent ports support.
+
+### Features:
+
+* [Support for Network Policies and Agent Ports](https://github.com/hyscale/hyscale/pull/367)
+
+### Fixes
+
+* [Fix for Dockerfile Path](https://github.com/hyscale/hyscale/pull/370)
+
 # v0.9.8.4 Release
 
 This is a minor release to fix custom plugin issues.
