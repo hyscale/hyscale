@@ -26,6 +26,7 @@ import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.generator.services.model.LBType;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.service.Agent;
 import io.hyscale.servicespec.commons.model.service.Port;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.slf4j.Logger;
@@ -33,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -81,9 +83,12 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
     private boolean portValidation(ServiceSpec serviceSpec, LoadBalancer loadBalancer) throws HyscaleException {
         TypeReference<List<Port>> portsListTypeReference = new TypeReference<List<Port>>() {
         };
+        // Fetching service ports
         List<Port> portList = serviceSpec.get(HyscaleSpecFields.ports, portsListTypeReference);
         List<String> portNumbersList = new ArrayList<>();
         portList.forEach(each -> portNumbersList.add(each.getPort()));
+        // Fetching agents ports
+        portNumbersList.addAll(getAgentPorts(serviceSpec));
         List<String> lbPorts = new ArrayList<>();
         loadBalancer.getMapping().forEach(e -> lbPorts.add(e.getPort()));
         for (String lbPort : lbPorts) {
@@ -93,6 +98,25 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
             }
         }
         return true;
+    }
+
+    private List<String> getAgentPorts(ServiceSpec serviceSpec) {
+        TypeReference<List<Agent>> agentsList = new TypeReference<List<Agent>>() {
+        };
+        List<String> portNumbersList = new ArrayList<>();
+        try {
+            List<Agent> agents = serviceSpec.get(HyscaleSpecFields.agents, agentsList);
+            agents.forEach((agent -> {
+                List<Port> ports = agent.getPorts();
+                ports.forEach((port)->{
+                    portNumbersList.add(port.getPort());
+                });
+            }));
+            return portNumbersList;
+        } catch (HyscaleException e) {
+            logger.error("Error while fetching agents from service spec, returning null.",e);
+            return Collections.emptyList();
+        }
     }
 
 
