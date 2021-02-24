@@ -88,7 +88,7 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
         List<String> portNumbersList = new ArrayList<>();
         portList.forEach(each -> portNumbersList.add(each.getPort()));
         // Fetching agents ports
-       // portNumbersList.addAll(getAgentPorts(serviceSpec));
+        portNumbersList.addAll(getAgentPorts(serviceSpec));
         List<String> lbPorts = new ArrayList<>();
         loadBalancer.getMapping().forEach(e -> lbPorts.add(e.getPort()));
         for (String lbPort : lbPorts) {
@@ -107,16 +107,16 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
         try {
             List<Agent> agents = serviceSpec.get(HyscaleSpecFields.agents, agentsList);
             if(agents == null || agents.isEmpty()){
-                Collections.emptyList();
+                return Collections.emptyList();
             }
-            agents.forEach((agent -> {
-                List<Port> ports = agent.getPorts();
-                if(ports!=null && !ports.isEmpty()){
-                    ports.forEach((port)->{
-                        portNumbersList.add(port.getPort());
-                    });
+            agents.forEach((agent)->{
+                if(agent != null){
+                    List<Port> ports = agent.getPorts();
+                    if(ports!=null && !ports.isEmpty()){
+                        ports.forEach(each -> portNumbersList.add(each.getPort()));
+                    }
                 }
-            }));
+            });
             return portNumbersList;
         } catch (HyscaleException e) {
             logger.error("Error while fetching agents from service spec, returning null.",e);
