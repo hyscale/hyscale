@@ -106,11 +106,16 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
         List<String> portNumbersList = new ArrayList<>();
         try {
             List<Agent> agents = serviceSpec.get(HyscaleSpecFields.agents, agentsList);
+            if(agents == null || agents.isEmpty()){
+                Collections.emptyList();
+            }
             agents.forEach((agent -> {
                 List<Port> ports = agent.getPorts();
-                ports.forEach((port)->{
-                    portNumbersList.add(port.getPort());
-                });
+                if(ports!=null && !ports.isEmpty()){
+                    ports.forEach((port)->{
+                        portNumbersList.add(port.getPort());
+                    });
+                }
             }));
             return portNumbersList;
         } catch (HyscaleException e) {
