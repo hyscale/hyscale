@@ -88,7 +88,7 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
         List<String> portNumbersList = new ArrayList<>();
         portList.forEach(each -> portNumbersList.add(each.getPort()));
         // Fetching agents ports
-        portNumbersList.addAll(getAgentPorts(serviceSpec));
+       // portNumbersList.addAll(getAgentPorts(serviceSpec));
         List<String> lbPorts = new ArrayList<>();
         loadBalancer.getMapping().forEach(e -> lbPorts.add(e.getPort()));
         for (String lbPort : lbPorts) {
