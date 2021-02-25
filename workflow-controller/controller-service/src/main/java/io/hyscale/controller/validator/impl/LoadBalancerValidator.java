@@ -24,6 +24,8 @@ import io.hyscale.commons.models.LoadBalancerMapping;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
+import io.hyscale.controller.provider.PortsProvider;
+import io.hyscale.generator.services.builder.DefaultPortsBuilder;
 import io.hyscale.generator.services.model.LBType;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.Agent;
@@ -31,6 +33,7 @@ import io.hyscale.servicespec.commons.model.service.Port;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -39,6 +42,13 @@ import java.util.List;
 
 @Component
 public class LoadBalancerValidator implements Validator<WorkflowContext> {
+
+    @Autowired
+    private PortsProvider portsProvider;
+
+    @Autowired
+    DefaultPortsBuilder defaultPortsBuilder;
+
 
     private static final Logger logger = LoggerFactory.getLogger(LoadBalancerValidator.class);
 
@@ -81,47 +91,18 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
      * @throws HyscaleException
      */
     private boolean portValidation(ServiceSpec serviceSpec, LoadBalancer loadBalancer) throws HyscaleException {
-        TypeReference<List<Port>> portsListTypeReference = new TypeReference<List<Port>>() {
-        };
-        // Fetching service ports
-        List<Port> portList = serviceSpec.get(HyscaleSpecFields.ports, portsListTypeReference);
-        List<String> portNumbersList = new ArrayList<>();
-        portList.forEach(each -> portNumbersList.add(each.getPort()));
-        // Fetching agents ports
-        portNumbersList.addAll(getAgentPorts(serviceSpec));
+
+        List<String> portNumbersList = portsProvider.getExposedPorts(serviceSpec,true);
         List<String> lbPorts = new ArrayList<>();
         loadBalancer.getMapping().forEach(e -> lbPorts.add(e.getPort()));
         for (String lbPort : lbPorts) {
+            lbPort = defaultPortsBuilder.updatePortProtocol(lbPort);
             if (!portNumbersList.contains(lbPort)) {
                 WorkflowLogger.persist(ValidatorActivity.PORTS_MISMATCH, LoggerTags.ERROR, lbPort);
                 return false;
             }
         }
         return true;
-    }
-
-    private List<String> getAgentPorts(ServiceSpec serviceSpec) {
-        TypeReference<List<Agent>> agentsList = new TypeReference<List<Agent>>() {
-        };
-        List<String> portNumbersList = new ArrayList<>();
-        try {
-            List<Agent> agents = serviceSpec.get(HyscaleSpecFields.agents, agentsList);
-            if(agents == null || agents.isEmpty()){
-                return Collections.emptyList();
-            }
-            agents.forEach((agent)->{
-                if(agent != null){
-                    List<Port> ports = agent.getPorts();
-                    if(ports!=null && !ports.isEmpty()){
-                        ports.forEach(each -> portNumbersList.add(each.getPort()));
-                    }
-                }
-            });
-            return portNumbersList;
-        } catch (HyscaleException e) {
-            logger.error("Error while fetching agents from service spec, returning null.",e);
-            return Collections.emptyList();
-        }
     }
 
 
