@@ -15,6 +15,7 @@
  */
 package io.hyscale.generator.services.builder;
 
+import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ConfigTemplate;
 import io.hyscale.commons.models.LoadBalancer;
@@ -39,6 +40,7 @@ public class TraefikMetaDataBuilder implements IngressMetaDataBuilder {
     private static final String INGRESS_CLASS = "INGRESS_CLASS";
     private static final String FRONTEND_ENTRY_POINTS = "FRONTEND_ENTRY_POINTS";
     private static final String REDIRECT_ENTRY_POINTS = "REDIRECT_ENTRY_POINTS";
+    private static final String HEADERS_EXPRESSION = "HEADERS_EXPRESSION";
 
     @Autowired
     private PluginTemplateProvider templateProvider;
@@ -73,7 +75,12 @@ public class TraefikMetaDataBuilder implements IngressMetaDataBuilder {
             context.put(REDIRECT_ENTRY_POINTS,null);
         }
         if(loadBalancer.getHeaders()!=null ){
-            //TODO Add Headers
+            StringBuilder sb = new StringBuilder();
+            loadBalancer.getHeaders().forEach((key,value) -> {
+                sb.append(key).append(ToolConstants.COLON).append(value).append(ToolConstants.HEADER_CONCATENATOR);
+            });
+            sb.deleteCharAt(sb.lastIndexOf("|"));
+            context.put(HEADERS_EXPRESSION,sb);
         }
         return context;
     }

@@ -31,6 +31,8 @@ public class ToolConstants {
 
     public static final String COMMA = ",";
 
+    public static final String HEADER_CONCATENATOR = "|";
+
     public static final String DOT = ".";
 
     public static final String DASH = "-";
