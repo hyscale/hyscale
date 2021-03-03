@@ -20,13 +20,16 @@ import io.hyscale.servicespec.commons.model.service.BuildSpec;
 import io.hyscale.servicespec.commons.model.service.Dockerfile;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
-import org.apache.commons.lang3.StringUtils;
+import io.hyscale.servicespec.commons.predicates.ServiceSpecPredicates;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Predicate;
 
 public class DockerfileGenPredicates {
+    
+    private DockerfileGenPredicates() {}
 
     private static final Logger logger = LoggerFactory.getLogger(DockerfileGenPredicates.class);
 
@@ -55,81 +58,9 @@ public class DockerfileGenPredicates {
                 return true;
             }
             
-            return stackAsServiceImage().test(serviceSpec);
+            return ServiceSpecPredicates.stackAsServiceImage().test(serviceSpec);
 
         };
     }
 
-    public static Predicate<ServiceSpec> stackAsServiceImage() {
-        return serviceSpec -> {
-            if (serviceSpec == null) {
-                return false;
-            }
-            BuildSpec buildSpec = null;
-            try {
-                buildSpec = serviceSpec.get(
-                        HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.buildSpec),
-                        BuildSpec.class);
-            } catch (HyscaleException e) {
-                logger.error("Error while fetching dockerfile from  image", e);
-            }
-
-            if (buildSpec == null) {
-                return false;
-            }
-            
-            return (!haveArtifacts().test(buildSpec) && !haveConfigCommands().test(buildSpec)
-                    && !haveConfigScript().test(buildSpec) && !haveRunScript().test(buildSpec)
-                    && !haveRunCommands().test(buildSpec));
-        };
-    }
-
-    /**
-     * @return true if artifacts exist in buildspec
-     */
-
-    public static Predicate<BuildSpec> haveArtifacts() {
-        return buildSpec -> {
-            if (buildSpec == null) {
-                return false;
-            }
-            return buildSpec.getArtifacts() != null && !(buildSpec.getArtifacts().isEmpty());
-        };
-    }
-
-    public static Predicate<BuildSpec> haveConfigCommands() {
-        return buildSpec -> {
-            if (buildSpec == null) {
-                return false;
-            }
-            return StringUtils.isNotBlank(buildSpec.getConfigCommands());
-        };
-    }
-
-    public static Predicate<BuildSpec> haveRunCommands() {
-        return buildSpec -> {
-            if (buildSpec == null) {
-                return false;
-            }
-            return StringUtils.isNotBlank(buildSpec.getRunCommands());
-        };
-    }
-
-    public static Predicate<BuildSpec> haveConfigScript() {
-        return buildSpec -> {
-            if (buildSpec == null) {
-                return false;
-            }
-            return StringUtils.isNotBlank(buildSpec.getConfigCommandsScript());
-        };
-    }
-
-    public static Predicate<BuildSpec> haveRunScript() {
-        return buildSpec -> {
-            if (buildSpec == null) {
-                return false;
-            }
-            return StringUtils.isNotBlank(buildSpec.getRunCommandsScript());
-        };
-    }
 }

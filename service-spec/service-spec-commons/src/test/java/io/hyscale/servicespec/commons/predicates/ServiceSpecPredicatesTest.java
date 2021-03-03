@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.dockerfile.gen.services.predicates;
+package io.hyscale.servicespec.commons.predicates;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -26,20 +26,21 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.dockerfile.gen.services.util.ServiceSpecTestUtil;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+import io.hyscale.servicespec.commons.util.ServiceSpecTestUtil;
 
-class DockerfileGenPredicatesTest {
+class ServiceSpecPredicatesTest {
 
     private static Stream<Arguments> input() {
-        return Stream.of(Arguments.of(DockerfileGenPredicates.skipDockerfileGen(), null, false),
-                Arguments.of(DockerfileGenPredicates.skipDockerfileGen(), "/input/skip-generation/dockerfile.hspec", true),
-                Arguments.of(DockerfileGenPredicates.skipDockerfileGen(), "/input/skip-generation/stack-as-service.hspec", true),
-                Arguments.of(DockerfileGenPredicates.skipDockerfileGen(), "/input/skip-generation/only-image.hspec", true),
-                Arguments.of(DockerfileGenPredicates.skipDockerfileGen(), "/input/skip-generation/invalid-spec.hspec", true),
-                Arguments.of(DockerfileGenPredicates.skipDockerfileGen(), "/input/skip-generation/dont-skip.hspec", false));
+        return Stream.of(Arguments.of(ServiceSpecPredicates.stackAsServiceImage(), null, false),
+                Arguments.of(ServiceSpecPredicates.stackAsServiceImage(), "/servicespecs/stackAsImage/dockerfile.hspec", false),
+                Arguments.of(ServiceSpecPredicates.stackAsServiceImage(), "/servicespecs/stackAsImage/only-image.hspec", false),
+                Arguments.of(ServiceSpecPredicates.stackAsServiceImage(), "/servicespecs/stackAsImage/dont-skip.hspec", false),
+                Arguments.of(ServiceSpecPredicates.stackAsServiceImage(), "/servicespecs/stackAsImage/invalid-spec.hspec", false),
+                Arguments.of(ServiceSpecPredicates.stackAsServiceImage(), "/servicespecs/stackAsImage/stack-as-service.hspec",
+                        true));
     }
-    
+
     @ParameterizedTest
     @MethodSource("input")
     void testPredicate(Predicate<ServiceSpec> predicate, String serviceSpecPath, boolean result) {

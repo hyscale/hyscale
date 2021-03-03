@@ -23,7 +23,7 @@ public enum ImageBuilderErrorCodes implements HyscaleError {
     FAILED_TO_TAG_IMAGE("Failed to tag image ",HyscaleErrorGroup.IMAGE_BUILD),
     FAILED_TO_BUILD_IMAGE("Failed to build image",HyscaleErrorGroup.IMAGE_BUILD),
     FAILED_TO_PUSH_IMAGE("Failed to push image",HyscaleErrorGroup.IMAGE_PUSH),
-    FAILED_TO_LOGIN("Failed to authenticate with the docker registry"),
+    FAILED_TO_LOGIN("Failed to authenticate with the docker registry {}"),
     FAILED_TO_PULL_IMAGE("Failed to pull image {}",HyscaleErrorGroup.IMAGE_BUILD),
     FIELDS_MISSING("Found {} missing",HyscaleErrorGroup.IMAGE_BUILD),
     DOCKER_DAEMON_NOT_RUNNING("Docker daemon is not running",HyscaleErrorGroup.IMAGE_BUILD),

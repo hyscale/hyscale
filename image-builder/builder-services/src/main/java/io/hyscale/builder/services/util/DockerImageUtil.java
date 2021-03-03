@@ -26,6 +26,8 @@ import io.hyscale.commons.commands.CommandExecutor;
 import io.hyscale.commons.commands.provider.ImageCommandProvider;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.ImageRegistry;
+import io.hyscale.commons.utils.EncodeDecodeUtil;
 
 @Component
 public class DockerImageUtil {
@@ -72,6 +74,23 @@ public class DockerImageUtil {
         boolean success = CommandExecutor.execute(pullImageCommand);
         if (!success) {
             throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_PULL_IMAGE, imageName);
+        }
+    }
+    
+    public void dockerLogin(ImageRegistry imageRegistry) throws HyscaleException {
+        String decodedAuth = EncodeDecodeUtil.decode(imageRegistry.getToken());
+        int delimiter = decodedAuth.indexOf(':');
+        String username = null;
+        String password = null;
+        if (delimiter > 0) {
+            username = decodedAuth.substring(0,delimiter);
+            password = decodedAuth.substring(delimiter+1);
+        }
+        logger.debug("Docker login to registry: {}", imageRegistry.getUrl());
+        String loginCommand = commandGenerator.dockerLogin(imageRegistry.getUrl(), username, password);
+        boolean success = CommandExecutor.execute(loginCommand);
+        if (!success) {
+            throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_LOGIN, imageRegistry.getUrl());
         }
     }
 }
