@@ -15,15 +15,18 @@
  */
 package io.hyscale.troubleshooting.integration.actions;
 
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.troubleshooting.integration.models.*;
 import io.kubernetes.client.openapi.models.V1Event;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class FixHealthCheckAction extends ActionNode<TroubleshootingContext> {
 
+    private static final Logger logger = LoggerFactory.getLogger(FixHealthCheckAction.class);
+    
     @Override
     public void process(TroubleshootingContext context) {
 
@@ -32,6 +35,7 @@ public class FixHealthCheckAction extends ActionNode<TroubleshootingContext> {
         if (obj != null) {
             V1Event event = (V1Event) FailedResourceKey.UNHEALTHY_POD_EVENT.getKlazz().cast(obj);
             eventMessage = event != null ? event.getMessage() : null;
+            logger.debug("Fix health check, pod event: {}", eventMessage);
         }
 
         DiagnosisReport report = new DiagnosisReport();

@@ -16,16 +16,23 @@
 package io.hyscale.generator.services.builder;
 
 import io.hyscale.commons.models.ResourceLabelKey;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.commons.utils.ResourceLabelBuilder;
-import io.hyscale.generator.services.model.ServiceMetadata;
 
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-//TODO Normaliza label as per regex (([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?
+//TODO Normalize label as per regex (([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?
 public class DefaultLabelBuilder {
+    
+    private DefaultLabelBuilder() {}
 
     public static Map<String, String> build(ServiceMetadata serviceMetadata) {
+        if (serviceMetadata == null) {
+            return null;
+        }
         Map<ResourceLabelKey, String> resourceLabelMap = ResourceLabelBuilder.build(serviceMetadata.getAppName(), serviceMetadata.getEnvName(),
                 serviceMetadata.getServiceName());
         return build(resourceLabelMap);
@@ -46,9 +53,8 @@ public class DefaultLabelBuilder {
         if (resourceLabelMap == null || resourceLabelMap.isEmpty()) {
             return null;
         }
-        return resourceLabelMap.entrySet().stream().filter(each -> {
-            return each != null;
-        }).collect(Collectors.toMap(k -> k.getKey().getLabel(), v -> v.getValue()));
+        return resourceLabelMap.entrySet().stream().filter(Objects::nonNull)
+                .collect(Collectors.toMap(k -> k.getKey().getLabel(), Entry::getValue));
     }
 
 }

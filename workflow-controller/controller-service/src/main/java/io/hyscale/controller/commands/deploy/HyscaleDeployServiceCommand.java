@@ -18,12 +18,14 @@ package io.hyscale.controller.commands.deploy;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.Callable;
-
+import com.google.gson.*;
 import io.hyscale.commons.component.ComponentInvoker;
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.constants.ValidationConstants;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.io.StructuredOutputHandler;
+import io.hyscale.commons.utils.GsonProviderUtil;
 import io.hyscale.commons.validator.Validator;
 import io.hyscale.controller.builder.K8sAuthConfigBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
@@ -34,6 +36,8 @@ import io.hyscale.controller.util.CommandUtil;
 import io.hyscale.controller.util.ServiceSpecUtil;
 import io.hyscale.controller.validator.impl.*;
 
+import io.hyscale.deployer.core.model.ServiceStatus;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +46,7 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.Manifest;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.model.WorkflowContextBuilder;
+import io.hyscale.controller.commands.args.FileConverter;
 import io.hyscale.controller.commands.input.ProfileArg;
 import io.hyscale.controller.invoker.DeployComponentInvoker;
 import io.hyscale.controller.invoker.ImageBuildComponentInvoker;
@@ -57,13 +62,13 @@ import javax.validation.constraints.Pattern;
  * This class executes 'hyscale deploy service' command
  * It is a sub-command of the 'hyscale deploy' command
  *
- * @option namespace  name of the namespace in which the service to be deployed
- * @option appName   name of the app to logically group your services
- * @option serviceSpecs   list of service specs that are to be deployed
- * @option profiles list of profiles for services
- * @option profile profile name to look for. Profile file should be present for all services in service spec
- * (profiles and profile are mutually exclusive)
- * @option verbose  prints the verbose output of the deployment
+ Options:
+ *  namespace - name of the namespace in which the service to be deployed
+ *  appName - name of the app to logically group your services
+ *  serviceSpecs - list of service specs that are to be deployed
+ *  profiles - list of profiles for services
+ *  profile - profile name to look for. Profile file should be present for all services in service spec (profiles and profile are mutually exclusive)
+ *  verbose - prints the verbose output of the deployment
  * <p>
  * Eg 1: hyscale deploy service -f svca.hspec -f svcb.hspec -p dev-svca.hprof -n dev -a sample
  * Eg 2: hyscale deploy service -f svca.hspec -f svcb.hspec -P dev -n dev -a sample
@@ -99,8 +104,13 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
     @CommandLine.Option(names = {"-v", "--verbose", "-verbose"}, required = false, description = "Verbose output")
     private boolean verbose = false;
 
-    @CommandLine.Option(names = {"-f", "--files"}, required = true, description = "Service specs files.", split = ",")
+    @CommandLine.Option(names = {"-f", "--files"}, 
+            required = true, description = "Service specs files.", split = ",", converter = FileConverter.class)
     private List<File> serviceSpecsFiles;
+
+    @Pattern(regexp = ValidationConstants.STRUCTURED_OUTPUT_FORMAT_REGEX, message = ValidationConstants.INVALID_OUTPUT_FORMAT_MSG)
+    @CommandLine.Option(names = {"-o", "--output"},paramLabel = "json" ,required = false, description = "Output in json format.")
+    private String structuredOutput;
 
     @ArgGroup(exclusive = true, heading = "Profile options", order = 10)
     private ProfileArg profileArg;
@@ -144,7 +154,20 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
     @Autowired
     private VolumeValidator volumeValidator;
 
+    @Autowired
+    private StructuredOutputHandler outputHandler;
+
+    @Autowired
+    private PortsValidator portsValidator;
+
+    @Autowired
+    private NetworkPoliciesValidator networkPoliciesValidator;
+
     private List<Validator<WorkflowContext>> postValidators;
+
+    private JsonArray jsonArr;
+
+    private JsonParser jsonParser;
 
     @PostConstruct
     public void init() {
@@ -154,6 +177,10 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
         this.postValidators.add(manifestValidator);
         this.postValidators.add(clusterValidator);
         this.postValidators.add(volumeValidator);
+        this.postValidators.add(portsValidator);
+        this.postValidators.add(networkPoliciesValidator);
+        this.jsonArr = new JsonArray();
+        this.jsonParser = new JsonParser();
     }
 
     @Override
@@ -162,18 +189,34 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
 
+        if(!StringUtils.isEmpty(structuredOutput)){
+            WorkflowLogger.setDisabled(true);
+            verbose=false;
+        }
+
         // Validate Service specs with schema
         if (!serviceSpecInputValidator.validate(serviceSpecsFiles)) {
+            if(WorkflowLogger.isDisabled()){
+                outputHandler.generateErrorMessage(WorkflowConstants.DEPLOYMENT_ERROR);
+            }
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
 
-        Map<String, File> serviceVsSpecFile = new HashMap<String, File>();
+        Map<String, File> serviceVsSpecFile = new HashMap<>();
         for (File serviceSpec : serviceSpecsFiles) {
             serviceVsSpecFile.put(ServiceSpecUtil.getServiceName(serviceSpec), serviceSpec);
         }
 
         // Process servicespecs to form EffectiveServiceSpec from ProfileArg & ServiceSpecFiles
-        List<EffectiveServiceSpec> effectiveServiceSpecs = serviceSpecProcessor.process(profileArg, serviceSpecsFiles);
+        List<EffectiveServiceSpec> effectiveServiceSpecs;
+        try {
+            effectiveServiceSpecs = serviceSpecProcessor.process(profileArg, serviceSpecsFiles);
+        } catch (HyscaleException e) {
+            if (WorkflowLogger.isDisabled()) {
+                StructuredOutputHandler.prepareOutput(WorkflowConstants.DEPLOYMENT_ERROR, e.getMessage());
+            }
+            throw e;
+        }
 
         // Construct WorkflowContext
         List<WorkflowContext> contextList = new ArrayList<>();
@@ -188,6 +231,9 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
                     contextList.add(builder.get());
                 } catch (HyscaleException e) {
                     logger.error("Error while preparing workflow context ", e);
+                    if (WorkflowLogger.isDisabled()) {
+                        StructuredOutputHandler.prepareOutput(WorkflowConstants.DEPLOYMENT_ERROR, e.getMessage());
+                    }
                     throw e;
                 }
             }
@@ -197,6 +243,9 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
 
         if (!inputSpecPostValidator.validate(contextList)) {
             WorkflowLogger.logPersistedActivities();
+            if(WorkflowLogger.isDisabled()){
+                outputHandler.generateErrorMessage(WorkflowConstants.DEPLOYMENT_ERROR);
+            }
             return ToolConstants.INVALID_INPUT_ERROR_CODE;
         }
 
@@ -227,8 +276,19 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
             }
             logWorkflowInfo(workflowContext);
             isCommandFailed = isCommandFailed ? isCommandFailed : workflowContext.isFailed();
+            if (WorkflowLogger.isDisabled() && !isCommandFailed) {
+                ServiceStatus serviceStatus = new ServiceStatus();
+                serviceStatus.setName(workflowContext.getServiceName());
+                if (workflowContext.getAttribute(WorkflowConstants.SERVICE_IP) != null) {
+                    serviceStatus.setMessage(workflowContext.getAttribute(WorkflowConstants.SERVICE_IP).toString());
+                }
+                JsonObject json = (JsonObject) jsonParser.parse(GsonProviderUtil.getPrettyGsonBuilder().toJson(serviceStatus));
+                jsonArr.add(json);
+            }
         }
-
+        if(WorkflowLogger.isDisabled()) {
+            StructuredOutputHandler.prepareOutput(WorkflowConstants.SERVICE_STATUS,jsonArr);
+        }
         return isCommandFailed ? ToolConstants.HYSCALE_ERROR_CODE : 0;
     }
 
@@ -242,8 +302,23 @@ public class HyscaleDeployServiceCommand implements Callable<Integer> {
             logger.error("Error while executing component invoker: {}, for app: {}, service: {}",
                     invoker.getClass(), appName, context.getServiceName(), e);
             context.setFailed(true);
+            if (WorkflowLogger.isDisabled()) {
+                ServiceStatus serviceStatus = new ServiceStatus();
+                serviceStatus.setName(context.getServiceName());
+                serviceStatus.setExitCode(e.getCode());
+                if (context.getAttribute(WorkflowConstants.TROUBLESHOOT_MESSAGE) != null) {
+                    serviceStatus.setMessage(context.getAttribute(WorkflowConstants.TROUBLESHOOT_MESSAGE).toString());
+                } else if(context.getAttribute(WorkflowConstants.ERROR_MESSAGE) != null){
+                    serviceStatus.setMessage(context.getAttribute(WorkflowConstants.ERROR_MESSAGE).toString());
+                } else {
+                    serviceStatus.setMessage(e.getMessage());
+                }
+                // Prepare K8s Error and set to serviceStatus.
+                JsonObject json = (JsonObject) jsonParser.parse(GsonProviderUtil.getPrettyGsonBuilder().toJson(serviceStatus));
+                jsonArr.add(json);
+            }
         }
-        return context.isFailed() ? false : true;
+        return !context.isFailed();
     }
 
     private void logWorkflowInfo(WorkflowContext workflowContext) {

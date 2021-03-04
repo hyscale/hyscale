@@ -35,8 +35,7 @@ import picocli.CommandLine.Command;
  * Every command/sub-command has to implement the {@link Callable} so that
  * whenever the command is executed the {@link #call()}
  * method will be invoked
- * <p>
- * <p>
+ * </p>
  * Command annotation overrides the version provider that picoli provides
  * by default, with {@link HyscaleVersionProvider} as implementation
  * <p>

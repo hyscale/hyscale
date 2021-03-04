@@ -17,7 +17,7 @@ package io.hyscale.controller.commands;
 
 import io.hyscale.controller.constants.GitPropertyConstants;
 import io.hyscale.controller.util.GitPropertyProvider;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Component;
@@ -29,7 +29,7 @@ import picocli.CommandLine;
  * Provides version when 'hyscale --version' command
  * is executed
  * <p>
- * HyScale Version <version> "<release-name>, build <commitID>
+ * HyScale Version {@literal<version>} {@literal<release-name>}, build {@literal<commitID>}
  */
 @Component
 public class HyscaleVersionProvider implements CommandLine.IVersionProvider {

@@ -16,13 +16,14 @@
 package io.hyscale.commons.constants;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class K8SRuntimeConstants {
 
-	public static final String K8s_DEPLOYMENT_POD_TEMPLATE_HASH = "pod-template-hash";
+	public static final String K8S_DEPLOYMENT_POD_TEMPLATE_HASH = "pod-template-hash";
 
-	public static final String K8s_STS_CONTROLLER_REVISION_HASH = "controller-revision-hash";
+	public static final String K8S_STS_CONTROLLER_REVISION_HASH = "controller-revision-hash";
 
 	public static final String DOMAIN_NAME = "DOMAIN_NAME";
 
@@ -52,13 +53,15 @@ public class K8SRuntimeConstants {
 
 	public static final String DEFAULT_NAMESPACE = "default";
 
-	public static final List<String> POD_ERROR_SATES = Arrays.asList("ErrImagePull", "CrashLoopBackOff",
-			"ImagePullBackOff", "Error", "Terminating");
+	public static final List<String> POD_ERROR_SATES = Collections.unmodifiableList(Arrays.asList("ErrImagePull", "CrashLoopBackOff",
+			"ImagePullBackOff", "Error", "Terminating"));
 
 	public static final String DEFAULT_VOLUME_SIZE = "1Gi";
-	
-	public static final List<String> SYSTEM_NAMESPACE = Arrays.asList("kube-system", "kube-public", "kube-node-lease");
+
+	public static final List<String> SYSTEM_NAMESPACE = Collections.unmodifiableList(Arrays.asList("kube-system", "kube-public", "kube-node-lease"));
 	
 	public static final Integer DEFAULT_REPLICA_COUNT = 1;
+
+	private K8SRuntimeConstants() {}
 
 }

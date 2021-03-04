@@ -16,14 +16,17 @@
 package io.hyscale.generator.services.generator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.generator.services.builder.DefaultLabelBuilder;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.plugin.framework.util.JsonSnippetConvertor;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 
 public class MetadataManifestSnippetGenerator {
+    
+    private MetadataManifestSnippetGenerator() {}
 
 	public static ManifestSnippet getMetaData(ManifestResource manifestResource, ServiceMetadata serviceMetadata)
 			throws JsonProcessingException {
@@ -38,7 +41,7 @@ public class MetadataManifestSnippetGenerator {
 		return snippet;
 	}
 
-	public static ManifestSnippet getApiVersion(ManifestResource manifestResource, ServiceMetadata metaDataContext) {
+	public static ManifestSnippet getApiVersion(ManifestResource manifestResource) {
 		ManifestSnippet apiVersionSnippet = new ManifestSnippet();
 		apiVersionSnippet.setPath("apiVersion");
 		apiVersionSnippet.setKind(manifestResource.getKind());

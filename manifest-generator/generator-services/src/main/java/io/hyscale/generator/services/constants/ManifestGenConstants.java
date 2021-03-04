@@ -16,6 +16,8 @@
 package io.hyscale.generator.services.constants;
 
 public class ManifestGenConstants {
+    
+    private ManifestGenConstants() {}
 
 	public static final String NAME_DELIMITER = "-";
 
@@ -34,5 +36,6 @@ public class ManifestGenConstants {
 	public static final String IMAGE_PULL_SECRET_NAME = "ImagePullSecretName";
 	
 	public static final String POD_CHECKSUM = "POD_CHECKSUM";
-	
+
+	public static final String NETWORK_POLICY = "networkpolicy";
 }

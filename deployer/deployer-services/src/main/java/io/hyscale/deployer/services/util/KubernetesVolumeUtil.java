@@ -15,6 +15,7 @@
  */
 package io.hyscale.deployer.services.util;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,19 +41,21 @@ import io.kubernetes.client.openapi.models.V1Volume;
  *
  */
 public class KubernetesVolumeUtil {
+    
+    private KubernetesVolumeUtil() {}
 
 	public static Map<String, Set<String>> getServiceVolumeNames(List<V1PersistentVolumeClaim> pvcList) {
 		if (pvcList == null || pvcList.isEmpty()) {
 			return null;
 		}
 
-		Map<String, Set<String>> serviceVolumes = new HashMap<String, Set<String>>();
+		Map<String, Set<String>> serviceVolumes = new HashMap<>();
 
 		pvcList.stream().forEach(pvc -> {
 			Map<String, String> labels = pvc.getMetadata().getLabels();
 			String serviceName = ResourceLabelUtil.getServiceName(labels);
 			if (serviceVolumes.get(serviceName) == null) {
-				serviceVolumes.put(serviceName, new HashSet<String>());
+				serviceVolumes.put(serviceName, new HashSet<>());
 			}
 			serviceVolumes.get(serviceName).add(getVolumeName(pvc));
 		});
@@ -65,12 +68,12 @@ public class KubernetesVolumeUtil {
 			return null;
 		}
 
-		Map<String, Set<String>> servicePVCs = new HashMap<String, Set<String>>();
+		Map<String, Set<String>> servicePVCs = new HashMap<>();
 		pvcList.stream().forEach(pvc -> {
 			String serviceName = ResourceLabelUtil.getServiceName(pvc.getMetadata().getLabels());
 
 			if (servicePVCs.get(serviceName) == null) {
-				servicePVCs.put(serviceName, new HashSet<String>());
+				servicePVCs.put(serviceName, new HashSet<>());
 			}
 			servicePVCs.get(serviceName).add(pvc.getMetadata().getName());
 		});
@@ -81,7 +84,7 @@ public class KubernetesVolumeUtil {
 	/**
 	 * Get volume name from pvc
 	 * pvc name = volume_name-service_name-index
-	 * @param pvcName
+	 * @param pvc
 	 * @return volumeName
 	 */
 	public static String getVolumeName(V1PersistentVolumeClaim pvc) {
@@ -121,20 +124,18 @@ public class KubernetesVolumeUtil {
 	}
 
 	public static Set<String> getPodsVolumes(List<V1Pod> podsList) {
-		Set<String> podsVolumes = new HashSet<String>();
+		Set<String> podsVolumes = new HashSet<>();
 		if (podsList == null || podsList.isEmpty()) {
 			return podsVolumes;
 		}
-		podsList.stream().forEach(pod -> {
-			podsVolumes.addAll(getPodVolumes(pod));
-		});
+		podsList.stream().forEach(pod -> podsVolumes.addAll(getPodVolumes(pod)));
 		return podsVolumes;
 	}
 
 	public static Set<String> getPodVolumes(V1Pod pod) {
-		Set<String> podsVolumes = new HashSet<String>();
+		Set<String> podsVolumes = new HashSet<>();
 		if (pod == null) {
-			return null;
+			return Collections.emptySet();
 		}
 		V1PodSpec podSpec = pod.getSpec();
 		if (podSpec == null) {

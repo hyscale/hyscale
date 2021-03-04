@@ -17,6 +17,7 @@ package io.hyscale.deployer.services.deployer.impl;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,17 +37,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.framework.events.model.ActivityState;
+import io.hyscale.commons.framework.events.publisher.EventPublisher;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.ClusterVersionInfo;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.KubernetesResource;
 import io.hyscale.commons.models.Manifest;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.commons.models.YAMLManifest;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.AppMetadata;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ResourceKind;
+import io.hyscale.deployer.events.model.UnDeployEvent;
 import io.hyscale.deployer.services.builder.AppMetadataBuilder;
 import io.hyscale.deployer.services.builder.PodBuilder;
 import io.hyscale.deployer.services.config.DeployerConfig;
@@ -93,27 +98,30 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
 
     @Autowired
     private ScaleServiceManager scaleServiceManager;
-    
+
     @Autowired
     private ServiceStatusProcessor serviceStatusProcessor;
-    
+
     @Autowired
     private PodParentProvider podParentProvider;
-    
+
     @Autowired
     private ClusterVersionProvider clusterVersionProvider;
-    
+
+    @Autowired
+    private EventPublisher publisher;
+
     @Override
     public void deploy(DeploymentContext context) throws HyscaleException {
-
+        List<Manifest> manifests = context.getManifests();
+        String namespace = context.getNamespace();
         K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(clientProvider.get((K8sAuthorisation) context.getAuthConfig()));
         try {
             resourceDispatcher.waitForReadiness(context.isWaitForReadiness());
-            resourceDispatcher.withNamespace(context.getNamespace()).apply(context.getManifests());
-
+            resourceDispatcher.withNamespace(namespace).apply(manifests);
         } catch (HyscaleException e) {
             logger.error("Error while deploying service {} in namespace {} , error {} ", context.getServiceName(),
-                    context.getNamespace(), e.toString());
+                    namespace, e.toString());
             throw e;
         }
     }
@@ -128,11 +136,14 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
         String serviceName = context.getServiceName();
         String namespace = context.getNamespace();
         String appName = context.getAppName();
+        ServiceMetadata serviceMetadata = new ServiceMetadata();
+        serviceMetadata.setAppName(appName);
+        serviceMetadata.setServiceName(serviceName);
         WorkflowLogger.header(DeployerActivity.WAITING_FOR_DEPLOYMENT);
         try {
             podHandler.watch(apiClient, appName, serviceName, namespace);
-        } catch (HyscaleException e) {
-            throw e;
+        } catch (HyscaleException ex) {
+            throw ex;
         }
     }
 
@@ -142,7 +153,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
          * For each resource kind and name, using resource handler Get resource from
          * cluster Get status of the fetched resource
          */
-        ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
+        ApiClient apiClient = clientProvider.get(authConfig);
         YAMLManifest yamlManifest = (YAMLManifest) manifest;
         try {
             KubernetesResource resource = KubernetesResourceUtil.getKubernetesResource(yamlManifest, namespace);
@@ -159,7 +170,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
 
     @Override
     public List<Pod> getPods(String namespace, String appName, String serviceName, K8sAuthorisation k8sAuthorisation) throws Exception {
-        List<Pod> podList = new ArrayList<Pod>();
+        List<Pod> podList = new ArrayList<>();
         List<V1Pod> v1PodList = null;
         try {
             ApiClient apiClient = clientProvider.get(k8sAuthorisation);
@@ -169,13 +180,13 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
 
             v1PodList = v1PodHandler.getBySelector(apiClient, selector, true, namespace);
             if (v1PodList == null || v1PodList.isEmpty()) {
-                return null;
+                return Collections.emptyList();
             }
 
             for (V1Pod v1Pod : v1PodList) {
                 PodBuilder builder = new PodBuilder();
                 List<V1Volume> v1VolumeList = v1Pod.getSpec().getVolumes();
-                List<Volume> podVolumeList = new ArrayList<Volume>();
+                List<Volume> podVolumeList = new ArrayList<>();
                 Set<String> volumeNames = new HashSet<>();
                 if (v1VolumeList != null) {
                     for (V1Volume v1Volume : v1VolumeList) {
@@ -202,14 +213,30 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
 
     @Override
     public void unDeploy(DeploymentContext context) throws HyscaleException {
-        K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(clientProvider.get((K8sAuthorisation) context.getAuthConfig()));
+        String appName = context.getAppName();
+        String serviceName = context.getServiceName();
+        String namespace = context.getNamespace();
+
+        ServiceMetadata serviceMetadata = new ServiceMetadata();
+        serviceMetadata.setAppName(appName);
+        serviceMetadata.setServiceName(serviceName);
+        UnDeployEvent event = new UnDeployEvent(ActivityState.STARTED, serviceMetadata, namespace);
+        publisher.publishEvent(event);
+        K8sResourceDispatcher resourceDispatcher = new K8sResourceDispatcher(
+                clientProvider.get((K8sAuthorisation) context.getAuthConfig()));
         try {
-            resourceDispatcher.withNamespace(context.getNamespace()).undeploy(context.getAppName(),
-                    context.getServiceName());
+            if(serviceName!=null && !serviceName.isBlank()){
+                resourceDispatcher.withNamespace(namespace).undeployService(appName, serviceName);
+            }else{
+                resourceDispatcher.withNamespace(namespace).undeployApp(appName);
+            }
+            event = new UnDeployEvent(ActivityState.DONE, serviceMetadata, namespace);
         } catch (HyscaleException e) {
-            logger.error("Error while undeploying service in namespace {} , error {} ", context.getNamespace(),
-                    e.toString());
+            logger.error("Error while undeploying service in namespace {} , error {} ", namespace, e.toString());
+            event = new UnDeployEvent(ActivityState.FAILED, serviceMetadata, namespace);
             throw e;
+        } finally {
+            publisher.publishEvent(event);
         }
     }
 
@@ -223,7 +250,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
     public InputStream logs(K8sAuthorisation authConfig, String serviceName, String namespace, String podName,
                             String containerName, Integer readLines, boolean tail) throws HyscaleException {
         try {
-            ApiClient apiClient = clientProvider.get((K8sAuthorisation) authConfig);
+            ApiClient apiClient = clientProvider.get(authConfig);
             V1PodHandler podHandler = (V1PodHandler) ResourceHandlers.getHandlerOf(ResourceKind.POD.getKind());
             if (readLines == null) {
                 readLines = deployerConfig.getDefaultTailLines();
@@ -262,20 +289,18 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
         return serviceStatusProcessor.getServiceDeploymentStatus(context.getAuthConfig(), context.getAppName(),
                 context.getServiceName(), context.getNamespace());
     }
-    
+
     @Override
     public List<DeploymentStatus> getDeploymentStatus(DeploymentContext context) throws HyscaleException {
         return serviceStatusProcessor.getDeploymentStatus(context.getAuthConfig(), context.getAppName(),
                 context.getNamespace());
     }
-    
+
     /**
      * Get Replica info for pods
      *
      * @param authConfig cluster auth configuration
-     *                   Implementation:
-     *                   <p>
-     *                   isFilter if disabled return replica info for all pods fetched based on selector
+     * @param all        if disabled, return replica info for all pods fetched based on selector
      *                   if enabled,
      *                   1. If owner kind for pods is different, warn user and return replica info for all pods
      *                   2. If owner kind is {@link ResourceKind #DEPLOYMENT} or {@link ResourceKind #REPLICA_SET},
@@ -283,7 +308,6 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
      *                   filter pods based on pod-template-hash from replica set
      *                   return replica info for filtered pods
      *                   3. Else return replica info for all pods
-     *                   </p>
      */
     @Override
     public List<ReplicaInfo> getReplicas(K8sAuthorisation authConfig, String appName, String serviceName, String namespace,
@@ -311,24 +335,24 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
 
         v1PodList = v1PodHandler.getBySelector(apiClient, selector, true, namespace);
         if (v1PodList == null || v1PodList.isEmpty()) {
-            return null;
+            return Collections.emptyList();
         }
         return K8sReplicaUtil.getReplicaInfo(v1PodList);
     }
 
     private List<Container> getContainers(V1Pod v1Pod, Set<String> volumeNames) {
-        List<Container> containers = new ArrayList<Container>();
+        List<Container> containers = new ArrayList<>();
         // get all status
         Map<String, String> containerVsStatus = new HashMap<>();
         if (v1Pod.getStatus() != null && v1Pod.getStatus().getContainerStatuses() != null) {
-            v1Pod.getStatus().getContainerStatuses().forEach((containerStatus) -> {
+            v1Pod.getStatus().getContainerStatuses().forEach(containerStatus -> {
                 String status = K8sPodUtil.getContainerStatus(containerStatus);
                 if (status != null) {
                     containerVsStatus.put(containerStatus.getName(), status);
                 }
             });
         }
-        v1Pod.getSpec().getContainers().forEach((v1Container) -> {
+        v1Pod.getSpec().getContainers().forEach(v1Container -> {
             Container container = new Container();
             container.setName(v1Container.getName());
             container.setStatus(containerVsStatus.get(v1Container.getName()));
@@ -379,7 +403,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
     @Override
     public ScaleStatus scale(K8sAuthorisation authConfig, String appName, String serviceName, String namespace, ScaleSpec scaleSpec) throws HyscaleException {
         ApiClient apiClient = clientProvider.get(authConfig);
-        if(scaleSpec.getValue()<0){
+        if (scaleSpec.getValue() < 0) {
             throw new HyscaleException(DeployerErrorCodes.CANNOT_SCALE_NEGATIVE, Integer.toString(scaleSpec.getValue()));
         }
         return scaleServiceManager.scale(apiClient, appName, serviceName, namespace, scaleSpec);

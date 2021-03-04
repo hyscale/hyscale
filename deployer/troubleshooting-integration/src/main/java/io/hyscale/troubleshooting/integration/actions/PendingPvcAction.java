@@ -47,31 +47,35 @@ public class PendingPvcAction extends ActionNode<TroubleshootingContext> {
         }
 
         Object obj = context.getAttribute(FailedResourceKey.FAILED_POD);
+        String describe = describe();
         if (obj == null) {
-            logger.debug("Cannot find any failed pod for to {}", describe());
+            logger.debug("Cannot find any failed pod for to {}", describe);
             return;
         }
 
         V1Pod pod = (V1Pod) FailedResourceKey.FAILED_POD.getKlazz().cast(obj);
 
         // Get all the pvc names associated to the failed pod
-        List<String> podPvcList = pod.getSpec().getVolumes().stream().map(each -> {
-            return each.getPersistentVolumeClaim() != null && each.getPersistentVolumeClaim().getClaimName() != null ? each.getPersistentVolumeClaim().getClaimName() : null;
-        }).collect(Collectors.toList());
+        List<String> podPvcList = pod.getSpec().getVolumes().stream()
+                .map(each -> each.getPersistentVolumeClaim() != null
+                        && each.getPersistentVolumeClaim().getClaimName() != null
+                                ? each.getPersistentVolumeClaim().getClaimName()
+                                : null)
+                .collect(Collectors.toList());
 
         // get all the events of pvc's associated with the failed pod
         List<V1Event> eventList = new ArrayList<>();
-        resourceData.stream().filter(each -> {
-            return each != null && each.getResource() != null && each.getResource() instanceof V1PersistentVolumeClaim;
-        }).forEach(resourceInfo -> {
-            // match the pvc name from the failed pod in the list of all pvc's
-            V1PersistentVolumeClaim persistentVolumeClaim = (V1PersistentVolumeClaim) resourceInfo.getResource();
-            if (podPvcList.contains(persistentVolumeClaim.getMetadata().getName())) {
-                eventList.addAll(resourceInfo.getEvents());
-            }
-        });
+        resourceData.stream().filter(each -> each != null && each.getResource() instanceof V1PersistentVolumeClaim)
+                .forEach(resourceInfo -> {
+                    // match the pvc name from the failed pod in the list of all pvc's
+                    V1PersistentVolumeClaim persistentVolumeClaim = (V1PersistentVolumeClaim) resourceInfo
+                            .getResource();
+                    if (podPvcList.contains(persistentVolumeClaim.getMetadata().getName())) {
+                        eventList.addAll(resourceInfo.getEvents());
+                    }
+                });
 
-        if (eventList == null || eventList.isEmpty()) {
+        if (eventList.isEmpty()) {
             report.setReason(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getReason());
             report.setRecommendedFix(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getMessage());
             context.addReport(report);
@@ -79,11 +83,10 @@ public class PendingPvcAction extends ActionNode<TroubleshootingContext> {
         }
 
         // ProvisioningFailed
-        boolean provisioningFailed = eventList.stream().anyMatch(each -> {
-            return PROVISIONING_FAILED.equals(each.getReason()) && pattern.matcher(each.getMessage()).find();
-        });
+        boolean provisioningFailed = eventList.stream().anyMatch(
+                each -> PROVISIONING_FAILED.equals(each.getReason()) && pattern.matcher(each.getMessage()).find());
 
-        logger.debug(describe() + ", provisioning failed: {}", provisioningFailed);
+        logger.debug("{}, provisioning failed: {}", describe, provisioningFailed);
         
         List<TroubleshootingContext.ResourceInfo> storageClassResources = context.getResourceInfos().get(ResourceKind.STORAGE_CLASS.getKind());
         if ((storageClassResources == null || storageClassResources.isEmpty()) && provisioningFailed) {
@@ -93,14 +96,12 @@ public class PendingPvcAction extends ActionNode<TroubleshootingContext> {
             return;
         }
         if (provisioningFailed) {
-            report.setReason(AbstractedErrorMessage.INVALID_STORAGE_CLASS.formatReason(context.getServiceInfo().getServiceName()));
-            report.setRecommendedFix(AbstractedErrorMessage.INVALID_STORAGE_CLASS.formatMessage(storageClassResources.stream().filter(each -> {
-                        return each != null && each.getResource() != null && each.getResource() instanceof V1StorageClass;
-                    }).map(each -> {
+            report.setReason(AbstractedErrorMessage.INVALID_STORAGE_CLASS.formatReason(context.getServiceMetadata().getServiceName()));
+            report.setRecommendedFix(AbstractedErrorMessage.INVALID_STORAGE_CLASS.formatMessage(storageClassResources
+                    .stream().filter(each -> each != null && each.getResource() instanceof V1StorageClass).map(each -> {
                         V1StorageClass storageClass = (V1StorageClass) each.getResource();
                         return storageClass.getMetadata().getName();
-                    }).collect(Collectors.joining(","))
-            ));
+                    }).collect(Collectors.joining(","))));
             context.addReport(report);
         }
     }

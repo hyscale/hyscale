@@ -19,10 +19,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import org.apache.commons.lang3.StringUtils;
@@ -52,23 +51,11 @@ public class MustacheTemplateResolver {
 		if(context == null || context.isEmpty()){
 			throw new HyscaleException(CommonErrorCode.TEMPLATE_CONTEXT_NOT_FOUND,templateFile);
 		}
-		try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-			Writer out = new OutputStreamWriter(outputStream,
-					Charset.forName(ToolConstants.CHARACTER_ENCODING).newEncoder());
+		try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(); Writer out = new OutputStreamWriter(outputStream,StandardCharsets.UTF_8.newEncoder());) {
 			Mustache m = mustacheFactory.compile(templateFile);
 			m.execute(out, context);
-			if (out != null) {
-				try {
-					out.flush();
-					out.close();
-				} catch (IOException e) {
-					HyscaleException ex = new HyscaleException(CommonErrorCode.FAILED_TO_RESOLVE_TEMPLATE, templateFile);
-					logger.error("Error while closing the output stream {}", ex);
-				}
-			}
-			String populatedTemplate = new String(outputStream.toByteArray(),
-					Charset.forName(ToolConstants.CHARACTER_ENCODING));
-			return populatedTemplate;
+			out.flush();
+			return new String(outputStream.toByteArray(), StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			HyscaleException ex = new HyscaleException(CommonErrorCode.FAILED_TO_RESOLVE_TEMPLATE, templateFile);
 			logger.error("Error while resolving template {}", templateFile, ex);

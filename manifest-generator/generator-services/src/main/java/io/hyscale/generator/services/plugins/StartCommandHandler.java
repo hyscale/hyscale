@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -45,7 +46,7 @@ public class StartCommandHandler implements ManifestHandler {
         String startCommand = serviceSpec.get(HyscaleSpecFields.startCommand, String.class);
         if (StringUtils.isBlank(startCommand)) {
             logger.debug("Found empty start command.");
-            return null;
+            return Collections.emptyList();
         }
         String podSpecOwner = ((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         return getCommandAndArgsSnippet(startCommand, podSpecOwner);
@@ -57,10 +58,10 @@ public class StartCommandHandler implements ManifestHandler {
             List<String> commandWithArgsList = Lists.newArrayList();
             String[] commandWithArgsArray = startCommand.split("\\s*,\\s*");
             for (String arg : commandWithArgsArray) {
-                String trimmedArg = arg.replaceAll("^\"|\"$", "");
+                // Replace starting and ending '"' from command
+                String trimmedArg = arg.replaceAll("(?:^\")|(?:\"$)", "");
                 commandWithArgsList.add(trimmedArg);
             }
-            // TODO split on " "? for command
             List<String> command = Lists.newArrayList();
             command.add(commandWithArgsList.get(0));
             List<String> args = Lists.newArrayList(commandWithArgsList);
@@ -85,7 +86,7 @@ public class StartCommandHandler implements ManifestHandler {
 
         } catch (JsonProcessingException e) {
             logger.error("Error while creating command and args snippet ", e);
-            return null;
+            return Collections.emptyList();
         }
         return snippetList;
     }

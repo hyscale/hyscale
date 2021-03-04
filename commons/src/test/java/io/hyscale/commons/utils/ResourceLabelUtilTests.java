@@ -36,10 +36,10 @@ public class ResourceLabelUtilTests {
 
     @Test
     public void testGetResourceUtils() {
-        Assertions.assertEquals(ResourceLabelUtil.getServiceName(labels), SVC_NAME);
+        Assertions.assertEquals(SVC_NAME,ResourceLabelUtil.getServiceName(labels));
         Assertions.assertNull(ResourceLabelUtil.getServiceName(null));
         Assertions.assertNull(ResourceLabelUtil.getServiceName(new HashMap<>()));
-        Assertions.assertEquals(ResourceLabelUtil.getAppName(labels), APP_NAME);
-        Assertions.assertEquals(ResourceLabelUtil.getEnvName(labels), ENV_NAME);
+        Assertions.assertEquals(APP_NAME,ResourceLabelUtil.getAppName(labels));
+        Assertions.assertEquals(ENV_NAME,ResourceLabelUtil.getEnvName(labels));
     }
 }

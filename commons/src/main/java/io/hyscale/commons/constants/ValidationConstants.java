@@ -16,7 +16,7 @@
 package io.hyscale.commons.constants;
 
 public class ValidationConstants {
-    
+
     public static final int NAMESPACE_LENGTH_MAX = 30;
     
     public static final int NAMESPACE_LENGTH_MIN = 2;
@@ -60,5 +60,10 @@ public class ValidationConstants {
             + NAMESPACE_REGEX + "')";
     
     public static final String MIN_LOG_LINES_ERROR_MSG = "Logs lines must be more than " + MIN_LOG_LINES;
-    
+
+    public static final String STRUCTURED_OUTPUT_FORMAT_REGEX = "JSON|json";
+
+    public static final String INVALID_OUTPUT_FORMAT_MSG = "Output format \"{}\" is invalid. Supported format is json.";
+
+    private ValidationConstants(){}
 }

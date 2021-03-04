@@ -27,7 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 //TODO JAVADOC
@@ -36,8 +35,6 @@ import java.util.regex.Pattern;
 public class IsClusterFull extends ConditionNode<TroubleshootingContext> {
 
     private static final Logger logger = LoggerFactory.getLogger(IsClusterFull.class);
-
-    private Predicate<TroubleshootingContext> isClusterFull;
 
     @Autowired
     private ClusterFullAction clusterFullAction;
@@ -55,15 +52,16 @@ public class IsClusterFull extends ConditionNode<TroubleshootingContext> {
         List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos().get(ResourceKind.POD.getKind());
         DiagnosisReport report = new DiagnosisReport();
         if (resourceInfos == null || resourceInfos.isEmpty()) {
-            report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceInfo().getServiceName()));
+            report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceMetadata().getServiceName()));
             report.setRecommendedFix(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.getMessage());
             context.addReport(report);
-            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
+            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceMetadata().getServiceName());
         }
 
         Object obj = context.getAttribute(FailedResourceKey.FAILED_POD_EVENTS);
         if (obj == null) {
-            logger.debug("Cannot find any failed pod for to {}", describe());
+            String describe = describe();
+            logger.debug("Cannot find any failed pod for node: {}", describe);
             return false;
         }
 
@@ -76,9 +74,8 @@ public class IsClusterFull extends ConditionNode<TroubleshootingContext> {
             return false;
         }
 
-        return eventList.stream().anyMatch(event -> {
-            return FAILED_SCHEDULING.equals(event.getReason()) && pattern.matcher(event.getMessage()).find();
-        });
+        return eventList.stream().anyMatch(
+                event -> FAILED_SCHEDULING.equals(event.getReason()) && pattern.matcher(event.getMessage()).find());
     }
 
 

@@ -66,7 +66,8 @@ public class ParentStatusCondition implements Node<TroubleshootingContext> {
         
         ResourceKind podParent = ConditionUtil.getPodParent(context);
         if (context.isTrace()) {
-            logger.debug(describe() + ", pod parent {}", podParent);
+            String describe = describe();
+            logger.debug("{}, pod parent {}", describe, podParent);
         }
         if (podParent == null) {
             return serviceNotDeployedAction;
@@ -88,12 +89,12 @@ public class ParentStatusCondition implements Node<TroubleshootingContext> {
             report.setReason(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getReason());
             report.setRecommendedFix(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getMessage());
             context.addReport(report);
-            logger.debug(podParent + " no events found");
+            logger.debug("{} no events found", podParent);
             return null;
         }
         V1Event event = getFilteredEvent(events);
         if (event == null) {
-            logger.debug(podParent + " no failure event found to process");
+            logger.debug("{} no failure event found to process", podParent);
             return tryAfterSometimeAction;
         }
         
@@ -106,7 +107,7 @@ public class ParentStatusCondition implements Node<TroubleshootingContext> {
         
         Integer replicas = podParentHandler.getReplicas(parentInfo.getResource());
         
-        return replicas != null && replicas == 0 ? true : false;
+        return replicas != null && replicas == 0;
     }
 
     // TODO filter events wrt latest deployment

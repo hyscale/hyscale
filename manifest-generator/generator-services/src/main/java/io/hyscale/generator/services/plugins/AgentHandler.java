@@ -17,7 +17,6 @@
 package io.hyscale.generator.services.plugins;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
@@ -25,8 +24,6 @@ import io.hyscale.generator.services.utils.AgentBuilder;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
-import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
-import io.hyscale.servicespec.commons.model.service.Agent;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -58,9 +56,9 @@ public class AgentHandler implements ManifestHandler {
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         if (!ManifestPredicates.getAgentsPredicate().test(serviceSpec)) {
             logger.debug("Agents found to be empty while processing service spec data.");
-            return null;
+            return Collections.emptyList();
         }
-        List<ManifestSnippet> manifestSnippetList = new ArrayList<ManifestSnippet>();
+        List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         try {
             for (AgentBuilder agentBuilder : agentBuilders) {
                 manifestSnippetList.addAll(agentBuilder.build(manifestContext, serviceSpec));

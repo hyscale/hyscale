@@ -15,6 +15,9 @@
  */
 package io.hyscale.commons.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.*;
 
 public class ThreadPoolUtil {
@@ -26,6 +29,8 @@ public class ThreadPoolUtil {
 
 	private ThreadPoolExecutor executor;
 
+	private static final Logger logger = LoggerFactory.getLogger(ThreadPoolUtil.class);
+
 	private static final class InstanceHolder {
 		private static final ThreadPoolUtil INSTANCE = new ThreadPoolUtil();
 	}
@@ -35,8 +40,8 @@ public class ThreadPoolUtil {
 	}
 
 	private ThreadPoolUtil() {
-		executor = new ThreadPoolExecutor(CORE_POOL_SIZE, MAX_POOL_SIZE, 60 * 1000, TimeUnit.MILLISECONDS,
-				new LinkedBlockingQueue(BLOCKING_QUEUE_SIZE));
+		executor = new ThreadPoolExecutor(CORE_POOL_SIZE, MAX_POOL_SIZE, (long) 60 * 1000, TimeUnit.MILLISECONDS,
+				new LinkedBlockingQueue<>(BLOCKING_QUEUE_SIZE));
 	}
 
 	public void executeWithRetries(Runnable runnable) {
@@ -53,7 +58,7 @@ public class ThreadPoolUtil {
 			executor.execute(runnable);
 			return true;
 		} catch (RejectedExecutionException re) {
-
+			logger.error("Error while executing thread.",re);
 		}
 		return false;
 	}
@@ -62,7 +67,7 @@ public class ThreadPoolUtil {
 		try {
 			return executor.submit(callable);
 		} catch (RejectedExecutionException re) {
-
+			logger.error("Error while submitting thread to executor",re);
 		}
 		return null;
 	}
@@ -71,7 +76,7 @@ public class ThreadPoolUtil {
 		try {
 			Thread.sleep(time);
 		} catch (InterruptedException e) {
-			//
+			Thread.currentThread().interrupt();
 		}
 	}
 
@@ -79,7 +84,7 @@ public class ThreadPoolUtil {
 		try {
 			executor.shutdown();
 		} catch (Exception e) {
-
+			logger.error("Error while performing executor shutdown",e);
 		}
 	}
 }

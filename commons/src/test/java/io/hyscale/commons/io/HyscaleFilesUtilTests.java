@@ -118,7 +118,7 @@ public class HyscaleFilesUtilTests {
 
     @Test
     public void getFileNameTest() throws HyscaleException {
-        assertEquals(SAMPLE_FILE_NAME, HyscaleFilesUtil.getFileName(sampleFilePath));
+        assertEquals(TEST_FILE_NAME, HyscaleFilesUtil.getFileName(testFilePath));
     }
     
     
@@ -129,7 +129,7 @@ public class HyscaleFilesUtilTests {
         assertEquals(file.getAbsolutePath(), foundFiles.get(0).getAbsolutePath());
         deleteDirectory(testDir);
         foundFiles = HyscaleFilesUtil.listFilesWithPattern(file.getParent(), TEST_FILE_PATTERN);
-        assertNull(foundFiles);
+        assertTrue(foundFiles.isEmpty());
     }
     
     @Test

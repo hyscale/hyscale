@@ -43,6 +43,8 @@ import io.kubernetes.client.openapi.models.V1ReplicaSet;
 public class K8sDeployerUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(K8sDeployerUtil.class);
+    
+    private K8sDeployerUtil() {}
 
     public static List<V1Pod> getExistingPods(ApiClient apiClient, String appName, String serviceName, String namespace)
             throws HyscaleException {
@@ -60,7 +62,7 @@ public class K8sDeployerUtil {
             String selector = ResourceSelectorUtil.getServiceSelector(appName, serviceName);
             podList = v1PodHandler.getBySelector(apiClient, selector, true, namespace);
         } catch (HyscaleException e) {
-
+            logger.debug("Error while fetching pods for app: {} , service: {} in namespace: {}", appName, serviceName, namespace);
         }
 
         if (podList == null || podList.isEmpty()) {
@@ -118,7 +120,7 @@ public class K8sDeployerUtil {
         }
         if (deploymentList == null || deploymentList.isEmpty()) {
             logger.debug("No deployment found for filtering pods, returning empty list");
-            return new ArrayList<V1Pod>();
+            return new ArrayList<>();
         }
 
         String revision = V1DeploymentHandler.getDeploymentRevision(deploymentList.get(0));
@@ -139,16 +141,16 @@ public class K8sDeployerUtil {
         }
         if (replicaSet == null) {
             logger.debug("No Replica set found with revision: {} for filtering pods, returning empty list", revision);
-            return new ArrayList<V1Pod>();
+            return new ArrayList<>();
         }
 
         Map<String, String> replicaLabels = replicaSet.getMetadata().getLabels();
         String podTemplateHash = replicaLabels != null
-                ? replicaLabels.get(K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH)
+                ? replicaLabels.get(K8SRuntimeConstants.K8S_DEPLOYMENT_POD_TEMPLATE_HASH)
                 : null;
 
-        Map<String, String> searchLabel = new HashMap<String, String>();
-        searchLabel.put(K8SRuntimeConstants.K8s_DEPLOYMENT_POD_TEMPLATE_HASH, podTemplateHash);
+        Map<String, String> searchLabel = new HashMap<>();
+        searchLabel.put(K8SRuntimeConstants.K8S_DEPLOYMENT_POD_TEMPLATE_HASH, podTemplateHash);
 
         return K8sPodUtil.filterPods(podList, PodPredicates.podContainsLabel(), searchLabel);
 

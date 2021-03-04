@@ -18,6 +18,7 @@ package io.hyscale.deployer.services.handler.impl;
 import java.util.List;
 
 import io.hyscale.deployer.services.model.DeployerActivity;
+import io.hyscale.deployer.services.constants.DeployerConstants;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.util.ExceptionHelper;
@@ -67,7 +68,7 @@ public class V1PersistentVolumeClaimHandler implements ResourceLifeCycleHandler<
 		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
 		V1PersistentVolumeClaim v1PersistentVolumeClaim = null;
 		try {
-			v1PersistentVolumeClaim = coreV1Api.readNamespacedPersistentVolumeClaim(name, namespace, TRUE, null, null);
+			v1PersistentVolumeClaim = coreV1Api.readNamespacedPersistentVolumeClaim(name, namespace, DeployerConstants.TRUE, null, null);
 		} catch (ApiException e) {
 			HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET);
 			logger.error("Error while fetching Persistent Volume claim {} in namespace {}, error {}", name, namespace,
@@ -87,7 +88,7 @@ public class V1PersistentVolumeClaimHandler implements ResourceLifeCycleHandler<
 			String fieldSelector = label ? null : selector;
 
 			V1PersistentVolumeClaimList v1PersistentVolumeClaimList = coreV1Api.listNamespacedPersistentVolumeClaim(
-					namespace, TRUE, null, null, fieldSelector, labelSelector, null, null, null, null);
+					namespace, DeployerConstants.TRUE, null, null, fieldSelector, labelSelector, null, null, null, null);
 			v1PersistentVolumeClaims = v1PersistentVolumeClaimList != null ? v1PersistentVolumeClaimList.getItems()
 					: null;
 		} catch (ApiException e) {
@@ -110,17 +111,10 @@ public class V1PersistentVolumeClaimHandler implements ResourceLifeCycleHandler<
 
 	@Override
 	public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-		CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-
-		V1DeleteOptions deleteOptions = getDeleteOptions();
 		ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_PERSISTENT_VOLUME_CLAIMS);
 		WorkflowLogger.startActivity(activityContext);
 		try {
-		    try {
-				coreV1Api.deleteNamespacedPersistentVolumeClaim(name, namespace, TRUE, null, null, null, null, deleteOptions);
-		    } catch (JsonSyntaxException e) {
-			// K8s Exception ignore
-		    }
+		    delete(apiClient, name, namespace);
 			List<String> persistentVolumeClaims = Lists.newArrayList();
 			persistentVolumeClaims.add(name);
 			if (wait) {
@@ -142,6 +136,17 @@ public class V1PersistentVolumeClaimHandler implements ResourceLifeCycleHandler<
 		return true;
 
 	}
+
+    private void delete(ApiClient apiClient, String name, String namespace) throws ApiException {
+        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
+        V1DeleteOptions deleteOptions = getDeleteOptions();
+        try {
+            coreV1Api.deleteNamespacedPersistentVolumeClaim(name, namespace, DeployerConstants.TRUE, null, null, null,
+                    null, deleteOptions);
+        } catch (JsonSyntaxException e) {
+            // K8s Exception ignore
+        }
+    }
 
 	@Override
 	public boolean deleteBySelector(ApiClient apiClient, String selector, boolean label, String namespace, boolean wait)

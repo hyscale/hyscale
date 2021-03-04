@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -34,9 +33,9 @@ public class ListToMapDeserializer extends JsonDeserializer<HashMap<String, Stri
 
 	@Override
 	public HashMap<String, String> deserialize(JsonParser parser, DeserializationContext context)
-			throws IOException, JsonProcessingException {
+			throws IOException {
 
-		HashMap<String, String> ret = new HashMap<String, String>();
+		HashMap<String, String> ret = new HashMap<>();
 
 		ObjectCodec codec = parser.getCodec();
 		TreeNode node = codec.readTree(parser);

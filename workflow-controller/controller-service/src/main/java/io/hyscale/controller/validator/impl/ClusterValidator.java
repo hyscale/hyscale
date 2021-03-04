@@ -15,6 +15,8 @@
  */
 package io.hyscale.controller.validator.impl;
 
+import io.hyscale.commons.exception.CommonErrorCode;
+import io.hyscale.commons.io.StructuredOutputHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +48,9 @@ public class ClusterValidator implements Validator<WorkflowContext> {
     @Autowired
     private Deployer deployer;
 
+    @Autowired
+    private StructuredOutputHandler outputHandler;
+
     private Map<AuthConfig, Boolean> clusterValidationMap;
 
     @PostConstruct
@@ -72,6 +77,9 @@ public class ClusterValidator implements Validator<WorkflowContext> {
         } finally {
             if (!isClusterValid) {
                 WorkflowLogger.persist(ValidatorActivity.CLUSTER_AUTHENTICATION_FAILED, LoggerTags.ERROR);
+                if(WorkflowLogger.isDisabled()){
+                    outputHandler.addErrorMessage(CommonErrorCode.FAILED_TO_CONNECT_TO_CLUSTER.getMessage());
+                }
             }
         }
         logger.debug("Is K8s cluster valid: {}. Time taken: {}", isClusterValid, System.currentTimeMillis() - startTime);

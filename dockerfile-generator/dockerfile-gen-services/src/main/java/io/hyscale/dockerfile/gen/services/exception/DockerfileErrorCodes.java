@@ -27,7 +27,10 @@ public enum DockerfileErrorCodes implements HyscaleError {
     DOCKERFILE_OR_BUILDSPEC_REQUIRED("Expected either Dockerfile or BuildSpec. Cannot accept both to define image spec",HyscaleErrorGroup.DOCKER_FILE_GENERATION),
     FAILED_TO_PROCESS_DOCKERFILE_GENERATION("Failed to process Dockerfile Generation",HyscaleErrorGroup.DOCKER_FILE_GENERATION),
     ARTIFACTS_FOUND_INVALID_IN_SERVICE_SPEC("Artifacts found to be invalid in the given service spec",HyscaleErrorGroup.DOCKER_FILE_GENERATION),
-    CANNOT_RESOLVE_STACK_IMAGE("Cannot resolve stack image",HyscaleErrorGroup.DOCKER_FILE_GENERATION);
+    CANNOT_RESOLVE_STACK_IMAGE("Cannot resolve stack image",HyscaleErrorGroup.DOCKER_FILE_GENERATION),
+    SCRIPT_FILE_NOT_FOUND("Script file {} not found", HyscaleErrorGroup.DOCKER_FILE_GENERATION),
+    INVALID_STACK_IMAGE("Stack image in build spec is invalid", HyscaleErrorGroup.DOCKER_FILE_GENERATION),
+    ARTIFACTS_NOT_FOUND("Artifacts {} not found", HyscaleErrorGroup.DOCKER_FILE_GENERATION);
 
     private String message;
     private int code;

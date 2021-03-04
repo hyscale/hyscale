@@ -1,0 +1,13 @@
+name: productpage
+
+type: service
+
+image:
+  registry: registry.hub.docker.com
+  name: istio/examples-bookinfo-productpage-v1
+  tag: 1.16.2
+
+external: true
+
+ports:
+  - port: 9080/http

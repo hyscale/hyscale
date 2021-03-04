@@ -20,14 +20,14 @@ import io.kubernetes.client.openapi.models.V1Namespace;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class NamespaceBuilderTest {
+class NamespaceBuilderTest {
 
     @Test
-    public void testNamespaceBuilder() {
+    void testNamespaceBuilder() {
         V1Namespace v1Namespace = NamespaceBuilder.build("mynamespace");
         Assertions.assertNotNull(v1Namespace);
-        Assertions.assertEquals(v1Namespace.getKind(), "Namespace");
+        Assertions.assertEquals( "Namespace", v1Namespace.getKind());
         Assertions.assertNotNull(v1Namespace.getMetadata());
-        Assertions.assertEquals(v1Namespace.getMetadata().getName(), "mynamespace");
+        Assertions.assertEquals("mynamespace", v1Namespace.getMetadata().getName());
     }
 }

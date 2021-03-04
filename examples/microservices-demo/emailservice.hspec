@@ -1,0 +1,15 @@
+name: emailservice
+
+image:
+     registry: gcr.io
+     name: google-samples/microservices-demo/emailservice
+     tag: v0.2.0
+
+props: 
+    PORT: "8080"
+    DISABLE_PROFILER: "1"
+    
+ports:
+   - port: 8080
+
+memory: 64Mi-128Mi

@@ -15,8 +15,6 @@
  */
 package io.hyscale.troubleshooting.integration.actions;
 
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.troubleshooting.integration.models.*;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +27,7 @@ public class DefaultAction extends ActionNode<TroubleshootingContext> {
     public void process(TroubleshootingContext context) {
         Object obj = context.getAttribute(FailedResourceKey.OBSERVED_POD_STATUS);
         String errorMessage = null;
-        if (obj != null && obj instanceof String) {
+        if (obj instanceof String) {
             errorMessage = String.format(KUBERNETES_ERROR_MESSAGE, (String) FailedResourceKey.OBSERVED_POD_STATUS.getKlazz().cast(obj));
         }
 

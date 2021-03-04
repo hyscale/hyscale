@@ -19,10 +19,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.utils.HyscaleContextUtil;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.model.PodStatusUtil;
-import io.hyscale.troubleshooting.integration.actions.DefaultAction;
-import io.hyscale.troubleshooting.integration.actions.FixCrashingApplication;
-import io.hyscale.troubleshooting.integration.actions.ImagePullBackOffAction;
-import io.hyscale.troubleshooting.integration.actions.ServiceNotDeployedAction;
+import io.hyscale.troubleshooting.integration.actions.*;
 import io.hyscale.troubleshooting.integration.models.FailedResourceKey;
 import io.hyscale.troubleshooting.integration.models.Node;
 import io.hyscale.deployer.services.model.PodStatus;
@@ -63,13 +60,14 @@ public class PodStatusCondition implements Node<TroubleshootingContext> {
         }
 
         List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos().getOrDefault(ResourceKind.POD.getKind(), null);
-        if (resourceInfos == null) {
+        if (resourceInfos == null || resourceInfos.isEmpty()) {
             if (context.isTrace()) {
-                logger.debug("Cannot find any pods for the service {}", context.getServiceInfo().getServiceName());
+                logger.debug("Cannot find any pods for the service {}", context.getServiceMetadata().getServiceName());
             }
             return parentStatusCondition;
         }
         PodStatus effectivePodStatus = PodStatus.DEFAULT;
+        
         for (TroubleshootingContext.ResourceInfo each : resourceInfos) {
             if (each == null || each.getResource() == null) {
                 continue;
@@ -79,7 +77,7 @@ public class PodStatusCondition implements Node<TroubleshootingContext> {
                 String aggregatedStatus = PodStatusUtil.currentStatusOf(v1Pod);
                 if (context.isTrace()) {
                     logger.debug("Aggregated status of pod {} of service {}", v1Pod.getMetadata().getName(),
-                            context.getServiceInfo().getServiceName());
+                            context.getServiceMetadata().getServiceName());
                 }
                 if (StringUtils.isEmpty(aggregatedStatus)) {
                     continue;
@@ -128,9 +126,14 @@ public class PodStatusCondition implements Node<TroubleshootingContext> {
                 return ArePodsReady.class;
             case COMPLETED:
                 return FixCrashingApplication.class;
+            case TERMINATING:
+                return ParentStatusCondition.class;
+            case RUN_CONTAINER_ERROR:
             case DEFAULT:
                 return defaultActionClass;
+            default:
+                return defaultActionClass;
+                
         }
-        return defaultActionClass;
     }
 }

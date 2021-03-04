@@ -5,7 +5,7 @@ docker_push()
 {
   docker login --username=$DOCKER_USERNAME  --password=$DOCKER_PASSWORD
   docker push $DOCKER_REPO/hyscale:$IMAGE_VERSION
-  docker run -v /home/runner/work/hyscale/hyscale/scripts:/var/tmp --entrypoint /bin/cp  $DOCKER_REPO/hyscale:$IMAGE_VERSION /usr/local/bin/hyscale.jar /var/tmp
+  docker run -v `pwd`:/var/tmp --entrypoint /bin/cp  $DOCKER_REPO/hyscale:$IMAGE_VERSION /usr/local/bin/hyscale.jar /var/tmp
   docker logout
 }
 
@@ -17,23 +17,50 @@ aws_cp_upload()
   set -- $upload_to
   for script in $scripts
   do 
-    aws s3 cp scripts/$script s3://$AWS_S3_BUCKET/hyscale/release/$dir/$1
+    aws s3 cp $script s3://$AWS_S3_BUCKET/hyscale/release/$dir/$1
     aws s3api put-object-tagging --bucket $AWS_S3_BUCKET  --key hyscale/release/$dir/$1 --tagging 'TagSet=[{Key=hyscalepubliccontent,Value=true}]'
     shift
   done
 }
 
 
-if [ $GITHUB_WORKFLOW == "Build"  ] #Here Build is the name of the github workflow that gets triggered on the merge to master, release branch or On the BranchCut.`
-then
-  sed -i "s|@@HYSCALE_DOCKER_REPO_PATH@@|$DOCKER_REPO|g" scripts/hyscale
-  grep -RiIl '@@HYSCALE_BUILD_VERSION@@' |grep -v publish_artifacts.sh| xargs sed -i "s|@@HYSCALE_BUILD_VERSION@@|$IMAGE_VERSION|g"
-  grep -RiIl '@@HYSCALE_URL@@' |grep -v publis_artifacts.sh| xargs sed -i "s|@@HYSCALE_URL@@|https://s3-$AWS_REGION.amazonaws.com/$AWS_S3_BUCKET/hyscale/release/$IMAGE_VERSION/hyscale.jar|g"
-  docker_push
-  aws_cp_upload $IMAGE_VERSION "hyscale hyscale_osx hyscale.ps1 hyscale.jar" "hyscale mac/hyscale win/hyscale.ps1 hyscale.jar"
-elif [ $GITHUB_WORKFLOW == "Release"  ]
-then
-  grep -RiIl '@@HYSCALE_URL@@' |grep -v publis_artifacts.sh| xargs sed -i "s|@@HYSCALE_URL@@|https://github.com/hyscale/hyscale/releases/download/v$PROJECT_VERSION/hyscale.jar|g"
-  grep -RiIl '@@HYSCALE_BUILD_VERSION@@' |grep -v publish_artifacts.sh| xargs sed -i "s|@@HYSCALE_BUILD_VERSION@@|$PROJECT_VERSION|g"
-  aws_cp_upload latest "hyscale.ps1 hyscale_osx" "win/hyscale.ps1 mac/hyscale"
+
+sed -i "s|@@IMAGE_NAME@@|$DOCKER_REPO/hyscale|g" invoker/container/container.go
+sed -i "s|@@IMAGE_TAG@@|$IMAGE_VERSION|g" invoker/container/container.go
+
+#Changing the directory to invoker to build the go binary(Package main.go is available in the invoker directory)
+cd invoker
+
+export GOPATH=$HOME/go
+export GOBIN=$(go env GOPATH)/bin
+
+package=main.go
+if [[ -z "$package" ]]; then
+  echo "usage: $0 <package-name>"
+  exit 1
 fi
+package_split=(${package//\// })
+package_name=${package_split[-1]}
+
+platforms=("windows/amd64" "darwin/amd64" "linux/amd64")
+
+for platform in "${platforms[@]}"
+do
+    platform_split=(${platform//\// })
+    GOOS=${platform_split[0]}
+    GOARCH=${platform_split[1]}
+    output_name=hyscale'-'$GOOS'-'$GOARCH
+    if [ $GOOS = "windows" ]; then
+        output_name+='.exe'
+    fi
+
+    env GOOS=$GOOS GOARCH=$GOARCH go build -o $output_name $package
+    if [ $? -ne 0 ]; then
+        echo 'An error has occurred! Aborting the script execution...'
+        exit 1
+    fi
+done
+
+
+docker_push
+aws_cp_upload $IMAGE_VERSION "hyscale-linux-amd64 hyscale-windows-amd64.exe hyscale-darwin-amd64 hyscale.jar" "hyscale win/hyscale.exe mac/hyscale hyscale.jar"

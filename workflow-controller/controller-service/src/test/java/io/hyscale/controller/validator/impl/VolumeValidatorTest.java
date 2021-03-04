@@ -29,17 +29,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.util.ServiceSpecTestUtil;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @SpringBootTest
-public class VolumeValidatorTest {
+class VolumeValidatorTest {
 
     @Autowired
     private VolumeValidator volumeValidator;
 
-    public static Stream<Arguments> input() throws IOException {
+    private static Stream<Arguments> input() throws HyscaleException {
         return Stream.of(Arguments
                         .of(ServiceSpecTestUtil.getServiceSpec("/servicespecs/validator/registry_validation.hspec"), true),
                 Arguments.of(null, false));

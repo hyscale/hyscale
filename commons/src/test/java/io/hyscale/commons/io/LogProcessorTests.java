@@ -36,7 +36,7 @@ public class LogProcessorTests {
     private static final String LOG_FILE_PATH = "/tmp/logs/logs.txt";
     private static final LogProcessor logProcessor = new LogProcessor();
     private static final String ENCODING = "UTF-8";
-    private static final String logFileContent = "logger running" + "\n" + "logger running";
+    private static final String logFileContent = "logger running" + System.lineSeparator() + "logger running";
     private static File file;
     private static ByteArrayOutputStream os = new ByteArrayOutputStream();
 
@@ -87,7 +87,7 @@ public class LogProcessorTests {
                 Assertions.fail();
             }
             Assertions.assertNotNull(content);
-            Assertions.assertEquals(content, logFileContent);
+            Assertions.assertEquals(logFileContent, content );
         }
     }
 
@@ -120,12 +120,13 @@ public class LogProcessorTests {
             } catch (HyscaleException e) {
             }
             Assertions.assertNotNull(os);
-            Assertions.assertEquals(os.toString().trim(), logFileContent);
+            Assertions.assertEquals(logFileContent, os.toString().trim());
         }
     }
 
     @Nested
     @DisplayName("Tailing log file test cases.")
+    @SuppressWarnings("java:S2925")
     public class TailLogFileTests {
         private TailLogTestHandler tailLogTestHandler = new TailLogTestHandler();
 

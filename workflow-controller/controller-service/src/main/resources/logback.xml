@@ -1,24 +1,33 @@
 <configuration scan="true">
 
-	<appender name="RollingFile"
-		class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<rollingPolicy
-			class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>${HYSCALECTL_LOGS_DIR}/logfile.%d{yyyy-MM-dd}.log
-			</fileNamePattern>
-			<maxHistory>30</maxHistory>
-			<totalSizeCap>1MB</totalSizeCap>
-		</rollingPolicy>
-		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level - %msg%n</pattern>
-		</encoder>
-	</appender>
-
 	<logger name="com.jayway.jsonpath" level="ERROR" />
+	<logger name="com.github.dockerjava" level="ERROR"/>
+	<logger name="org.apache" level="ERROR" />
+	<logger name="org.springframework" level="WARN"/>
+	<logger name="org.hibernate.validator" level="WARN"/>
 	<logger name="org.springframework.boot.autoconfigure.logging">
 		<level value="ERROR" />
 	</logger>
-	<root level="debug">
+
+	<appender name="RollingFile"
+			  class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${HYSCALECTL_LOGS_DIR}/logfile.log</file>
+		<rollingPolicy
+				class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>${HYSCALECTL_LOGS_DIR}/logfile.%d{yyyy-MM-dd}.%i.log
+			</fileNamePattern>
+
+			<maxFileSize>10MB</maxFileSize>
+			<maxHistory>10</maxHistory>
+			<totalSizeCap>${HYS_LOG_SIZE:-100MB}</totalSizeCap>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %c{3} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+
+	<root level="${HYS_LOG_LEVEL:-info}">
 		<appender-ref ref="RollingFile" />
 	</root>
 </configuration>

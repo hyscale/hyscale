@@ -23,6 +23,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JsonSnippetConvertor {
+    
+    private JsonSnippetConvertor() {}
 
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 

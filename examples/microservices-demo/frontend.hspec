@@ -1,0 +1,26 @@
+name: frontend
+
+image:
+     registry: gcr.io
+     name: google-samples/microservices-demo/frontend
+     tag: v0.2.0
+
+props: 
+    PORT: "8080"
+    PRODUCT_CATALOG_SERVICE_ADDR: "productcatalogservice:3550"
+    CURRENCY_SERVICE_ADDR: "currencyservice:7000"
+    CART_SERVICE_ADDR: "cartservice:7070"
+    RECOMMENDATION_SERVICE_ADDR: "recommendationservice:8080"
+    SHIPPING_SERVICE_ADDR: "shippingservice:50051"
+    CHECKOUT_SERVICE_ADDR: "checkoutservice:5050"
+    AD_SERVICE_ADDR: "adservice:9555"
+    ENV_PLATFORM: "gcp"
+    
+ports:
+  - port: 8080/tcp
+    healthCheck:
+      httpPath: /_healthz
+
+external: true
+
+memory: 64Mi-128Mi

@@ -21,6 +21,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -38,6 +39,8 @@ import io.hyscale.commons.exception.HyscaleException;
  * Utility class to handle file operation
  */
 public class HyscaleFilesUtil {
+
+	private HyscaleFilesUtil() {}
 
 	private static final Logger logger = LoggerFactory.getLogger(HyscaleFilesUtil.class);
 
@@ -63,8 +66,7 @@ public class HyscaleFilesUtil {
 		try (FileWriter fileWriter = new FileWriter(file)) {
 			fileWriter.write(fileData);
 		} catch (IOException e) {
-			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_WRITE_FILE, filename);
-			throw ex;
+			throw new HyscaleException(e, CommonErrorCode.FAILED_TO_WRITE_FILE, filename);
 		}
 		return file;
 	}
@@ -96,12 +98,13 @@ public class HyscaleFilesUtil {
 		}
 		file.getParentFile().mkdirs();
 		try {
-			file.createNewFile();
+			if(file.createNewFile()){
+				return file;
+			}
 		} catch (IOException e) {
-			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_WRITE_FILE, file.getName());
-			throw ex;
+			throw new HyscaleException(e, CommonErrorCode.FAILED_TO_WRITE_FILE, file.getName());
 		}
-		return file;
+		return null;
 	}
 
 	/**
@@ -121,7 +124,7 @@ public class HyscaleFilesUtil {
 		try (FileWriter fileWriter = new FileWriter(file, true)) {
 			fileWriter.write(fileData);
 		} catch (IOException e) {
-			logger.error("Failed to update file {}", e);
+ 			logger.error("Failed to update file {}", filename, e);
 			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_WRITE_FILE, filename);
 			throw ex;
 		}
@@ -148,8 +151,7 @@ public class HyscaleFilesUtil {
 		try {
 			FileUtils.copyFileToDirectory(sourceFile, dest);
 		} catch (IOException e) {
-			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_COPY_FILE, sourceFile.getName());
-			throw ex;
+			throw  new HyscaleException(e, CommonErrorCode.FAILED_TO_COPY_FILE, sourceFile.getName());
 		}
 	}
 
@@ -169,8 +171,7 @@ public class HyscaleFilesUtil {
 		try {
 			FileUtils.copyFile(sourceFile, destFile);
 		} catch (IOException e) {
-			HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_COPY_FILE, sourceFile.getName());
-			throw ex;
+			throw new HyscaleException(e, CommonErrorCode.FAILED_TO_COPY_FILE, sourceFile.getName());
 		}
 	}
 
@@ -211,8 +212,7 @@ public class HyscaleFilesUtil {
 			try {
 				FileUtils.cleanDirectory(directory);
 			} catch (IOException e) {
-				HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_CLEAN_DIRECTORY, dir);
-				throw ex;
+				throw new HyscaleException(e, CommonErrorCode.FAILED_TO_CLEAN_DIRECTORY, dir);
 			}
 		}
 	}
@@ -224,8 +224,7 @@ public class HyscaleFilesUtil {
 			try {
 				FileUtils.deleteDirectory(directory);
 			} catch (IOException e) {
-				HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_DELETE_DIRECTORY, dir);
-				throw ex;
+				throw  new HyscaleException(e, CommonErrorCode.FAILED_TO_DELETE_DIRECTORY, dir);
 			}
 		}
 	}
@@ -241,8 +240,7 @@ public class HyscaleFilesUtil {
 	    try (FileInputStream inputStream = new FileInputStream(filepath)){
 	        return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_READ_FILE, filepath.getAbsolutePath());
-            throw ex;
+            throw new HyscaleException(e, CommonErrorCode.FAILED_TO_READ_FILE, filepath.getAbsolutePath());
         }
 	}
 	
@@ -254,7 +252,7 @@ public class HyscaleFilesUtil {
 	 */
 	public static List<File> listFilesWithPattern(String directory, String fileNamePattern) {
         if (directory == null || StringUtils.isBlank(fileNamePattern)) {
-            return null;
+            return Collections.emptyList();
         }
         return listFilesWithPattern(new File(directory), fileNamePattern);
     }
@@ -267,14 +265,11 @@ public class HyscaleFilesUtil {
      */
 	public static List<File> listFilesWithPattern(File directory, String fileNamePattern){
 	    if (directory == null || !directory.isDirectory()|| StringUtils.isBlank(fileNamePattern)) {
-            return null;
+            return Collections.emptyList();
         }
 	    
-	    File[] matchingFile = directory.listFiles((dir, name) -> {
-	          return name.matches(fileNamePattern);
-	        });
+	    File[] matchingFile = directory.listFiles((dir, name) -> name.matches(fileNamePattern));
 	    
 	    return matchingFile == null ? null : Arrays.asList(matchingFile);
 	}
-	
 }

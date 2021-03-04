@@ -16,11 +16,11 @@
 package io.hyscale.commons.commands;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.hyscale.commons.config.SetupConfig;
-import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.CommonErrorCode;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.io.HyscaleFilesUtil;
@@ -36,7 +35,7 @@ import io.hyscale.commons.io.StringOutputStream;
 import io.hyscale.commons.models.CommandResult;
 
 /**
- * Class to execute commands using apache commons exec {@link https://commons.apache.org/proper/commons-exec/}
+ * Class to execute commands using apache commons exec <a href="https://ommons.apache.org/proper/commons-exec/">apache commons exec</a>
  * Use case:
  * To execute command and check if it was successful
  * To execute command and get output in String
@@ -47,9 +46,9 @@ import io.hyscale.commons.models.CommandResult;
 public class CommandExecutor {
 
     private static final Logger logger = LoggerFactory.getLogger(CommandExecutor.class);
-    
-    private static final long DEFAULT_TIMEOUT_IN_MILLIS = 120000;
-    
+
+    private CommandExecutor(){}
+
     /**
      * @param command to be executed
      * @return {@link CommandResult} which contains command output and exit code
@@ -67,7 +66,7 @@ public class CommandExecutor {
      */
     public static CommandResult executeAndGetResults(String command, String stdInput) {
         try {
-            return _execute(command, null, null, stdInput);
+            return execute(command, null, null, stdInput);
         } catch (Exception e) {
             HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_EXECUTE_COMMAND, command);
             logger.error("Error while reading command output,error {} for the standard input {}", ex, stdInput);
@@ -84,13 +83,13 @@ public class CommandExecutor {
     public static boolean execute(String command) {
         CommandResult commandResult = null;
         try {
-            commandResult = _execute(command, null, null, null);
+            commandResult = execute(command, null, null, null);
         } catch (IOException | HyscaleException e) {
             HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_EXECUTE_COMMAND, command);
             logger.error("Failed while executing command, error {}", ex.toString());
             return false;
         }
-        return commandResult == null || commandResult.getExitCode() != 0 ? false : true;
+        return commandResult.getExitCode() == 0;
     }
 
     /**
@@ -111,13 +110,13 @@ public class CommandExecutor {
     public static boolean executeInDir(String command, File commandOutputFile, String dir) {
         CommandResult commandResult = null;
         try {
-            commandResult = _execute(command, commandOutputFile, dir, null);
+            commandResult = execute(command, commandOutputFile, dir, null);
         } catch (IOException | HyscaleException e) {
             HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_EXECUTE_COMMAND, command);
             logger.error("Failed while executing command, error {}", ex.toString());
             return false;
         }
-        return commandResult == null || commandResult.getExitCode() != 0 ? false : true;
+        return commandResult.getExitCode() == 0;
     }
 
     /**
@@ -131,7 +130,7 @@ public class CommandExecutor {
      * @throws HyscaleException
      * @throws IOException
      */
-    private static CommandResult _execute(String command, File outputFile, String dir, String stdInput)
+    private static CommandResult execute(String command, File outputFile, String dir, String stdInput)
             throws HyscaleException, IOException {
         
         CommandResult cmdResult = new CommandResult();
@@ -158,9 +157,6 @@ public class CommandExecutor {
         PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream, outputStream, inputStream);
 
         // Timeout
-        // ExecuteWatchdog watchDog = new ExecuteWatchdog(DEFAULT_TIMEOUT_IN_MILLIS);
-        // executor.setWatchdog(watchDog);
-
         executor.setStreamHandler(streamHandler);
         executor.setWorkingDirectory(new File(dir));
         int exitCode = 1;
@@ -178,18 +174,18 @@ public class CommandExecutor {
         return cmdResult;
     }
 
-    private static String getCommandOutput(OutputStream outputStream) throws UnsupportedEncodingException {
-        if (outputStream != null && outputStream instanceof StringOutputStream) {
+    private static String getCommandOutput(OutputStream outputStream)  {
+        if (outputStream instanceof StringOutputStream) {
             return ((StringOutputStream) outputStream).toString();
         }
         return null;
     }
 
-    private static InputStream getInputStream(String stdInput) throws UnsupportedEncodingException {
+    private static InputStream getInputStream(String stdInput) {
         if (StringUtils.isBlank(stdInput)) {
             return null;
         }
-        return new ByteArrayInputStream(stdInput.getBytes(ToolConstants.CHARACTER_ENCODING));
+        return new ByteArrayInputStream(stdInput.getBytes(StandardCharsets.UTF_8));
     }
 
     private static OutputStream getOutputStream(File outputFile) throws FileNotFoundException, HyscaleException {
@@ -199,5 +195,5 @@ public class CommandExecutor {
         }
         return new StringOutputStream();
     }
-    
+
 }

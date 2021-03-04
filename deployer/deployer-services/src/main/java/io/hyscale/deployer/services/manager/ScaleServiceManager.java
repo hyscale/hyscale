@@ -16,7 +16,6 @@
 package io.hyscale.deployer.services.manager;
 
 import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.deployer.services.model.ScaleOperation;
 import io.hyscale.deployer.services.model.ScaleSpec;
 import io.hyscale.deployer.services.model.ScaleStatus;
 import io.kubernetes.client.openapi.ApiClient;

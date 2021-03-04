@@ -22,8 +22,8 @@ import io.hyscale.generator.services.utils.VolumeMountsUtil;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.generator.services.generator.K8sResourceNameGenerator;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
@@ -58,7 +58,7 @@ public class VolumeMountsHandler implements ManifestHandler {
         try {
             snippetList.add(buildVolumeMountSnippet(serviceSpec, serviceMetadata, podSpecOwner));
         } catch (JsonProcessingException e) {
-            logger.error("Error while generating volume mounts manifest for service {}", e);
+            logger.error("Error while generating volume mounts manifest for service {}", serviceMetadata.getServiceName(), e);
         }
         return snippetList;
     }

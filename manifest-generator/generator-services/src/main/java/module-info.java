@@ -28,6 +28,7 @@ module manifestGenerator {
 	exports io.hyscale.generator.services.processor;
 	exports io.hyscale.generator.services.provider;
 	exports io.hyscale.generator.services.utils;
+	exports io.hyscale.generator.services.builder;
 
 	uses ManifestHandler;
 
@@ -41,4 +42,5 @@ module manifestGenerator {
 	requires transitive pluginframework;
 	requires transitive service_spec_commons;
 	requires com.fasterxml.jackson.dataformat.yaml;
+	requires org.yaml.snakeyaml;
 }

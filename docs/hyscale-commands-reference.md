@@ -16,6 +16,7 @@ Options:
   -a, --application string   name of application `<applicationName>`
   -v  --verbose              `Optional` verbose mode
   -P  string                 `Optional` profile name 
+  -o, --output json          `Optional` Show deployment status in the required format. Allowed values are json/JSON.
 ```
 
 #### Description
@@ -24,7 +25,7 @@ To deploy an application service which is defined in the hspec file, use the "de
 
 -P profilename option lookups for the profile files in the format `<profilename>-<servicename>`.hprof in the directory of hspec ,say dir(hspec) or in the dir(hspec)/profiles. In this case profile is compulsory for all the service spec(s) provided.
 
-Images that are built part of hyscale deploy are handled based on the IMAGE_CLEANUP_POLICY environment variable. Possible values of the policy are 
+Images that are built part of hyscale deploy are handled based on the HYS_IMAGE_CLEANUP_POLICY environment variable. Possible values of the policy are 
 * PRESERVE_N_RECENTLY_USED (default) , preserves the last 3 recently used images
 * DELETE_AFTER_BUILD, deletes the image immediately after the build.
 * PRESERVE_ALL, preserves the images
@@ -211,3 +212,9 @@ Application name must consist of lower case alphanumeric characters or '-' with 
 Basic unit of your application deployment. 
 A service name must consist of lower case alphanumeric characters or '-', it should start with an alphabetic character, and can end with an alphanumeric character. Regex used for validation is
 *`[a-z]([-a-z0-9]*[a-z0-9])?`*   
+
+## Environment Variables
+
+`HYS_LOG_LEVEL` - Log level for hyscale tool logs. Default is set to `info`. To change log level to `debug` execute `export HYS_LOG_LEVEL=debug`.
+
+`HYS_LOG_SIZE` - Folder size cap for hyscale tool logs. Default is set to `100MB`. To change total size cap execute `export HYS_LOG_SIZE=<size>` (minimum size cap is 10MB).

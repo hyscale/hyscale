@@ -32,6 +32,7 @@ public class Agent {
 	private List<AgentVolume> volumes;
 	private String propsVolumePath;
 	private String secretsVolumePath;
+	private List<Port> ports;
 
 	public String getName() {
 		return name;
@@ -87,5 +88,13 @@ public class Agent {
 
 	public void setProps(Map<String, String> props) {
 		this.props = props;
+	}
+
+	public List<Port> getPorts() {
+		return ports;
+	}
+
+	public void setPorts(List<Port> ports) {
+		this.ports = ports;
 	}
 }

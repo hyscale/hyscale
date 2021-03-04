@@ -17,12 +17,12 @@ package io.hyscale.troubleshooting.integration.service;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.K8sAuthorisation;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
-import io.hyscale.troubleshooting.integration.models.ServiceInfo;
 
 import java.util.List;
 
 public interface TroubleshootService {
 
-    public List<DiagnosisReport> troubleshoot(ServiceInfo serviceInfo, K8sAuthorisation k8sAuthorisation, String namespace) throws HyscaleException;
+    public List<DiagnosisReport> troubleshoot(ServiceMetadata serviceMetadata, K8sAuthorisation k8sAuthorisation, String namespace) throws HyscaleException;
 }

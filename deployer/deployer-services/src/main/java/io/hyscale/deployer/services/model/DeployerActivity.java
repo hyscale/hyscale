@@ -21,6 +21,8 @@ import io.hyscale.commons.models.Activity;
  * Activities list for Deployer Service
  */
 public enum DeployerActivity implements Activity {
+	DEPLOYING("Applying {}"),
+	DELETING("Deleting {}"),
 	DEPLOYING_CONFIGMAP("Applying ConfigMap "),
 	DEPLOYING_STATEFULSET("Applying StatefulSet "),
 	DEPLOYING_DEPLOYMENT("Applying Deployment "),
@@ -51,7 +53,8 @@ public enum DeployerActivity implements Activity {
 	SERVICE_WITH_ZERO_REPLICAS("Service has zero replicas"),
 	SCALING_SERVICE("Scaling service "),
 	SCALE_DOWN_VOLUME("The scale operation would leave stale replica volumes [{}] in your namespace {} and are meant for review and manual deletion. If not deleted, when you scale up the service the same volumes are reattached to the new replicas"),
-	DESIRED_STATE("Service is already with desired state of replicas {} ");
+	DESIRED_STATE("Service is already with desired state of replicas {} "),
+	DESIRED_STATE_ON_HPA_ENABLED("HPA has been enabled on this service , so the requested scale operation may not result expected replicas. Check existing replicas using 'hyscale get replica status' command");
 
 	private String message;
 

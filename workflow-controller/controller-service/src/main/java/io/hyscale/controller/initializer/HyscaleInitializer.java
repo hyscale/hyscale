@@ -16,9 +16,8 @@
 package io.hyscale.controller.initializer;
 
 import io.hyscale.controller.exception.ParameterExceptionHandler;
-import io.hyscale.controller.piccoli.ProfileArgsManipulator;
 
-import java.util.Map;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +38,6 @@ import io.hyscale.controller.util.ResourceCleanUpUtil;
 import io.hyscale.controller.util.ShutdownHook;
 import picocli.CommandLine;
 import picocli.CommandLine.IFactory;
-import picocli.CommandLine.IHelpSectionRenderer;
 import picocli.CommandLine.ParameterException;
 
 /**
@@ -80,6 +78,11 @@ public class HyscaleInitializer implements CommandLineRunner {
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(HyscaleInitializer.class);
+        if(System.getenv(ToolConstants.WORKFLOW_LOGGER_DISABLED)!=null && System.getenv(ToolConstants.WORKFLOW_LOGGER_DISABLED).equalsIgnoreCase("true")){
+            Properties properties = new Properties();
+            properties.setProperty("spring.main.banner-mode", "off");
+            app.setDefaultProperties(properties);
+        }
         app.setLazyInitialization(IS_LAZY_INITIALIZATION);
         app.run(args);
     }
@@ -90,15 +93,13 @@ public class HyscaleInitializer implements CommandLineRunner {
         try {
             Runtime.getRuntime().addShutdownHook(new ShutdownHook());
             CommandLine commandLine = new CommandLine(hyscaleCommand, factory);
+            commandLine.setSubcommandsCaseInsensitive(true);
             commandLine.setExecutionExceptionHandler(exceptionHandler);
             commandLine.setParameterExceptionHandler(parameterExceptionHandler);
-            Map<String, IHelpSectionRenderer> updatedHelp = ProfileArgsManipulator.updateHelp(commandLine);
-            commandLine.setHelpSectionMap(updatedHelp);
-            args = ProfileArgsManipulator.updateArgs(args);
             exitCode = commandLine.execute(args);
         } catch (ParameterException e) {
             logger.error("Error while processing command, error {}", ControllerErrorCodes.INVALID_COMMAND.getMessage(), e);
-        } catch (Throwable e) {
+        } catch (Exception e) {
             logger.error("Unexpected error in processing command, error {}", ControllerErrorCodes.UNEXPECTED_ERROR.getMessage(), e);
         } finally {
             logger.debug("HyscaleInitializer::exit code: {}", exitCode);

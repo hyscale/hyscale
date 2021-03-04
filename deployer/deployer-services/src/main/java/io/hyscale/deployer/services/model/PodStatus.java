@@ -31,7 +31,8 @@ public enum PodStatus {
     ERROR("Error", true, DeploymentStatus.ServiceStatus.FAILED),
     COMPLETED("Completed", true, DeploymentStatus.ServiceStatus.FAILED),
     RUNNING("Running", false, DeploymentStatus.ServiceStatus.RUNNING),
-    DEFAULT("default", true, DeploymentStatus.ServiceStatus.FAILED);
+    DEFAULT("default", true, DeploymentStatus.ServiceStatus.FAILED),
+    TERMINATING("Terminating", false, DeploymentStatus.ServiceStatus.NOT_RUNNING);
 
     private String status;
     private boolean failed;

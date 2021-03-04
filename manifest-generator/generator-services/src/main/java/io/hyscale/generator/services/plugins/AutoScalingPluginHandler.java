@@ -19,10 +19,10 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.ConfigTemplate;
 import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.exception.ManifestErrorCodes;
-import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.generator.services.model.ManifestGeneratorActivity;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
@@ -68,21 +68,23 @@ public class AutoScalingPluginHandler implements ManifestHandler {
 
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
-        String podSpecOwner = (String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER);
-        if (!ManifestPredicates.isAutoScalingEnabledWithPrint().test(serviceSpec, true) || !(podSpecOwner.equals(ManifestResource.STATEFUL_SET.getKind()) || podSpecOwner.equals(ManifestResource.DEPLOYMENT.getKind()))) {
+        Object podSpecOwner = manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER);
+        if (!ManifestPredicates.isAutoScalingEnabledWithPrint().test(serviceSpec, true)
+                || !(ManifestResource.STATEFUL_SET.getKind().equals(podSpecOwner)
+                        || ManifestResource.DEPLOYMENT.getKind().equals(podSpecOwner))) {
             logger.debug("Skipping AutoScaling handler");
-            return null;
+            return Collections.emptyList();
         }
 
         Replicas replicas = serviceSpec.get(HyscaleSpecFields.replicas, Replicas.class);
         if (replicas == null) {
             logger.debug("Cannot handle replicas as the field is not declared");
-            return null;
+            return Collections.emptyList();
         }
         ConfigTemplate hpaTemplate = templateProvider.get(PluginTemplateProvider.PluginTemplateType.HPA);
         if (hpaTemplate == null) {
             WorkflowLogger.persist(ManifestGeneratorActivity.FAILED_TO_PROCESS_REPLICAS);
-            return null;
+            return Collections.emptyList();
         }
         String yamlString = templateResolver.resolveTemplate(hpaTemplate.getTemplatePath(), getContext(replicas, serviceSpec, manifestContext));
         ManifestSnippet snippet = new ManifestSnippet();
@@ -100,8 +102,8 @@ public class AutoScalingPluginHandler implements ManifestHandler {
         serviceMetadata.setAppName(manifestContext.getAppName());
         serviceMetadata.setEnvName(manifestContext.getEnvName());
         serviceMetadata.setServiceName(serviceSpec.get(HyscaleSpecFields.name, String.class));
-        ManifestResource podSpecOwner = null;
-        podSpecOwner = ManifestResource.fromString((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
+        ManifestResource podSpecOwner = ManifestResource
+                .fromString((String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER));
         context.put(TARGET_KIND, podSpecOwner.getKind());
         context.put(TARGET_APIVERSION, podSpecOwner.getApiVersion());
         context.put(TARGET_NAME, podSpecOwner.getName(serviceMetadata));
@@ -112,7 +114,7 @@ public class AutoScalingPluginHandler implements ManifestHandler {
     }
 
     private Integer normalizeThreshold(String cpuThresholdPercentage) throws HyscaleException {
-        String cpuThreshold = cpuThresholdPercentage.replaceAll("%", "");
+        String cpuThreshold = cpuThresholdPercentage.replace("%", "");
         try {
             return Integer.valueOf(cpuThreshold);
         } catch (NumberFormatException e) {

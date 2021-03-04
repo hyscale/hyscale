@@ -17,6 +17,7 @@ package io.hyscale.commons.io;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 
 import io.hyscale.commons.utils.TailHandler;
@@ -50,6 +51,7 @@ public class TailLogFile implements Runnable {
 		return run;
 	}
 
+	@SuppressWarnings("java:S106")
 	private void handle(String line) {
 		System.out.println(line);
 	}
@@ -60,29 +62,11 @@ public class TailLogFile implements Runnable {
 			while (run) {
 				long fileLength = logFile.length();
 				if (fileLength > lastKnownPosition) {
-
 					// Reading
-					RandomAccessFile readWriteFileAccess = new RandomAccessFile(logFile, READ_ONLY);
-					readWriteFileAccess.seek(lastKnownPosition);
-					String fileLine = null;
-					while ((fileLine = readWriteFileAccess.readLine()) != null) {
-						if (handler == null) {
-							handle(fileLine);
-							continue;
-						}
-						handler.handleLine(fileLine);
-						if (handler.handleEOF(fileLine)) {
-							stopRunning();
-						}
-
-					}
-					lastKnownPosition = readWriteFileAccess.getFilePointer();
-					readWriteFileAccess.close();
+					readLogfile();
 				}
 				sleep();
 			}
-		} catch (FileNotFoundException ex) {
-			sleep();
 		} catch (Exception e) {
 			stopRunning();
 		}
@@ -92,6 +76,30 @@ public class TailLogFile implements Runnable {
 		try {
 			Thread.sleep(delayMillis);
 		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+	}
+
+	private void readLogfile() throws IOException {
+		try (RandomAccessFile readWriteFileAccess = new RandomAccessFile(logFile, READ_ONLY)){
+			readWriteFileAccess.seek(lastKnownPosition);
+			String fileLine = null;
+			while ((fileLine = readWriteFileAccess.readLine()) != null) {
+				if (handler == null) {
+					handle(fileLine);
+					continue;
+				}
+				handler.handleLine(fileLine);
+				if (handler.handleEOF(fileLine)) {
+					stopRunning();
+				}
+
+			}
+			lastKnownPosition = readWriteFileAccess.getFilePointer();
+		} catch (FileNotFoundException ex) {
+			sleep();
+		} catch (IOException e) {
+			throw e;
 		}
 	}
 

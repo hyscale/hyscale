@@ -1,0 +1,4 @@
+environment: dev
+overrides: recommendationservice
+
+cpu: 100m-200m

@@ -1,0 +1,6 @@
+environment: dev
+overrides: ratings
+k8sSnippets:
+  - "./snippets/initcontainerpatch.yaml"
+  - "./snippets/nodeportpatch.yaml"
+  - "./snippets/securitycontextpatch.yaml"

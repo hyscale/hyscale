@@ -30,7 +30,9 @@ public class DeploymentStatus {
         RUNNING("Running"),
         NOT_RUNNING("Not Running"),
         NOT_DEPLOYED("Not Deployed"),
-        FAILED("Failed");
+        FAILED("Failed"),
+        SCALING_DOWN("Scaling Down");
+
 
         private ServiceStatus(String message) {
             this.message = message;

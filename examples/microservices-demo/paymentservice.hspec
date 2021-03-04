@@ -1,0 +1,14 @@
+name: paymentservice
+
+image:
+     registry: gcr.io
+     name: google-samples/microservices-demo/paymentservice
+     tag: v0.2.0
+
+props:
+    PORT: "50051"
+
+ports:
+   - port: 50051
+
+memory: 64Mi-128Mi

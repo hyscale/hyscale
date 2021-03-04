@@ -48,55 +48,51 @@ public class AnyPendingPVCCondition extends ConditionNode<TroubleshootingContext
 
     @PostConstruct
     public void init() {
-        this.pendingPvcCondition = new Predicate<TroubleshootingContext>() {
-            @Override
-            public boolean test(TroubleshootingContext context) {
-                List<TroubleshootingContext.ResourceInfo> resourceData = context.getResourceInfos().get(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind());
-
-                // Since there are no pvc's found for the service, there's not pending pvc
-                if (resourceData == null || resourceData.isEmpty()) {
-                    logger.debug("No PVC's found for service {}", context.getServiceInfo().getServiceName());
-                    return false;
-                }
-
-                Object obj = context.getAttribute(FailedResourceKey.FAILED_POD);
-                if (obj == null) {
-                    logger.debug("Cannot find any failed pod for to {}", describe());
-                    return false;
-                }
-
-                V1Pod pod = (V1Pod) FailedResourceKey.FAILED_POD.getKlazz().cast(obj);
-
-                // Get all the pvc names associated to the failed pod
-                List<String> podPvcList = pod.getSpec().getVolumes().stream().map(each -> {
-                    return each.getPersistentVolumeClaim() != null && each.getPersistentVolumeClaim().getClaimName() != null ? each.getPersistentVolumeClaim().getClaimName() : null;
-                }).collect(Collectors.toList());
-
-
-                // get all the pvc list for this particular failed pod from context
-                List<V1PersistentVolumeClaim> pvcList = resourceData.stream().filter(each -> {
-                    if (each != null && each.getResource() != null && each.getResource() instanceof V1PersistentVolumeClaim) {
-                        V1PersistentVolumeClaim persistentVolumeClaim = (V1PersistentVolumeClaim) each.getResource();
-                        return podPvcList.contains(persistentVolumeClaim.getMetadata().getName());
-                    }
-                    return false;
-                }).map(each -> {
-                    return (V1PersistentVolumeClaim) each.getResource();
-                }).collect(Collectors.toList());
-
-                // Since there are no pvc's found for the service, there's not pending pvc
-                if (pvcList == null || pvcList.isEmpty()) {
-                    logger.debug("PVC List if found empty for service {}", context.getServiceInfo().getServiceName());
-                    return false;
-                }
-                return pvcList.stream().filter(each -> {
-                    return each != null && each instanceof V1PersistentVolumeClaim;
-                }).anyMatch(each -> {
-                    V1PersistentVolumeClaim persistentVolumeClaim = (V1PersistentVolumeClaim) each;
-                    String pvcPhase = persistentVolumeClaim.getStatus().getPhase();
-                    return pvcPhase != null ? pvcPhase.equals(TroubleshootConstants.PENDING_PHASE) : false;
-                });
+        this.pendingPvcCondition = context -> {
+            List<TroubleshootingContext.ResourceInfo> resourceData = context.getResourceInfos().get(ResourceKind.PERSISTENT_VOLUME_CLAIM.getKind());
+            
+            // Since there are no pvc's found for the service, there's not pending pvc
+            if (resourceData == null || resourceData.isEmpty()) {
+                logger.debug("No PVC's found for service {}", context.getServiceMetadata().getServiceName());
+                return false;
             }
+            
+            Object obj = context.getAttribute(FailedResourceKey.FAILED_POD);
+            if (obj == null) {
+                String describe = describe();
+                logger.debug("Cannot find any failed pod for {}", describe);
+                return false;
+            }
+            
+            V1Pod pod = (V1Pod) FailedResourceKey.FAILED_POD.getKlazz().cast(obj);
+            
+            // Get all the pvc names associated to the failed pod
+            List<String> podPvcList = pod.getSpec().getVolumes().stream()
+                    .map(each -> each.getPersistentVolumeClaim() != null
+                            && each.getPersistentVolumeClaim().getClaimName() != null
+                                    ? each.getPersistentVolumeClaim().getClaimName()
+                                    : null)
+                    .collect(Collectors.toList());            
+            
+            // get all the pvc list for this particular failed pod from context
+            List<V1PersistentVolumeClaim> pvcList = resourceData.stream().filter(each -> {
+                if (each != null && each.getResource() instanceof V1PersistentVolumeClaim) {
+                    V1PersistentVolumeClaim persistentVolumeClaim = (V1PersistentVolumeClaim) each.getResource();
+                    return podPvcList.contains(persistentVolumeClaim.getMetadata().getName());
+                }
+                return false;
+            }).map(each -> (V1PersistentVolumeClaim) each.getResource()).collect(Collectors.toList());
+            
+            // Since there are no pvc's found for the service, there's not pending pvc
+            if (pvcList == null || pvcList.isEmpty()) {
+                logger.debug("PVC List if found empty for service {}", context.getServiceMetadata().getServiceName());
+                return false;
+            }
+            return pvcList.stream().filter(each -> each instanceof V1PersistentVolumeClaim).anyMatch(each -> {
+                V1PersistentVolumeClaim persistentVolumeClaim = each;
+                String pvcPhase = persistentVolumeClaim.getStatus().getPhase();
+                return TroubleshootConstants.PENDING_PHASE.equals(pvcPhase);
+            });
         };
     }
 

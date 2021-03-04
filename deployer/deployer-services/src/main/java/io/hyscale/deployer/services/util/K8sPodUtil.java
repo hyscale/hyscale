@@ -15,13 +15,14 @@
  */
 package io.hyscale.deployer.services.util;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import io.hyscale.deployer.services.model.PodStatus;
 import org.apache.commons.lang3.StringUtils;
 
 import io.hyscale.commons.constants.K8SRuntimeConstants;
@@ -38,6 +39,7 @@ import io.kubernetes.client.openapi.models.V1PodCondition;
  */
 public class K8sPodUtil {
 
+    private K8sPodUtil() {}
     /**
      * Gets aggregate status from Init containers - empty if init containers are ready
      * If init container status not found gets aggregated status from containers
@@ -53,6 +55,9 @@ public class K8sPodUtil {
                 v1Pod.getStatus().getInitContainerStatuses());
         if (initContainerAggStatus != null) {
             return initContainerAggStatus;
+        }
+        if(v1Pod.getMetadata().getDeletionTimestamp() != null){
+            return PodStatus.TERMINATING.getStatus();
         }
         String containerAggStatus = validateAndGetContainerStatuses(v1Pod.getStatus().getContainerStatuses());
         return containerAggStatus != null ? containerAggStatus : v1Pod.getStatus().getPhase();
@@ -72,7 +77,7 @@ public class K8sPodUtil {
         if (checkForPodCondition(v1Pod, PodCondition.READY)) {
             return null;
         }
-        Map<PodCondition, V1PodCondition> podConditionsMap = new HashMap<PodCondition, V1PodCondition>();
+        Map<PodCondition, V1PodCondition> podConditionsMap = new EnumMap<>(PodCondition.class);
         podConditions.stream().forEach(condition -> {
             PodCondition podCondition = PodCondition.fromString(condition.getType());
             if (podCondition != null) {
@@ -166,7 +171,7 @@ public class K8sPodUtil {
         String initContainerStatus = null;
         for (V1ContainerStatus each : initContainerStatuses) {
             if (each.getState().getTerminated() != null && each.getReady()) {
-                continue;
+                // Do nothing
             } else if (each.getState().getWaiting() != null) {
                 initContainerStatus = each.getState().getWaiting().getReason();
                 break;
@@ -179,15 +184,15 @@ public class K8sPodUtil {
 
     // If any container restart > 0 or pod in errorState
     public static boolean checkForPodCreation(V1Pod v1Pod) {
+        if (v1Pod == null) {
+            return false;
+        }
         String status = getAggregatedStatusOfContainersForPod(v1Pod);
         if (K8SRuntimeConstants.POD_RUNING_STATE_CONDITION.equalsIgnoreCase(status)) {
             return true;
         }
-        if (checkForContainersRestart(v1Pod.getStatus().getContainerStatuses())
-                || K8SRuntimeConstants.POD_ERROR_SATES.contains(status)) {
-            return false;
-        }
-        return false;
+        return checkForContainersRestart(v1Pod.getStatus().getContainerStatuses())
+                || K8SRuntimeConstants.POD_ERROR_SATES.contains(status);
     }
     
     /**
@@ -200,7 +205,7 @@ public class K8sPodUtil {
 
 
     /**
-     * @param v1Pod
+     * @param pod
      * @param restartPodCount
      * @return If pod restart count is greater than to given restartPodCount then it will return true, else false
      */
@@ -295,7 +300,7 @@ public class K8sPodUtil {
         String initContainerStatus = null;
         for (V1ContainerStatus each : initContainerStatuses) {
             if (each.getState().getTerminated() != null && each.getReady()) {
-                continue;
+                // Do nothing
             } else if (each.getState().getWaiting() != null) {
                 initContainerStatus = each.getState().getWaiting().getMessage();
                 break;
@@ -351,13 +356,11 @@ public class K8sPodUtil {
      * @param filter predicate used for filtering
      * @return filtered pods
      */
-    public static List<V1Pod> filterPods(List<V1Pod> podList, Predicate filter) {
+    public static List<V1Pod> filterPods(List<V1Pod> podList, Predicate<V1Pod> filter) {
         if (podList == null || podList.isEmpty() || filter == null) {
             return podList;
         }
-
-        return podList.stream().filter(pod -> filter.test(pod))
-                .collect(Collectors.toList());
+        return podList.stream().filter(filter::test).collect(Collectors.toList());
     }
 
     /**
@@ -435,7 +438,7 @@ public class K8sPodUtil {
             return null;
         }
         List<V1OwnerReference> ownerReferences = pod.getMetadata().getOwnerReferences();
-        if (ownerReferences == null || ownerReferences.size() < 1) {
+        if (ownerReferences == null || ownerReferences.isEmpty()) {
             return null;
         }
         return ownerReferences.get(0);

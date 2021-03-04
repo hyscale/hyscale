@@ -15,13 +15,12 @@
  */
 package io.hyscale.troubleshooting.integration.actions;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.deployer.services.model.PodStatus;
-import io.hyscale.deployer.services.model.PodStatusCode;
+import io.hyscale.deployer.services.model.PodExitStatus;
 import io.hyscale.deployer.services.model.PodStatusUtil;
 import io.hyscale.troubleshooting.integration.models.AbstractedErrorMessage;
 import io.hyscale.troubleshooting.integration.models.ActionNode;
@@ -57,7 +56,7 @@ public class FixCrashingApplication extends ActionNode<TroubleshootingContext> {
 
 		if (lastState.equals(PodStatus.OOMKILLED.getStatus())) {
 			report.setReason(AbstractedErrorMessage.NOT_ENOUGH_MEMORY_FOUND
-					.formatReason(context.getServiceInfo().getServiceName()));
+					.formatReason(context.getServiceMetadata().getServiceName()));
 			report.setRecommendedFix(AbstractedErrorMessage.NOT_ENOUGH_MEMORY_FOUND.getMessage());
 		} else if (lastState.equals(PodStatus.COMPLETED.getStatus())) {
 			report.setReason(AbstractedErrorMessage.INVALID_STARTCOMMANDS_FOUND.getReason());
@@ -65,9 +64,10 @@ public class FixCrashingApplication extends ActionNode<TroubleshootingContext> {
 		} else {
 			V1ContainerState v1ContainerState = PodStatusUtil.getLastState(pod);
 			Integer statusCode = PodStatusUtil.getExitCode(v1ContainerState);
+			logger.debug("Pod status code: {}", statusCode);
 			if (statusCode!=null) {
-				PodStatusCode.Signals signals = PodStatusCode.Signals.fromCode(statusCode);
-				String exitCode = (signals != null) ? signals.getSignal() : EXIT_CODE + statusCode.toString();
+				PodExitStatus podExitStatus = PodExitStatus.fromCode(statusCode);
+				String exitCode = podExitStatus != null ? podExitStatus.getSignal() : EXIT_CODE + statusCode.toString();
 				report.setReason(AbstractedErrorMessage.SERVICE_COMMANDS_FAILURE.formatReason(exitCode));
 			}else {
 				report.setReason(AbstractedErrorMessage.APPLICATION_CRASH.getReason());

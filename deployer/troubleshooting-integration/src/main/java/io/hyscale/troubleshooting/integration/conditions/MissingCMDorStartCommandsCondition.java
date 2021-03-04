@@ -23,9 +23,10 @@ import io.hyscale.commons.commands.provider.ImageCommandProvider;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.CommandResult;
 import io.hyscale.commons.utils.ObjectMapperFactory;
-import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
 import io.hyscale.troubleshooting.integration.models.*;
+import io.hyscale.troubleshooting.integration.util.ConditionUtil;
+import io.hyscale.troubleshooting.integration.util.DiagnosisReportUtil;
 import io.hyscale.troubleshooting.integration.actions.DockerfileCMDMissingAction;
 import io.kubernetes.client.openapi.models.V1Pod;
 import org.slf4j.Logger;
@@ -36,8 +37,6 @@ import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 //TODO JAVADOC
 @Component
@@ -46,8 +45,6 @@ public class MissingCMDorStartCommandsCondition extends ConditionNode<Troublesho
     private static final Logger logger = LoggerFactory.getLogger(MissingCMDorStartCommandsCondition.class);
     private static final String DOCKER_INSTALLATION_NOTFOUND_MESSAGE = "Docker is not installed";
     private static final String IMAGE_NOT_FOUND_LOCALLY = "Image %s is not found locally to inspect";
-
-    private Predicate<TroubleshootingContext> containerStartCommandCheck;
 
     @Autowired
     private ImageCommandProvider commandProvider;
@@ -61,40 +58,27 @@ public class MissingCMDorStartCommandsCondition extends ConditionNode<Troublesho
 
     @Override
     public boolean decide(TroubleshootingContext context) throws HyscaleException {
-        List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos().get(ResourceKind.POD.getKind());
-        DiagnosisReport report = new DiagnosisReport();
-        if (resourceInfos == null || resourceInfos.isEmpty()) {
-            report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceInfo().getServiceName()));
-            report.setRecommendedFix(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.getMessage());
-            context.addReport(report);
-            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
+        String serviceName = context.getServiceMetadata().getServiceName();
+        List<V1Pod> podsList = ConditionUtil.getPods(context);
+
+        if (podsList == null || podsList.isEmpty()) {
+            logger.debug("No pods found for service: {}", serviceName);
+            context.addReport(DiagnosisReportUtil.getServiceNotDeployedReport(serviceName));
+            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, serviceName);
         }
 
-        List<V1Pod> podsList = resourceInfos.stream().filter(each -> {
-            return each != null && each.getResource() != null && each.getResource() instanceof V1Pod;
-        }).map(pod -> {
-            return (V1Pod) pod.getResource();
-        }).collect(Collectors.toList());
-
-        if (podsList == null && podsList.isEmpty()) {
-            report.setReason(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.formatReason(context.getServiceInfo().getServiceName()));
-            report.setRecommendedFix(AbstractedErrorMessage.SERVICE_NOT_DEPLOYED.getMessage());
-            context.addReport(report);
-            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
-        }
-
-        V1Pod pod = (V1Pod) podsList.get(0);
+        V1Pod pod = podsList.get(0);
 
         if (checkForStartCommands(pod)) {
             return false;
         }
-
+        DiagnosisReport report = new DiagnosisReport();
         String image = getImageFromPods(pod);
         if (image == null) {
             report.setReason(AbstractedErrorMessage.CANNOT_INFER_ERROR.getReason());
             report.setRecommendedFix(AbstractedErrorMessage.CANNOT_INFER_ERROR.getMessage());
             context.addReport(report);
-            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceInfo().getServiceName());
+            throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceMetadata().getServiceName());
         }
 
         String dockerInstallCommand = commandProvider.dockerVersion();

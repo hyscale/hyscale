@@ -16,12 +16,13 @@
 package io.hyscale.troubleshooting.integration.service.impl;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.framework.events.publisher.EventPublisher;
 import io.hyscale.commons.models.K8sAuthorisation;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.troubleshooting.integration.builder.TroubleshootingContextCollector;
 import io.hyscale.troubleshooting.integration.conditions.PodStatusCondition;
 import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
 import io.hyscale.troubleshooting.integration.models.Node;
-import io.hyscale.troubleshooting.integration.models.ServiceInfo;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
 import io.hyscale.troubleshooting.integration.service.TroubleshootService;
 import org.slf4j.Logger;
@@ -42,29 +43,34 @@ public class TroubleshootServiceImpl implements TroubleshootService {
     @Autowired
     private PodStatusCondition podStatusCondition;
 
+    @Autowired
+    private EventPublisher publisher;
+
     @Override
-    public List<DiagnosisReport> troubleshoot(ServiceInfo serviceInfo, K8sAuthorisation k8sAuthorisation, String namespace) throws HyscaleException {
+    public List<DiagnosisReport> troubleshoot(ServiceMetadata serviceMetadata, K8sAuthorisation k8sAuthorisation, String namespace) throws HyscaleException {
         try {
-            TroubleshootingContext troubleshootingContext = contextBuilder.build(serviceInfo, k8sAuthorisation, namespace);
+            TroubleshootingContext troubleshootingContext = contextBuilder.build(serviceMetadata, k8sAuthorisation, namespace);
             executeTroubleshootFlow(troubleshootingContext);
             return troubleshootingContext.getDiagnosisReports();
         } catch (HyscaleException e) {
-            logger.error("Error while troubleshooting service {}", serviceInfo.getServiceName(), e);
+            logger.error("Error while troubleshooting service {}", serviceMetadata.getServiceName(), e);
             throw e;
         }
     }
 
     private void executeTroubleshootFlow(TroubleshootingContext troubleshootingContext) throws HyscaleException {
-        Node current = podStatusCondition;
+        Node<TroubleshootingContext> current = podStatusCondition;
+        String nodeDescription = current.describe();
         try {
             do {
+                nodeDescription = current.describe();
                 if (troubleshootingContext.isTrace()) {
-                    logger.debug("Executing troubleshooting node {}", current.describe());
+                    logger.debug("Executing troubleshooting node {}", nodeDescription);
                 }
                 current = current.next(troubleshootingContext);
             } while (current != null);
         } catch (HyscaleException e) {
-            logger.error("Error while troubleshooting workflow {}", e);
+            logger.error("Error while troubleshooting workflow {}", nodeDescription, e);
             throw e;
         }
     }

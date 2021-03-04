@@ -47,7 +47,7 @@ public class DeploymentContext {
 	// Manifest helper method
 	public void addManifest(Manifest manifest) {
 		if (manifests == null) {
-			manifests = new ArrayList<Manifest>();
+			manifests = new ArrayList<>();
 		}
 		manifests.add(manifest);
 	}

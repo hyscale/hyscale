@@ -40,7 +40,7 @@ public class ManifestMeta {
 
 	@Override
 	public String toString() {
-		return !StringUtils.isBlank(identifier) ? identifier + "_" + kind : kind;
+		return StringUtils.isNotBlank(identifier) ? identifier + "_" + kind : kind;
 	}
 
 	@Override
@@ -62,16 +62,20 @@ public class ManifestMeta {
 			return false;
 		ManifestMeta other = (ManifestMeta) obj;
 		if (kind == null) {
-			if (other.kind != null)
-				return false;
-		} else if (!kind.equals(other.kind))
-			return false;
+			if (other.kind != null) {
+			    return false;
+			}
+		} else if (!kind.equals(other.kind)) {
+		    return false;
+		}
 
 		if (identifier == null) {
-			if (other.identifier != null)
-				return false;
-		} else if (!identifier.equals(other.identifier))
-			return false;
+			if (other.identifier != null) {
+			    return false;
+			}
+		} else if (!identifier.equals(other.identifier)) {
+		    return false;
+		}
 
 		return true;
 	}

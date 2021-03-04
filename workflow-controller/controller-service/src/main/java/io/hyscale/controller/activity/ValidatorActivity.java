@@ -30,7 +30,7 @@ public enum ValidatorActivity implements Activity {
     VALIDATING_MANIFEST("Validating manifest for service {} "),
     VALIDATING_REGISTRY("Validating registry {} "),
     VALIDATING_VOLUME("Validating volumes for service {} "),
-    
+
     VOLUME_VALIDATION_FAILED("Volume validation failed. Error {}"),
     MANIFEST_VALIDATION_FAILED("Manifest validation failed. Error {}"),
     DOCKER_NOT_INSTALLED("Docker not installed. Install docker to continue "),
@@ -38,7 +38,13 @@ public enum ValidatorActivity implements Activity {
     MISSING_DOCKER_REGISTRY_CREDENTIALS("Cannot find {} credentials. Do 'docker login {}' to continue with the deployment"),
     SERVICE_SPEC_VALIDATION_FAILED("Service spec validation failed for {}. {} "),
     PROFILE_VALIDATION_FAILED("Profile validation failed for {}. {} "),
-    CLUSTER_AUTHENTICATION_FAILED("Cluster authentication failed. Verify if cluster config is valid");
+    CLUSTER_AUTHENTICATION_FAILED("Cluster authentication failed. Verify if cluster config is valid"),
+
+    MISSING_PORTS("Invalid Service Spec. Missing required field 'ports' in allowTraffic."),
+    INVALID_EXTERNAL_VALUE("Invalid Service Spec. Traffic rules cannot be applied to a service exposed externally."),
+    DUPLICATE_PORTS("Invalid Service Spec. Duplicate ports found : {}"),
+    PORT_NOT_EXPOSED("Invalid Service Spec. Traffic rules cannot be applied to a port that is not exposed on the Service");
+
 
     private String message;
 

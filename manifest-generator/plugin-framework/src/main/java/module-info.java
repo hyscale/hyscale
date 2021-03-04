@@ -21,7 +21,7 @@ module pluginframework {
 
 	requires service_spec_commons;
 	requires commons;
-	requires gson;
+	requires com.google.gson;
 	requires java.validation;
 	requires com.fasterxml.jackson.databind;
 	requires com.fasterxml.jackson.core;

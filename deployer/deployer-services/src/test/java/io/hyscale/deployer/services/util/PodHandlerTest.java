@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 
-public class PodHandlerTest {
+class PodHandlerTest {
 
     static ApiClient apiClient;
     String podName = "testpod";
@@ -44,13 +44,13 @@ public class PodHandlerTest {
     }
 
     @Test
-    public void testGetStatus() {
-        Assertions.assertEquals(K8sPodUtil.getAggregatedStatusOfContainersForPod(pod), "Running");
+    void testGetStatus() {
+        Assertions.assertEquals("Running", K8sPodUtil.getAggregatedStatusOfContainersForPod(pod));
     }
 
     @Test
-    public void testGetMessage() {
-        Assertions.assertEquals(K8sPodUtil.getPodMessage(pod), null);
+    void testGetMessage() {
+        Assertions.assertEquals(null, K8sPodUtil.getPodMessage(pod));
     }
 
 }

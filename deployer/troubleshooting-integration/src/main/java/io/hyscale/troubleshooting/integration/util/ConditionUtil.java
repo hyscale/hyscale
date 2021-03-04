@@ -17,11 +17,16 @@ package io.hyscale.troubleshooting.integration.util;
 
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
+import io.kubernetes.client.openapi.models.V1Pod;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ConditionUtil {
-
+    
+    private ConditionUtil() {}
+    
     /**
      * Pod parent can be deployment or statefulset
      * Preference is given to statefulset if both are present
@@ -48,6 +53,26 @@ public class ConditionUtil {
         }
 
         return null;
+    }
+    
+    /**
+     * @param context
+     * @return list of pods from context resource info
+     */
+    public static List<V1Pod> getPods(TroubleshootingContext context) {
+        List<V1Pod> podList = Collections.emptyList();
+        if (context == null || context.getResourceInfos() == null) {
+            return podList;
+        }
+        List<TroubleshootingContext.ResourceInfo> resourceInfos = context.getResourceInfos()
+                .get(ResourceKind.POD.getKind());
+        if (resourceInfos == null || resourceInfos.isEmpty()) {
+            return podList;
+        }
+        podList = resourceInfos.stream().filter(each -> each != null && each.getResource() instanceof V1Pod)
+                .map(pod -> (V1Pod) pod.getResource()).collect(Collectors.toList());
+
+        return podList;
     }
 
 }

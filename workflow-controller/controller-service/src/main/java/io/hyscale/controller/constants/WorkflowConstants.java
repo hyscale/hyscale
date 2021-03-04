@@ -67,4 +67,10 @@ public class WorkflowConstants {
 	
 	public static final String REPLICA_NAME = "REPLICA_NAME";
 
+	public static final String ERROR_MESSAGE = "ERROR_MESSAGE";
+
+	public static final String SERVICE_STATUS = "serviceStatus";
+
+	public static final String DEPLOYMENT_ERROR = "deploymentError";
+
 }

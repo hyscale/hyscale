@@ -16,6 +16,7 @@
 package io.hyscale.generator.services.plugins;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,6 @@ import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.model.ManifestGeneratorActivity;
 import io.hyscale.generator.services.builder.DefaultLabelBuilder;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.generator.services.generator.MetadataManifestSnippetGenerator;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
@@ -40,6 +40,7 @@ import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.Auth;
 import io.hyscale.commons.models.ManifestContext;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.commons.models.ImageRegistry;
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.commons.utils.NormalizationUtil;
@@ -64,7 +65,7 @@ public class ImagePullSecretHandler implements ManifestHandler {
 			String registry = serviceSpec.get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.registry), String.class);
 			registry = registry == null ? "" : registry;
 			WorkflowLogger.persist(ManifestGeneratorActivity.FAILED_TO_CREATE_IMAGE_PULL_SECRET, registry, registry);
-			return null;
+			return Collections.emptyList();
 		}
 
         String name = imageRegistry.getName() == null ? imageRegistry.getUrl() : imageRegistry.getName();
@@ -76,7 +77,7 @@ public class ImagePullSecretHandler implements ManifestHandler {
         List<ManifestSnippet> manifestSnippetList = new ArrayList<>();
         try {
             // Override the name because image-pull-secret has either the registry-name or registry-url as the name of the manifest
-            ManifestSnippet apiVersionSnippet = MetadataManifestSnippetGenerator.getApiVersion(ManifestResource.SECRET, serviceMetadata);
+            ManifestSnippet apiVersionSnippet = MetadataManifestSnippetGenerator.getApiVersion(ManifestResource.SECRET);
 
             //Api Version snippet
             manifestSnippetList.add(apiVersionSnippet);
@@ -92,15 +93,13 @@ public class ImagePullSecretHandler implements ManifestHandler {
             // Get the secret type snippet as kubernetes.io/dockerconfigjson
             manifestSnippetList.add(getSecretTypeSnippet());
             //Add Name to each snippet except podSpec ImagePullSecretName
-            manifestSnippetList.stream().forEach(each -> {
-                each.setName(name);
-            });
+            manifestSnippetList.stream().forEach(each -> each.setName(name));
             // Adding the secret to pod
             logger.debug("Prepared image pull secret manifest for registry.");
             manifestContext.addGenerationAttribute(ManifestGenConstants.IMAGE_PULL_SECRET_NAME, NormalizationUtil.normalize(name));
 
         } catch (JsonProcessingException e) {
-            logger.error("Error while generating image pull secret manifest {}", e);
+            logger.error("Error while generating image pull secret manifest", e);
         }
         return manifestSnippetList;
     }

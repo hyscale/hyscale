@@ -29,13 +29,15 @@ import io.hyscale.deployer.services.handler.PodParentHandler;
  *
  */
 public class PodParentFactory {
+    
+    private PodParentFactory() {}
 
     private static Map<String, PodParentHandler> kindVsHandlerMap;
 
 
     public static void registerHandlers() {
         if (kindVsHandlerMap == null) {
-            kindVsHandlerMap = new HashMap();
+            kindVsHandlerMap = new HashMap<>();
             for (PodParentHandler handler : ServiceLoader.load(PodParentHandler.class, PodParentFactory.class.getClassLoader())) {
                 kindVsHandlerMap.put(handler.getKind(), handler);
             }
@@ -52,7 +54,7 @@ public class PodParentFactory {
      */
     public static List<PodParentHandler> getAllHandlers(){
         if (kindVsHandlerMap == null) {
-        return null;
+        return Collections.emptyList();
         }
         return Collections.unmodifiableList(kindVsHandlerMap.values().stream().collect(Collectors.toList()));
     }

@@ -24,13 +24,11 @@ public class HyscaleContextUtil {
 
     private static ApplicationContext applicationContext;
 
-    public static void setContext(ApplicationContext appContext) {
+    private HyscaleContextUtil() {}
+
+    public static synchronized void setContext(ApplicationContext appContext) {
         if (applicationContext == null) {
-            synchronized (HyscaleContextUtil.class) {
-                if (applicationContext == null) {
-                    applicationContext = appContext;
-                }
-            }
+            applicationContext = appContext;
         }
     }
 
@@ -43,17 +41,17 @@ public class HyscaleContextUtil {
     }
 
     public static <T> T getSpringBean(Class<T> className) {
-        return (T) applicationContext.getBean(className);
+        return applicationContext.getBean(className);
     }
 
     public static <T> T getSpringBean(Class<T> className, Object... args) {
-        return (T) applicationContext.getBean(className, args);
+        return applicationContext.getBean(className, args);
     }
 
     public static <T> T getSpringBeanNullIfNotExists(Class<T> className) {
         try {
             if (applicationContext != null) {
-                return (T) applicationContext.getBean(className);
+                return applicationContext.getBean(className);
             } else {
                 return null;
             }
@@ -78,6 +76,10 @@ public class HyscaleContextUtil {
             defaultMessage = applicationContext.getMessage(key, null, defaultMessage, Locale.getDefault());
         }
         return applicationContext.getMessage(key, null, defaultMessage, locale);
+    }
+    
+    public static String[] getBeanNames(Class<?> className) {
+        return applicationContext.getBeanNamesForType(className);
     }
 
 }

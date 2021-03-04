@@ -15,6 +15,7 @@
  */
 package io.hyscale.troubleshooting.integration.models;
 
+import io.hyscale.commons.models.ServiceMetadata;
 import io.kubernetes.client.openapi.models.V1Event;
 
 import java.util.*;
@@ -22,23 +23,23 @@ import java.util.*;
 //TODO JAVADOC
 public class TroubleshootingContext implements NodeContext {
 
-    private ServiceInfo serviceInfo;
+    private ServiceMetadata serviceMetadata;
     private Map<String, List<ResourceInfo>> resourceInfos;
     private Map<FailedResourceKey, Object> failedObjects;
     private List<DiagnosisReport> diagnosisReports;
     private boolean trace;
 
     public TroubleshootingContext() {
-        this.failedObjects = new HashMap<>();
+        this.failedObjects = new EnumMap<>(FailedResourceKey.class);
         this.diagnosisReports = new ArrayList<>();
     }
 
-    public ServiceInfo getServiceInfo() {
-        return serviceInfo;
+    public ServiceMetadata getServiceMetadata() {
+        return serviceMetadata;
     }
 
-    public void setServiceInfo(ServiceInfo serviceInfo) {
-        this.serviceInfo = serviceInfo;
+    public void setServiceMetadata(ServiceMetadata serviceMetadata) {
+        this.serviceMetadata = serviceMetadata;
     }
 
     public Map<FailedResourceKey, Object> getFailedObjects() {

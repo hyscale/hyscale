@@ -16,6 +16,7 @@
 package io.hyscale.deployer.services.handler.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,11 +35,13 @@ import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.AnnotationKey;
 import io.hyscale.commons.models.ResourceLabelKey;
 import io.hyscale.commons.models.Status;
+import io.hyscale.commons.utils.GsonProviderUtil;
 import io.hyscale.commons.utils.ResourceLabelUtil;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.DeploymentStatus;
 import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.core.model.ResourceOperation;
+import io.hyscale.deployer.services.constants.DeployerConstants;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 import io.hyscale.deployer.services.handler.PodParentHandler;
 import io.hyscale.deployer.services.handler.ResourceHandlers;
@@ -73,8 +76,8 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         V1StatefulSet statefulSet = null;
         try {
             resource.getMetadata().putAnnotationsItem(
-                    AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), gson.toJson(resource));
-            statefulSet = appsV1Api.createNamespacedStatefulSet(namespace, resource, TRUE, null, null);
+                    AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(), GsonProviderUtil.getPrettyGsonBuilder().toJson(resource));
+            statefulSet = appsV1Api.createNamespacedStatefulSet(namespace, resource, DeployerConstants.TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,
                     ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.CREATE));
@@ -83,6 +86,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
             WorkflowLogger.endActivity(Status.FAILED);
             throw ex;
         }
+        LOGGER.info("Created Statefulset {} in namespace {}",name,namespace);
         WorkflowLogger.endActivity(Status.DONE);
         return statefulSet;
     }
@@ -102,14 +106,14 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
             LOGGER.debug("Error while getting StatefulSet {} in namespace {} for Update, creating new", name,
                     namespace);
             V1StatefulSet statefulSet = create(apiClient, resource, namespace);
-            return statefulSet != null ? true : false;
+            return statefulSet != null;
         }
 
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_STATEFULSET);
         try {
             String resourceVersion = existingStatefulSet.getMetadata().getResourceVersion();
             resource.getMetadata().setResourceVersion(resourceVersion);
-            appsV1Api.replaceNamespacedStatefulSet(name, namespace, resource, TRUE, null, null);
+            appsV1Api.replaceNamespacedStatefulSet(name, namespace, resource, DeployerConstants.TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,
                     ExceptionHelper.getExceptionMessage(getKind(), e, ResourceOperation.UPDATE));
@@ -118,6 +122,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
             WorkflowLogger.endActivity(Status.FAILED);
             throw ex;
         }
+        LOGGER.info("Updated Statefulset {} in namespace {}",name,namespace);
         WorkflowLogger.endActivity(Status.DONE);
         return true;
     }
@@ -127,7 +132,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         AppsV1Api appsV1Api = new AppsV1Api(apiClient);
         V1StatefulSet v1StatefulSet = null;
         try {
-            v1StatefulSet = appsV1Api.readNamespacedStatefulSet(name, namespace, TRUE, null, null);
+            v1StatefulSet = appsV1Api.readNamespacedStatefulSet(name, namespace, DeployerConstants.TRUE, null, null);
         } catch (ApiException e) {
             HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET);
             LOGGER.error("Error while fetching StatefulSet {} in namespace {}, error {}", name, namespace,
@@ -144,7 +149,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         String fieldSelector = label ? null : selector;
         List<V1StatefulSet> statefulSets = null;
         try {
-            V1StatefulSetList statefulSetList = appsV1Api.listNamespacedStatefulSet(namespace, TRUE, null,
+            V1StatefulSetList statefulSetList = appsV1Api.listNamespacedStatefulSet(namespace, DeployerConstants.TRUE, null,
                     null, fieldSelector, labelSelector, null, null, null, null);
             statefulSets = statefulSetList != null ? statefulSetList.getItems() : null;
         } catch (ApiException e) {
@@ -165,7 +170,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         List<V1StatefulSet> statefulSets = null;
         try {
             V1StatefulSetList statefulSetList = appsV1Api.listStatefulSetForAllNamespaces(null, null, fieldSelector,
-                    labelSelector, null, TRUE, null, null, null);
+                    labelSelector, null, DeployerConstants.TRUE, null, null, null);
             statefulSets = statefulSetList != null ? statefulSetList.getItems() : null;
         } catch (ApiException e) {
             HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_ALL);
@@ -184,14 +189,14 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         }
         AppsV1Api appsV1Api = new AppsV1Api(apiClient);
         target.getMetadata().putAnnotationsItem(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation(),
-                gson.toJson(target));
+                GsonProviderUtil.getPrettyGsonBuilder().toJson(target));
         V1StatefulSet sourceStatefulSet = null;
         try {
             sourceStatefulSet = get(apiClient, name, namespace);
         } catch (HyscaleException e) {
             LOGGER.debug("Error while getting StatefulSet {} in namespace {} for Patch, creating new", name, namespace);
             V1StatefulSet statefulSet = create(apiClient, target, namespace);
-            return statefulSet != null ? true : false;
+            return statefulSet != null;
         }
         WorkflowLogger.startActivity(DeployerActivity.DEPLOYING_STATEFULSET);
         Object patchObject = null;
@@ -200,12 +205,12 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         boolean deleteRequired = false;
         String serviceName = sourceStatefulSet.getMetadata().getLabels().get(ResourceLabelKey.SERVICE_NAME.getLabel());
         try {
-            patchObject = K8sResourcePatchUtil.getJsonPatch(gson.fromJson(lastAppliedConfig, V1StatefulSet.class),
+            patchObject = K8sResourcePatchUtil.getJsonPatch(GsonProviderUtil.getPrettyGsonBuilder().fromJson(lastAppliedConfig, V1StatefulSet.class),
                     target, V1StatefulSet.class);
             deleteRequired = isDeletePodRequired(apiClient, serviceName, namespace);
             LOGGER.debug("Deleting existing pods for updating StatefulSet patch required :{}", deleteRequired);
             V1Patch v1Patch = new V1Patch(patchObject.toString());
-            appsV1Api.patchNamespacedStatefulSet(name, namespace, v1Patch, TRUE, null, null, null);
+            appsV1Api.patchNamespacedStatefulSet(name, namespace, v1Patch, DeployerConstants.TRUE, null, null, null);
         } catch (HyscaleException ex) {
             LOGGER.error("Error while creating patch for StatefulSet {}, source {}, target {}, error {}", name,
                     sourceStatefulSet, target, ex.toString());
@@ -230,17 +235,10 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
 
     @Override
     public boolean delete(ApiClient apiClient, String name, String namespace, boolean wait) throws HyscaleException {
-        AppsV1Api appsV1Api = new AppsV1Api(apiClient);
-        V1DeleteOptions deleteOptions = getDeleteOptions();
-        deleteOptions.setApiVersion("apps/v1");
         ActivityContext activityContext = new ActivityContext(DeployerActivity.DELETING_STATEFULSET);
         WorkflowLogger.startActivity(activityContext);
         try {
-            try {
-                appsV1Api.deleteNamespacedStatefulSet(name, namespace, TRUE, null, null, null, null, deleteOptions);
-            } catch (JsonSyntaxException e) {
-                // K8s end exception ignore
-            }
+            delete(apiClient, name, namespace);
             if (wait) {
                 List<String> pendingStatefulSets = Lists.newArrayList();
                 pendingStatefulSets.add(name);
@@ -258,9 +256,21 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
             WorkflowLogger.endActivity(activityContext, Status.FAILED);
             throw ex;
         }
-        LOGGER.debug("Deleting StatefulSet done");
+        LOGGER.info("Deleted StatefulSet {} in namespace {} ",name, namespace);
         WorkflowLogger.endActivity(activityContext, Status.DONE);
         return true;
+    }
+
+    private void delete(ApiClient apiClient, String name, String namespace) throws ApiException {
+        AppsV1Api appsV1Api = new AppsV1Api(apiClient);
+        V1DeleteOptions deleteOptions = getDeleteOptions();
+        deleteOptions.setApiVersion("apps/v1");
+        try {
+            appsV1Api.deleteNamespacedStatefulSet(name, namespace, DeployerConstants.TRUE, null, null, null, null,
+                    deleteOptions);
+        } catch (JsonSyntaxException e) {
+            // K8s end exception ignore
+        }
     }
 
     @Override
@@ -298,19 +308,16 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         List<V1Pod> v1PodList = podHandler.getBySelector(apiClient, getPodSelector(name), true, namespace);
         boolean isPodInErrorState = false;
         if (v1PodList != null && !v1PodList.isEmpty()) {
-            isPodInErrorState = v1PodList.stream().anyMatch(each -> {
-                boolean podErrorState = !K8sPodUtil.getAggregatedStatusOfContainersForPod(each)
-                        .equalsIgnoreCase(K8SRuntimeConstants.POD_RUNING_STATE_CONDITION)
-                        || !K8sPodUtil.checkForPodCondition(each, PodCondition.READY);
-                return podErrorState;
-            });
+            isPodInErrorState = v1PodList.stream()
+                    .anyMatch(each -> !K8sPodUtil.getAggregatedStatusOfContainersForPod(each)
+                            .equalsIgnoreCase(K8SRuntimeConstants.POD_RUNING_STATE_CONDITION)
+                            || !K8sPodUtil.checkForPodCondition(each, PodCondition.READY));
         }
         return isPodInErrorState;
     }
 
     private String getPodSelector(String serviceName) {
-        String podSelector = ResourceSelectorUtil.getServiceSelector(null, serviceName);
-        return podSelector;
+        return ResourceSelectorUtil.getServiceSelector(null, serviceName);
     }
 
     @Override
@@ -327,7 +334,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         Integer intendedReplicas = statefulSet.getSpec().getReplicas();
         // Success case update remaining pods status and return
         if (updateRevision != null && updateRevision.equals(currentRevision) && intendedReplicas != null
-                && intendedReplicas == currentReplicas && intendedReplicas == readyReplicas) {
+                && intendedReplicas.equals(currentReplicas) && intendedReplicas.equals(readyReplicas)) {
             return ResourceStatus.STABLE;
         }
 
@@ -353,11 +360,11 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
      */
     public List<String> getServiceNames(List<V1StatefulSet> statefulSetList) {
         if (statefulSetList == null) {
-            return null;
+            return Collections.emptyList();
         }
-        return statefulSetList.stream().filter(each -> {
-            return each != null && each.getMetadata() != null;
-        }).map(each -> ResourceLabelUtil.getServiceName(each.getMetadata().getLabels())).collect(Collectors.toList());
+        return statefulSetList.stream().filter(each -> each != null && each.getMetadata() != null)
+                .map(each -> ResourceLabelUtil.getServiceName(each.getMetadata().getLabels()))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -365,10 +372,10 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         try {
             return buildStatus(getBySelector(apiClient, selector, label, namespace));
         } catch (HyscaleException e) {
-            logger.error("Error while fetching StatefulSet with selector {} in namespace {}, error {}", selector,
+            LOGGER.error("Error while fetching StatefulSet with selector {} in namespace {}, error {}", selector,
                     namespace, e.getMessage());
         }
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -376,15 +383,25 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         if (statefulSet == null) {
             return null;
         }
-        return buildStatusFromMetadata(statefulSet.getMetadata(), ResourceStatus.getServiceStatus(status(statefulSet)));
+        ResourceStatus resourceStatus = status(statefulSet);
+        DeploymentStatus.ServiceStatus serviceStatus = ResourceStatus.getServiceStatus(resourceStatus);
+        if (resourceStatus.equals(ResourceStatus.PENDING)) {
+            if (statefulSet.getSpec().getReplicas() <= statefulSet.getStatus().getReadyReplicas()){
+                serviceStatus = DeploymentStatus.ServiceStatus.SCALING_DOWN;
+            }
+        }
+        if (statefulSet.getSpec().getReplicas() == 0 && resourceStatus.equals(ResourceStatus.STABLE)){
+            serviceStatus = DeploymentStatus.ServiceStatus.NOT_RUNNING;
+        }
+        return buildStatusFromMetadata(statefulSet.getMetadata(), serviceStatus);
     }
 
     @Override
     public List<DeploymentStatus> buildStatus(List<V1StatefulSet> statefulSetList) {
         if (statefulSetList == null) {
-            return null;
+            return Collections.emptyList();
         }
-        List<DeploymentStatus> statuses = new ArrayList<DeploymentStatus>();
+        List<DeploymentStatus> statuses = new ArrayList<>();
         statefulSetList.stream().forEach(each -> {
             DeploymentStatus deployStatus = buildStatus(each);
             if (deployStatus != null) {
@@ -400,7 +417,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         try {
             statefulSetList = getBySelector(apiClient, selector, label, namespace);
         } catch (HyscaleException e) {
-            logger.error("Error fetching deployment for pod selection, ignoring", e);
+            LOGGER.error("Error fetching deployment for pod selection, ignoring", e);
             return null;
         }
         if (statefulSetList == null || statefulSetList.isEmpty()) {
@@ -419,7 +436,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         if (annotations == null || annotations.isEmpty()) {
             return null;
         }
-        return annotations.get(K8SRuntimeConstants.K8s_STS_CONTROLLER_REVISION_HASH);
+        return annotations.get(K8SRuntimeConstants.K8S_STS_CONTROLLER_REVISION_HASH);
     }
 
     /**
@@ -439,9 +456,9 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         }
         String currentRevision = stsStatus.getCurrentRevision();
         String updateRevision = stsStatus.getUpdateRevision();
-        logger.debug("Current Revision = " + currentRevision);
-        logger.debug("Updated Revision = " + updateRevision);
-        return K8SRuntimeConstants.K8s_STS_CONTROLLER_REVISION_HASH + "=" + updateRevision;
+        LOGGER.debug("Current Revision: {}", currentRevision);
+        LOGGER.debug("Updated Revision: {}", updateRevision);
+        return K8SRuntimeConstants.K8S_STS_CONTROLLER_REVISION_HASH + "=" + updateRevision;
     }
 
     /**
@@ -457,43 +474,35 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
     @Override
     public boolean scale(ApiClient apiClient, V1StatefulSet v1StatefulSet, String namespace, int value) throws HyscaleException {
         if (v1StatefulSet == null) {
-            logger.error("Cannot scale 'null' deployment");
+            LOGGER.error("Cannot scale 'null' deployment");
             return false;
         }
         String name = v1StatefulSet.getMetadata().getName();
         int currentReplicas = v1StatefulSet.getSpec().getReplicas();
-        // No need of scaling
-        if (currentReplicas == value) {
-            WorkflowLogger.persist(DeployerActivity.DESIRED_STATE, String.valueOf(value));
-            return true;
-        }
-        V1Scale exisiting = new V1ScaleBuilder()
-                .withSpec(new V1ScaleSpec().replicas(currentReplicas))
-                .build();
-        AppsV1Api appsV1Api = new AppsV1Api(apiClient);
+        String lastAppliedConfig = v1StatefulSet.getMetadata().getAnnotations()
+                .get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation());
+        V1StatefulSet latAppliedStateFulSet = GsonProviderUtil.getPrettyGsonBuilder().fromJson(lastAppliedConfig, V1StatefulSet.class);
         ActivityContext activityContext = new ActivityContext(DeployerActivity.SCALING_SERVICE);
         WorkflowLogger.startActivity(activityContext);
         boolean status = false;
         try {
-            V1Scale scale = new V1ScaleBuilder()
-                    .withSpec(new V1ScaleSpec().replicas(value))
-                    .build();
-            Object jsonPatch = K8sResourcePatchUtil.getJsonPatch(exisiting, scale, V1Scale.class);
-            V1Patch patch = new V1Patch(jsonPatch.toString());
-            appsV1Api.patchNamespacedStatefulSetScale(name, namespace, patch, TRUE, null, null, null);
+            if (!(currentReplicas == value && latAppliedStateFulSet.getSpec().getReplicas() == value)) {
+                latAppliedStateFulSet.getSpec().setReplicas(value);
+                patch(apiClient, name, namespace, latAppliedStateFulSet);
+            }
             status = waitForDesiredState(apiClient, name, namespace, activityContext);
-        } catch (ApiException e) {
-            logger.error("Error while applying PATCH scale to {} due to : {} code :{}", name, e.getResponseBody(), e.getCode(), e);
+        } catch (HyscaleException e) {
+            LOGGER.error("Error while applying PATCH scale to {} due to : {} code :{}", name, e.getMessage(), e.getCode(), e);
             WorkflowLogger.endActivity(Status.FAILED);
-            HyscaleException ex = new HyscaleException(DeployerErrorCodes.ERROR_WHILE_SCALING, e.getResponseBody());
+            HyscaleException ex = new HyscaleException(DeployerErrorCodes.ERROR_WHILE_SCALING, e.getMessage());
             throw ex;
         } finally {
             if (status) {
                 if (value < currentReplicas) {
                     WorkflowLogger.persist(DeployerActivity.SCALE_DOWN_VOLUME,
-                            v1StatefulSet.getSpec().getVolumeClaimTemplates().stream().map(each -> {
-                                return each.getMetadata().getName();
-                            }).collect(Collectors.joining(",")), namespace);
+                            v1StatefulSet.getSpec().getVolumeClaimTemplates().stream()
+                                    .map(each -> each.getMetadata().getName()).collect(Collectors.joining(",")),
+                            namespace);
                 }
                 WorkflowLogger.endActivity(activityContext, Status.DONE);
             } else {
@@ -510,10 +519,10 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         int sleep = 3;
         try {
             int rotations = 0;
-            while (System.currentTimeMillis() - startTime < MAX_WAIT_TIME_IN_MILLISECONDS) {
+            while (System.currentTimeMillis() - startTime < DeployerConstants.MAX_WAIT_TIME_IN_MILLISECONDS) {
                 V1StatefulSet updatedStatefulset = null;
                 updatedStatefulset = get(apiClient, name, namespace);
-                logger.debug("Patched Statefulset status :{} ", updatedStatefulset.getStatus());
+                LOGGER.debug("Patched Statefulset status :{} ", updatedStatefulset.getStatus());
                 if (status(updatedStatefulset) == ResourceStatus.STABLE) {
                     stable = true;
                     break;
@@ -523,14 +532,20 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
                     sleep++;
                     rotations = 0;
                 }
-                Thread.currentThread().sleep(sleep * 1000);
+                Thread.sleep(sleep * 1000L);
+                rotations++;
             }
         } catch (InterruptedException e) {
-            logger.error("Sleep Thread interrupted ", e);
+            LOGGER.error("Sleep Thread interrupted ", e);
+            Thread.currentThread().interrupt();
         } catch (HyscaleException ex){
-            logger.error("Error while fetching statefulset {}", ex.getHyscaleError(), ex);
+            LOGGER.error("Error while fetching statefulset {}", ex.getHyscaleError(), ex);
         }
         return stable;
     }
 
+    @Override
+    public boolean isWorkLoad() {
+    	return true;
+    }
 }

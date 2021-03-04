@@ -1,0 +1,14 @@
+name: adservice
+
+image:
+     registry: gcr.io
+     name: google-samples/microservices-demo/adservice
+     tag: v0.2.0
+
+ports:
+   - port: 9555
+   
+props:
+   PORT: "9555"
+
+memory: 180Mi-300Mi

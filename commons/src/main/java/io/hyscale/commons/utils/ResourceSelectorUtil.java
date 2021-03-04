@@ -24,11 +24,13 @@ import io.hyscale.commons.models.ResourceLabelKey;
 
 public class ResourceSelectorUtil {
 
+    private ResourceSelectorUtil() {}
+
     public static String getSelectorFromLabelMap(Map<ResourceLabelKey, String> label) {
         if (label == null || label.isEmpty()) {
             return null;
         }
-        return label.entrySet().stream().map((entry) -> entry.getKey().getLabel() + "=" + entry.getValue())
+        return label.entrySet().stream().map(entry -> entry.getKey().getLabel() + "=" + entry.getValue())
                 .collect(Collectors.joining(","));
     }
 
@@ -55,7 +57,7 @@ public class ResourceSelectorUtil {
 	 */
     public static String getNamespaceSelector(String namespace) {
     	StringBuilder fieldSelector = new StringBuilder();
-		fieldSelector.append(MetadataFieldSelector.METADATA_NAMESPACE.getFieldName()).append(ToolConstants.EQUALS).append(namespace);
+		fieldSelector.append(MetadataFieldSelector.METADATA_NAMESPACE.getFieldName()).append(ToolConstants.EQUALS_SYMBOL).append(namespace);
 		return fieldSelector.toString();
     }
 }

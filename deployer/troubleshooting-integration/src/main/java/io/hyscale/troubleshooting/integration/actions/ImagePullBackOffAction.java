@@ -22,7 +22,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Component
 public class ImagePullBackOffAction extends ActionNode<TroubleshootingContext> {
@@ -49,8 +48,8 @@ public class ImagePullBackOffAction extends ActionNode<TroubleshootingContext> {
                     }
                     DiagnosisReport report = new DiagnosisReport();
                     if (imageNotFoundPattern.matcher(event.getMessage()).find()) {
-                        report.setReason(AbstractedErrorMessage.FIX_IMAGE_NAME.formatReason(context.getServiceInfo().getServiceName()));
-                        report.setRecommendedFix(AbstractedErrorMessage.FIX_IMAGE_NAME.formatMessage(context.getServiceInfo().getServiceName()));
+                        report.setReason(AbstractedErrorMessage.FIX_IMAGE_NAME.formatReason(context.getServiceMetadata().getServiceName()));
+                        report.setRecommendedFix(AbstractedErrorMessage.FIX_IMAGE_NAME.formatMessage(context.getServiceMetadata().getServiceName()));
                         context.addReport(report);
                         actedOn = true;
                         break;

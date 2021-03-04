@@ -1,0 +1,21 @@
+name: myservice
+image:
+  registry: x.y.z
+  name: myServiceImage
+  tag: 1.2.3
+  buildSpec:
+    stackImage: abc/pqr:1.0
+    artifacts:
+      - name: sample
+        source: sample.war
+        destination: /abc/def/ghi/sample.txt
+    configCommands: |-
+      echo "Hello, I'm configure commands"
+    runCommandsScript: /abc/def/run.sh
+    runCommands: |-
+      echo "Hello, I'm run commands"
+
+ports:
+  - port: 8080/http
+    healthCheck:
+      httpPath: /sample

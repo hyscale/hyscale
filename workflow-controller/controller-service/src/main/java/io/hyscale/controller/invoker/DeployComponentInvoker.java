@@ -17,15 +17,16 @@ package io.hyscale.controller.invoker;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
-import io.hyscale.troubleshooting.integration.models.ServiceInfo;
 import io.hyscale.troubleshooting.integration.service.TroubleshootService;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ import io.hyscale.commons.io.LogProcessor;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DeploymentContext;
 import io.hyscale.commons.models.Manifest;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.builder.DeploymentContextBuilder;
 import io.hyscale.controller.constants.WorkflowConstants;
@@ -141,8 +143,7 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
         }
         context.addAttribute(WorkflowConstants.OUTPUT, true);
 
-        Boolean external = serviceSpec.get(HyscaleSpecFields.external, Boolean.class);
-        external = external == null ? false : external;
+        boolean external = BooleanUtils.toBoolean(serviceSpec.get(HyscaleSpecFields.external, Boolean.class));
         logger.debug("Checking whether service {} is external {}", serviceName, external);
         if (external) {
             TypeReference<List<Port>> typeReference = new TypeReference<List<Port>>() {
@@ -165,15 +166,15 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
     }
 
     private List<DiagnosisReport> troubleshoot(DeploymentContext deploymentContext) {
-        ServiceInfo serviceInfo = new ServiceInfo();
-        serviceInfo.setAppName(deploymentContext.getAppName());
-        serviceInfo.setServiceName(deploymentContext.getServiceName());
+        ServiceMetadata serviceMetadata = new ServiceMetadata();
+        serviceMetadata.setAppName(deploymentContext.getAppName());
+        serviceMetadata.setServiceName(deploymentContext.getServiceName());
         try {
-            return troubleshootService.troubleshoot(serviceInfo, (K8sAuthorisation) deploymentContext.getAuthConfig(), deploymentContext.getNamespace());
+            return troubleshootService.troubleshoot(serviceMetadata, (K8sAuthorisation) deploymentContext.getAuthConfig(), deploymentContext.getNamespace());
         } catch (HyscaleException e) {
-            logger.error("Error while executing troubleshooot serice {}", e);
+            logger.error("Error while executing troubleshooot serice {}",deploymentContext.getServiceName(), e);
         }
-        return null;
+        return Collections.emptyList();
     }
 
     /**
@@ -210,6 +211,7 @@ public class DeployComponentInvoker extends ComponentInvoker<WorkflowContext> {
             errorMessage.append(ToolConstants.NEW_LINE).append(troubleshootMessage);
         }
         WorkflowLogger.error(ControllerActivity.TROUBLESHOOT, errorMessage.toString());
+        context.addAttribute(WorkflowConstants.ERROR_MESSAGE, errorMessage.toString());
         context.setFailed(true);
         if (he != null) {
             throw he;

@@ -24,6 +24,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.utils.GsonProviderUtil;
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.deployer.services.exception.DeployerErrorCodes;
 
@@ -33,6 +34,8 @@ import io.hyscale.deployer.services.exception.DeployerErrorCodes;
  */
 public class K8sResourcePatchUtil {
 
+    private K8sResourcePatchUtil() {}
+    
 	/**
 	 * Creates Json diff for patch based on source and target
 	 * @param <T> 
@@ -58,14 +61,11 @@ public class K8sResourcePatchUtil {
 			patch = JsonDiff.asJson(mapper.readTree(gson.toJson(source)), mapper.readTree(gson.toJson(target)));
 			return mapper.writeValueAsString(patch);
 		} catch (IOException e) {
-			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.ERROR_WHILE_CREATING_PATCH);
-			throw ex;
+			throw new HyscaleException(e, DeployerErrorCodes.ERROR_WHILE_CREATING_PATCH);
 		}
 	}
 
 	public static Object deserialize(String jsonStr, Class<?> targetClass) {
-		Gson gson = new Gson();
-		Object obj = gson.fromJson(jsonStr, targetClass);
-		return obj;
+	    return GsonProviderUtil.getPrettyGsonBuilder().fromJson(jsonStr, targetClass);
 	}
 }

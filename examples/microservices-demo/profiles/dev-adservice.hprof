@@ -1,0 +1,4 @@
+environment: dev
+overrides: adservice
+
+cpu: 200m-300m

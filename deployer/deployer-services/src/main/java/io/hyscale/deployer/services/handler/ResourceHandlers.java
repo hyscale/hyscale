@@ -19,12 +19,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public final class ResourceHandlers {
+    
+    private ResourceHandlers() {}
 
 	private static Map<String, ResourceLifeCycleHandler> kindVsHandler;
 
 	public static void registerHandlers() {
 		if (kindVsHandler == null) {
-			kindVsHandler = new HashMap();
+			kindVsHandler = new HashMap<>();
 			for (ResourceLifeCycleHandler handler : ServiceLoader.load(ResourceLifeCycleHandler.class,
 					ResourceHandlers.class.getClassLoader())) {
 				kindVsHandler.put(handler.getKind(), handler);
@@ -47,7 +49,7 @@ public final class ResourceHandlers {
 	 */
 	public static List<ResourceLifeCycleHandler> getAllHandlers(){
 	    if (kindVsHandler == null) {
-		return null;
+		return Collections.emptyList();
 	    }
 	    return Collections.unmodifiableList(kindVsHandler.values().stream().collect(Collectors.toList()));
 	}

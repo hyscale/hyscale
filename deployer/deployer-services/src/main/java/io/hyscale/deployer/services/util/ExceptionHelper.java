@@ -28,27 +28,31 @@ import io.kubernetes.client.openapi.ApiException;
  *
  */
 public class ExceptionHelper {
-
+    
     private static final String FAILED_WITH_MESSAGE = "failed with status: ";
     private static final String CAUSE_MESSAGE = ", cause: ";
     private static final String UNAUTHORIZED_MESSAGE = "Unauthorized access";
 
+    private ExceptionHelper() {}
+    
     /**
      * @param resourceKind
-     * @param ApiException
+     * @param ex
      * @param operation
      * @return String - resource kind, fail message, ApiException code, cause message
      */
     public static String getExceptionMessage(String resourceKind, ApiException ex, ResourceOperation operation) {
         StringBuilder exceptionMsg = new StringBuilder();
         exceptionMsg.append(resourceKind).append(ToolConstants.SPACE);
+        if (operation != null) {
+            exceptionMsg.append(operation.getOperation()).append(ToolConstants.SPACE);
+        }
         exceptionMsg.append(FAILED_WITH_MESSAGE);
         exceptionMsg.append(getCode(ex)).append(CAUSE_MESSAGE);
         String responseMessage = getResponseMessage(ex);
         if (StringUtils.isNotBlank(responseMessage)) {
             exceptionMsg.append(responseMessage);
         }
-        
         return exceptionMsg.toString();
     }
 

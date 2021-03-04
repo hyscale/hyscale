@@ -28,6 +28,8 @@ import java.util.Map;
 public class PropsProvider {
 
 	private static final Logger logger = LoggerFactory.getLogger(PropsProvider.class);
+	
+	private PropsProvider() {}
 
 	public static Props getProps(ServiceSpec serviceSpec) throws HyscaleException {
 		Props props = new Props();

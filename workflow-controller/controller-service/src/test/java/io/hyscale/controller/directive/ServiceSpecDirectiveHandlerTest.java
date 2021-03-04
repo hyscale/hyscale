@@ -30,12 +30,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.controller.util.ServiceSpecTestUtil;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class ServiceSpecDirectiveHandlerTest {
+class ServiceSpecDirectiveHandlerTest {
 
     private static ObjectNode serviceSpecNode = null;
 
@@ -52,15 +53,15 @@ public class ServiceSpecDirectiveHandlerTest {
 
     @ParameterizedTest
     @MethodSource(value = "input")
-    public void testServiceSpecUpdate(IServiceSpecUpdateTestHandler serviceSpecJsonHandlerTest) {
+    void testServiceSpecUpdate(IServiceSpecUpdateTestHandler serviceSpecJsonHandlerTest) {
         String serviceSpec = serviceSpecJsonHandlerTest.getServiceSpecPath();
         try {
             oldServiceSpec = ServiceSpecTestUtil.getServiceSpec(serviceSpec);
             serviceSpecNode = (ObjectNode) ServiceSpecTestUtil.getServiceSpecJsonNode(serviceSpec);
             updatedServiceSpec = serviceSpecJsonHandlerTest.updateServiceSpec(serviceSpecNode);
             assertTrue(serviceSpecJsonHandlerTest.validate(oldServiceSpec, updatedServiceSpec));
-        } catch (IOException e) {
-            fail();
+        } catch (IOException | HyscaleException e) {
+            fail(e);
         }
     }
 

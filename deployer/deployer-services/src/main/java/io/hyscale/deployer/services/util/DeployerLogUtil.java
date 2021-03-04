@@ -82,8 +82,7 @@ public class DeployerLogUtil {
 			logProcessor.readLogFile(new File(logFile), System.out);
 		} catch (IOException e) {
 			logger.error("Failed to get deploy logs {}", serviceName, e);
-			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_GET_LOGS);
-			throw ex;
+			throw new HyscaleException(e, DeployerErrorCodes.FAILED_TO_GET_LOGS);
 		} catch (HyscaleException ex) {
 			throw ex;
 		}
@@ -104,8 +103,7 @@ public class DeployerLogUtil {
                 podName, serviceName, readLines, true)) {
 			IOUtils.copy(is, System.out);
 		} catch (IOException e) {
-			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_GET_LOGS);
-			throw ex;
+			throw new HyscaleException(e, DeployerErrorCodes.FAILED_TO_GET_LOGS);
 		} catch (HyscaleException ex) {
 			throw ex;
 		}

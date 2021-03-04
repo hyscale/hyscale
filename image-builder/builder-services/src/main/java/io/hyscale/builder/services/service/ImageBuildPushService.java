@@ -20,7 +20,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 /**
- * Interface to build & push from the service spec
+ * Interface to build and push from the service spec
  * If buildSpec is defined in the service spec
  * <p>Implementation Notes</p>
  * Implementations of this interface should be responsible for
@@ -40,7 +40,7 @@ public interface ImageBuildPushService {
 	 *  specified in the service spec and push it to the #BuildContext.imageRegistry
 	 *
 	 * @param serviceSpec servicespec
-	 * @param context  parameters that control the image build & image push
+	 * @param context  parameters that control the image build and image push
 	 * @throws HyscaleException
 	 */
 

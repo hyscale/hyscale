@@ -18,7 +18,7 @@ package io.hyscale.controller.commands.input;
 import java.io.File;
 import java.util.List;
 
-import io.hyscale.controller.piccoli.ProfileArgsManipulator;
+import io.hyscale.controller.commands.args.FileConverter;
 import picocli.CommandLine;
 
 /**
@@ -28,11 +28,11 @@ import picocli.CommandLine;
  */
 public class ProfileArg {
 
-    @CommandLine.Option(names = { "-p", "--profile" }, required = false, description = "Profile for service.")
+    @CommandLine.Option(names = { "-p", "--profile" }, 
+            required = false, description = "Profile for service.", converter = FileConverter.class)
     private List<File> profiles;
 
-    // TODO Replace once picocli supports case sensitive args
-    @CommandLine.Option(names = ProfileArgsManipulator.TEMP_PROFILE_DIR_OPTION, required = false, description = "Profile name for service.")
+    @CommandLine.Option(names = {"-P"}, required = false, description = "Profile name for service.")
     private String profileName;
 
     public List<File> getProfiles() {

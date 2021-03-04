@@ -17,6 +17,7 @@ package io.hyscale.generator.services.plugins;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,9 +40,9 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.commons.models.ResourceLabelKey;
+import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.commons.models.VolumeAccessMode;
 import io.hyscale.generator.services.model.ManifestResource;
-import io.hyscale.generator.services.model.ServiceMetadata;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -69,9 +70,9 @@ public class VolumeTemplatesHandler implements ManifestHandler {
         };
         List<Volume> volumes = serviceSpec.get(HyscaleSpecFields.volumes, volumesList);
         String podSpecOwner = (String) manifestContext.getGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER);
-        if (!validateVolumes(volumes, manifestContext) || !(podSpecOwner.equals(ManifestResource.DEPLOYMENT.getKind()) || podSpecOwner.equals(ManifestResource.STATEFUL_SET.getKind()))) {
+        if (!validateVolumes(volumes) || !(podSpecOwner.equals(ManifestResource.DEPLOYMENT.getKind()) || podSpecOwner.equals(ManifestResource.STATEFUL_SET.getKind()))) {
             logger.debug("Validation for volume templates failed.");
-            return null;
+            return Collections.emptyList();
         }
 
         String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
@@ -158,20 +159,12 @@ public class VolumeTemplatesHandler implements ManifestHandler {
         }
     }
 
-    private boolean validateVolumes(List<Volume> volumes, ManifestContext manifestContext) throws HyscaleException {
+    private boolean validateVolumes(List<Volume> volumes) {
         if (volumes == null || volumes.isEmpty()) {
             logger.debug("No volumes found.");
             return false;
         }
 
-        /*for (Volume volume : volumes) {
-            if (StringUtils.isBlank(volume.getStorageClass())) {
-                logger.debug("Storage class for volume {} found to be empty.",volume);
-                WorkflowLogger.persist(ManifestGeneratorActivity.MISSING_FIELD, HyscaleSpecFields.storageClass);
-                HyscaleException he = new HyscaleException(ManifestErrorCodes.MISSING_STORAGE_CLASS_FOR_VOLUMES, volume.getName());
-                throw he;
-            }
-        }*/
         return true;
     }
 
