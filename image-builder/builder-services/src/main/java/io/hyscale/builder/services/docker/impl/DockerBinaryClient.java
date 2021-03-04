@@ -49,7 +49,6 @@ import org.springframework.stereotype.Component;
 import io.hyscale.builder.services.config.ImageBuilderConfig;
 import io.hyscale.builder.services.docker.HyscaleDockerClient;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
-import io.hyscale.builder.core.models.BuildContext;
 import io.hyscale.builder.core.models.DockerImage;
 import io.hyscale.builder.core.models.ImageBuilderActivity;
 import io.hyscale.commons.commands.CommandExecutor;

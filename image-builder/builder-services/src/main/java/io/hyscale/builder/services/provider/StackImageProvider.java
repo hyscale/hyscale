@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.hyscale.builder.services.predicates.ImageBuilderPredicates;
 import io.hyscale.builder.services.util.DockerfileUtil;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -103,6 +104,9 @@ public class StackImageProvider {
             return Collections.emptyList();
         }
         String dockerfilePath = dockerfileUtil.getDockerfileAbsolutePath(dockerfile);
+        if (!ImageBuilderPredicates.getDockerfileExistsPredicate().test(dockerfilePath)) {
+            return Collections.emptyList();
+        }
         Set<String> stackImages = new HashSet<>();
         try {
             List<String> fileData = Files.readAllLines(Paths.get(dockerfilePath));
@@ -118,6 +122,6 @@ public class StackImageProvider {
         } catch (IOException e) {
             logger.error("Error while getting stack images from dockerfile");
         }
-        return new ArrayList<String>(stackImages);
+        return new ArrayList<>(stackImages);
     }
 }

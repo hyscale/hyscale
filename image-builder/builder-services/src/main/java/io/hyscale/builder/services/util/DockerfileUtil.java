@@ -45,6 +45,8 @@ public class DockerfileUtil {
         String dockerfilePath = sb.toString();
         dockerfilePath = StringUtils.isNotBlank(dockerfilePath) ? SetupConfig.getAbsolutePath(dockerfilePath)
                 : SetupConfig.getAbsolutePath(".");
-        return dockerfilePath + ToolConstants.LINUX_FILE_SEPARATOR + DockerImageConstants.DOCKERFILE_NAME;
+        return dockerfilePath.endsWith(ToolConstants.FILE_SEPARATOR)
+                ? dockerfilePath + DockerImageConstants.DOCKERFILE_NAME
+                : dockerfilePath + ToolConstants.FILE_SEPARATOR + DockerImageConstants.DOCKERFILE_NAME;
     }
 }

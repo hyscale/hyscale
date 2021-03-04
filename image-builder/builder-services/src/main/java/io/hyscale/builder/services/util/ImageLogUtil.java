@@ -16,6 +16,7 @@
 package io.hyscale.builder.services.util;
 
 import java.io.File;
+import java.io.OutputStream;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.io.LogProcessor;
@@ -39,6 +40,9 @@ import io.hyscale.builder.services.constants.DockerImageConstants;
 public class ImageLogUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(ImageLogUtil.class);
+    
+    @SuppressWarnings("java:S106")
+    private static final OutputStream SYSTEM_OUTPUT_STREAM = System.out;
     
 	@Autowired
 	private LogProcessor processLogFile;
@@ -105,7 +109,7 @@ public class ImageLogUtil {
         if (logFile.exists() && logFile.isFile()) {
             WorkflowLogger.header(activity);
             logger.debug("Reading logs file {}", logFilePath);
-            processLogFile.readLogFile(logFile, System.out);
+            processLogFile.readLogFile(logFile, SYSTEM_OUTPUT_STREAM);
         }
     }
     

@@ -62,7 +62,7 @@ public class ImageCommandProvider {
 	private static final String LOGIN = " login ";
 	private static final String CONFIG = " --config ";
 	private static final String USER_ARG = " -u ";
-	private static final String PASSWORD_ARG = " -p ";
+	private static final String PASS_ARG = " -p ";
 	private static final boolean USE_SUDO = false;
 	private static final boolean USE_CONFIG = true;
 	
@@ -201,7 +201,7 @@ public class ImageCommandProvider {
             if (isPasswordJson(password)) {
                 password = "'" + password + "'";
             }
-            sb.append(PASSWORD_ARG).append(password);
+            sb.append(PASS_ARG).append(password);
         }
         return sb.toString();
     }
