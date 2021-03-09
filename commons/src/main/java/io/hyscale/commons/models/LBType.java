@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.hyscale.generator.services.model;
+package io.hyscale.commons.models;
 
-import io.hyscale.commons.utils.HyscaleContextUtil;
-import io.hyscale.generator.services.builder.*;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -25,37 +23,27 @@ import java.util.List;
 
 public enum LBType {
 
-    INGRESS(IngressProvider.NGINX.getProvider(),IngressProvider.TRAEFIK.getProvider()){
-        @Override
-        public LoadBalancerBuilder getBuilder() {
-            return HyscaleContextUtil.getSpringBean(IngressManifestBuilder.class);
-        }
-
+    INGRESS("nginx", "traefik") {
         @Override
         public String getServiceAddressPlaceHolder() {
-            return  "<External IP of Ingress controller service>";
+            return "<External IP of Ingress controller service>";
         }
     },
-    ISTIO("istio"){
-        @Override
-        public LoadBalancerBuilder getBuilder() {
-            return HyscaleContextUtil.getSpringBean(IstioManifestBuilder.class);
-        }
-
+    ISTIO("istio") {
         @Override
         public String getServiceAddressPlaceHolder() {
-            return  "<External IP of istio-ingress-gateway>";
+            return "<External IP of istio-ingress-gateway>";
         }
     };
 
     private List<String> lbProviders;
 
-    LBType(String... providers){
+    LBType(String... providers) {
         this.lbProviders = new ArrayList<>();
         this.lbProviders.addAll(Arrays.asList(providers));
     }
 
-    public List<String> getProviders(){
+    public List<String> getProviders() {
         return this.lbProviders;
     }
 
@@ -65,8 +53,8 @@ public enum LBType {
         }
         for (LBType lbType : LBType.values()) {
             List<String> lbProviders = lbType.getProviders();
-            for(String lbProvider : lbProviders){
-                if(lbProvider.equalsIgnoreCase(provider)){
+            for (String lbProvider : lbProviders) {
+                if (lbProvider.equalsIgnoreCase(provider)) {
                     return lbType;
                 }
             }
@@ -74,10 +62,6 @@ public enum LBType {
         return null;
     }
 
-    public abstract LoadBalancerBuilder getBuilder();
-
     public abstract String getServiceAddressPlaceHolder();
 
 }
-
-
