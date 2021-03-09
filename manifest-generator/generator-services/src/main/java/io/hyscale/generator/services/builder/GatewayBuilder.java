@@ -15,16 +15,11 @@
  */
 package io.hyscale.generator.services.builder;
 
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.models.ConfigTemplate;
 import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.ServiceMetadata;
-import io.hyscale.commons.utils.MustacheTemplateResolver;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.provider.PluginTemplateProvider;
-import io.hyscale.plugin.framework.models.ManifestSnippet;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -33,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class GatewayBuilder implements IstioResourcesManifestGenerator {
+public class GatewayBuilder extends IstioResourcesManifestGenerator {
 
     private static final String GATEWAY_LABELS = "labels";
     private static final String TLS_MODE = "TLS_MODE";
@@ -41,25 +36,26 @@ public class GatewayBuilder implements IstioResourcesManifestGenerator {
     private static final String PROTOCOL = "PROTOCOL";
     private static final String PORT_NUMBER = "PORT_NUMBER";
     private static final Integer DEFAULT_GATEWAY_PORT = 80;
+    private static final Integer DEFAULT_GATEWAY_TLS_PORT = 443;
 
-    @Autowired
-    private PluginTemplateProvider templateProvider;
-
-    @Autowired
-    private MustacheTemplateResolver templateResolver;
 
     @Override
-    public ManifestSnippet generateManifest(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
-        ConfigTemplate gatewayTemplate = templateProvider.get(PluginTemplateProvider.PluginTemplateType.ISTIO_GATEWAY);
-        String yaml = templateResolver.resolveTemplate(gatewayTemplate.getTemplatePath(), getContext(loadBalancer));
-        ManifestSnippet snippet = new ManifestSnippet();
-        snippet.setKind(ManifestResource.GATEWAY.getKind());
-        snippet.setPath("spec");
-        snippet.setSnippet(yaml);
-        return snippet;
+    protected PluginTemplateProvider.PluginTemplateType getTemplateType() {
+        return PluginTemplateProvider.PluginTemplateType.ISTIO_GATEWAY;
     }
 
-    private Map<String, Object> getContext(LoadBalancer loadBalancer) {
+    @Override
+    protected String getKind() {
+        return ManifestResource.GATEWAY.getKind();
+    }
+
+    @Override
+    protected String getPath() {
+        return "spec";
+    }
+
+    @Override
+    protected Map<String, Object> getContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) {
         Map<String, Object> map = new HashMap<>();
         map.put(GATEWAY_LABELS, loadBalancer.getLabels().entrySet());
         map.put(ManifestGenConstants.LOADBALANCER, loadBalancer);
@@ -67,7 +63,7 @@ public class GatewayBuilder implements IstioResourcesManifestGenerator {
         hosts.add(loadBalancer.getHost());
         map.put(ManifestGenConstants.HOSTS, hosts);
         map.put(TLS_MODE, DEFAULT_TLS_MODE);
-        map.put(PORT_NUMBER, DEFAULT_GATEWAY_PORT);
+        map.put(PORT_NUMBER, loadBalancer.getTlsSecret() == null ? DEFAULT_GATEWAY_PORT : DEFAULT_GATEWAY_TLS_PORT);
         map.put(PROTOCOL, loadBalancer.getTlsSecret() != null ? "HTTPS" : "HTTP");
         return map;
     }

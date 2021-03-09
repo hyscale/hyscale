@@ -48,7 +48,7 @@ public enum ValidatorActivity implements Activity {
     EXTERNAL_CONFIGURED("When external is configured as false in hspec, loadBalancer configuration snippet can not be applied."),//TODO Verify warning message
     LB_CLASS_NAME_REQUIRED("loadBalancer className is required."),
     LB_GATEWAY_LABEL_REQUIRED("loadaBalancer gateway label is required for istio."),
-    LB_TYPE_REQUIRED("loadBalancer type is required."),
+    LB_PROVIDER_REQUIRED("loadBalancer provider is required."),
     LB_HOST_REQUIRED("loadBalancer host is required."),
     LB_MAPPING_REQUIRED("loadBalancer mapping is required."),
     LB_PORT_REQUIRED("port is required {}."),

@@ -1,7 +1,7 @@
 name: productpage
 image:
      registry: registry.hub.docker.com
-     name: inagachandra/bookinfo-productpage
+     name: username/bookinfo-productpage # replace with your dockerhub username for {{username}}
      tag: 1.16.2
      buildSpec:
        stackImage: docker.io/istio/examples-bookinfo-productpage-v1:1.16.2

@@ -21,7 +21,7 @@ import io.hyscale.generator.services.builder.NginxMetaDataBuilder;
 import io.hyscale.generator.services.builder.TraefikMetaDataBuilder;
 import org.apache.commons.lang3.StringUtils;
 
-public enum IngressProvider {
+public enum IngressBuilderProvider {
     NGINX("nginx"){
         @Override
         public IngressMetaDataBuilder getMetadataBuilder() {
@@ -37,19 +37,19 @@ public enum IngressProvider {
 
     private String provider;
 
-    IngressProvider(String provider){
+    IngressBuilderProvider(String provider){
         this.provider = provider;
     }
 
     public String getProvider(){ return this.provider; }
 
-    public static IngressProvider fromString(String provider) {
+    public static IngressBuilderProvider fromString(String provider) {
         if (StringUtils.isBlank(provider)) {
             return null;
         }
-        for (IngressProvider ingressProvider : IngressProvider.values()) {
-            if(ingressProvider.getProvider().equalsIgnoreCase(provider)){
-                return ingressProvider;
+        for (IngressBuilderProvider ingressBuilderProvider : IngressBuilderProvider.values()) {
+            if(ingressBuilderProvider.getProvider().equalsIgnoreCase(provider)){
+                return ingressBuilderProvider;
             }
         }
         return null;

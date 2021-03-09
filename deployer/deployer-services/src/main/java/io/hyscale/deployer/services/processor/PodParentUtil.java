@@ -119,8 +119,7 @@ public class PodParentUtil {
             }
             if (metadata != null) {
                 JsonParser jsonParser = new JsonParser();
-                JsonObject lastAppliedConfigJson = (JsonObject) jsonParser.parse(metadata.getAnnotations().get(AnnotationKey.K8S_HYSCALE_LAST_APPLIED_CONFIGURATION.getAnnotation()));
-                JsonObject serviceSpec = (JsonObject) jsonParser.parse(lastAppliedConfigJson.getAsJsonObject("metadata").getAsJsonObject("annotations").get(AnnotationKey.HYSCALE_SERVICE_SPEC.getAnnotation()).getAsString());
+                JsonObject serviceSpec = (JsonObject) jsonParser.parse(metadata.getAnnotations().get(AnnotationKey.HYSCALE_SERVICE_SPEC.getAnnotation()));
                 if (serviceSpec.get("loadBalancer") != null) {
                     return GsonProviderUtil.getPrettyGsonBuilder().fromJson(serviceSpec.get("loadBalancer"), LoadBalancer.class);
                 }

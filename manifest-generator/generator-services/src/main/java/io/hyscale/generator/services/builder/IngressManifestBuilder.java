@@ -20,7 +20,7 @@ import io.hyscale.commons.models.ConfigTemplate;
 import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.commons.utils.MustacheTemplateResolver;
-import io.hyscale.generator.services.model.IngressProvider;
+import io.hyscale.generator.services.model.IngressBuilderProvider;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.provider.PluginTemplateProvider;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
@@ -64,7 +64,7 @@ public class IngressManifestBuilder implements LoadBalancerBuilder {
 
     private ManifestSnippet getProviderSpecificMetadata(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
         String provider = loadBalancer.getProvider();
-        return IngressProvider.fromString(provider).getMetadataBuilder().build(serviceMetadata,loadBalancer);
+        return IngressBuilderProvider.fromString(provider).getMetadataBuilder().build(serviceMetadata,loadBalancer);
     }
 
     private Map<String, Object> getIngressSpecContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) {

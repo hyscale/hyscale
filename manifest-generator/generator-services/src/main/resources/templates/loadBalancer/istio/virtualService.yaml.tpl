@@ -6,12 +6,7 @@ gateways:
 {{#gateways}}
 - {{ . }}
 {{/gateways}}
-{{#loadBalancer.tlsSecret}}
-tls:
-{{/loadBalancer.tlsSecret}}
-{{^loadBalancer.tlsSecret}}
 http:
-{{/loadBalancer.tlsSecret}}
 {{#loadBalancer.mapping}}
 - match:
 {{#contextPaths}}

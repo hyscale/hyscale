@@ -24,6 +24,7 @@ import io.hyscale.generator.services.utils.ServiceSpecTestUtil;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -44,15 +45,20 @@ class VirtualServiceBuilderTest {
     @Autowired
     private VirtualServiceBuilder virtualServiceBuilder;
 
+    private ServiceMetadata serviceMetadata = new ServiceMetadata();
+
+    @BeforeAll
+    public void init() throws HyscaleException {
+        serviceMetadata.setAppName("book-info");
+        serviceMetadata.setServiceName("productpage");
+        serviceMetadata.setEnvName("dev");
+    }
+
     private static Stream<Arguments> input() throws HyscaleException {
         try {
             return Stream.of(Arguments.of(
                     ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-istio.hspec"),
                     FileUtils.readFileToString(new File(VirtualServiceBuilderTest.class.getResource("/builder/output/virtualService.yaml").getFile()), StandardCharsets.UTF_8)
-                    ),
-                    Arguments.of(
-                            ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-with-tls-istio.hspec"),
-                            FileUtils.readFileToString(new File(VirtualServiceBuilderTest.class.getResource("/builder/output/virtualService-with-tls.yaml").getFile()), StandardCharsets.UTF_8)
                     )
             );
         } catch (Exception e) {
@@ -65,10 +71,6 @@ class VirtualServiceBuilderTest {
     @ParameterizedTest
     @MethodSource("input")
     void testGenerateManifest(ServiceSpec serviceSpec, String output) throws HyscaleException {
-        ServiceMetadata serviceMetadata = new ServiceMetadata();
-        serviceMetadata.setAppName("book-info");
-        serviceMetadata.setServiceName("productpage");
-        serviceMetadata.setEnvName("dev");
         LoadBalancer loadBalancer = ManifestContextTestUtil.getLoadBalancerFromSpec(serviceSpec);
         ManifestSnippet manifestSnippet = virtualServiceBuilder.generateManifest(serviceMetadata, loadBalancer);
         assertEquals(manifestSnippet.getSnippet().replaceAll("\\s", ""), output.replaceAll("\\s", ""));

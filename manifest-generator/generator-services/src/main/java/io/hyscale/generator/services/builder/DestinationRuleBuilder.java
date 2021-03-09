@@ -15,50 +15,45 @@
  */
 package io.hyscale.generator.services.builder;
 
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.models.ConfigTemplate;
 import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.ServiceMetadata;
-import io.hyscale.commons.utils.MustacheTemplateResolver;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.provider.PluginTemplateProvider;
-import io.hyscale.plugin.framework.models.ManifestSnippet;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class DestinationRuleBuilder implements IstioResourcesManifestGenerator {
+public class DestinationRuleBuilder extends IstioResourcesManifestGenerator {
 
     private static final String HOST_NAME = "HOST_NAME";
 
-    @Autowired
-    private PluginTemplateProvider templateProvider;
-
-    @Autowired
-    private MustacheTemplateResolver templateResolver;
 
     @Override
-    public ManifestSnippet generateManifest(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
-        if(loadBalancer.isSticky()){
-            ConfigTemplate virtualServiceTemplate = templateProvider.get(PluginTemplateProvider.PluginTemplateType.ISTIO_DESTINATION_RULE);
-            String yaml = templateResolver.resolveTemplate(virtualServiceTemplate.getTemplatePath(), getContext(serviceMetadata, loadBalancer));
-            ManifestSnippet snippet = new ManifestSnippet();
-            snippet.setKind(ManifestResource.DESTINATION_RULE.getKind());
-            snippet.setPath("spec");
-            snippet.setSnippet(yaml);
-            return snippet;
-        }
-        return null;
+    protected PluginTemplateProvider.PluginTemplateType getTemplateType() {
+        return PluginTemplateProvider.PluginTemplateType.ISTIO_DESTINATION_RULE;
     }
 
-    private Map<String, Object> getContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) {
-        Map<String, Object> map = new HashMap<>();
-        map.put(HOST_NAME, serviceMetadata.getServiceName());
-        map.put(ManifestGenConstants.LOADBALANCER, loadBalancer);
-        return map;
+    @Override
+    protected String getKind() {
+        return ManifestResource.DESTINATION_RULE.getKind();
+    }
+
+    @Override
+    protected String getPath() {
+        return "spec";
+    }
+
+    @Override
+    protected Map<String, Object> getContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) {
+        if(loadBalancer.isSticky()){
+            Map<String, Object> map = new HashMap<>();
+            map.put(HOST_NAME, serviceMetadata.getServiceName());
+            map.put(ManifestGenConstants.LOADBALANCER, loadBalancer);
+            return map;
+        }
+        return  null;
     }
 }

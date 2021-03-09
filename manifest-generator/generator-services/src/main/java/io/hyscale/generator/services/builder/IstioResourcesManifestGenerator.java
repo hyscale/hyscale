@@ -16,10 +16,45 @@
 package io.hyscale.generator.services.builder;
 
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.models.ConfigTemplate;
 import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.ServiceMetadata;
+import io.hyscale.commons.utils.MustacheTemplateResolver;
+import io.hyscale.generator.services.provider.PluginTemplateProvider;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
+import org.springframework.beans.factory.annotation.Autowired;
 
-public interface IstioResourcesManifestGenerator {
-    ManifestSnippet generateManifest(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException;
+import java.util.Map;
+
+public abstract class IstioResourcesManifestGenerator {
+
+    @Autowired
+    private PluginTemplateProvider templateProvider;
+
+    @Autowired
+    private MustacheTemplateResolver templateResolver;
+
+    ManifestSnippet generateManifest(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
+        ConfigTemplate gatewayTemplate = templateProvider.get(getTemplateType());
+        Map<String, Object> context = getContext(serviceMetadata, loadBalancer);
+        if (context == null) {
+            return null;
+        }
+        String yaml = templateResolver.resolveTemplate(gatewayTemplate.getTemplatePath(), context);
+        ManifestSnippet snippet = new ManifestSnippet();
+        snippet.setKind(getKind());
+        snippet.setPath(getPath());
+        snippet.setSnippet(yaml);
+        return snippet;
+    }
+
+    protected abstract PluginTemplateProvider.PluginTemplateType getTemplateType();
+
+    protected abstract String getKind();
+
+    protected abstract String getPath();
+
+    protected abstract Map<String, Object> getContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer);
+
+
 }

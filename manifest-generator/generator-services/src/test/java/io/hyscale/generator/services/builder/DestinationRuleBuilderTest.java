@@ -18,7 +18,6 @@ package io.hyscale.generator.services.builder;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.ServiceMetadata;
-import io.hyscale.generator.services.exception.ManifestErrorCodes;
 import io.hyscale.generator.services.utils.ManifestContextTestUtil;
 import io.hyscale.generator.services.utils.ServiceSpecTestUtil;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
@@ -27,18 +26,15 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -66,7 +62,7 @@ class DestinationRuleBuilderTest {
     }
 
     @Test
-    void testGenerateManifes2() throws HyscaleException {
+    void skipDestinationRuleGeneration() throws HyscaleException {
         ServiceSpec serviceSpec = ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-istio.hspec");
         LoadBalancer loadBalancer = ManifestContextTestUtil.getLoadBalancerFromSpec(serviceSpec);
         ManifestSnippet manifestSnippet = destinationRuleBuilder.generateManifest(serviceMetadata, loadBalancer);

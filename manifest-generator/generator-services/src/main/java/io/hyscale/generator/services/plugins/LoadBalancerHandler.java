@@ -15,12 +15,12 @@
  */
 package io.hyscale.generator.services.plugins;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.models.LBType;
 import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.commons.models.ServiceMetadata;
-import io.hyscale.generator.services.model.LBType;
+import io.hyscale.generator.services.model.LBBuilderType;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
 import io.hyscale.plugin.framework.annotation.ManifestPlugin;
 import io.hyscale.plugin.framework.handler.ManifestHandler;
@@ -52,19 +52,14 @@ public class LoadBalancerHandler implements ManifestHandler {
             logger.debug("Load Balancer information found to be empty while processing service spec data.");
             return Collections.emptyList();
         }
-        LoadBalancer loadBalancer = serviceSpec.get(HyscaleSpecFields.loadBalancer, new TypeReference<LoadBalancer>() {
-        });
-        try {
-            LBType lbType = LBType.getByProvider(loadBalancer.getProvider());
-            ServiceMetadata serviceMetadata = new ServiceMetadata();
-            serviceMetadata.setAppName(manifestContext.getAppName());
-            serviceMetadata.setEnvName(manifestContext.getEnvName());
-            String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
-            serviceMetadata.setServiceName(serviceName);
-            return lbType.getBuilder().build(serviceMetadata, loadBalancer);
-        } catch (HyscaleException e) {
-            logger.error("Error while generating LoadBalancer manifests.", e);
-            return Collections.emptyList();
-        }
+        LoadBalancer loadBalancer = serviceSpec.get(HyscaleSpecFields.loadBalancer, LoadBalancer.class);
+        LBType lbType = LBType.getByProvider(loadBalancer.getProvider());
+        LBBuilderType lbBuilderType = LBBuilderType.getByType(lbType);
+        ServiceMetadata serviceMetadata = new ServiceMetadata();
+        serviceMetadata.setAppName(manifestContext.getAppName());
+        serviceMetadata.setEnvName(manifestContext.getEnvName());
+        String serviceName = serviceSpec.get(HyscaleSpecFields.name, String.class);
+        serviceMetadata.setServiceName(serviceName);
+        return lbBuilderType != null ? lbBuilderType.getBuilder().build(serviceMetadata, loadBalancer) : Collections.emptyList();
     }
 }

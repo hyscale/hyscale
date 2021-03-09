@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 import io.hyscale.commons.constants.ToolConstants;
+import io.hyscale.commons.models.LBType;
 import io.hyscale.generator.services.builder.DefaultLabelBuilder;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.predicates.ManifestPredicates;
@@ -228,7 +229,7 @@ public enum ManifestResource {
 
         @Override
         public Predicate<ServiceSpec> getPredicate() {
-            return ManifestPredicates.getDestinationRUlePredicate();
+            return ManifestPredicates.getDestinationRulePredicate();
         }
     };
 

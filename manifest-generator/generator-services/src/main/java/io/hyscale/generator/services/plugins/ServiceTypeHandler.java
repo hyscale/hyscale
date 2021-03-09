@@ -47,18 +47,7 @@ public class ServiceTypeHandler implements ManifestHandler {
             ManifestSnippet serviceTypeSnippet = new ManifestSnippet();
             serviceTypeSnippet.setKind(ManifestResource.SERVICE.getKind());
             serviceTypeSnippet.setPath("spec.type");
-
-            Boolean external = serviceSpec.get(HyscaleSpecFields.external, Boolean.class);
-            /**
-             * If loadBalancer is configured and external is specified as true in hspec, then Service type could be CLUSTER_IP.
-             * If loadBalancer is not configured, external is not specified or specified as false, then Service type could be CLUSTER_IP.
-             * Conclusion :  If loadBalancer is configured, service type will be CLUSTER_IP irrespective of the "external".
-             */
-            LoadBalancer loadBalancer = serviceSpec.get(HyscaleSpecFields.loadBalancer, LoadBalancer.class);
-            if (loadBalancer != null) {
-                external = false;
-            }
-            K8sServiceType serviceType = getServiceType(external);
+            K8sServiceType serviceType = getServiceType(serviceSpec);
             String serviceTypeName = serviceType != null ? serviceType.getName() : K8sServiceType.CLUSTER_IP.getName();
             logger.debug("Processing Service Type {}.",serviceTypeName);
             serviceTypeSnippet.setSnippet(serviceTypeName);
@@ -67,21 +56,26 @@ public class ServiceTypeHandler implements ManifestHandler {
         return manifestSnippetList;
     }
 
-    @SuppressWarnings("java:S2583")
-    private K8sServiceType getServiceType(Boolean external) {
+    /**
+     * If loadBalancer is configured and external is specified as true in hspec, then Service type could be CLUSTER_IP.
+     * If loadBalancer is not configured and external is true then service type could be LOAD_BALANCER.
+     */
+    private K8sServiceType getServiceType(ServiceSpec serviceSpec) throws HyscaleException {
+        Boolean external = serviceSpec.get(HyscaleSpecFields.external, Boolean.class);
         if (BooleanUtils.toBoolean(external)) {
-            if (checkForLoadBalancerType()) {
-                return K8sServiceType.LOAD_BALANCER;
+            if (checkForLoadBalancerType(serviceSpec)) {
+                return K8sServiceType.CLUSTER_IP;
             } else {
-                return K8sServiceType.NODE_PORT;
+                return K8sServiceType.LOAD_BALANCER;
             }
         } else {
             return K8sServiceType.CLUSTER_IP;
         }
     }
 
-    private boolean checkForLoadBalancerType() {
-        return true;
+    private boolean checkForLoadBalancerType(ServiceSpec serviceSpec) throws HyscaleException {
+        LoadBalancer loadBalancer = serviceSpec.get(HyscaleSpecFields.loadBalancer, LoadBalancer.class);
+        return loadBalancer != null;
     }
 
 }

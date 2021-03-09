@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.LoggerTags;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.LBType;
 import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.LoadBalancerMapping;
 import io.hyscale.commons.validator.Validator;
@@ -26,18 +27,15 @@ import io.hyscale.controller.activity.ValidatorActivity;
 import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.controller.provider.PortsProvider;
 import io.hyscale.generator.services.builder.DefaultPortsBuilder;
-import io.hyscale.generator.services.model.LBType;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
-import io.hyscale.servicespec.commons.model.service.Agent;
-import io.hyscale.servicespec.commons.model.service.Port;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
+import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -111,10 +109,8 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
      * @throws HyscaleException
      */
     private boolean checkForExternalTrue(ServiceSpec serviceSpec) throws HyscaleException {
-        TypeReference<Boolean> booleanTypeReference = new TypeReference<>() {
-        };
-        Boolean isExternal = serviceSpec.get(HyscaleSpecFields.external, booleanTypeReference);
-        if (isExternal != null && !isExternal) {
+        Boolean isExternal = serviceSpec.get(HyscaleSpecFields.external, Boolean.class);
+        if (BooleanUtils.isFalse(isExternal)) {
             WorkflowLogger.persist(ValidatorActivity.EXTERNAL_CONFIGURED, LoggerTags.ERROR);
             return false;
         }
@@ -127,31 +123,30 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
      */
     private boolean validateMandatoryFields(LoadBalancer loadBalancer) {
         boolean isMandatoryFieldsExists = true;
-        if (LBType.getByProvider(loadBalancer.getProvider()) == LBType.INGRESS && loadBalancer.getClassName() == null) {
-            isMandatoryFieldsExists = false;
-            WorkflowLogger.persist(ValidatorActivity.LB_CLASS_NAME_REQUIRED, LoggerTags.ERROR);
+        if (LBType.getByProvider(loadBalancer.getProvider()) == LBType.INGRESS) {
+            isMandatoryFieldsExists = validateEachField(loadBalancer.getClassName(), ValidatorActivity.LB_CLASS_NAME_REQUIRED);
         }
-        if (LBType.getByProvider(loadBalancer.getProvider()) == LBType.ISTIO && loadBalancer.getLabels() == null) {
-            isMandatoryFieldsExists = false;
-            WorkflowLogger.persist(ValidatorActivity.LB_GATEWAY_LABEL_REQUIRED, LoggerTags.ERROR);
+        if (LBType.getByProvider(loadBalancer.getProvider()) == LBType.ISTIO) {
+            isMandatoryFieldsExists = validateEachField(loadBalancer.getLabels(), ValidatorActivity.LB_GATEWAY_LABEL_REQUIRED);
         }
-        if (loadBalancer.getHost() == null) {
+        if (!validateEachField(loadBalancer.getHost(), ValidatorActivity.LB_HOST_REQUIRED) ||
+                !validateEachField(loadBalancer.getProvider(), ValidatorActivity.LB_PROVIDER_REQUIRED) ||
+                !validateEachField(loadBalancer.getMapping(), ValidatorActivity.LB_MAPPING_REQUIRED)) {
             isMandatoryFieldsExists = false;
-            WorkflowLogger.persist(ValidatorActivity.LB_HOST_REQUIRED, LoggerTags.ERROR);
-        }
-        if (loadBalancer.getProvider() == null) {
-            isMandatoryFieldsExists = false;
-            WorkflowLogger.persist(ValidatorActivity.LB_TYPE_REQUIRED, LoggerTags.ERROR);
-        }
-        if (loadBalancer.getMapping() == null || loadBalancer.getMapping().isEmpty()) {
-            isMandatoryFieldsExists = false;
-            WorkflowLogger.persist(ValidatorActivity.LB_MAPPING_REQUIRED, LoggerTags.ERROR);
         }
         if (loadBalancer.getMapping() != null && !loadBalancer.getMapping().isEmpty()) {
             boolean isMappingFieldsExists = validateLoadBalancerMapping(loadBalancer.getMapping());
             isMandatoryFieldsExists = isMappingFieldsExists && isMandatoryFieldsExists;
         }
         return isMandatoryFieldsExists;
+    }
+
+    public boolean validateEachField( Object object, ValidatorActivity activityMessage){
+        if (object == null) {
+            WorkflowLogger.persist(activityMessage, LoggerTags.ERROR);
+            return false;
+        }
+        return true;
     }
 
     /**

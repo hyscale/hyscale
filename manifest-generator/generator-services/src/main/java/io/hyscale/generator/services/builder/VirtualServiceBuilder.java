@@ -15,16 +15,11 @@
  */
 package io.hyscale.generator.services.builder;
 
-import io.hyscale.commons.exception.HyscaleException;
-import io.hyscale.commons.models.ConfigTemplate;
 import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.ServiceMetadata;
-import io.hyscale.commons.utils.MustacheTemplateResolver;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.model.ManifestResource;
 import io.hyscale.generator.services.provider.PluginTemplateProvider;
-import io.hyscale.plugin.framework.models.ManifestSnippet;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -33,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class VirtualServiceBuilder implements IstioResourcesManifestGenerator {
+public class VirtualServiceBuilder extends IstioResourcesManifestGenerator {
 
     private static final String DEFAULT_MATCH_TYPE = "prefix";
 
@@ -44,24 +39,23 @@ public class VirtualServiceBuilder implements IstioResourcesManifestGenerator {
     private static final String HEADERS = "headers";
 
 
-    @Autowired
-    private PluginTemplateProvider templateProvider;
-
-    @Autowired
-    private MustacheTemplateResolver templateResolver;
-
     @Override
-    public ManifestSnippet generateManifest(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException {
-        ConfigTemplate virtualServiceTemplate = templateProvider.get(PluginTemplateProvider.PluginTemplateType.ISTIO_VIRTUAL_SERVICE);
-        String yaml = templateResolver.resolveTemplate(virtualServiceTemplate.getTemplatePath(), getContext(serviceMetadata, loadBalancer));
-        ManifestSnippet snippet = new ManifestSnippet();
-        snippet.setKind(ManifestResource.VIRTUAL_SERVICE.getKind());
-        snippet.setPath("spec");
-        snippet.setSnippet(yaml);
-        return snippet;
+    protected PluginTemplateProvider.PluginTemplateType getTemplateType() {
+        return PluginTemplateProvider.PluginTemplateType.ISTIO_VIRTUAL_SERVICE;
     }
 
-    private Map<String, Object> getContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) {
+    @Override
+    protected String getKind() {
+        return ManifestResource.VIRTUAL_SERVICE.getKind();
+    }
+
+    @Override
+    protected String getPath() {
+        return "spec";
+    }
+
+    @Override
+    protected Map<String, Object> getContext(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) {
         Map<String, Object> map = new HashMap<>();
         String serviceName = serviceMetadata.getServiceName();
         String envName = serviceMetadata.getEnvName();
