@@ -84,9 +84,8 @@
 		<release.name>First Light</release.name>
 		<hspec.supported.version>0.6.4</hspec.supported.version>
 		<docker.java.version>3.1.5</docker.java.version>
-		<!--<sonar.organization>hyscale</sonar.organization>-->
-		<sonar.host.url>http://localhost:9000/</sonar.host.url>
-		<sonar.login>799a31df0a059998bb0a1bbfcc0ef4e14a507b12</sonar.login>
+		<sonar.organization>hyscale</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<jacoco.version>0.8.3</jacoco.version>
                 <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
                 <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
