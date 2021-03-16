@@ -17,6 +17,7 @@ package io.hyscale.controller.validator.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.io.StructuredOutputHandler;
 import io.hyscale.commons.logger.LoggerTags;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.LBType;
@@ -46,6 +47,9 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
 
     @Autowired
     DefaultPortsBuilder defaultPortsBuilder;
+
+    @Autowired
+    private StructuredOutputHandler structuredOutputHandler;
 
 
     private static final Logger logger = LoggerFactory.getLogger(LoadBalancerValidator.class);
@@ -90,13 +94,14 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
      */
     private boolean portValidation(ServiceSpec serviceSpec, LoadBalancer loadBalancer) throws HyscaleException {
 
-        List<String> portNumbersList = portsProvider.getExposedPorts(serviceSpec,true);
+        List<String> portNumbersList = portsProvider.getExposedPorts(serviceSpec, true);
         List<String> lbPorts = new ArrayList<>();
         loadBalancer.getMapping().forEach(e -> lbPorts.add(e.getPort()));
         for (String lbPort : lbPorts) {
             lbPort = defaultPortsBuilder.updatePortProtocol(lbPort);
             if (!portNumbersList.contains(lbPort)) {
                 WorkflowLogger.persist(ValidatorActivity.PORTS_MISMATCH, LoggerTags.ERROR, lbPort);
+                addErrorMessage(ValidatorActivity.PORTS_MISMATCH.getActivityMessage(), lbPort);
                 return false;
             }
         }
@@ -110,8 +115,9 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
      */
     private boolean checkForExternalTrue(ServiceSpec serviceSpec) throws HyscaleException {
         Boolean isExternal = serviceSpec.get(HyscaleSpecFields.external, Boolean.class);
-        if (BooleanUtils.isFalse(isExternal)) {
+        if (!BooleanUtils.toBoolean(isExternal)) {
             WorkflowLogger.persist(ValidatorActivity.EXTERNAL_CONFIGURED, LoggerTags.ERROR);
+            addErrorMessage(ValidatorActivity.EXTERNAL_CONFIGURED.getActivityMessage(), (String[]) null);
             return false;
         }
         return true;
@@ -141,9 +147,10 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
         return isMandatoryFieldsExists;
     }
 
-    public boolean validateEachField( Object object, ValidatorActivity activityMessage){
+    public boolean validateEachField(Object object, ValidatorActivity activityMessage) {
         if (object == null) {
             WorkflowLogger.persist(activityMessage, LoggerTags.ERROR);
+            addErrorMessage(activityMessage.getActivityMessage(), (String[]) null);
             return false;
         }
         return true;
@@ -155,17 +162,28 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
      */
     public boolean validateLoadBalancerMapping(List<LoadBalancerMapping> mappings) {
         boolean isMappingFieldsExists = true;
+        String errorMessage;
         for (LoadBalancerMapping mapping : mappings) {
             if (mapping.getPort() == null) {
                 isMappingFieldsExists = false;
-                WorkflowLogger.persist(ValidatorActivity.LB_PORT_REQUIRED, LoggerTags.ERROR, mapping.getContextPaths() != null ? "for contextPaths: " + String.join(",", mapping.getContextPaths()) : "");
+                errorMessage = mapping.getContextPaths() != null ? "for contextPaths: " + String.join(",", mapping.getContextPaths()) : "";
+                WorkflowLogger.persist(ValidatorActivity.LB_PORT_REQUIRED, LoggerTags.ERROR, errorMessage);
+                addErrorMessage(ValidatorActivity.LB_PORT_REQUIRED.getActivityMessage(), errorMessage);
             }
             if (mapping.getContextPaths() == null || mapping.getContextPaths().isEmpty()) {
                 isMappingFieldsExists = false;
-                WorkflowLogger.persist(ValidatorActivity.LB_CONTEXT_PATH_REQUIRED, LoggerTags.ERROR, mapping.getPort() != null ? "for port:" + mapping.getPort() : "");
+                errorMessage = mapping.getPort() != null ? "for port:" + mapping.getPort() : "";
+                WorkflowLogger.persist(ValidatorActivity.LB_CONTEXT_PATH_REQUIRED, LoggerTags.ERROR, errorMessage);
+                addErrorMessage(ValidatorActivity.LB_CONTEXT_PATH_REQUIRED.getActivityMessage(), errorMessage);
             }
         }
         return isMappingFieldsExists;
+    }
+
+    public void addErrorMessage(String errorMessage, String... args) {
+        if (WorkflowLogger.isDisabled()) {
+            structuredOutputHandler.addErrorMessage(errorMessage, args);
+        }
     }
 }
 
