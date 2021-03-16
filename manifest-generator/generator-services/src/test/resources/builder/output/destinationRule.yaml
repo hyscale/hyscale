@@ -2,4 +2,6 @@ host: productpage
 trafficPolicy:
   loadBalancer:
     consistentHash:
-      httpHeaderName: "x-user"
+      httpCookie:
+        name: DEFAULT_COOKIE
+        ttl: 60s

@@ -30,6 +30,10 @@ public class DestinationRuleBuilder extends IstioResourcesManifestGenerator {
 
     private static final String HOST_NAME = "HOST_NAME";
 
+    private static final String DEFAULT_COOKIE_NAME = "DEFAULT_COOKIE";
+
+    private static final int DEFAULT_COOKIE_TLS = 60;
+
 
     @Override
     protected PluginTemplateProvider.PluginTemplateType getTemplateType() {
@@ -52,6 +56,8 @@ public class DestinationRuleBuilder extends IstioResourcesManifestGenerator {
             Map<String, Object> map = new HashMap<>();
             map.put(HOST_NAME, serviceMetadata.getServiceName());
             map.put(ManifestGenConstants.LOADBALANCER, loadBalancer);
+            map.put("DEFAULT_COOKIE_NAME",DEFAULT_COOKIE_NAME);
+            map.put("DEFAULT_COOKIE_TLS",DEFAULT_COOKIE_TLS);
             return map;
         }
         return  null;

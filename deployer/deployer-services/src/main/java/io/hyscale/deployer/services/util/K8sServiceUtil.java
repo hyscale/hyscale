@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Utility to process information from {@link V1Service}
@@ -105,9 +106,9 @@ public class K8sServiceUtil {
 	return portsList;
     }
 
-	public static ServiceAddress getLBServiceAddress(LoadBalancer loadBalancer, ApiClient apiClient, String lbSelector, String namespace, boolean wait) throws HyscaleException {
+	public static ServiceAddress getLBServiceAddress(boolean wait, LoadBalancer loadBalancer, ApiClient apiClient, String lbSelector, String namespace) throws HyscaleException {
 		if (!wait) {
-			return getLBServiceAddress(loadBalancer, apiClient, lbSelector, namespace);
+			return getLBServiceAddress(loadBalancer, apiClient, lbSelector, namespace, true);
 		}
 		ServiceAddress serviceAddress = null;
 		long startTime = System.currentTimeMillis();
@@ -116,7 +117,7 @@ public class K8sServiceUtil {
 		try {
 			while (System.currentTimeMillis() - startTime < LB_READY_STATE_TIME) {
 				WorkflowLogger.continueActivity(serviceIPContext);
-				serviceAddress = getLBServiceAddress(loadBalancer, apiClient, lbSelector, namespace);
+				serviceAddress = getLBServiceAddress(loadBalancer, apiClient, lbSelector, namespace, false);
 				if (serviceAddress != null && serviceAddress.getServiceIP() != null) {
 					break;
 				}
@@ -133,25 +134,28 @@ public class K8sServiceUtil {
 			WorkflowLogger.endActivity(serviceIPContext, Status.FAILED);
 			throw new HyscaleException(DeployerErrorCodes.FAILED_TO_GET_SERVICE_ADDRESS);
 		}
+		if (serviceAddress.getServiceIP() == null) {
+			serviceAddress = getLBServiceAddress(loadBalancer, apiClient, lbSelector, namespace, true);
+		}
 		WorkflowLogger.endActivity(serviceIPContext, Status.DONE);
 		return serviceAddress;
 	}
 
-	public static ServiceAddress getLBServiceAddress(LoadBalancer loadBalancer, ApiClient apiClient, String lbSelector, String namespace) {
+	public static ServiceAddress getLBServiceAddress(LoadBalancer loadBalancer, ApiClient apiClient, String lbSelector, String namespace, boolean setDefault) {
 		LBType lbType = LBType.getByProvider(loadBalancer.getProvider());
 		if (lbType != null) {
 			ServiceAddress serviceAddress = new ServiceAddress();
 			serviceAddress.setServiceIP(lbType.getServiceAddressPlaceHolder());
 			serviceAddress.setServiceURL(loadBalancer.getHost());
 			if (lbType.equals(LBType.INGRESS)) {
-				return getIngressServiceAddress(loadBalancer, apiClient, lbSelector, namespace);
+				return getIngressServiceAddress(loadBalancer, apiClient, lbSelector, namespace, setDefault);
 			}
 			return serviceAddress;
 		}
 		return null;
 	}
 
-	public static ServiceAddress getIngressServiceAddress(LoadBalancer loadBalancer, ApiClient apiClient, String ingressSelector, String namespace) {
+	public static ServiceAddress getIngressServiceAddress(LoadBalancer loadBalancer, ApiClient apiClient, String ingressSelector, String namespace, boolean setDefaultIp) {
 		try {
 			ServiceAddress serviceAddress = new ServiceAddress();
 			serviceAddress.setServiceURL(loadBalancer.getHost());
@@ -166,6 +170,10 @@ public class K8sServiceUtil {
 					JsonObject ingress = status.getAsJsonObject(LOAD_BALANCER).getAsJsonArray("ingress").get(0).getAsJsonObject();
 					serviceAddress.setServiceIP(ingress.get("ip").getAsString());
 				}
+			}
+			if (serviceAddress.getServiceIP() == null && setDefaultIp) {
+				LBType lbType = LBType.getByProvider(loadBalancer.getProvider());
+				serviceAddress.setServiceIP(Objects.requireNonNull(lbType).getServiceAddressPlaceHolder());
 			}
 			return serviceAddress;
 		} catch (Exception e) {
