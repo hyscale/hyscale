@@ -27,6 +27,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class generates istio virtual service yaml.
+ */
 @Component
 public class VirtualServiceBuilder extends IstioResourcesManifestGenerator {
 

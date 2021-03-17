@@ -30,6 +30,9 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Builds Metadata for  Nginx Ingress resource yaml
+ */
 @Component
 public class NginxMetaDataBuilder implements IngressMetaDataBuilder {
     private static final String INGRESS_CLASS = "INGRESS_CLASS";

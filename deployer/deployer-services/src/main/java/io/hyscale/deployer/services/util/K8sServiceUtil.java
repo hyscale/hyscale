@@ -106,6 +106,7 @@ public class K8sServiceUtil {
 	return portsList;
     }
 
+
 	public static ServiceAddress getLBServiceAddress(boolean wait, LoadBalancer loadBalancer, ApiClient apiClient, String lbSelector, String namespace) throws HyscaleException {
 		if (!wait) {
 			return getLBServiceAddress(loadBalancer, apiClient, lbSelector, namespace, true);
@@ -141,6 +142,9 @@ public class K8sServiceUtil {
 		return serviceAddress;
 	}
 
+	/**
+	 *  Service Address details of the load balancer.
+	 */
 	public static ServiceAddress getLBServiceAddress(LoadBalancer loadBalancer, ApiClient apiClient, String lbSelector, String namespace, boolean setDefault) {
 		LBType lbType = LBType.getByProvider(loadBalancer.getProvider());
 		if (lbType != null) {
@@ -155,6 +159,15 @@ public class K8sServiceUtil {
 		return null;
 	}
 
+	/**
+	 *
+	 * @param loadBalancer Load Balancer details.
+	 * @param apiClient apiClient to access the cluster.
+	 * @param ingressSelector Selector required to get the Ingress resource from the cluster.
+	 * @param namespace namespace of the Ingress
+	 * @param setDefaultIp if setDefaultIp is true Service IP will be the place holder, else it will  be the IP of Ingress resource in the cluster.
+	 * @return ServiceAddress.
+	 */
 	public static ServiceAddress getIngressServiceAddress(LoadBalancer loadBalancer, ApiClient apiClient, String ingressSelector, String namespace, boolean setDefaultIp) {
 		try {
 			ServiceAddress serviceAddress = new ServiceAddress();

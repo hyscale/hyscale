@@ -28,6 +28,9 @@ import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class is responsible for creating manifests of Istio resources(Gateway,Virtual Service, Destination rule) for the load balancer configuration provided in hspec.
+ */
 @Component
 public class IstioManifestBuilder implements LoadBalancerBuilder {
     private static final Logger logger = LoggerFactory.getLogger(IstioManifestBuilder.class);

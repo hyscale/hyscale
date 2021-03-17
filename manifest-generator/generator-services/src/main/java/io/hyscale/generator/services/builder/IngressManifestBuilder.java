@@ -34,6 +34,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+
+/**
+ * This class generates Manifests of Ingress resources for the load balancer configuration provided in hspec.
+ */
 @Component
 public class IngressManifestBuilder implements LoadBalancerBuilder {
     private static final Logger logger = LoggerFactory.getLogger(IngressManifestBuilder.class);

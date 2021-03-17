@@ -17,6 +17,9 @@ package io.hyscale.commons.models;
 
 import java.util.List;
 
+/**
+ * Match conditions of a load balancer.
+ */
 public class LoadBalancerMapping {
     List<String> contextPaths;
     String port;

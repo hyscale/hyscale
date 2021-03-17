@@ -20,6 +20,9 @@ import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.ServiceMetadata;
 import io.hyscale.plugin.framework.models.ManifestSnippet;
 
+/**
+ * Builds Metadata for Ingress resource yaml.
+ */
 public interface IngressMetaDataBuilder {
 
     public ManifestSnippet build(ServiceMetadata serviceMetadata, LoadBalancer loadBalancer) throws HyscaleException;

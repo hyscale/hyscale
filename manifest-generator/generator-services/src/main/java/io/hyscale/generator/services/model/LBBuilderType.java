@@ -21,6 +21,9 @@ import io.hyscale.generator.services.builder.IngressManifestBuilder;
 import io.hyscale.generator.services.builder.IstioManifestBuilder;
 import io.hyscale.generator.services.builder.LoadBalancerBuilder;
 
+/**
+ * This class provides the appropriate LoadBalancer manifests builder based on the provider(type of load balancer) mentioned in hspec.
+ */
 public enum LBBuilderType {
 
     INGRESS {

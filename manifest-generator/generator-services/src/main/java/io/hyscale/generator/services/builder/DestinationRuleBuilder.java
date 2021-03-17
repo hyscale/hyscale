@@ -24,7 +24,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
-
+/**
+ * This class generates istio destination rule yaml.
+ */
 @Component
 public class DestinationRuleBuilder extends IstioResourcesManifestGenerator {
 

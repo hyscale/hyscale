@@ -29,7 +29,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
-
+/**
+ * Builds Metadata for Traefik Ingress resource yaml
+ */
 @Component
 public class TraefikMetaDataBuilder implements IngressMetaDataBuilder {
 

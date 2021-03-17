@@ -26,6 +26,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
 
+/**
+ * This class generates Manifests of Istio resources using the respective template.
+ */
 public abstract class IstioResourcesManifestGenerator {
 
     @Autowired

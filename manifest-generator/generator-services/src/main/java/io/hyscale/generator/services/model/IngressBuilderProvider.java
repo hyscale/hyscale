@@ -21,6 +21,9 @@ import io.hyscale.generator.services.builder.NginxMetaDataBuilder;
 import io.hyscale.generator.services.builder.TraefikMetaDataBuilder;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * This class provides the appropriate Ingress Manifests Builder based on the provider mentioned in hspec.
+ */
 public enum IngressBuilderProvider {
     NGINX("nginx"){
         @Override

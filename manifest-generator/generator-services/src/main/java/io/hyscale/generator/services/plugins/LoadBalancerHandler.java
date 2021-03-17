@@ -34,18 +34,15 @@ import org.springframework.stereotype.Component;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Plugin for Generating the Manifests required for Load Balancing configuration specified in hspec.
+ */
 @Component
 @ManifestPlugin(name = "LoadBalancerHandler")
 public class LoadBalancerHandler implements ManifestHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(LoadBalancerHandler.class);
 
-    /**
-     * @param serviceSpec
-     * @param manifestContext
-     * @return
-     * @throws HyscaleException
-     */
     @Override
     public List<ManifestSnippet> handle(ServiceSpec serviceSpec, ManifestContext manifestContext) throws HyscaleException {
         if (!ManifestPredicates.getLoadBalancerPredicate(LBType.INGRESS).test(serviceSpec) && !ManifestPredicates.getLoadBalancerPredicate(LBType.ISTIO).test(serviceSpec)) {

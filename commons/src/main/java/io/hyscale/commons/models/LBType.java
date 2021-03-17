@@ -21,6 +21,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * @author nagachandrai
+ * Type of load balancer supported by hyscale.
+ */
 public enum LBType {
 
     INGRESS("nginx", "traefik") {
