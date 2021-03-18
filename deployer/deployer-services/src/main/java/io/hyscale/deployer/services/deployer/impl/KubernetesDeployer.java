@@ -256,7 +256,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
             ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
             String selector = ResourceSelectorUtil.getServiceSelector(context.getAppName(), context.getServiceName());
             PodParent podParent = podParentProvider.getPodParent(apiClient, context.getAppName(), context.getServiceName(), context.getNamespace());
-            LoadBalancer loadBalancer = PodParentUtil.getLoadBalancerInSpec(podParent);
+            LoadBalancer loadBalancer = PodParentUtil.getLoadBalancerSpec(podParent);
             if (loadBalancer != null) {
                 return K8sServiceUtil.getLBServiceAddress(context.isWaitForReadiness(), loadBalancer, apiClient, selector, context.getNamespace());
             }

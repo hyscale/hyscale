@@ -143,7 +143,7 @@ public enum ManifestResource {
             sb.append(ManifestGenConstants.NAME_DELIMITER);
             sb.append(NormalizationUtil.normalize(serviceMetadata.getServiceName()));
             sb.append(ManifestGenConstants.NAME_DELIMITER);
-            sb.append(ToolConstants.INGRESS);
+            sb.append(ManifestGenConstants.INGRESS);
             return sb.toString();
         }
 

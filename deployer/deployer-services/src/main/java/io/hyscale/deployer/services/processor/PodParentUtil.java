@@ -108,7 +108,10 @@ public class PodParentUtil {
         return Collections.emptyList();
     }
 
-    public static LoadBalancer getLoadBalancerInSpec(PodParent podParent) {
+    /**
+     * This method is responsible for retrieving loadBalancer spec from 'hyscale.io/service-spec' annotation present in deployed Pod Parent resource.
+     */
+    public static LoadBalancer getLoadBalancerSpec(PodParent podParent) {
         try {
             V1ObjectMeta metadata = null;
             if (ResourceKind.DEPLOYMENT.getKind().equalsIgnoreCase(podParent.getKind())) {

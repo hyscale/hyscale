@@ -63,7 +63,7 @@ public class ServiceTypeHandler implements ManifestHandler {
     private K8sServiceType getServiceType(ServiceSpec serviceSpec) throws HyscaleException {
         Boolean external = serviceSpec.get(HyscaleSpecFields.external, Boolean.class);
         if (BooleanUtils.toBoolean(external)) {
-            if (checkForLoadBalancerType(serviceSpec)) {
+            if (checkForLoadBalancer(serviceSpec)) {
                 return K8sServiceType.CLUSTER_IP;
             } else {
                 return K8sServiceType.LOAD_BALANCER;
@@ -73,7 +73,7 @@ public class ServiceTypeHandler implements ManifestHandler {
         }
     }
 
-    private boolean checkForLoadBalancerType(ServiceSpec serviceSpec) throws HyscaleException {
+    private boolean checkForLoadBalancer(ServiceSpec serviceSpec) throws HyscaleException {
         LoadBalancer loadBalancer = serviceSpec.get(HyscaleSpecFields.loadBalancer, LoadBalancer.class);
         return loadBalancer != null;
     }
