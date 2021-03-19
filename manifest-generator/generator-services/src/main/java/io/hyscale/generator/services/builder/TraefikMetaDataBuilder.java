@@ -78,9 +78,7 @@ public class TraefikMetaDataBuilder implements IngressMetaDataBuilder {
         }
         if(loadBalancer.getHeaders()!=null ){
             StringBuilder sb = new StringBuilder();
-            loadBalancer.getHeaders().forEach((key,value) -> {
-                sb.append(key).append(ToolConstants.COLON).append(value).append(ToolConstants.HEADER_CONCATENATOR);
-            });
+            loadBalancer.getHeaders().forEach((key,value) -> sb.append(key).append(ToolConstants.COLON).append(value).append(ToolConstants.HEADER_CONCATENATOR));
             sb.deleteCharAt(sb.lastIndexOf("|"));
             context.put(HEADERS_EXPRESSION,sb);
         }

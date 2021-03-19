@@ -4,7 +4,6 @@ ports:
   - port: 9080/http
 loadBalancer:
      provider: nginx
-     className: nginx-ingress
      host: bookinfo.com
      mapping:
         - port : 9080/http

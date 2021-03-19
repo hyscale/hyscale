@@ -25,6 +25,8 @@ import io.hyscale.plugin.framework.models.ManifestSnippet;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -36,14 +38,15 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class VirtualServiceBuilderTest {
+class TraefikMetaDataBuilderTest {
+
 
     @Autowired
-    private VirtualServiceBuilder virtualServiceBuilder;
+    private TraefikMetaDataBuilder traefikMetaDataBuilder;
 
     private ServiceMetadata serviceMetadata = new ServiceMetadata();
 
@@ -54,11 +57,16 @@ class VirtualServiceBuilderTest {
         serviceMetadata.setEnvName("dev");
     }
 
+
     private static Stream<Arguments> input() throws HyscaleException {
         try {
             return Stream.of(Arguments.of(
-                    ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-istio.hspec"),
-                    FileUtils.readFileToString(new File(VirtualServiceBuilderTest.class.getResource("/builder/output/istio/virtualService.yaml").getFile()), StandardCharsets.UTF_8)
+                    ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-traefik-with-tls.hspec"),
+                    FileUtils.readFileToString(new File(VirtualServiceBuilderTest.class.getResource("/builder/output/ingress/traefik/traefik-metadata-with-tls.yaml").getFile()), StandardCharsets.UTF_8)
+                    ),
+                    Arguments.of(
+                            ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-traefik.hspec"),
+                            FileUtils.readFileToString(new File(VirtualServiceBuilderTest.class.getResource("/builder/output/ingress/traefik/traefik-metadata.yaml").getFile()), StandardCharsets.UTF_8)
                     )
             );
         } catch (Exception e) {
@@ -70,10 +78,9 @@ class VirtualServiceBuilderTest {
 
     @ParameterizedTest
     @MethodSource("input")
-    void testGenerateManifest(ServiceSpec serviceSpec, String output) throws HyscaleException {
+    void testBuild(ServiceSpec serviceSpec, String output) throws HyscaleException {
         LoadBalancer loadBalancer = ManifestContextTestUtil.getLoadBalancerFromSpec(serviceSpec);
-        ManifestSnippet manifestSnippet = virtualServiceBuilder.generateManifest(serviceMetadata, loadBalancer);
+        ManifestSnippet manifestSnippet = traefikMetaDataBuilder.build(serviceMetadata, loadBalancer);
         assertEquals(manifestSnippet.getSnippet().replaceAll("\\s", ""), output.replaceAll("\\s", ""));
     }
-
 }

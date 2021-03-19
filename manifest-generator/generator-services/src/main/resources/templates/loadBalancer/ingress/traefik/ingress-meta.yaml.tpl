@@ -6,8 +6,12 @@ labels:
   hyscale.io/environment-name: {{ENVIRONMENT_NAME}}
   {{/ENVIRONMENT_NAME}}
 annotations:
-  kubernetes.io/ingress.class: "{{INGRESS_CLASS}}"
-  traefik.ingress.kubernetes.io/frontend-entry-points: {{ FRONTEND_ENTRY_POINTS }}
+  {{#INGRESS_CLASS}}
+  kubernetes.io/ingress.class: {{INGRESS_CLASS}}
+  {{/INGRESS_CLASS}}
+  {{#FRONTEND_ENTRY_POINTS}}
+  traefik.ingress.kubernetes.io/frontend-entry-points: {{FRONTEND_ENTRY_POINTS}}
+  {{/FRONTEND_ENTRY_POINTS}}
   {{#REDIRECT_ENTRYPOINTS}}
   traefik.ingress.kubernetes.io/redirect-entry-point: {{ REDIRECT_ENTRY_POINTS }}
   {{/REDIRECT_ENTRYPOINTS}}

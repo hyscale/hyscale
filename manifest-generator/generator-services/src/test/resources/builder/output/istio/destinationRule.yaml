@@ -4,4 +4,4 @@ trafficPolicy:
     consistentHash:
       httpCookie:
         name: DEFAULT_COOKIE
-        ttl: 60s
+        ttl: 30m

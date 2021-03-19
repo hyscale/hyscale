@@ -54,10 +54,10 @@ class DestinationRuleBuilderTest {
 
     @Test
     void testGenerateManifest() throws HyscaleException, IOException {
-        ServiceSpec serviceSpec = ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-with-tls-istio.hspec");
+        ServiceSpec serviceSpec = ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-istio-with-tls.hspec");
         LoadBalancer loadBalancer = ManifestContextTestUtil.getLoadBalancerFromSpec(serviceSpec);
         ManifestSnippet manifestSnippet = destinationRuleBuilder.generateManifest(serviceMetadata, loadBalancer);
-        String outputYaml = FileUtils.readFileToString(new File(GatewayBuilderTest.class.getResource("/builder/output/destinationRule.yaml").getFile()), StandardCharsets.UTF_8);
+        String outputYaml = FileUtils.readFileToString(new File(GatewayBuilderTest.class.getResource("/builder/output/istio/destinationRule.yaml").getFile()), StandardCharsets.UTF_8);
         assertEquals(manifestSnippet.getSnippet().replaceAll("\\s", ""), outputYaml.replaceAll("\\s", ""));
     }
 

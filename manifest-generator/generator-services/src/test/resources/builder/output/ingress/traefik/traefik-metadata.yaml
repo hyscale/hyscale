@@ -1,0 +1,6 @@
+name: dev-productpage-ingress
+labels:
+  hyscale.io/app-name: book-info
+  hyscale.io/service-name: productpage
+annotations:
+  ingress.kubernetes.io/custom-request-headers: hello:there|test:sample

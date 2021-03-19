@@ -48,11 +48,11 @@ class GatewayBuilderTest {
         try {
             return Stream.of(Arguments.of(
                     ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-istio.hspec"),
-                    FileUtils.readFileToString(new File(GatewayBuilderTest.class.getResource("/builder/output/gateway.yaml").getFile()), StandardCharsets.UTF_8)
+                    FileUtils.readFileToString(new File(GatewayBuilderTest.class.getResource("/builder/output/istio/gateway.yaml").getFile()), StandardCharsets.UTF_8)
                     ),
                     Arguments.of(
-                            ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-with-tls-istio.hspec"),
-                            FileUtils.readFileToString(new File(GatewayBuilderTest.class.getResource("/builder/output/gateway-with-tls.yaml").getFile()), StandardCharsets.UTF_8)
+                            ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-istio-with-tls.hspec"),
+                            FileUtils.readFileToString(new File(GatewayBuilderTest.class.getResource("/builder/output/istio/gateway-with-tls.yaml").getFile()), StandardCharsets.UTF_8)
                     )
             );
         } catch (Exception e) {

@@ -66,7 +66,7 @@ class LoadBalancerHandlerTest {
     public static Stream<Arguments> input() throws HyscaleException {
         return Stream.of(
                 Arguments.of(ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-istio.hspec"), false),
-                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-ingress.hspec"), false),
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-nginx.hspec"), false),
                 Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice-min.hspec"), true));
     }
 
