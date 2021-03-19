@@ -29,6 +29,7 @@ public class ManifestContextTestUtil {
     public static ManifestContext getManifestContext(ManifestResource podSpecOwner) {
         ManifestContext context = new ManifestContext();
         context.setAppName("app");
+        context.setEnvName("dev");
         if (podSpecOwner != null) {
             context.addGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER, podSpecOwner.getKind());
         }

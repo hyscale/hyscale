@@ -18,7 +18,6 @@ package io.hyscale.generator.services.model;
 import java.util.Map;
 import java.util.function.Predicate;
 
-import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.models.LBType;
 import io.hyscale.generator.services.builder.DefaultLabelBuilder;
 import io.hyscale.generator.services.constants.ManifestGenConstants;

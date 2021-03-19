@@ -67,6 +67,7 @@ class LoadBalancerHandlerTest {
         return Stream.of(
                 Arguments.of(ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-istio.hspec"), false),
                 Arguments.of(ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-nginx.hspec"), false),
+                Arguments.of(ServiceSpecTestUtil.getServiceSpec("/builder/input/lb-traefik.hspec"), false),
                 Arguments.of(ServiceSpecTestUtil.getServiceSpec("/input/myservice-min.hspec"), true));
     }
 

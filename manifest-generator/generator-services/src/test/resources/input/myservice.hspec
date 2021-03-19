@@ -48,3 +48,17 @@ secretsVolumePath: /abc/def/secrets.txt
 secrets:
    skey1: val1
    skey2: val2
+loadBalancer:
+     provider: istio
+     labels:
+        istio: ingressgateway
+     host: abc.com
+     sticky: true
+     mapping:
+        - port : 9080/http
+          contextPaths:
+               - "/test"
+               - "/sample"
+     headers:
+         key1 : value1
+         key2 : value2
