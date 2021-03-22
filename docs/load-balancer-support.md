@@ -34,10 +34,6 @@ image:
 external: true
 ports:
   - port: 9080/http
-       
-k8sSnippets:
-  - ./snippets/init-container-snippet.yaml
-  - 
 loadBalancer:
     className: nginx-ingress-class-name
     provider: nginx
