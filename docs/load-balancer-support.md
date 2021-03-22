@@ -25,6 +25,34 @@ Thus unification of Ingress and Service Mesh makes more sense from a load balanc
 ### Prerequisites
 
 ### Introducing the 'loadBalancer' field 
+```yaml
+name: productpage
+image:
+    registry: registry.hub.docker.com
+    name: istio/bookinfo-productpagev1
+    tag: 1.16.2
+external: true
+ports:
+  - port: 9080/http
+       
+k8sSnippets:
+  - ./snippets/init-container-snippet.yaml
+  - 
+loadBalancer:
+    className: nginx-ingress-class-name
+    provider: nginx
+    host: bookinfo.com
+    sticky: true
+    tlsSecret: default-server-secret
+    mapping:
+       - port : 9080/http
+         contextPaths:
+              - "/productpage"
+              - "/static"      
+    headers:
+        key1 : value1
+        key2 : value2
+```
 
 ### Enabling Ingress for routing with HyScale
 
