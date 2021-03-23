@@ -45,14 +45,13 @@ public enum ValidatorActivity implements Activity {
     PORT_NOT_EXPOSED("Invalid Service Spec. Traffic rules cannot be applied to a port that is not exposed on the Service"),
     //Load balancer validation
     PORTS_MISMATCH("Ports declared in the load balancer should match with the ports mentioned in the hspec. Mismatched port : {}"),
-    EXTERNAL_CONFIGURED("When external is configured as false in hspec, loadBalancer configuration snippet can not be applied."),//TODO Verify warning message
-    LB_CLASS_NAME_REQUIRED("loadBalancer className is required."),
-    LB_GATEWAY_LABEL_REQUIRED("loadaBalancer gateway label is required for istio."),
-    LB_PROVIDER_REQUIRED("loadBalancer provider is required."),
-    LB_HOST_REQUIRED("loadBalancer host is required."),
-    LB_MAPPING_REQUIRED("loadBalancer mapping is required."),
+    EXTERNAL_CONFIGURED("loadBalancer configuration requires external field to be set as true in hspec."),
+    LB_GATEWAY_LABEL_REQUIRED("loadBalancer gateway label is required for istio."),
+    LB_PROVIDER_REQUIRED("loadBalancer provider name is required."),
+    LB_HOST_REQUIRED("loadBalancer host name is required."),
+    LB_MAPPING_REQUIRED("path mapping for loadBalancer is required."),
     LB_PORT_REQUIRED("port is required {}."),
-    LB_CONTEXT_PATH_REQUIRED("contextPaths is required {}.");
+    LB_CONTEXT_PATH_REQUIRED("atleast one contextPath is required {}.");
     private String message;
 
     ValidatorActivity(String message) {

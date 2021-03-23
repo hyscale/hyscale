@@ -129,9 +129,6 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
      */
     private boolean validateMandatoryFields(LoadBalancer loadBalancer) {
         boolean isMandatoryFieldsExists = true;
-        if (LBType.getByProvider(loadBalancer.getProvider()) == LBType.INGRESS) {
-            isMandatoryFieldsExists = validateEachField(loadBalancer.getClassName(), ValidatorActivity.LB_CLASS_NAME_REQUIRED);
-        }
         if (LBType.getByProvider(loadBalancer.getProvider()) == LBType.ISTIO) {
             isMandatoryFieldsExists = validateEachField(loadBalancer.getLabels(), ValidatorActivity.LB_GATEWAY_LABEL_REQUIRED);
         }
