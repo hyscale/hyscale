@@ -70,5 +70,13 @@ loadBalancer:
 ```
 
 ### Enabling Ingress for routing with HyScale
+As mentioned, It's a prerequisite and part of user's responsibility to provide an Ingress Controller (Nginx or Traefik) in the namespace in which the service has to be deployed using HyScale.
+ - Defining Ingress Class
+ - Defining Provider Name
+ - Defining Host
+ - Defining TLS Secret name
+ - Defining Mapping for each port
+ - Defining headers
+ - Enable Stickiness
 
 ### Enabling Service Mesh for routing with Hyscale
