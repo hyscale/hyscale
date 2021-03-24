@@ -20,8 +20,8 @@ Ingress can provide basic layer 7 load balancing capabilities. Whereas Service m
 But both Ingress and Service mesh commonly provide the primary functionality for Load balancing, SSL termination and virtual hosting and also share the majority of use cases.
 Thus unification of Ingress and Service Mesh makes more sense from a load balancing perspective.
 
-### How it works?
-So basically we pluck a common feather (Routing Rules) out of each one's (Ingress & Service Mesh) hat. 
+### In short, How it works?
+So basically, we plucked a common feather (Routing Rules) out of each one's (Ingress & Service Mesh) hat. 
 
 ### Prerequisites
 There are certain cluster level configurations depending upon loadBalancer Type (Ingress or Service Mesh) that a user has to perform before deploying a service with load balancer support using HyScale.
@@ -35,6 +35,13 @@ In the case of Service Mesh:
 
 
 ### Introducing the 'loadBalancer' field 
+We crafted a new field "loadBalancer" in Hspec by picking some minimum requirements to configure an OSI Layer 7 LB. 
+Wherein a user can write routing rules for respective ports that are defined for that service. 
+Refer loadBalancer in [HyScale spec reference](https://github.com/hyscale/hspec/blob/master/docs/hyscale-spec-reference.md#).
+
+Note: The external field of hspec should be true in order to expose a service using loadBalancer.
+
+A simple hspec with loadBalancer configuration looks like :
 
 ```yaml
 name: productpage
@@ -45,6 +52,7 @@ image:
 external: true
 ports:
   - port: 9080/http
+
 loadBalancer:
     className: nginx-ingress-class-name
     provider: nginx
