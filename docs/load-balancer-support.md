@@ -21,10 +21,21 @@ But both Ingress and Service mesh commonly provide the primary functionality for
 Thus unification of Ingress and Service Mesh makes more sense from a load balancing perspective.
 
 ### How it works?
+So basically we pluck a common feather (Routing Rules) out of each one's (Ingress & Service Mesh) hat. 
 
 ### Prerequisites
+There are certain cluster level configurations depending upon loadBalancer Type (Ingress or Service Mesh) that a user has to perform before deploying a service with load balancer support using HyScale.
+
+In the case of Ingress:
+ - Deploying the Ingress Controller in the respective namespace. (Nginx/Traefik)
+ 
+In the case of Service Mesh:
+ - Installing Service Mesh (Istio) in the cluster.
+ - Ensure that the namespace in which we're deploying is istio-enabled.
+
 
 ### Introducing the 'loadBalancer' field 
+
 ```yaml
 name: productpage
 image:
