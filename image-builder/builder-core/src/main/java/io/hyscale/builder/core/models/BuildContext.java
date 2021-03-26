@@ -89,7 +89,9 @@ public class BuildContext {
     }
     
     public void addRegistry(String registry, ImageRegistry imageRegistry) {
-        this.registriesMap.put(registry, imageRegistry);
+        if (imageRegistry != null) {
+            this.registriesMap.put(registry, imageRegistry);
+        }
     }
 
     public Map<String, String> getBuildArgs() {

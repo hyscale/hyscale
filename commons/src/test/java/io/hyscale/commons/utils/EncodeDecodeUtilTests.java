@@ -24,6 +24,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import io.hyscale.commons.models.Credentials;
+
 class EncodeDecodeUtilTests {
 
     private static Stream<Arguments> encodeInput() {
@@ -37,7 +39,7 @@ class EncodeDecodeUtilTests {
     @ParameterizedTest
     @MethodSource("encodeInput")
     void testEncode(String userName, String password, String expectedResult) {
-        assertEquals(expectedResult, EncodeDecodeUtil.encode(userName, password));
+        assertEquals(expectedResult, EncodeDecodeUtil.getEncodedCredentials(userName, password));
     }
     
     private static Stream<Arguments> decodeInput() {
@@ -51,5 +53,22 @@ class EncodeDecodeUtilTests {
     @MethodSource("decodeInput")
     void testDecode(String input, String expectedResult) {
         assertEquals(expectedResult, EncodeDecodeUtil.decode(input));
+    }
+    
+    private static Stream<Arguments> decodeCredentialsInput() {
+        Credentials credentials = new Credentials();
+        credentials.setUsername("test");
+        credentials.setPassword("test");
+        return Stream.of(Arguments.of(null, null),
+                Arguments.of("", null),
+                Arguments.of("dGVzdDp0ZXN0", credentials)
+                );
+    }
+    
+    @ParameterizedTest
+    @MethodSource("decodeCredentialsInput")
+    void testDecodedCredentials(String input, Credentials expectedCredentials) {
+        Credentials actualCredentials = EncodeDecodeUtil.getDecodedCredentials(input);
+        assertEquals(expectedCredentials, actualCredentials);
     }
 }

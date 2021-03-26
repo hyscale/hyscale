@@ -63,6 +63,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.io.HyscaleFilesUtil;
 import io.hyscale.commons.logger.ActivityContext;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.Credentials;
 import io.hyscale.commons.models.ImageRegistry;
 import io.hyscale.commons.models.Status;
 import io.hyscale.commons.utils.EncodeDecodeUtil;
@@ -301,14 +302,9 @@ public class DockerRESTClient implements HyscaleDockerClient {
     }
 
     @Override
-    public String push(Image image, ImageRegistry imageRegistry) throws HyscaleException {
-        return push(image, imageRegistry, null, false);
-    }
-
-    @Override
     public String push(Image image, ImageRegistry imageRegistry, String logfile, boolean isVerbose)
             throws HyscaleException {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder shaSum = new StringBuilder();
         ActivityContext pushActivity = new ActivityContext(ImageBuilderActivity.IMAGE_PUSH);
         WorkflowLogger.startActivity(pushActivity);
 
@@ -336,8 +332,8 @@ public class DockerRESTClient implements HyscaleDockerClient {
                     onError(new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_PUSH_IMAGE));
                 }
                 if (StringUtils.isNotBlank(message) && message.contains(SHA256)) {
-                    sb.setLength(0);
-                    sb.append(getImageDigest(message));
+                    shaSum.setLength(0);
+                    shaSum.append(getImageDigest(message));
                 }
                 super.onNext(item);
             }
@@ -354,8 +350,7 @@ public class DockerRESTClient implements HyscaleDockerClient {
             throw new HyscaleException(e, ImageBuilderErrorCodes.FAILED_TO_PUSH_IMAGE);
         }
         handleOutput(isVerbose, pushActivity, Status.DONE);
-        String shaSum = sb.toString();
-        return StringUtils.isNotBlank(shaSum) ? shaSum : null;
+        return StringUtils.isNotBlank(shaSum) ? shaSum.toString() : null;
     }
     
     private void handleOutput(String output, String filePath, ActivityContext context, boolean isVerbose) {
@@ -398,11 +393,10 @@ public class DockerRESTClient implements HyscaleDockerClient {
         }
         AuthConfig authConfig = new AuthConfig();
         authConfig.withRegistryAddress(imageRegistry.getUrl());
-        String decodedAuth = EncodeDecodeUtil.decode(imageRegistry.getToken());
-        int delimiter = decodedAuth.indexOf(':');
-        if (delimiter > 0) {
-            authConfig.withUsername(decodedAuth.substring(0,delimiter));
-            authConfig.withPassword(decodedAuth.substring(delimiter+1));
+        Credentials credentials = EncodeDecodeUtil.getDecodedCredentials(imageRegistry.getToken());
+        if (credentials != null) {
+            authConfig.withUsername(credentials.getUsername());
+            authConfig.withPassword(credentials.getPassword());
         }
         return authConfig;
     }
@@ -435,7 +429,7 @@ public class DockerRESTClient implements HyscaleDockerClient {
     }
 
     @Override
-    public boolean loginRequired() {
+    public boolean isLoginRequired() {
         return false;
     }
 

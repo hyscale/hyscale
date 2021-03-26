@@ -20,18 +20,45 @@ import java.util.Base64;
 import org.apache.commons.lang3.StringUtils;
 
 import io.hyscale.commons.constants.ToolConstants;
+import io.hyscale.commons.models.Credentials;
 
 public class EncodeDecodeUtil {
 
     private EncodeDecodeUtil() {
     }
+    
+    private static final char DEFAULT_SEPARATOR = ':';
 
-    public static String encode(String userName, String password) {
+    public static String getEncodedCredentials(String userName, String password) {
         if (StringUtils.isBlank(userName) || StringUtils.isBlank(password)) {
             return null;
         }
         String tokenString = userName + ToolConstants.COLON + password;
         return Base64.getEncoder().encodeToString(tokenString.getBytes());
+    }
+    
+    /**
+     * 
+     * @param encodedCredentials should be base64 encoding of username + separator + password
+     * @param separator
+     * @return Credentials
+     */
+    public static Credentials getDecodedCredentials(String encodedCredentials, char separator) {
+        if (StringUtils.isBlank(encodedCredentials)) {
+            return null;
+        }
+        Credentials credentials = new Credentials();
+        String decodedAuth = EncodeDecodeUtil.decode(encodedCredentials);
+        int delimiter = decodedAuth.indexOf(separator);
+        if (delimiter > 0) {
+            credentials.setUsername(decodedAuth.substring(0,delimiter));
+            credentials.setPassword(decodedAuth.substring(delimiter+1));
+        }
+        return credentials;
+    }
+    
+    public static Credentials getDecodedCredentials(String encodedCredentials) {
+        return getDecodedCredentials(encodedCredentials, DEFAULT_SEPARATOR);
     }
 
     public static String decode(String encodedString) {

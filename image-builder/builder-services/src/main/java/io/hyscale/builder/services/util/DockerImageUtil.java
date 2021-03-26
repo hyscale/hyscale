@@ -15,6 +15,7 @@
  */
 package io.hyscale.builder.services.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import io.hyscale.commons.commands.CommandExecutor;
 import io.hyscale.commons.commands.provider.ImageCommandProvider;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.Credentials;
 import io.hyscale.commons.models.ImageRegistry;
 import io.hyscale.commons.utils.EncodeDecodeUtil;
 
@@ -78,16 +80,16 @@ public class DockerImageUtil {
     }
     
     public void dockerLogin(ImageRegistry imageRegistry) throws HyscaleException {
-        String decodedAuth = EncodeDecodeUtil.decode(imageRegistry.getToken());
-        int delimiter = decodedAuth.indexOf(':');
-        String username = null;
-        String password = null;
-        if (delimiter > 0) {
-            username = decodedAuth.substring(0,delimiter);
-            password = decodedAuth.substring(delimiter+1);
+        if (StringUtils.isBlank(imageRegistry.getToken())) {
+            return;
+        }
+        Credentials credentials = EncodeDecodeUtil.getDecodedCredentials(imageRegistry.getToken());
+        if (credentials == null) {
+            return;
         }
         logger.debug("Docker login to registry: {}", imageRegistry.getUrl());
-        String loginCommand = commandGenerator.dockerLogin(imageRegistry.getUrl(), username, password);
+        String loginCommand = commandGenerator.dockerLogin(imageRegistry.getUrl(), credentials.getUsername(),
+                credentials.getPassword());
         boolean success = CommandExecutor.execute(loginCommand);
         if (!success) {
             throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_LOGIN, imageRegistry.getUrl());

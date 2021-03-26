@@ -50,7 +50,7 @@ public class ImageRegistryBuilder {
         if (credsStoreEntity == null) {
             return null;
         }
-        String encodedToken = EncodeDecodeUtil.encode(credsStoreEntity.getUsername(), credsStoreEntity.getSecret());
+        String encodedToken = EncodeDecodeUtil.getEncodedCredentials(credsStoreEntity.getUsername(), credsStoreEntity.getSecret());
         return new ImageRegistry(credsStoreEntity.getServerURL(), encodedToken);
     }
 

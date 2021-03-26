@@ -45,6 +45,7 @@ import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.framework.events.model.ActivityState;
 import io.hyscale.commons.framework.events.publisher.EventPublisher;
+import io.hyscale.commons.io.HyscaleFilesUtil;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.ImageRegistry;
 import io.hyscale.commons.models.Status;
@@ -101,27 +102,34 @@ public class LocalImageBuildPushServiceImpl implements ImageBuildPushService {
         }
         
         Map<String, ImageRegistry> registryMap = context.getRegistriesMap();
-        if (hyscaleDockerClient.loginRequired()) {
+        if (hyscaleDockerClient.isLoginRequired()) {
             for (ImageRegistry imageRegistry : registryMap.values()) {
                 hyscaleDockerClient.login(imageRegistry);
             }
         }
-        
         updateContext(serviceSpec, context);
-        
-        buildImage(serviceSpec, registryMap, context);
-
-        String sourceImage = getSourceImageName(serviceSpec, context);
-
-        if (context.isStackAsServiceImage().booleanValue()) {
-            pullImage(sourceImage, serviceSpec, registryMap);
+            
+        try {
+            buildImage(serviceSpec, registryMap, context);
+            
+            String sourceImage = getSourceImageName(serviceSpec, context);
+            
+            if (context.isStackAsServiceImage().booleanValue()) {
+                pullImage(sourceImage, serviceSpec, registryMap);
+            }
+            
+            Image image = serviceSpec.get(HyscaleSpecFields.image, Image.class);
+            
+            tagImage(sourceImage, image);
+            
+            pushImage(image, serviceSpec, context);
+        } finally {
+            if (hyscaleDockerClient.isCleanUpRequired()) {
+                logger.debug("Cleaning up temporary config");
+                // Clean up temp config
+                HyscaleFilesUtil.deleteDirectory(SetupConfig.getTemporaryDockerConfigDir());
+            }
         }
-
-        Image image = serviceSpec.get(HyscaleSpecFields.image, Image.class);
-
-        tagImage(sourceImage, image);
-
-        pushImage(image, serviceSpec, context);
 
         // Clean up images based on clean up policy
         imageCleanUp.cleanUp(serviceSpec, context);

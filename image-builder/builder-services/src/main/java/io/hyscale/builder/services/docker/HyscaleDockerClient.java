@@ -35,12 +35,12 @@ public interface HyscaleDockerClient {
     /**
      * @return true if manual login is required for the client
      */
-    boolean loginRequired();
+    boolean isLoginRequired();
     
     /**
      * @return true if clean up temporary files are required
      */
-    default boolean cleanUp(){
+    default boolean isCleanUpRequired(){
         return false;
     }
     /**
@@ -94,15 +94,6 @@ public interface HyscaleDockerClient {
     DockerImage build(Dockerfile dockerfile, String imageName, String tag, Map<String, ImageRegistry> registryMap,
             String logfile, boolean isVerbose) throws HyscaleException;
 
-    /**
-     * Push image to registry
-     * @param image
-     * @param imageRegistry
-     * @return ShaSum of pushed image
-     * @throws HyscaleException
-     */
-    String push(Image image, ImageRegistry imageRegistry) throws HyscaleException;
-    
     /**
      * Push image to registry
      * @param image

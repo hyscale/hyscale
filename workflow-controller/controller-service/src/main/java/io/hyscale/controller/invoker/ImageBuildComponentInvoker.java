@@ -40,7 +40,6 @@ import io.hyscale.commons.models.DockerfileEntity;
 import io.hyscale.commons.models.ImageRegistry;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.constants.WorkflowConstants;
-import io.hyscale.controller.hooks.ConfigCleanUpHook;
 import io.hyscale.controller.hooks.ImageCleanUpHook;
 import io.hyscale.controller.manager.RegistryManager;
 import io.hyscale.controller.model.WorkflowContext;
@@ -71,13 +70,9 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
     @Autowired
     private ImageCleanUpHook imageCleanUpHook;
     
-    @Autowired
-    private ConfigCleanUpHook configCleanUpHook;
-
     @PostConstruct
     public void init() {
         super.addHook(imageCleanUpHook);
-        super.addHook(configCleanUpHook);
     }
 
     @Override

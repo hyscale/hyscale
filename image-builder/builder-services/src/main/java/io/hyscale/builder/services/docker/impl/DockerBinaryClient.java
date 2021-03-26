@@ -18,6 +18,7 @@ package io.hyscale.builder.services.docker.impl;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -156,11 +157,6 @@ public class DockerBinaryClient implements HyscaleDockerClient {
     }
 
     @Override
-    public String push(Image image, ImageRegistry imageRegistry) throws HyscaleException {
-        return push(image, imageRegistry, null, false);
-    }
-
-    @Override
     public String push(Image image, ImageRegistry imageRegistry, String logfile, boolean isVerbose)
             throws HyscaleException {
         String shaSum = null;
@@ -270,7 +266,7 @@ public class DockerBinaryClient implements HyscaleDockerClient {
         String[] imageIds = StringUtils.isNotBlank(imageIdsAsString) ? imageIdsAsString.split("\\s+") : null;
         if (imageIds == null || imageIds.length == 0) {
             logger.debug("No images found to clean from the host machine");
-            return null;
+            return Collections.emptyList();
         }
         // Need to preserve the order of output, hence a LinkedHashset
         return new LinkedList<>(Arrays.asList(imageIds));
@@ -282,12 +278,12 @@ public class DockerBinaryClient implements HyscaleDockerClient {
     }
 
     @Override
-    public boolean loginRequired() {
+    public boolean isLoginRequired() {
         return true;
     }
     
     @Override
-    public boolean cleanUp(){
+    public boolean isCleanUpRequired(){
         return true;
     }
 }
