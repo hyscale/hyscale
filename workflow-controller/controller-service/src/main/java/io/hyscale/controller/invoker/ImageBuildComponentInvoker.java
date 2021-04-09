@@ -15,30 +15,37 @@
  */
 package io.hyscale.controller.invoker;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import javax.annotation.PostConstruct;
 
-import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
-import io.hyscale.controller.activity.ControllerActivity;
-import io.hyscale.controller.constants.WorkflowConstants;
-import io.hyscale.controller.manager.RegistryManager;
-import io.hyscale.controller.model.WorkflowContext;
-
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.hyscale.builder.core.models.BuildContext;
+import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
+import io.hyscale.builder.services.provider.StackImageProvider;
+import io.hyscale.builder.services.service.ImageBuildPushService;
 import io.hyscale.commons.component.ComponentInvoker;
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.DockerfileEntity;
+import io.hyscale.commons.models.ImageRegistry;
+import io.hyscale.controller.activity.ControllerActivity;
+import io.hyscale.controller.constants.WorkflowConstants;
 import io.hyscale.controller.hooks.ImageCleanUpHook;
-import io.hyscale.builder.services.service.ImageBuildPushService;
+import io.hyscale.controller.manager.RegistryManager;
+import io.hyscale.controller.model.WorkflowContext;
 import io.hyscale.servicespec.commons.exception.ServiceSpecErrorCodes;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
-import io.hyscale.servicespec.commons.model.service.BuildSpec;
+import io.hyscale.servicespec.commons.model.service.Dockerfile;
 import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 /**
@@ -58,8 +65,11 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
     private RegistryManager registryManager;
 
     @Autowired
-    private ImageCleanUpHook imageCleanUpHook;
+    private StackImageProvider stackImageProvider;
 
+    @Autowired
+    private ImageCleanUpHook imageCleanUpHook;
+    
     @PostConstruct
     public void init() {
         super.addHook(imageCleanUpHook);
@@ -92,14 +102,14 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
         BuildContext buildContext = new BuildContext();
         buildContext.setAppName(appName);
         buildContext.setServiceName(serviceName);
-        buildContext.setStackAsServiceImage(isStackImage(context));
-        buildContext.setVerbose((Boolean) context.getAttribute(WorkflowConstants.VERBOSE));
-        buildContext.setPushRegistry(registryManager.getImageRegistry(serviceSpec
-                .get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.registry), String.class)));
-        if (isStackImage(context)) {
-            String pullImageRegistryName = getPullImageRegistry(context);
-            if (StringUtils.isNotBlank(pullImageRegistryName)) {
-                buildContext.setPullRegistry(registryManager.getImageRegistry(pullImageRegistryName));
+        buildContext.setStackAsServiceImage((Boolean) context.getAttribute(WorkflowConstants.STACK_AS_SERVICE_IMAGE));
+        buildContext.setVerbose(BooleanUtils.toBoolean((Boolean) context.getAttribute(WorkflowConstants.VERBOSE)));
+
+        List<String> registryList = getImageRegistries(serviceSpec);
+        for (String registry : registryList) {
+            ImageRegistry imageRegistry = registryManager.getImageRegistry(registry);
+            if (imageRegistry != null) {
+                buildContext.addRegistry(registry, imageRegistry);
             }
         }
         DockerfileEntity dockerfileEntity = (DockerfileEntity) context
@@ -113,40 +123,53 @@ public class ImageBuildComponentInvoker extends ComponentInvoker<WorkflowContext
             context.setFailed(true);
             throw e;
         } finally {
-            context.addAttribute(WorkflowConstants.IMAGE_SHA_SUM,
-                    buildContext.getImageShaSum());
-            context.addAttribute(WorkflowConstants.BUILD_LOGS,
-                    buildContext.getBuildLogs());
-            context.addAttribute(WorkflowConstants.PUSH_LOGS,
-                    buildContext.getPushLogs());
+            context.addAttribute(WorkflowConstants.IMAGE_SHA_SUM, buildContext.getImageShaSum());
+            context.addAttribute(WorkflowConstants.BUILD_LOGS, buildContext.getBuildLogs());
+            context.addAttribute(WorkflowConstants.PUSH_LOGS, buildContext.getPushLogs());
         }
     }
 
-    private String getPullImageRegistry(WorkflowContext context) {
-        ServiceSpec serviceSpec = context.getServiceSpec();
-        String stackImage = null;
-        try {
-            BuildSpec buildSpec = serviceSpec.get(
-                    HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.buildSpec), BuildSpec.class);
-            if (buildSpec != null) {
-                stackImage = buildSpec.getStackImage();
+    private List<String> getImageRegistries(ServiceSpec serviceSpec) throws HyscaleException {
+        List<String> registriesList = new ArrayList<>();
+        String pushRegistry = serviceSpec
+                .get(HyscaleSpecFields.getPath(HyscaleSpecFields.image, HyscaleSpecFields.registry), String.class);
+        registriesList.add(pushRegistry);
+        registriesList.addAll(getPullRegistries(serviceSpec));
+        return registriesList;
+    }
+
+    /**
+     * Pull registries include:
+     * Stack image from build spec or
+     * From field in user docker file
+     * @param serviceSpec
+     * @return
+     */
+    private List<String> getPullRegistries(ServiceSpec serviceSpec) {
+        List<String> pullRegistries = new ArrayList<>();
+        String stackImage = stackImageProvider.getStackImageFromBuildSpec(serviceSpec);
+        if (stackImage != null) {
+            // buildSpec
+            pullRegistries.add(stackImage.split("/")[0]);
+        } else {
+            // Dockerfile
+            List<String> stackImages = stackImageProvider.getStackImagesFromDockerfile(serviceSpec);
+            if (CollectionUtils.isNotEmpty(stackImages)) {
+                Set<String> stackRegistries = stackImages.stream().filter(registry -> registry.split("/").length > 1)
+                .map(registry -> registry.split("/")[0]).collect(Collectors.toSet());
+                pullRegistries.addAll(stackRegistries);
             }
-        } catch (HyscaleException e) {
-            logger.error("Error while getting build spec for stack image");
         }
-        return stackImage != null ? stackImage.split("/")[0] : stackImage;
-    }
-
-    private boolean isStackImage(WorkflowContext context) {
-        Boolean stackAsServiceImage = (Boolean) context.getAttribute(WorkflowConstants.STACK_AS_SERVICE_IMAGE);
-        return stackAsServiceImage == null ? false : stackAsServiceImage;
+        return pullRegistries;
     }
 
     @Override
     protected void onError(WorkflowContext context, HyscaleException he) throws HyscaleException {
         WorkflowLogger.header(ControllerActivity.ERROR);
-        WorkflowLogger.error(ControllerActivity.CAUSE, he != null ? he.getMessage() : ImageBuilderErrorCodes.FAILED_TO_BUILD_AND_PUSH_IMAGE.getMessage());
-        context.addAttribute(WorkflowConstants.ERROR_MESSAGE, (he != null) ? he.getMessage() : ImageBuilderErrorCodes.FAILED_TO_BUILD_AND_PUSH_IMAGE.getMessage());
+        WorkflowLogger.error(ControllerActivity.CAUSE,
+                he != null ? he.getMessage() : ImageBuilderErrorCodes.FAILED_TO_BUILD_AND_PUSH_IMAGE.getMessage());
+        context.addAttribute(WorkflowConstants.ERROR_MESSAGE,
+                (he != null) ? he.getMessage() : ImageBuilderErrorCodes.FAILED_TO_BUILD_AND_PUSH_IMAGE.getMessage());
         context.setFailed(true);
         if (he != null) {
             throw he;

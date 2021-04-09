@@ -16,6 +16,7 @@
 package io.hyscale.builder.services.util;
 
 import java.io.File;
+import java.io.OutputStream;
 
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.io.LogProcessor;
@@ -30,6 +31,7 @@ import io.hyscale.builder.services.config.ImageBuilderConfig;
 import io.hyscale.builder.core.models.BuildContext;
 import io.hyscale.builder.core.models.ImageBuilderActivity;
 import io.hyscale.commons.logger.WorkflowLogger;
+import io.hyscale.commons.models.Activity;
 import io.hyscale.builder.services.handler.BuildLogHandler;
 import io.hyscale.builder.services.handler.PushLogHandler;
 import io.hyscale.builder.services.constants.DockerImageConstants;
@@ -37,10 +39,13 @@ import io.hyscale.builder.services.constants.DockerImageConstants;
 @Component
 public class ImageLogUtil {
 
+    private static final Logger logger = LoggerFactory.getLogger(ImageLogUtil.class);
+    
+    @SuppressWarnings("java:S106")
+    private static final OutputStream SYSTEM_OUTPUT_STREAM = System.out;
+    
 	@Autowired
 	private LogProcessor processLogFile;
-
-	private static final Logger logger = LoggerFactory.getLogger(ImageLogUtil.class);
 
 	@Autowired
 	private ImageBuilderConfig imageBuilderConfig;
@@ -86,34 +91,28 @@ public class ImageLogUtil {
 	public void readLogs(BuildContext context) throws HyscaleException {
 		String appName = context.getAppName();
 		String serviceName = context.getServiceName();
+		
 		// build logs
-		readBuildLogs(appName, serviceName);
+		String logFilePath = imageBuilderConfig.getDockerBuildlog(appName, serviceName);
+		readLogs(logFilePath, ImageBuilderActivity.BUILD_LOGS);
+		
 		// push logs
-		readPushLogs(appName, serviceName);
+		logFilePath = imageBuilderConfig.getDockerPushLogDir(appName, serviceName);
+        readLogs(logFilePath, ImageBuilderActivity.IMAGE_PUSH_LOG);
 	}
 
-	public void readBuildLogs(String appName, String serviceName) throws HyscaleException {
-		File buildLogFile = new File(imageBuilderConfig.getDockerBuildlog(appName, serviceName));
-		boolean fileExists = buildLogFile.exists();
-		if (fileExists) {
-			WorkflowLogger.header(ImageBuilderActivity.BUILD_LOGS);
-
-				processLogFile.readLogFile(buildLogFile, System.out);
-
-			logger.debug("Reading Build logs for app {} and service {}",appName,serviceName);
-		}
-	}
-
-	public void readPushLogs(String appName, String serviceName) throws HyscaleException{
-		File pushLogFile = new File(imageBuilderConfig.getDockerPushLogDir(appName, serviceName));
-		boolean pushLogExists = pushLogFile.exists();
-		if (pushLogExists) {
-			WorkflowLogger.header(ImageBuilderActivity.IMAGE_PUSH_LOG);
-				processLogFile.readLogFile(pushLogFile, System.out);
-			logger.debug("Reading push logs for app {} and service {}",appName,serviceName);
-		}
-	}
-
+    public void readLogs(String logFilePath, Activity activity) throws HyscaleException {
+        if (logFilePath == null) {
+            return;
+        }
+        File logFile = new File(logFilePath);
+        if (logFile.exists() && logFile.isFile()) {
+            WorkflowLogger.header(activity);
+            logger.debug("Reading logs file {}", logFilePath);
+            processLogFile.readLogFile(logFile, SYSTEM_OUTPUT_STREAM);
+        }
+    }
+    
 	public TailLogFile tailBuildLogs(String appName, String serviceName){
 		BuildLogHandler buildLogHandler = new BuildLogHandler();
 		File logFile = new File(imageBuilderConfig.getDockerBuildlog(appName, serviceName));

@@ -20,7 +20,9 @@ module builderservices {
 	exports io.hyscale.builder.services.exception;
 	exports io.hyscale.builder.services.impl;
 	exports io.hyscale.builder.services.docker;
+	exports io.hyscale.builder.services.docker.impl;
 	exports io.hyscale.builder.services.service;
+	exports io.hyscale.builder.services.provider;
 
 	requires transitive commons;
 	requires transitive service_spec_commons;

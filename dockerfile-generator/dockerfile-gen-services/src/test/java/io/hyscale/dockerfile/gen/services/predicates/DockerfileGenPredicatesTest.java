@@ -37,14 +37,7 @@ class DockerfileGenPredicatesTest {
                 Arguments.of(DockerfileGenPredicates.skipDockerfileGen(), "/input/skip-generation/stack-as-service.hspec", true),
                 Arguments.of(DockerfileGenPredicates.skipDockerfileGen(), "/input/skip-generation/only-image.hspec", true),
                 Arguments.of(DockerfileGenPredicates.skipDockerfileGen(), "/input/skip-generation/invalid-spec.hspec", true),
-                Arguments.of(DockerfileGenPredicates.skipDockerfileGen(), "/input/skip-generation/dont-skip.hspec", false),
-                Arguments.of(DockerfileGenPredicates.stackAsServiceImage(), null, false),
-                Arguments.of(DockerfileGenPredicates.stackAsServiceImage(), "/input/skip-generation/dockerfile.hspec", false),
-                Arguments.of(DockerfileGenPredicates.stackAsServiceImage(), "/input/skip-generation/only-image.hspec", false),
-                Arguments.of(DockerfileGenPredicates.stackAsServiceImage(), "/input/skip-generation/dont-skip.hspec", false),
-                Arguments.of(DockerfileGenPredicates.stackAsServiceImage(), "/input/skip-generation/invalid-spec.hspec", false),
-                Arguments.of(DockerfileGenPredicates.stackAsServiceImage(), "/input/skip-generation/stack-as-service.hspec", true)
-                );
+                Arguments.of(DockerfileGenPredicates.skipDockerfileGen(), "/input/skip-generation/dont-skip.hspec", false));
     }
     
     @ParameterizedTest

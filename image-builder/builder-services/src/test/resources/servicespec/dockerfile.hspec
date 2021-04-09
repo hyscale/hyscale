@@ -1,0 +1,8 @@
+name: myservice
+image:
+  registry: x.y.z
+  name: myServiceImage
+  tag: 1.2.3
+  dockerfile:
+    path: src/test/resources/
+    dockerfilePath: servicespec

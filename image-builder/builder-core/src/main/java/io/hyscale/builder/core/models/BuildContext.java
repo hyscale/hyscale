@@ -15,6 +15,7 @@
  */
 package io.hyscale.builder.core.models;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import io.hyscale.commons.models.DockerfileEntity;
@@ -24,22 +25,15 @@ public class BuildContext {
 
 	private DockerfileEntity dockerfileEntity;
 	private DockerImage dockerImage;
-	/**
-	 * Push registry refer to one where hyscale will push the final image
-	 */
-	private ImageRegistry pushRegistry;
-	/**
-	 * Pull registry is required to pull intermediate image
-	 * Ex: In case stack image refers to image in private registry
-	 */
-	private ImageRegistry pullRegistry;
+	// Registry credentials for pull and push registries
+	private Map<String, ImageRegistry> registriesMap = new HashMap<>();
 	private String serviceName;
 	private String appName;
 	private String version;
 	private Map<String, String> buildArgs;
 	private boolean verbose;
 	private boolean tail;
-	private boolean stackAsServiceImage;
+	private Boolean stackAsServiceImage;
 	private String imageShaSum;
 	private String buildLogs;
 	private String pushLogs;
@@ -84,23 +78,23 @@ public class BuildContext {
 		this.dockerImage = dockerImage;
 	}
 
-	public ImageRegistry getPushRegistry() {
-		return pushRegistry;
-	}
+	public Map<String, ImageRegistry> getRegistriesMap() {
+        return registriesMap;
+    }
 
-	public void setPushRegistry(ImageRegistry pushRegistry) {
-		this.pushRegistry = pushRegistry;
-	}
+    public void addRegistry(ImageRegistry imageRegistry) {
+        if (imageRegistry != null) {
+            this.addRegistry(imageRegistry.getUrl(), imageRegistry);
+        }
+    }
+    
+    public void addRegistry(String registry, ImageRegistry imageRegistry) {
+        if (imageRegistry != null) {
+            this.registriesMap.put(registry, imageRegistry);
+        }
+    }
 
-	public ImageRegistry getPullRegistry() {
-	    return pullRegistry;
-	}
-
-	public void setPullRegistry(ImageRegistry pullRegistry) {
-	    this.pullRegistry = pullRegistry;
-	}
-
-	public Map<String, String> getBuildArgs() {
+    public Map<String, String> getBuildArgs() {
 	    return buildArgs;
 	}
 
@@ -124,11 +118,11 @@ public class BuildContext {
 		this.tail = tail;
 	}
 
-	public boolean isStackAsServiceImage() {
+	public Boolean isStackAsServiceImage() {
 		return stackAsServiceImage;
 	}
 
-	public void setStackAsServiceImage(boolean stackAsServiceImage) {
+	public void setStackAsServiceImage(Boolean stackAsServiceImage) {
 		this.stackAsServiceImage = stackAsServiceImage;
 	}
 

@@ -18,6 +18,7 @@ package io.hyscale.builder.services.docker.impl;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ import io.hyscale.builder.services.spring.DockerBinaryCondition;
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.models.CommandResult;
+import io.hyscale.commons.models.ImageRegistry;
 import io.hyscale.commons.utils.ImageMetadataProvider;
 import io.hyscale.commons.utils.ObjectMapperFactory;
 import io.hyscale.servicespec.commons.model.service.Image;
@@ -48,7 +50,6 @@ import org.springframework.stereotype.Component;
 import io.hyscale.builder.services.config.ImageBuilderConfig;
 import io.hyscale.builder.services.docker.HyscaleDockerClient;
 import io.hyscale.builder.services.exception.ImageBuilderErrorCodes;
-import io.hyscale.builder.core.models.BuildContext;
 import io.hyscale.builder.core.models.DockerImage;
 import io.hyscale.builder.core.models.ImageBuilderActivity;
 import io.hyscale.commons.commands.CommandExecutor;
@@ -119,24 +120,20 @@ public class DockerBinaryClient implements HyscaleDockerClient {
     }
 
     @Override
-    public DockerImage build(Dockerfile dockerfile, String tag, BuildContext context) throws HyscaleException {
+    public DockerImage build(Dockerfile dockerfile, String imageName, String tag,
+            Map<String, ImageRegistry> registryMap, String logfile, boolean isVerbose) throws HyscaleException {
+       
         WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_BUILD);
-        String appName = context.getAppName();
-        String serviceName = context.getServiceName();
-        boolean verbose = context.isVerbose();
         String buildPath = dockerfile.getPath() != null ? SetupConfig.getAbsolutePath(dockerfile.getPath()) : null;
         String dockerfilePath = dockerfile.getDockerfilePath();
-        String dockerBuildCommand = imageCommandProvider.dockerBuildCommand(appName, serviceName, tag, dockerfilePath,
-                buildPath, dockerfile.getTarget(), dockerfile.getArgs());
+        String dockerBuildCommand = imageCommandProvider.dockerBuildCommand(imageName, tag, dockerfilePath, buildPath,
+                dockerfile.getTarget(), dockerfile.getArgs());
 
         logger.debug("Docker build command {}", dockerBuildCommand);
 
-        String logFilePath = imageBuilderConfig.getDockerBuildlog(appName, serviceName);
-        File logFile = new File(logFilePath);
-        context.setBuildLogs(logFilePath);
-
-        // TODO keep continuation activity for user
-        boolean status = CommandExecutor.executeInDir(dockerBuildCommand, logFile, buildPath);
+        boolean status = logfile != null
+                ? CommandExecutor.executeInDir(dockerBuildCommand, new File(logfile), buildPath)
+                : CommandExecutor.executeInDir(dockerBuildCommand, buildPath);
         if (!status) {
             WorkflowLogger.endActivity(Status.FAILED);
             logger.error("Failed to build docker image");
@@ -144,8 +141,8 @@ public class DockerBinaryClient implements HyscaleDockerClient {
             WorkflowLogger.endActivity(Status.DONE);
         }
 
-        if (verbose) {
-            imageLogUtil.readBuildLogs(appName, serviceName);
+        if (isVerbose) {
+            imageLogUtil.readLogs(logfile, ImageBuilderActivity.BUILD_LOGS);
         }
 
         if (!status) {
@@ -153,52 +150,43 @@ public class DockerBinaryClient implements HyscaleDockerClient {
         }
 
         DockerImage dockerImage = new DockerImage();
-        dockerImage.setName(imageMetadataProvider.getBuildImageName(appName, serviceName));
+        dockerImage.setName(imageName);
         dockerImage.setTag(tag);
 
         return dockerImage;
     }
 
-    /**
-     * Check docker exists, If stack image as service image pull, tag
-     * Push image if required else return
-     *
-     * @throws HyscaleException
-     */
     @Override
-    public void push(Image image, BuildContext buildContext) throws HyscaleException {
+    public String push(Image image, ImageRegistry imageRegistry, String logfile, boolean isVerbose)
+            throws HyscaleException {
+        String shaSum = null;
         WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_PUSH);
-        String appName = buildContext.getAppName();
-        String serviceName = buildContext.getServiceName();
-        boolean verbose = buildContext.isVerbose();
         String imageFullPath = ImageUtil.getImage(image);
         String pushImageCommand = imageCommandProvider.dockerPush(imageFullPath);
-        String logFilePath = imageBuilderConfig.getDockerPushLogDir(appName, serviceName);
-        File logFile = new File(logFilePath);
-        buildContext.setPushLogs(logFilePath);
-        // TODO keep continuation activity for user , launch a new thread & waitFor
-        boolean status = CommandExecutor.execute(pushImageCommand, logFile);
+        boolean status = logfile == null ? CommandExecutor.execute(pushImageCommand)
+                : CommandExecutor.execute(pushImageCommand, new File(logfile));
         if (!status) {
             WorkflowLogger.endActivity(Status.FAILED);
             logger.error("Failed to push docker image");
         } else {
             String inspectCommand = imageCommandProvider.dockerInspect(imageFullPath);
             CommandResult result = CommandExecutor.executeAndGetResults(inspectCommand);
-            buildContext.setImageShaSum(getImageDigest(result));
+            shaSum = getImageDigest(result);
             WorkflowLogger.endActivity(Status.DONE);
         }
 
-        if (verbose) {
-            imageLogUtil.readPushLogs(appName, serviceName);
+        if (isVerbose) {
+            imageLogUtil.readLogs(logfile, ImageBuilderActivity.IMAGE_PUSH_LOG);
         }
 
         if (!status) {
             throw new HyscaleException(ImageBuilderErrorCodes.FAILED_TO_PUSH_IMAGE);
         }
+        return shaSum;
     }
 
     @Override
-    public void pull(String image, BuildContext context) throws HyscaleException {
+    public void pull(String image, ImageRegistry imageRegistry) throws HyscaleException {
         WorkflowLogger.startActivity(ImageBuilderActivity.IMAGE_PULL);
 
         if (StringUtils.isBlank(image)) {
@@ -278,9 +266,24 @@ public class DockerBinaryClient implements HyscaleDockerClient {
         String[] imageIds = StringUtils.isNotBlank(imageIdsAsString) ? imageIdsAsString.split("\\s+") : null;
         if (imageIds == null || imageIds.length == 0) {
             logger.debug("No images found to clean from the host machine");
-            return null;
+            return Collections.emptyList();
         }
         // Need to preserve the order of output, hence a LinkedHashset
         return new LinkedList<>(Arrays.asList(imageIds));
+    }
+    
+    @Override
+    public void login(ImageRegistry imageRegistry) throws HyscaleException {
+        dockerImageUtil.dockerLogin(imageRegistry);
+    }
+
+    @Override
+    public boolean isLoginRequired() {
+        return true;
+    }
+    
+    @Override
+    public boolean isCleanUpRequired(){
+        return true;
     }
 }

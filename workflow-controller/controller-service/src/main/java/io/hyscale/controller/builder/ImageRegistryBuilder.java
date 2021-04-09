@@ -15,14 +15,14 @@
  */
 package io.hyscale.controller.builder;
 
-import io.hyscale.commons.constants.ToolConstants;
 import io.hyscale.commons.models.Auth;
 import io.hyscale.commons.models.CredsStoreEntity;
 import io.hyscale.commons.models.DockerCredHelper;
 import io.hyscale.commons.models.ImageRegistry;
+import io.hyscale.commons.utils.EncodeDecodeUtil;
+
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Base64;
 import java.util.Map;
 
 /**Provides ImageRegistry details*/
@@ -50,8 +50,7 @@ public class ImageRegistryBuilder {
         if (credsStoreEntity == null) {
             return null;
         }
-        String tokenString = credsStoreEntity.getUsername() + ToolConstants.COLON + credsStoreEntity.getSecret();
-        String encodedToken = Base64.getEncoder().encodeToString(tokenString.getBytes());
+        String encodedToken = EncodeDecodeUtil.getEncodedCredentials(credsStoreEntity.getUsername(), credsStoreEntity.getSecret());
         return new ImageRegistry(credsStoreEntity.getServerURL(), encodedToken);
     }
 

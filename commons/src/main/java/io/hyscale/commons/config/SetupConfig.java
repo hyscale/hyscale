@@ -27,6 +27,7 @@ public class SetupConfig {
 
     public static final String HYSCALE_CTL_HOME = "HYSCALECTL_HOME";
     public static final String USER_HOME_DIR = System.getProperty("user.home");
+    public static final String TEMP_DIR = System.getProperty("java.io.tmpdir");
     public static final String CURRENT_WORKING_DIR = System.getProperty("user.dir");
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
     public static final String INSTALLATION_DIR = USER_HOME_DIR;
@@ -42,6 +43,7 @@ public class SetupConfig {
     private static final String LOGS_DIR = "logs";
     private static final String APPS_DIR = "apps";
     private static final String HYSCALE_DIR = "hyscale";
+    private static final String TEMPORARY_CONFIG_DIR = "hyscale-docker-config";
 
     private static final ThreadLocal<String> absolutePathTL = new ThreadLocal<>();
 
@@ -50,7 +52,7 @@ public class SetupConfig {
             absolutePathTL.set(path);
         }
     }
-
+    
     public static String getToolLogDir() {
         return INSTALLATION_DIR + FILE_SEPARATOR + HYSCALE_DIR + FILE_SEPARATOR + LOGS_DIR;
     }
@@ -161,5 +163,9 @@ public class SetupConfig {
             return false;
         }
         return Boolean.valueOf(hyscaleregistryConf);
+    }
+    
+    public static String getTemporaryDockerConfigDir() {
+        return TEMP_DIR + FILE_SEPARATOR + TEMPORARY_CONFIG_DIR;
     }
 }

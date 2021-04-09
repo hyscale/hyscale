@@ -18,9 +18,9 @@ package io.hyscale.builder.services.docker;
 import java.util.List;
 import java.util.Map;
 
-import io.hyscale.builder.core.models.BuildContext;
 import io.hyscale.builder.core.models.DockerImage;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.models.ImageRegistry;
 import io.hyscale.servicespec.commons.model.service.Dockerfile;
 import io.hyscale.servicespec.commons.model.service.Image;
 
@@ -31,7 +31,18 @@ import io.hyscale.servicespec.commons.model.service.Image;
  *
  */
 public interface HyscaleDockerClient {
-
+    
+    /**
+     * @return true if manual login is required for the client
+     */
+    boolean isLoginRequired();
+    
+    /**
+     * @return true if clean up temporary files are required
+     */
+    default boolean isCleanUpRequired(){
+        return false;
+    }
     /**
      * @return true if docker is running, else false
      */
@@ -70,30 +81,37 @@ public interface HyscaleDockerClient {
     void deleteImage(String imageId, boolean force) throws HyscaleException;
 
     /**
-     * Build image based on docker
+     * Build image based on dockerfile
      * @param dockerfile
+     * @param imageName
      * @param tag
-     * @param context
+     * @param registryMap
+     * @param logfile
+     * @param isVerbose
      * @return {@link DockerImage} built image details
      * @throws HyscaleException
      */
-    DockerImage build(Dockerfile dockerfile, String tag, BuildContext context) throws HyscaleException;
+    DockerImage build(Dockerfile dockerfile, String imageName, String tag, Map<String, ImageRegistry> registryMap,
+            String logfile, boolean isVerbose) throws HyscaleException;
 
     /**
      * Push image to registry
      * @param image
-     * @param buildContext
+     * @param imageRegistry
+     * @param logfile
+     * @param isVerbose
+     * @return ShaSum of pushed image
      * @throws HyscaleException
      */
-    void push(Image image, BuildContext buildContext) throws HyscaleException;
+    String push(Image image, ImageRegistry imageRegistry, String logfile, boolean isVerbose) throws HyscaleException;
 
     /**
      * Pull image from registry
      * @param image
-     * @param context
+     * @param imageRegistry
      * @throws HyscaleException
      */
-    void pull(String image, BuildContext context) throws HyscaleException;
+    void pull(String image, ImageRegistry imageRegistry) throws HyscaleException;
 
     /**
      * Tag image based on destination
@@ -103,4 +121,10 @@ public interface HyscaleDockerClient {
      */
     void tag(String source, Image dest) throws HyscaleException;
     
+    /**
+     * Login to registry
+     * @param registry
+     * @throws HyscaleException
+     */
+    default void login(ImageRegistry registry) throws HyscaleException {}
 }
