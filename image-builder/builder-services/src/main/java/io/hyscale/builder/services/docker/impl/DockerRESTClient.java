@@ -235,7 +235,6 @@ public class DockerRESTClient implements HyscaleDockerClient {
         }
         buildImageCmd.withDockerfile(new File(dockerfile.getDockerfilePath()))
                 .withPull(true)
-                .withNoCache(true)
                 .withLabels(labels)
                 .withTags(tags)
                 .withTarget(dockerfile.getTarget());
