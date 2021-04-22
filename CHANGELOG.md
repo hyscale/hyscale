@@ -1,6 +1,14 @@
+# v0.9.9.1 Release
+
+This is a minor release for refactoring image building process.
+
+### Fixes
+
+* [Refactoring docker client. Image registry changes.](https://github.com/hyscale/hyscale/pull/375)
+
 # v0.9.9 Release
 
-This is a minor release is for network policies support and agent ports support.
+This is a minor release for network policies support and agent ports support.
 
 ### Features:
 
