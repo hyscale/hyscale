@@ -1,0 +1,17 @@
+name: ratings
+
+image:
+  registry: registry.hub.docker.com
+  name: istio/examples-bookinfo-ratings-v1
+  tag: 1.15.0
+
+external: false
+
+ports:
+  - port: 8080/http
+
+allowTraffic:
+  - ports:
+      - 8080
+    from:
+      - reviews

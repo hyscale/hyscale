@@ -19,5 +19,5 @@ _dist/
 *.class
 
 #Schema Files
-service-spec/schema-validator/src/main/resources/hprof/0.6.2.1/
-service-spec/schema-validator/src/main/resources/hspec/0.6.2.1/
+service-spec/schema-validator/src/main/resources/hprof/
+service-spec/schema-validator/src/main/resources/hspec/

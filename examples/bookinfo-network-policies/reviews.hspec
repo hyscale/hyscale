@@ -1,0 +1,17 @@
+name: reviews
+
+image:
+  registry: registry.hub.docker.com
+  name: istio/examples-bookinfo-reviews-v1
+  tag: 1.16.2
+
+external: false
+
+ports:
+  - port: 9080/http
+
+allowTraffic:
+  - ports:
+      - 9080
+    from:
+      - productpage
