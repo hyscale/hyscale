@@ -250,7 +250,7 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
     }
 
     @Override
-    public ServiceAddress  getServiceAddress(DeploymentContext context) throws HyscaleException {
+    public ServiceAddress getServiceAddress(DeploymentContext context) throws HyscaleException {
         ServiceAddress serviceAddress;
         try {
             ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());

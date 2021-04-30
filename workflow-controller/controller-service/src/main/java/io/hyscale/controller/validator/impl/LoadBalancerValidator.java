@@ -75,7 +75,6 @@ public class LoadBalancerValidator implements Validator<WorkflowContext> {
                 return false;
             }
             if (!portValidation(serviceSpec, loadBalancer)) {
-                //message for validator?
                 return false;
             }
             if (!checkForExternalTrue(serviceSpec)) {
