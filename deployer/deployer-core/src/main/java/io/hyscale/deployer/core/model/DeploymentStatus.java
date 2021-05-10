@@ -49,6 +49,7 @@ public class DeploymentStatus {
     private ServiceStatus serviceStatus;
     private String message;
     private String serviceAddress;
+    private String serviceURL;
 
     private DateTime age;
 
@@ -90,6 +91,14 @@ public class DeploymentStatus {
 
     public void setServiceAddress(String serviceAddress) {
         this.serviceAddress = serviceAddress;
+    }
+
+    public String getServiceURL() {
+        return serviceURL;
+    }
+
+    public void setServiceURL(String serviceURL) {
+        this.serviceURL = serviceURL;
     }
 
 }

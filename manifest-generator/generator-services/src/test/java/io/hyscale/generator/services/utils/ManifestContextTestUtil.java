@@ -15,19 +15,30 @@
  */
 package io.hyscale.generator.services.utils;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.commons.models.ManifestContext;
 import io.hyscale.generator.services.constants.ManifestGenConstants;
 import io.hyscale.generator.services.model.ManifestResource;
+import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
+import io.hyscale.servicespec.commons.model.service.ServiceSpec;
 
 public class ManifestContextTestUtil {
     
     public static ManifestContext getManifestContext(ManifestResource podSpecOwner) {
         ManifestContext context = new ManifestContext();
         context.setAppName("app");
+        context.setEnvName("dev");
         if (podSpecOwner != null) {
             context.addGenerationAttribute(ManifestGenConstants.POD_SPEC_OWNER, podSpecOwner.getKind());
         }
         return context;
+    }
+
+    public static LoadBalancer getLoadBalancerFromSpec(ServiceSpec serviceSpec) throws HyscaleException {
+        LoadBalancer loadBalancer = serviceSpec.get(HyscaleSpecFields.loadBalancer, new TypeReference<LoadBalancer>(){});
+        return loadBalancer;
     }
 
 }

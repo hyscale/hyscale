@@ -57,6 +57,8 @@ public class K8sResourceDispatcher {
 
     private static final Logger logger = LoggerFactory.getLogger(K8sResourceDispatcher.class);
 
+    private static final String APPLY_MANIFEST_ERROR = "Error while applying manifests to kubernetes";
+
     private K8sResourceBroker resourceBroker;
     private ApiClient apiClient;
     private String namespace;
@@ -119,7 +121,7 @@ public class K8sResourceDispatcher {
 
         } catch (Exception e) {
             HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_APPLY_MANIFEST);
-            logger.error("Error while applying manifests to kubernetes", ex);
+            logger.error(APPLY_MANIFEST_ERROR, ex);
             throw ex;
         }
     }

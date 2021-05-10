@@ -50,8 +50,21 @@ public class PluginTemplateProvider {
 
     public enum PluginTemplateType {
         HPA("hpa.yaml.tpl"),
+
+        INGRESS("/loadBalancer/ingress/ingress-spec.yaml.tpl"),
+
+        NGINX("/loadBalancer/ingress/nginx/ingress-meta.yaml.tpl"),
+
+        TRAEFIK("/loadBalancer/ingress/traefik/ingress-meta.yaml.tpl"),
+
+        ISTIO_VIRTUAL_SERVICE("/loadBalancer/istio/virtualService.yaml.tpl"),
+
+        ISTIO_DESTINATION_RULE("/loadBalancer/istio/destinationRule.yaml.tpl"),
+
+        ISTIO_GATEWAY("/loadBalancer/istio/gateway.yaml.tpl"),
+
         NETWORK_POLICY("networkPolicy.yaml.tpl");
-    			
+    		
         String templateFile;
 
         PluginTemplateType(String tplFile) {

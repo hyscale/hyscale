@@ -15,38 +15,11 @@
  */
 package io.hyscale.deployer.services.deployer.impl;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import io.hyscale.deployer.services.manager.ScaleServiceManager;
-import io.hyscale.deployer.services.model.*;
-import io.hyscale.deployer.services.processor.ClusterVersionProvider;
-import io.hyscale.deployer.services.processor.PodParentProvider;
-import io.hyscale.deployer.services.processor.ServiceStatusProcessor;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.framework.events.model.ActivityState;
 import io.hyscale.commons.framework.events.publisher.EventPublisher;
 import io.hyscale.commons.logger.WorkflowLogger;
-import io.hyscale.commons.models.ClusterVersionInfo;
-import io.hyscale.commons.models.DeploymentContext;
-import io.hyscale.commons.models.K8sAuthorisation;
-import io.hyscale.commons.models.KubernetesResource;
-import io.hyscale.commons.models.Manifest;
-import io.hyscale.commons.models.ServiceMetadata;
-import io.hyscale.commons.models.YAMLManifest;
+import io.hyscale.commons.models.*;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.deployer.core.model.AppMetadata;
 import io.hyscale.deployer.core.model.DeploymentStatus;
@@ -63,17 +36,27 @@ import io.hyscale.deployer.services.handler.ResourceLifeCycleHandler;
 import io.hyscale.deployer.services.handler.impl.V1PersistentVolumeClaimHandler;
 import io.hyscale.deployer.services.handler.impl.V1PodHandler;
 import io.hyscale.deployer.services.handler.impl.V1ServiceHandler;
+import io.hyscale.deployer.services.manager.ScaleServiceManager;
+import io.hyscale.deployer.services.model.*;
+import io.hyscale.deployer.services.processor.ClusterVersionProvider;
+import io.hyscale.deployer.services.processor.PodParentProvider;
+import io.hyscale.deployer.services.processor.PodParentUtil;
+import io.hyscale.deployer.services.processor.ServiceStatusProcessor;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
-import io.hyscale.deployer.services.util.K8sDeployerUtil;
-import io.hyscale.deployer.services.util.K8sPodUtil;
-import io.hyscale.deployer.services.util.K8sReplicaUtil;
-import io.hyscale.deployer.services.util.K8sResourceDispatcher;
-import io.hyscale.deployer.services.util.KubernetesResourceUtil;
+import io.hyscale.deployer.services.util.*;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
 import io.kubernetes.client.openapi.models.V1Pod;
 import io.kubernetes.client.openapi.models.V1Volume;
 import io.kubernetes.client.openapi.models.V1VolumeMount;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * {@link Deployer} implementation for K8s Cluster
@@ -268,12 +251,17 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
 
     @Override
     public ServiceAddress getServiceAddress(DeploymentContext context) throws HyscaleException {
-        ServiceAddress serviceAddress = null;
+        ServiceAddress serviceAddress;
         try {
             ApiClient apiClient = clientProvider.get((K8sAuthorisation) context.getAuthConfig());
+            String selector = ResourceSelectorUtil.getServiceSelector(context.getAppName(), context.getServiceName());
+            PodParent podParent = podParentProvider.getPodParent(apiClient, context.getAppName(), context.getServiceName(), context.getNamespace());
+            LoadBalancer loadBalancer = PodParentUtil.getLoadBalancerSpec(podParent);
+            if (loadBalancer != null) {
+                return K8sServiceUtil.getLBServiceAddress(context.isWaitForReadiness(), loadBalancer, apiClient, selector, context.getNamespace());
+            }
             V1ServiceHandler v1ServiceHandler = (V1ServiceHandler) ResourceHandlers
                     .getHandlerOf(ResourceKind.SERVICE.getKind());
-            String selector = ResourceSelectorUtil.getServiceSelector(context.getAppName(), context.getServiceName());
             serviceAddress = v1ServiceHandler.getServiceAddress(apiClient, selector, context.getNamespace(),
                     context.isWaitForReadiness());
         } catch (HyscaleException e) {
@@ -282,7 +270,6 @@ public class KubernetesDeployer implements Deployer<K8sAuthorisation> {
         }
         return serviceAddress;
     }
-
 
     @Override
     public DeploymentStatus getServiceDeploymentStatus(DeploymentContext context) throws HyscaleException {

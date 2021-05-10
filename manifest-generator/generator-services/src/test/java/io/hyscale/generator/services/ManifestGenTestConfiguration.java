@@ -16,15 +16,13 @@ package io.hyscale.generator.services;
  * limitations under the License.
  */
 
-import javax.annotation.PostConstruct;
-
+import io.hyscale.commons.config.SetupConfig;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 
-import io.hyscale.commons.config.SetupConfig;
-import io.hyscale.commons.utils.MustacheTemplateResolver;
+import javax.annotation.PostConstruct;
 
 @SpringBootConfiguration
 @ComponentScan(basePackages = "io.hyscale.generator, io.hyscale.commons")

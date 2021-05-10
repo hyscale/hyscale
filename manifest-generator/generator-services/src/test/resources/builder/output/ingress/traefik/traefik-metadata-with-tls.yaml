@@ -1,0 +1,8 @@
+name: dev-productpage-ingress
+labels:
+  hyscale.io/app-name: book-info
+  hyscale.io/service-name: productpage
+annotations:
+  kubernetes.io/ingress.class: traefik-ingress
+  traefik.ingress.kubernetes.io/frontend-entry-points: http
+  ingress.kubernetes.io/custom-request-headers: hello:there|test:sample

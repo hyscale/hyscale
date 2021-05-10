@@ -1,0 +1,12 @@
+selector:
+  istio: ingressgateway
+servers:
+- hosts:
+    - bookinfo.com
+  port:
+    number: 443
+    name: HTTPS
+    protocol: HTTPS
+  tls:
+    mode: SIMPLE
+    credentialName: bookinfo-tls-secret

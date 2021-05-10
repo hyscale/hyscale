@@ -17,6 +17,8 @@ package io.hyscale.generator.services.predicates;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.hyscale.commons.exception.HyscaleException;
+import io.hyscale.commons.models.LBType;
+import io.hyscale.commons.models.LoadBalancer;
 import io.hyscale.generator.services.provider.PropsProvider;
 import io.hyscale.generator.services.utils.ReplicasUtil;
 import io.hyscale.servicespec.commons.fields.HyscaleSpecFields;
@@ -31,6 +33,34 @@ import java.util.function.Predicate;
 public class ManifestPredicates {
 
     private ManifestPredicates() {
+    }
+
+    public static Predicate<ServiceSpec>getDestinationRulePredicate(){
+        return serviceSpec -> {
+            TypeReference<LoadBalancer> loadBalancerTypeReference = new TypeReference<LoadBalancer>() {
+            };
+            LoadBalancer loadBalancer = null;
+            try {
+                loadBalancer = serviceSpec.get(HyscaleSpecFields.loadBalancer, loadBalancerTypeReference);
+            } catch (HyscaleException e) {
+                return false;
+            }
+            return (loadBalancer != null && loadBalancer.isSticky() && LBType.ISTIO == LBType.getByProvider(loadBalancer.getProvider()));
+        };
+    }
+
+    public static Predicate<ServiceSpec>getLoadBalancerPredicate(LBType providerType){
+        return serviceSpec -> {
+            TypeReference<LoadBalancer> loadBalancerTypeReference = new TypeReference<LoadBalancer>() {
+            };
+            LoadBalancer loadBalancer = null;
+            try {
+                loadBalancer = serviceSpec.get(HyscaleSpecFields.loadBalancer, loadBalancerTypeReference);
+            } catch (HyscaleException e) {
+                return false;
+            }
+            return (loadBalancer != null && (providerType == LBType.getByProvider(loadBalancer.getProvider())));
+        };
     }
 
     public static Predicate<ServiceSpec> getVolumesPredicate() {

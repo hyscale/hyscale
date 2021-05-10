@@ -1,0 +1,9 @@
+name: productpage
+external: true
+ports:
+  - port: 9000/http
+loadBalancer:
+     mapping:
+     headers:
+         hello : there
+         test : sample

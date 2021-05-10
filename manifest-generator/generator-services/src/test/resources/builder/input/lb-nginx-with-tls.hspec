@@ -1,0 +1,18 @@
+name: productpage
+external: true
+ports:
+  - port: 9080/http
+loadBalancer:
+     provider: nginx
+     className: nginx-ingress
+     host: bookinfo.com
+     sticky: true
+     tlsSecret: default-server-secret
+     mapping:
+        - port : 9080/http
+          contextPaths:
+               - "/productpage"
+               - "/login"
+     headers:
+         hello : there
+         test : sample

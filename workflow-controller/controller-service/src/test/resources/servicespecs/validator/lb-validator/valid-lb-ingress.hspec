@@ -1,0 +1,27 @@
+name: productpage
+image:
+     registry: registry.hub.docker.com
+     name: username/bookinfo-productpage # replace with your dockerhub username for {{username}}
+     tag: 1.16.2
+     buildSpec:
+       stackImage: docker.io/istio/examples-bookinfo-productpage-v1:1.16.2
+
+external: true
+
+ports:
+  - port: 9080/http
+
+loadBalancer:
+     provider: nginx
+     className: ingress-controller
+     host: bookinfo3.com
+     sticky: true
+     tlsSecret: bookinfo-tls-secret
+     mapping:
+        - port : 9080/http
+          contextPaths:
+               - "/productpage"
+               - "/login"
+     headers:
+         hello : there
+         test : sample

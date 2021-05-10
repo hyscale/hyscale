@@ -15,16 +15,6 @@
  */
 package io.hyscale.deployer.services.processor;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.models.AuthConfig;
 import io.hyscale.commons.models.DeploymentContext;
@@ -39,6 +29,15 @@ import io.hyscale.deployer.services.model.ServiceAddress;
 import io.hyscale.deployer.services.provider.K8sClientProvider;
 import io.hyscale.deployer.services.util.DeploymentStatusUtil;
 import io.kubernetes.client.openapi.ApiClient;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class ServiceStatusProcessor {
@@ -109,6 +108,7 @@ public class ServiceStatusProcessor {
             ServiceAddress serviceAddress = deployer.getServiceAddress(context);
             if (serviceAddress != null) {
                 deploymentStatus.setServiceAddress(serviceAddress.toString());
+                deploymentStatus.setServiceURL(serviceAddress.getServiceURL());
             }
         } catch (HyscaleException e) {
             logger.debug("Failed to get service address {} ", e.getHyscaleError());

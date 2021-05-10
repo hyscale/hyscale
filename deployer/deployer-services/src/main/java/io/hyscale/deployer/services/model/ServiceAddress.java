@@ -30,6 +30,7 @@ public class ServiceAddress {
 
     private String serviceIP;
     private List<Integer> ports;
+    private String serviceURL;
 
     public String getServiceIP() {
 	return serviceIP;
@@ -67,5 +68,13 @@ public class ServiceAddress {
 	}
 
 	return address.toString();
+    }
+
+    public String getServiceURL() {
+        return serviceURL;
+    }
+
+    public void setServiceURL(String serviceURL) {
+        this.serviceURL = serviceURL;
     }
 }

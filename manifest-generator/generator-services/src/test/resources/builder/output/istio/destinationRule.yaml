@@ -1,0 +1,7 @@
+host: productpage
+trafficPolicy:
+  loadBalancer:
+    consistentHash:
+      httpCookie:
+        name: DEFAULT_COOKIE
+        ttl: 30m

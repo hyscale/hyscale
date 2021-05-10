@@ -43,6 +43,8 @@ public class WorkflowConstants {
 
 	public static final String SERVICE_IP = "SERVICE_IP";
 
+	public static final String SERVICE_URL = "SERVICE_URL";
+
 	public static final String DEPLOY_LOGS = "DEPLOY_LOGS";
 
 	public static final String CLEAN_UP_SERVICE_DIR = "CLEAN_UP_SERVICE_DIR";
