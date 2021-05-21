@@ -1,7 +1,13 @@
 #!/bin/bash
 VERSION=$1
+
 HSPEC="https://github.com/hyscale/hspec/blob/release/HSpec$VERSION/schema/service-spec.json"
 HPROF="https://github.com/hyscale/hspec/blob/release/HSpec$VERSION/schema/profile-spec.json"
+
+if [[ "$VERSION" == "master" ]]; then
+  HSPEC="https://github.com/hyscale/hspec/blob/$VERSION/schema/service-spec.json"
+  HPROF="https://github.com/hyscale/hspec/blob/$VERSION/schema/profile-spec.json"
+fi
 
 echo $HSPEC
 echo $HPROF
