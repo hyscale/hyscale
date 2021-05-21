@@ -28,7 +28,7 @@ import io.hyscale.troubleshooting.integration.models.ActionNode;
 import io.hyscale.troubleshooting.integration.models.DiagnosisReport;
 import io.hyscale.troubleshooting.integration.models.FailedResourceKey;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
-import io.kubernetes.client.openapi.models.V1Event;
+import io.kubernetes.client.openapi.models.CoreV1Event;
 import io.kubernetes.client.openapi.models.V1ObjectReference;
 
 /**
@@ -64,7 +64,7 @@ public class ParentFailureAction extends ActionNode<TroubleshootingContext> {
             logger.debug("No failure event found to process");
             return;
         }
-        V1Event event = (V1Event) eventObj;
+        CoreV1Event event = (CoreV1Event) eventObj;
         if (invalidVolumeNamePattern.stream().anyMatch(pattern -> pattern.matcher(event.getMessage()).find())) {
             report.setReason(AbstractedErrorMessage.INVALID_VOLUME_NAME.getReason());
             report.setRecommendedFix(AbstractedErrorMessage.INVALID_VOLUME_NAME.getMessage());

@@ -16,7 +16,7 @@
 package io.hyscale.troubleshooting.integration.actions;
 
 import io.hyscale.troubleshooting.integration.models.*;
-import io.kubernetes.client.openapi.models.V1Event;
+import io.kubernetes.client.openapi.models.CoreV1Event;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +33,7 @@ public class FixHealthCheckAction extends ActionNode<TroubleshootingContext> {
         Object obj = context.getAttribute(FailedResourceKey.UNHEALTHY_POD_EVENT);
         String eventMessage = null;
         if (obj != null) {
-            V1Event event = (V1Event) FailedResourceKey.UNHEALTHY_POD_EVENT.getKlazz().cast(obj);
+            CoreV1Event event = (CoreV1Event) FailedResourceKey.UNHEALTHY_POD_EVENT.getKlazz().cast(obj);
             eventMessage = event != null ? event.getMessage() : null;
             logger.debug("Fix health check, pod event: {}", eventMessage);
         }

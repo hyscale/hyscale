@@ -73,7 +73,7 @@ public class V1ReplicaSetHandler implements ResourceLifeCycleHandler<V1ReplicaSe
             String fieldSelector = label ? null : selector;
 
             V1ReplicaSetList v1DeploymentList = appsV1Api.listNamespacedReplicaSet(namespace, DeployerConstants.TRUE, null, 
-                    null, fieldSelector, labelSelector, null, null, null, null);
+                    null, fieldSelector, labelSelector, null, null, null, null, null);
 
             v1ReplicaSets = v1DeploymentList != null ? v1DeploymentList.getItems() : null;
         } catch (ApiException e) {

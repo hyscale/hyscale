@@ -24,7 +24,7 @@ import io.hyscale.troubleshooting.integration.actions.TryAfterSometimeAction;
 import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
 import io.hyscale.troubleshooting.integration.models.*;
 import io.hyscale.troubleshooting.integration.actions.FixHealthCheckAction;
-import io.kubernetes.client.openapi.models.V1Event;
+import io.kubernetes.client.openapi.models.CoreV1Event;
 import io.kubernetes.client.openapi.models.V1Pod;
 
 import org.apache.commons.lang3.BooleanUtils;
@@ -63,7 +63,7 @@ public class IsPodsReadinessFailing implements Node<TroubleshootingContext> {
             throw new HyscaleException(TroubleshootErrorCodes.SERVICE_IS_NOT_DEPLOYED, context.getServiceMetadata().getServiceName());
         }
 
-        List<V1Event> v1Events = new ArrayList<>();
+        List<CoreV1Event> v1Events = new ArrayList<>();
         Object obj = context.getAttribute(FailedResourceKey.UNREADY_POD);
         V1Pod unhealthyPod = null;
         if (obj != null) {

@@ -24,6 +24,7 @@ import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.deployer.services.client.GenericK8sClient;
 import io.hyscale.deployer.services.client.K8sResourceClient;
 import io.hyscale.deployer.services.model.CustomObject;
+import io.hyscale.deployer.services.model.DeployerActivity;
 import io.hyscale.deployer.services.model.PodParent;
 import io.hyscale.deployer.services.processor.PodParentUtil;
 import org.slf4j.Logger;
@@ -35,6 +36,7 @@ import io.hyscale.commons.exception.HyscaleException;
 import io.hyscale.commons.logger.WorkflowLogger;
 import io.hyscale.commons.models.K8sAuthorisation;
 import io.hyscale.commons.models.Manifest;
+import io.hyscale.commons.models.Status;
 import io.hyscale.commons.utils.ResourceSelectorUtil;
 import io.hyscale.controller.activity.ControllerActivity;
 import io.hyscale.controller.constants.WorkflowConstants;
@@ -112,11 +114,14 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 								WorkflowLogger.header(ControllerActivity.CLEANING_UP_RESOURCES);
 								isMsgPrinted = true;
 							}
+							WorkflowLogger.startActivity(DeployerActivity.DELETING, customResourceKind.getKind());
 							genericK8sClient.delete(existingResource);
+							WorkflowLogger.endActivity(Status.DONE);
 						}
 					}catch (Exception e){
 						logger.error("Error while cleaning up stale resource: {}, error: {}", customResourceKind.getKind(),
 								e.getMessage());
+						WorkflowLogger.endActivity(Status.FAILED);
 					}
 				}
 			}
@@ -126,7 +131,6 @@ public class K8SResourcesCleanUpHook implements InvokerHook<WorkflowContext> {
 		}catch (Exception e){
 			HyscaleException ex = new HyscaleException(e, DeployerErrorCodes.FAILED_TO_READ_MANIFEST);
 			logger.error("Error while cleaning stale kubernetes resources, error: {}", ex.getMessage());
-			return;
 		}
 	}
 

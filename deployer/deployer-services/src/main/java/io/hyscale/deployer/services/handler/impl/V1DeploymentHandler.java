@@ -143,7 +143,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
             String fieldSelector = label ? null : selector;
 
             V1DeploymentList v1DeploymentList = appsV1Api.listNamespacedDeployment(namespace, DeployerConstants.TRUE, null,
-                    null, fieldSelector, labelSelector, null, null, null, null);
+                    null, fieldSelector, labelSelector, null, null, null, null, null);
 
             v1Deployments = v1DeploymentList != null ? v1DeploymentList.getItems() : null;
         } catch (ApiException e) {
@@ -165,7 +165,7 @@ public class V1DeploymentHandler extends PodParentHandler<V1Deployment> implemen
             String fieldSelector = label ? null : selector;
 
             V1DeploymentList v1DeploymentList = appsV1Api.listDeploymentForAllNamespaces(null, null, fieldSelector,
-                    labelSelector, null, DeployerConstants.TRUE, null, null, null);
+                    labelSelector, null, DeployerConstants.TRUE, null, null, null, null);
 
             v1Deployments = v1DeploymentList != null ? v1DeploymentList.getItems() : null;
         } catch (ApiException e) {

@@ -156,7 +156,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
         List<V1Pod> v1Pods = null;
         try {
             V1PodList v1PodList = coreV1Api.listNamespacedPod(namespace, DeployerConstants.TRUE, null, null, fieldSelector, labelSelector,
-                    null, null, null, null);
+                    null, null, null, null, null);
             v1Pods = v1PodList != null ? v1PodList.getItems() : null;
         } catch (ApiException e) {
             HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_BY_SELECTOR);
@@ -176,7 +176,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
         List<V1Pod> v1Pods = null;
         try {
             V1PodList v1PodList = coreV1Api.listPodForAllNamespaces(null, null, fieldSelector, labelSelector, null,
-                    DeployerConstants.TRUE, null, null, null);
+                    DeployerConstants.TRUE, null, null, null, null);
             v1Pods = v1PodList != null ? v1PodList.getItems() : null;
         } catch (ApiException e) {
             HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_BY_SELECTOR);
@@ -545,7 +545,7 @@ public class V1PodHandler implements ResourceLifeCycleHandler<V1Pod> {
         try {
             return Watch.createWatch(
                     apiClient, api.listNamespacedPodCall(namespace, null, false, null, null, latestPodSelector, null,
-                            null, POD_WATCH_TIMEOUT_IN_SEC, Boolean.TRUE, null),
+                            null, null, POD_WATCH_TIMEOUT_IN_SEC, Boolean.TRUE, null),
                     new TypeToken<Watch.Response<V1Pod>>() {
                     }.getType());
         } catch (ApiException e) {

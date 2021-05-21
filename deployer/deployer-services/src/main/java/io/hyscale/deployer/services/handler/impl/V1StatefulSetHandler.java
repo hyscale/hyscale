@@ -150,7 +150,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         List<V1StatefulSet> statefulSets = null;
         try {
             V1StatefulSetList statefulSetList = appsV1Api.listNamespacedStatefulSet(namespace, DeployerConstants.TRUE, null,
-                    null, fieldSelector, labelSelector, null, null, null, null);
+                    null, fieldSelector, labelSelector, null, null, null, null, null);
             statefulSets = statefulSetList != null ? statefulSetList.getItems() : null;
         } catch (ApiException e) {
             HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_BY_SELECTOR);
@@ -170,7 +170,7 @@ public class V1StatefulSetHandler extends PodParentHandler<V1StatefulSet> implem
         List<V1StatefulSet> statefulSets = null;
         try {
             V1StatefulSetList statefulSetList = appsV1Api.listStatefulSetForAllNamespaces(null, null, fieldSelector,
-                    labelSelector, null, DeployerConstants.TRUE, null, null, null);
+                    labelSelector, null, DeployerConstants.TRUE, null, null, null, null);
             statefulSets = statefulSetList != null ? statefulSetList.getItems() : null;
         } catch (ApiException e) {
             HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_ALL);

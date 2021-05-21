@@ -56,7 +56,7 @@ public class KubernetesResourceUtil {
         try{
             obj = Yaml.load(yamlManifest.getManifest());
         }catch (ConstructorException | IOException e){
-            logger.error("Failed to load manifest returning null");
+            logger.error("Failed to load manifest returning null", e);
             return null;
         }
         Method kindMethod = obj.getClass().getMethod(GET_KIND);

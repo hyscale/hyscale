@@ -17,7 +17,7 @@ package io.hyscale.troubleshooting.integration.actions;
 
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.troubleshooting.integration.models.*;
-import io.kubernetes.client.openapi.models.V1Event;
+import io.kubernetes.client.openapi.models.CoreV1Event;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -39,10 +39,10 @@ public class ImagePullBackOffAction extends ActionNode<TroubleshootingContext> {
 
         Object obj = context.getAttribute(FailedResourceKey.FAILED_POD_EVENTS);
         if (obj != null) {
-            List<V1Event> eventList = (List<V1Event>) FailedResourceKey.FAILED_POD_EVENTS.getKlazz().cast(obj);
+            List<CoreV1Event> eventList = (List<CoreV1Event>) FailedResourceKey.FAILED_POD_EVENTS.getKlazz().cast(obj);
             if (eventList != null && !eventList.isEmpty()) {
                 boolean actedOn = false;
-                for (V1Event event : eventList) {
+                for (CoreV1Event event : eventList) {
                     if (!FAILED.equals(event.getReason())) {
                         continue;
                     }

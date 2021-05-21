@@ -64,7 +64,7 @@ public class PendingPvcAction extends ActionNode<TroubleshootingContext> {
                 .collect(Collectors.toList());
 
         // get all the events of pvc's associated with the failed pod
-        List<V1Event> eventList = new ArrayList<>();
+        List<CoreV1Event> eventList = new ArrayList<>();
         resourceData.stream().filter(each -> each != null && each.getResource() instanceof V1PersistentVolumeClaim)
                 .forEach(resourceInfo -> {
                     // match the pvc name from the failed pod in the list of all pvc's

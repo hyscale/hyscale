@@ -74,7 +74,7 @@ public class HyscaleException extends Exception {
         if (args != null && args.length != 0 ) {
             sb.append(String.format(hyscaleError.getMessage().replaceAll("\\{\\}", "%s"), args));
         } else {
-            sb.append(hyscaleError.getMessage());
+            sb.append(hyscaleError.getMessage().replace("{}", ""));
         }
         sb.append("]");
         return sb.toString();

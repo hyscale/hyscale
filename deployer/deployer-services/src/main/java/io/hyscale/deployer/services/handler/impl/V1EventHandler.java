@@ -26,8 +26,8 @@ import io.hyscale.deployer.services.util.ExceptionHelper;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.apis.CoreV1Api;
-import io.kubernetes.client.openapi.models.V1Event;
-import io.kubernetes.client.openapi.models.V1EventList;
+import io.kubernetes.client.openapi.models.CoreV1Event;
+import io.kubernetes.client.openapi.models.CoreV1EventList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,12 +37,12 @@ import java.util.List;
  * Kubernetes events life cycle handler
  */
 
-public class V1EventHandler implements ResourceLifeCycleHandler<V1Event> {
+public class V1EventHandler implements ResourceLifeCycleHandler<CoreV1Event> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(V1EventHandler.class);
 
     @Override
-    public V1Event create(ApiClient apiClient, V1Event resource, String namespace) throws HyscaleException {
+    public CoreV1Event create(ApiClient apiClient, CoreV1Event resource, String namespace) throws HyscaleException {
         HyscaleException hyscaleException = new HyscaleException(DeployerErrorCodes.OPERATION_NOT_SUPPORTED,
                 ResourceOperation.CREATE.getOperation(), getKind());
         LOGGER.error(hyscaleException.getMessage());
@@ -50,7 +50,7 @@ public class V1EventHandler implements ResourceLifeCycleHandler<V1Event> {
     }
 
     @Override
-    public boolean update(ApiClient apiClient, V1Event resource, String namespace) throws HyscaleException {
+    public boolean update(ApiClient apiClient, CoreV1Event resource, String namespace) throws HyscaleException {
         HyscaleException hyscaleException = new HyscaleException(DeployerErrorCodes.OPERATION_NOT_SUPPORTED,
                 ResourceOperation.UPDATE.getOperation(), getKind());
         LOGGER.error(hyscaleException.getMessage());
@@ -58,7 +58,7 @@ public class V1EventHandler implements ResourceLifeCycleHandler<V1Event> {
     }
 
     @Override
-    public V1Event get(ApiClient apiClient, String name, String namespace) throws HyscaleException {
+    public CoreV1Event get(ApiClient apiClient, String name, String namespace) throws HyscaleException {
         HyscaleException hyscaleException = new HyscaleException(DeployerErrorCodes.OPERATION_NOT_SUPPORTED,
                 ResourceOperation.GET.getOperation(), getKind());
         LOGGER.error(hyscaleException.getMessage());
@@ -66,15 +66,15 @@ public class V1EventHandler implements ResourceLifeCycleHandler<V1Event> {
     }
 
     @Override
-    public List<V1Event> getBySelector(ApiClient apiClient, String selector, boolean label, String namespace) throws HyscaleException {
+    public List<CoreV1Event> getBySelector(ApiClient apiClient, String selector, boolean label, String namespace) throws HyscaleException {
         CoreV1Api coreV1Api = new CoreV1Api(apiClient);
-        List<V1Event> events = null;
+        List<CoreV1Event> events = null;
         try {
             String labelSelector = label ? selector : null;
             String fieldSelector = label ? null : selector;
 
-            V1EventList v1EventList = coreV1Api.listNamespacedEvent(namespace, DeployerConstants.TRUE, null, 
-                    null, fieldSelector, labelSelector, null, null, null, null);
+            CoreV1EventList v1EventList = coreV1Api.listNamespacedEvent(namespace, DeployerConstants.TRUE, null, 
+                    null, fieldSelector, labelSelector, null, null, null, null, null);
 
             events = v1EventList != null ? v1EventList.getItems() : null;
         } catch (ApiException e) {
@@ -87,7 +87,7 @@ public class V1EventHandler implements ResourceLifeCycleHandler<V1Event> {
     }
 
     @Override
-    public boolean patch(ApiClient apiClient, String name, String namespace, V1Event body) throws HyscaleException {
+    public boolean patch(ApiClient apiClient, String name, String namespace, CoreV1Event body) throws HyscaleException {
         HyscaleException hyscaleException = new HyscaleException(DeployerErrorCodes.OPERATION_NOT_SUPPORTED,
                 ResourceOperation.PATCH.getOperation(), getKind());
         LOGGER.error(hyscaleException.getMessage());
