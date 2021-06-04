@@ -84,7 +84,7 @@
 		<copyright.year>2019</copyright.year>
 		<copyright.company>Pramati Prism, Inc.</copyright.company>
 		<release.name>First Light</release.name>
-		<hspec.supported.version>0.6.5</hspec.supported.version>
+		<hspec.supported.version>master</hspec.supported.version>
 		<docker.java.version>3.1.5</docker.java.version>
 		<sonar.organization>hyscale</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>

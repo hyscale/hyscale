@@ -40,44 +40,15 @@
                                     failonerror="true">
                                     <arg line="${hspec.supported.version}" />
                                 </exec>
+                                <exec executable="src/main/resources/script/fetch.sh"
+                                    failonerror="true">
+                                    <arg line="${hspec.supported.version}" />
+                                </exec>
                             </tasks>
                         </configuration>
                         <goals>
                             <goal>run</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>com.googlecode.maven-download-plugin</groupId>
-                <artifactId>download-maven-plugin</artifactId>
-                <version>1.5.0</version>
-                <executions>
-                    <execution>
-                        <phase>process-sources</phase>
-                        <id>hspec-service-json</id>
-                        <goals>
-                            <goal>wget</goal>
-                        </goals>
-                        <configuration>
-                            <mkdir
-                                dir="src/main/resources/hspec/${hspec.supported.version}" />
-                            <url>https://raw.githubusercontent.com/hyscale/hspec/release/HSpec${hspec.supported.version}/schema/service-spec.json</url>
-                            <outputDirectory>src/main/resources/hspec/${hspec.supported.version}</outputDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <phase>process-sources</phase>
-                        <id>hprof-service-json</id>
-                        <goals>
-                            <goal>wget</goal>
-                        </goals>
-                        <configuration>
-                            <mkdir
-                                dir="src/main/resources/hprof/${hprof.supported.version}" />
-                            <url>https://raw.githubusercontent.com/hyscale/hspec/release/HSpec${hspec.supported.version}/schema/profile-spec.json</url>
-                            <outputDirectory>src/main/resources/hprof/${hspec.supported.version}</outputDirectory>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
