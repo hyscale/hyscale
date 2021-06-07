@@ -1,6 +1,7 @@
 general:
   vulnerabilities:
     #fix is not provided for the below vulnarabilities yet, refer to https://security-tracker.debian.org/tracker/CVE-2020-10878 and https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=962005
+    - CVE-2017-18640
     - CVE-2019-3843
     - CVE-2019-3844
     - CVE-2019-12290
