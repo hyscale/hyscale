@@ -10,7 +10,7 @@ const fs = require('fs'),
 
 const msg = {
     to: 'engineering@hyscale.io',
-    from: 'srujan.gourishetty@hyscale.io',
+    from: 'niranjan.andhe@hyscale.io',
     subject: 'Hyscale Tool Build Status',
     text: 'Find the Attached Doc',
     html: '<p>Find the Attached DOC</p>',
