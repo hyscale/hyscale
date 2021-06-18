@@ -2,27 +2,27 @@ general:
   vulnerabilities:
     #fix is not provided for the below vulnarabilities yet, refer to https://security-tracker.debian.org/tracker/CVE-2020-10878 and https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=962005
     - CVE-2017-18640
+    - CVE-2018-12886
     - CVE-2019-3843
     - CVE-2019-3844
     - CVE-2019-12290
-    - CVE-2018-12886
     - CVE-2019-15847
+    - CVE-2019-20444
+    - CVE-2019-20445
     - CVE-2019-20454
     - CVE-2020-1751
     - CVE-2020-1752
+    - CVE-2020-11612
     - CVE-2020-24659
+    - CVE-2020-28052
     - CVE-2021-3326
+    - CVE-2021-3520
     - CVE-2021-20231
     - CVE-2021-20232
     - CVE-2021-20305
     - CVE-2021-27568
+    - CVE-2021-33560
     - CVE-2021-33574
-    - CVE-2021-3520
-    - CVE-2019-20444
-    - CVE-2019-20445
-    - CVE-2020-11612
-    - CVE-2019-12402
-    - CVE-2020-28052
   bestPracticeViolations:
     - CIS-DI-0001
     - DKL-DI-0006
