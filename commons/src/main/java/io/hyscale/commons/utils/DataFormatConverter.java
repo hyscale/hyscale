@@ -50,9 +50,8 @@ public class DataFormatConverter {
             ObjectMapper jsonWriter = ObjectMapperFactory.jsonMapper();
             return jsonWriter.writeValueAsString(obj);
         } catch (IOException e) {
-            LOGGER.error(e.getMessage());
-            HyscaleException ex = new HyscaleException(e, CommonErrorCode.YAML_TO_JSON_CONVERSION_FAILURE,e.getMessage());
-            throw ex;
+            LOGGER.error("Error while converting yaml to json::",e);
+            throw new HyscaleException(e, CommonErrorCode.YAML_TO_JSON_CONVERSION_FAILURE,e.getMessage());
         }
     }
 
@@ -64,16 +63,15 @@ public class DataFormatConverter {
      * @throws HyscaleException if any IO Exception occurs while conversion.
      */
     public static String yamlToJson(File file) throws HyscaleException{
+        if(file==null){
+            return null;
+        }
         try {
-            if(file==null){
-               return null;
-            }
             String data = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
             return yamlToJson(data);
         } catch (IOException e) {
             LOGGER.error(e.getMessage());
-            HyscaleException ex = new HyscaleException(e, CommonErrorCode.FAILED_TO_READ_FILE,file.getPath());
-            throw ex;
+            throw new HyscaleException(e, CommonErrorCode.FAILED_TO_READ_FILE,file.getPath());
         }
     }
 

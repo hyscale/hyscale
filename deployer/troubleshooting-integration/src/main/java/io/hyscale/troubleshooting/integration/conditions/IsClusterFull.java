@@ -20,7 +20,7 @@ import io.hyscale.deployer.core.model.ResourceKind;
 import io.hyscale.troubleshooting.integration.errors.TroubleshootErrorCodes;
 import io.hyscale.troubleshooting.integration.models.*;
 import io.hyscale.troubleshooting.integration.actions.ClusterFullAction;
-import io.kubernetes.client.openapi.models.V1Event;
+import io.kubernetes.client.openapi.models.CoreV1Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +65,7 @@ public class IsClusterFull extends ConditionNode<TroubleshootingContext> {
             return false;
         }
 
-        List<V1Event> eventList = (List<V1Event>) FailedResourceKey.FAILED_POD_EVENTS.getKlazz().cast(obj);
+        List<CoreV1Event> eventList = (List<CoreV1Event>) FailedResourceKey.FAILED_POD_EVENTS.getKlazz().cast(obj);
 
         if (eventList == null || eventList.isEmpty()) {
             report.setReason(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getReason());

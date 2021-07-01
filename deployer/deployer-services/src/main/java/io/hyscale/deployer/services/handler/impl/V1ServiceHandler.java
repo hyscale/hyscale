@@ -142,7 +142,7 @@ public class V1ServiceHandler implements ResourceLifeCycleHandler<V1Service> {
             String labelSelector = label ? selector : null;
             String fieldSelector = label ? null : selector;
             V1ServiceList v1ServiceList = coreV1Api.listNamespacedService(namespace, DeployerConstants.TRUE, null, null, fieldSelector,
-                    labelSelector, null, null, null, null);
+                    labelSelector, null, null, null, null, null);
             v1Services = v1ServiceList != null ? v1ServiceList.getItems() : null;
         } catch (ApiException e) {
             HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_BY_SELECTOR);

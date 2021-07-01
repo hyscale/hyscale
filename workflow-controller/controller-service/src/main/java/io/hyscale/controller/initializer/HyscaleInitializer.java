@@ -17,6 +17,7 @@ package io.hyscale.controller.initializer;
 
 import io.hyscale.controller.exception.ParameterExceptionHandler;
 
+import java.io.PrintStream;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -31,11 +32,13 @@ import io.hyscale.builder.core.models.ImageBuilder;
 import io.hyscale.builder.services.config.ImageBuilderConfig;
 import io.hyscale.commons.config.SetupConfig;
 import io.hyscale.commons.constants.ToolConstants;
+import io.hyscale.commons.io.StringOutputStream;
 import io.hyscale.controller.commands.HyscaleCommand;
 import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.exception.ExceptionHandler;
 import io.hyscale.controller.util.ResourceCleanUpUtil;
 import io.hyscale.controller.util.ShutdownHook;
+import io.kubernetes.client.util.ModelMapper;
 import picocli.CommandLine;
 import picocli.CommandLine.IFactory;
 import picocli.CommandLine.ParameterException;
@@ -74,6 +77,15 @@ public class HyscaleInitializer implements CommandLineRunner {
         System.setProperty(ToolConstants.HYSCALECTL_LOGS_DIR_PROPERTY, SetupConfig.getToolLogDir());
         System.setProperty(ToolConstants.NASHORNS_ARGS, ToolConstants.NASHORNS_DEPRECATION_WARNING_FLAG);
         System.setProperty(ToolConstants.JDK_TLS_CLIENT_PROTOCOLS_ARGS, ToolConstants.JDK_TLS_CLIENT_VERSION);
+        /*
+         *  TODO This was added since ModelMapper is doing a sysout.
+         *  {@see io.kubernetes.client.util.ModelMapper}
+         *  Remove this once we upgrade K8s client to 12
+         */
+        PrintStream printStream = System.out;
+        System.setOut(new PrintStream( new StringOutputStream()));
+        new ModelMapper();
+        System.setOut(printStream);
     }
 
     public static void main(String[] args) {

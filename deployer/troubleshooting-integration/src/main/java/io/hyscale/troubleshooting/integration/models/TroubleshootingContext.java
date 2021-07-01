@@ -16,7 +16,7 @@
 package io.hyscale.troubleshooting.integration.models;
 
 import io.hyscale.commons.models.ServiceMetadata;
-import io.kubernetes.client.openapi.models.V1Event;
+import io.kubernetes.client.openapi.models.CoreV1Event;
 
 import java.util.*;
 
@@ -81,14 +81,14 @@ public class TroubleshootingContext implements NodeContext {
 
     public static class ResourceInfo {
 
-        private List<V1Event> events;
+        private List<CoreV1Event> events;
         private Object resource;
 
-        public List<V1Event> getEvents() {
+        public List<CoreV1Event> getEvents() {
             return events;
         }
 
-        public void setEvents(List<V1Event> events) {
+        public void setEvents(List<CoreV1Event> events) {
             this.events = events;
         }
 

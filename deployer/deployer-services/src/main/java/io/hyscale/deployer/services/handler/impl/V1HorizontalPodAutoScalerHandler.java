@@ -134,7 +134,7 @@ public class V1HorizontalPodAutoScalerHandler implements ResourceLifeCycleHandle
             String fieldSelector = label ? null : selector;
 
             V1HorizontalPodAutoscalerList v1HorizontalPodAutoscalerList = autoscalingV1Api.listNamespacedHorizontalPodAutoscaler(namespace, DeployerConstants.TRUE,
-                    null, null, fieldSelector, labelSelector, null, null, null, null);
+                    null, null, fieldSelector, labelSelector, null, null, null, null, null);
 
             v1HorizontalPodAutoscalers = v1HorizontalPodAutoscalerList != null ? v1HorizontalPodAutoscalerList.getItems() : null;
         } catch (ApiException e) {

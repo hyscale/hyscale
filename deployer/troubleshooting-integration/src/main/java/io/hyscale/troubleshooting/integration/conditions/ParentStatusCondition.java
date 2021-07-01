@@ -37,7 +37,7 @@ import io.hyscale.troubleshooting.integration.models.Node;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext;
 import io.hyscale.troubleshooting.integration.models.TroubleshootingContext.ResourceInfo;
 import io.hyscale.troubleshooting.integration.util.ConditionUtil;
-import io.kubernetes.client.openapi.models.V1Event;
+import io.kubernetes.client.openapi.models.CoreV1Event;
 
 @Component
 public class ParentStatusCondition implements Node<TroubleshootingContext> {
@@ -84,7 +84,7 @@ public class ParentStatusCondition implements Node<TroubleshootingContext> {
             return serviceWithZeroReplicasAction;
         }
         DiagnosisReport report = new DiagnosisReport();
-        List<V1Event> events = parentInfo.getEvents();
+        List<CoreV1Event> events = parentInfo.getEvents();
         if (events == null || events.isEmpty()) {
             report.setReason(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getReason());
             report.setRecommendedFix(AbstractedErrorMessage.CANNOT_FIND_EVENTS.getMessage());
@@ -92,7 +92,7 @@ public class ParentStatusCondition implements Node<TroubleshootingContext> {
             logger.debug("{} no events found", podParent);
             return null;
         }
-        V1Event event = getFilteredEvent(events);
+        CoreV1Event event = getFilteredEvent(events);
         if (event == null) {
             logger.debug("{} no failure event found to process", podParent);
             return tryAfterSometimeAction;
@@ -111,9 +111,9 @@ public class ParentStatusCondition implements Node<TroubleshootingContext> {
     }
 
     // TODO filter events wrt latest deployment
-    private V1Event getFilteredEvent(List<V1Event> events) {
-        V1Event filteredEvent = null;
-        for (V1Event event : events) {
+    private CoreV1Event getFilteredEvent(List<CoreV1Event> events) {
+        CoreV1Event filteredEvent = null;
+        for (CoreV1Event event : events) {
             if (FAILED_CREATE_EVENT.equals(event.getReason())) {
                 filteredEvent = event;
             }

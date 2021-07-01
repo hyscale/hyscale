@@ -136,7 +136,7 @@ public class V1ConfigMapHandler implements ResourceLifeCycleHandler<V1ConfigMap>
             String fieldSelector = label ? null : selector;
 
             V1ConfigMapList configMapList = coreV1Api.listNamespacedConfigMap(namespace, DeployerConstants.TRUE, null, null,
-                    fieldSelector, labelSelector, null, null, null, null);
+                    fieldSelector, labelSelector, null, null, null, null, null);
             configMaps = configMapList != null ? configMapList.getItems() : null;
         } catch (ApiException e) {
             HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_BY_SELECTOR);

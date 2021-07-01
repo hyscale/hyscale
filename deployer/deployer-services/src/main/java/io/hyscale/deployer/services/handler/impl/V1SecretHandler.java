@@ -136,7 +136,7 @@ public class V1SecretHandler implements ResourceLifeCycleHandler<V1Secret> {
 			String labelSelector = label ? selector : null;
 			String fieldSelector = label ? null : selector;
 			V1SecretList v1SecretList = coreV1Api.listNamespacedSecret(namespace, DeployerConstants.TRUE, null, null,fieldSelector,
-					labelSelector, null, null, null, null);
+					labelSelector, null, null, null, null, null);
 			v1Secrets = v1SecretList != null ? v1SecretList.getItems() : null;
 		} catch (ApiException e) {
 			HyscaleException ex = ExceptionHelper.buildGetException(getKind(), e, ResourceOperation.GET_BY_SELECTOR);
