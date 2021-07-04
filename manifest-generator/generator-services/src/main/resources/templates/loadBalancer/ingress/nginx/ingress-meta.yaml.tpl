@@ -10,18 +10,18 @@ annotations:
   kubernetes.io/ingress.class: {{INGRESS_CLASS}}
   {{/INGRESS_CLASS}}
   {{^ALLOW_HTTP }}
-  kubernetes.io/ingress.allow-http: true
+  kubernetes.io/ingress.allow-http: "true"
   {{/ALLOW_HTTP }}
   {{#ALLOW_HTTP }}
-  kubernetes.io/ingress.allow-http: false
+  kubernetes.io/ingress.allow-http: "false"
   {{/ALLOW_HTTP }}
   {{^SSL_REDIRECT }}
-  nginx.ingress.kubernetes.io/ssl-redirect: false
+  nginx.ingress.kubernetes.io/ssl-redirect: "false"
   {{/SSL_REDIRECT }}
   {{#SSL_REDIRECT }}
-  nginx.ingress.kubernetes.io/ssl-redirect: true
+  nginx.ingress.kubernetes.io/ssl-redirect: "true"
   {{/SSL_REDIRECT }}
-  nginx.ingress.kubernetes.io/use-regex: true
+  nginx.ingress.kubernetes.io/use-regex: "true"
   {{#STICKY }}
   nginx.ingress.kubernetes.io/affinity: {{ STICKY }}
   {{/STICKY }}
