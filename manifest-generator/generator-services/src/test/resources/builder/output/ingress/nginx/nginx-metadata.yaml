@@ -3,8 +3,8 @@ labels:
     hyscale.io/app-name: book-info
     hyscale.io/service-name: productpage
 annotations:
-    kubernetes.io/ingress.allow-http: true
-    nginx.ingress.kubernetes.io/ssl-redirect: false
-    nginx.ingress.kubernetes.io/use-regex: true
+    kubernetes.io/ingress.allow-http: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/configuration-snippet: |
         proxy_set_header hello there;proxy_set_header test sample;
