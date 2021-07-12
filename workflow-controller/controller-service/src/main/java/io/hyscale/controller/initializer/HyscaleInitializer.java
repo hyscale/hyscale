@@ -17,6 +17,7 @@ package io.hyscale.controller.initializer;
 
 import io.hyscale.controller.exception.ParameterExceptionHandler;
 
+import java.lang.reflect.Field;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ import io.hyscale.controller.exception.ControllerErrorCodes;
 import io.hyscale.controller.exception.ExceptionHandler;
 import io.hyscale.controller.util.ResourceCleanUpUtil;
 import io.hyscale.controller.util.ShutdownHook;
+import org.springframework.objenesis.instantiator.util.UnsafeUtils;
 import picocli.CommandLine;
 import picocli.CommandLine.IFactory;
 import picocli.CommandLine.ParameterException;
@@ -53,7 +55,7 @@ import picocli.CommandLine.ParameterException;
 @ComponentScan(basePackages = "io.hyscale")
 public class HyscaleInitializer implements CommandLineRunner {
 
-    private final Logger logger = LoggerFactory.getLogger(HyscaleInitializer.class);
+    private static final Logger logger = LoggerFactory.getLogger(HyscaleInitializer.class);
 
     @Autowired
     private IFactory factory;
@@ -77,6 +79,7 @@ public class HyscaleInitializer implements CommandLineRunner {
     }
 
     public static void main(String[] args) {
+        disableWarningsFromJVM();
         SpringApplication app = new SpringApplication(HyscaleInitializer.class);
         if(System.getenv(ToolConstants.WORKFLOW_LOGGER_DISABLED)!=null && System.getenv(ToolConstants.WORKFLOW_LOGGER_DISABLED).equalsIgnoreCase("true")){
             Properties properties = new Properties();
@@ -107,5 +110,14 @@ public class HyscaleInitializer implements CommandLineRunner {
         }
         System.exit(exitCode);
     }
-    
+
+    public static void disableWarningsFromJVM() {
+        try {
+            Class cls = Class.forName("jdk.internal.module.IllegalAccessLogger");
+            Field logger = cls.getDeclaredField("logger");
+            UnsafeUtils.getUnsafe().putObjectVolatile(cls, UnsafeUtils.getUnsafe().staticFieldOffset(logger), null);
+        } catch (Exception e) {
+            logger.warn("Unable to hide warning messages for illegal reflective access");
+        }
+    }
 }
