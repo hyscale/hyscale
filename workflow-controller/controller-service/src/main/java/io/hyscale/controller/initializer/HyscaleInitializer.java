@@ -55,7 +55,7 @@ import picocli.CommandLine.ParameterException;
 @ComponentScan(basePackages = "io.hyscale")
 public class HyscaleInitializer implements CommandLineRunner {
 
-    private final Logger logger = LoggerFactory.getLogger(HyscaleInitializer.class);
+    private static final Logger logger = LoggerFactory.getLogger(HyscaleInitializer.class);
 
     @Autowired
     private IFactory factory;
