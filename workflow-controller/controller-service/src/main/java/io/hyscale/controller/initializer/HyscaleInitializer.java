@@ -117,7 +117,7 @@ public class HyscaleInitializer implements CommandLineRunner {
             Field logger = cls.getDeclaredField("logger");
             UnsafeUtils.getUnsafe().putObjectVolatile(cls, UnsafeUtils.getUnsafe().staticFieldOffset(logger), null);
         } catch (Exception e) {
-            // ignore
+            logger.warn("Unable to hide warning messages for illegal reflective access");
         }
     }
 }
