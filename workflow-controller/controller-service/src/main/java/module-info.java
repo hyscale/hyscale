@@ -61,4 +61,5 @@ module controller.service {
     requires deployer.services;
     requires java.annotation;
     requires org.apache.commons.collections4;
+    requires jdk.unsupported;
 }
