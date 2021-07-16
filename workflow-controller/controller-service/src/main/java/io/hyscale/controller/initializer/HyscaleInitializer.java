@@ -55,7 +55,7 @@ import picocli.CommandLine.ParameterException;
 @ComponentScan(basePackages = "io.hyscale")
 public class HyscaleInitializer implements CommandLineRunner {
 
-    private static final Logger logger = LoggerFactory.getLogger(HyscaleInitializer.class);
+    private final Logger logger = LoggerFactory.getLogger(HyscaleInitializer.class);
 
     @Autowired
     private IFactory factory;
@@ -117,7 +117,7 @@ public class HyscaleInitializer implements CommandLineRunner {
             Field logger = cls.getDeclaredField("logger");
             UnsafeUtils.getUnsafe().putObjectVolatile(cls, UnsafeUtils.getUnsafe().staticFieldOffset(logger), null);
         } catch (Exception e) {
-            logger.warn("Unable to hide warning messages for illegal reflective access");
+            LoggerFactory.getLogger(HyscaleInitializer.class).warn("Unable to hide warning messages for illegal reflective access");
         }
     }
 }
