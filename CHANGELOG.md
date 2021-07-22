@@ -1,3 +1,11 @@
+# v1.0.0 Release
+
+This release is aimed to abstract and deliver load balancing capabilities of Ingress (Traefik, Nginix) and Service mesh (Istio) for a service.
+
+### Features:
+
+* [Load Balancer Support](https://github.com/hyscale/hyscale/issues/361)
+
 
 # v0.9.9.1 Release
 
