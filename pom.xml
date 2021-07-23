@@ -8,7 +8,7 @@
 	<groupId>io.hyscale</groupId>
 	<artifactId>hyscale</artifactId>
 	<packaging>pom</packaging>
-	<version>0.9.9.1</version>
+	<version>1.0.0</version>
 
 	<modules>
 		<module>image-builder</module>
@@ -83,7 +83,7 @@
 		<maven.build.timestamp.format>EEE d MMM yyyy HH:mm:ss</maven.build.timestamp.format>
 		<copyright.year>2019</copyright.year>
 		<copyright.company>Pramati Prism, Inc.</copyright.company>
-		<release.name>First Light</release.name>
+		<release.name>Cullinan Diamond</release.name>
 		<hspec.supported.version>master</hspec.supported.version>
 		<docker.java.version>3.1.5</docker.java.version>
 		<sonar.organization>hyscale</sonar.organization>
