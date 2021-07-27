@@ -33,7 +33,6 @@ In the case of Ingress:
  
 In the case of Service Mesh:
  - Installing Service Mesh (Istio) in the cluster.
- - Ensure that the namespace in which we're deploying is istio-enabled.
 
 
 ### Introducing the 'loadBalancer' field 
