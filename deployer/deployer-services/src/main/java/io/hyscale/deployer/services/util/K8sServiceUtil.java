@@ -181,7 +181,9 @@ public class K8sServiceUtil {
 				JsonObject status = (JsonObject) jsonParser.parse(String.valueOf(ingressResource.get("status")));
 				if (status.get(LOAD_BALANCER) != null && status.getAsJsonObject(LOAD_BALANCER).get("ingress") != null) {
 					JsonObject ingress = status.getAsJsonObject(LOAD_BALANCER).getAsJsonArray("ingress").get(0).getAsJsonObject();
-					serviceAddress.setServiceIP(ingress.get("ip").getAsString());
+					if(ingress.get("ip") != null){
+						serviceAddress.setServiceIP(ingress.get("ip").getAsString());	
+					}
 				}
 			}
 			if (serviceAddress.getServiceIP() == null && setDefaultIp) {
