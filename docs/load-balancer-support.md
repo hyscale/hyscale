@@ -33,7 +33,6 @@ In the case of Ingress:
  
 In the case of Service Mesh:
  - Installing Service Mesh (Istio) in the cluster.
- - Ensure that the namespace in which we're deploying is istio-enabled.
 
 
 ### Introducing the 'loadBalancer' field 
@@ -78,6 +77,10 @@ As mentioned, It's a prerequisite and part of user's responsibility to provide a
    Currently HyScale supports two providers for Ingress i.e Nginx and Traefik. You can choose any of them and mention it in `provider` field in the hspec loadBalancer configuration.
    #### - Defining Routing Configuration
    Routing configuration includes specifying host name, TLS secret name if available, mapping rules, headers and enabling or disabling session stickiness in the corresponding fields `host` ,`tlsSecret`,  `mapping`, `headers` and `sticky`  .
+  #### Note: Mandatory fields are 
+  - `provider`
+  - `host`
+  - `mapping`
 
 #### -  Manifest Generation and Deployment
  Here an `Ingress` resource created and applied based on the loadBalancer configuration provided in the hspec.
@@ -122,6 +125,11 @@ Here, It's a prerequisite and part of user's responsibility to ensure Istio is i
    Currently HyScale supports only one provider for Service Mesh i.e Istio. Mention it in `provider` field in the hspec loadBalancer configuration.
    #### - Defining Routing Configuration
    Routing configuration includes specifying host name, TLS secret name if available, mapping rules, headers and enabling or disabling session stickiness in the corresponding fields `host` ,`tlsSecret`,  `mapping`, `headers` and `sticky`  .
+   #### Note: Mandatory fields are 
+  - `provider`
+  - `host`
+  - `mapping`
+  - `labels`
  #### -  Manifest Generation and Deployment
  Here three resource manifests are created and applied- `Gateway`, `VirtualService` and `DestinationRule` based on the loadBalancer configuration provided in the hspec.
  Configure the external IP Address of istio-ingress-gatway for the service URL provided to access the service.
