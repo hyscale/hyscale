@@ -38,7 +38,7 @@ public enum DeployerErrorCodes implements HyscaleError {
     FAILED_TO_PATCH_RESOURCE("Failed to patch resource {}"),
     FAILED_TO_GET_SERVICE_ADDRESS("Failed to get service address",HyscaleErrorGroup.GET_SERVICE_IP),
     MANIFEST_REQUIRED("Manifest required",HyscaleErrorGroup.DEPLOYER_APPLY),
-    FAILED_TO_APPLY_MANIFEST("Failed to apply manifests, Recommended to refer logs",HyscaleErrorGroup.DEPLOYER_APPLY),
+    FAILED_TO_APPLY_MANIFEST("Failed to apply manifests,Please refer logs for more details",HyscaleErrorGroup.DEPLOYER_APPLY),
     FAILED_TO_READ_MANIFEST("Failed to read manifests"),
     SERVICE_REQUIRED("Service required"),
     APPLICATION_REQUIRED("Application name required"),
