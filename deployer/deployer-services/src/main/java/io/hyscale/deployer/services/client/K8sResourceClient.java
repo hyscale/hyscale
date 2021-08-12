@@ -95,12 +95,14 @@ public class K8sResourceClient extends GenericK8sClient {
         if(response!=null){
             if(response.isSuccess()){
                 logger.info("Successfully updated resource : {} name : {}",kind,name);
+                return;
             }else{
                 logger.error("Failed to update, reason: {}\n Message: {}",response.getStatus().getReason(),response.getStatus().getMessage());
                 throw new HyscaleException(DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,kind,response.getStatus().getMessage());
             }
         }
-
+        logger.error("Failed to update resource {}",kind);
+        throw new HyscaleException(DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,kind);
     }
 
     @Override
