@@ -66,11 +66,14 @@ public class K8sResourceClient extends GenericK8sClient {
         if(response!=null){
             if(response.isSuccess()){
                 logger.info("Successfully created resource : {}, name : {} ",kind,name);
+                return;
             }else{
                 logger.error("Failed to create, reason: {}\n Message: {}",response.getStatus().getReason(),response.getStatus().getMessage());
                 throw new HyscaleException(DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,kind,response.getStatus().getMessage());
             }
         }
+        logger.error("Failed to create resource {}",kind);
+        throw new HyscaleException(DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,kind);
     }
 
     @Override
