@@ -69,9 +69,11 @@ public class K8sResourceClient extends GenericK8sClient {
                 return;
             }else{
                 logger.error("Failed to create, reason: {}\n Message: {}",response.getStatus().getReason(),response.getStatus().getMessage());
+                throw new HyscaleException(DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,kind,response.getStatus().getMessage());
             }
         }
-        throw new HyscaleException(DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE);
+        logger.error("Failed to create resource {}",kind);
+        throw new HyscaleException(DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,kind);
     }
 
     @Override
@@ -96,9 +98,11 @@ public class K8sResourceClient extends GenericK8sClient {
                 return;
             }else{
                 logger.error("Failed to update, reason: {}\n Message: {}",response.getStatus().getReason(),response.getStatus().getMessage());
+                throw new HyscaleException(DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE,kind,response.getStatus().getMessage());
             }
         }
-        throw new HyscaleException(DeployerErrorCodes.FAILED_TO_CREATE_RESOURCE);
+        logger.error("Failed to update resource {}",kind);
+        throw new HyscaleException(DeployerErrorCodes.FAILED_TO_UPDATE_RESOURCE,kind);
     }
 
     @Override

@@ -206,9 +206,9 @@ public class K8sResourceDispatcher {
         return customObject.getKind() + ":" + customObject.getApiVersion();
     }
 
-    private void applyCustomResources(List<CustomObject> customObjectList) {
+    private void applyCustomResources(List<CustomObject> customObjectList) throws HyscaleException{
         // Using Generic K8s Client
-        customObjectList.stream().forEach(object -> {
+        for (CustomObject object : customObjectList) {
             GenericK8sClient genericK8sClient = new K8sResourceClient(apiClient).
                     withNamespace(namespace).forKind(new CustomResourceKind(object.getKind(), object.getApiVersion()));
             try {
@@ -226,8 +226,9 @@ public class K8sResourceDispatcher {
             } catch (HyscaleException ex) {
                 WorkflowLogger.endActivity(Status.FAILED);
                 logger.error("Failed to apply resource :{} Reason :: {}", object.getKind(), ex.getMessage());
+                throw ex;
             }
-        });
+        }
     }
 
     private void deleteResources(String labelSelector, List<CustomResourceKind> appliedKindsList) throws HyscaleException {
