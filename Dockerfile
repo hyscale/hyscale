@@ -20,7 +20,7 @@ RUN mkdir -p ~/.gnupg/ && echo "$GPG_KEY_ENV"| base64 --decode > ~/.gnupg/privat
     && gpg --batch --import ~/.gnupg/private.key \
     && mvn $MAVEN_EXEC_ENV
 
-FROM openjdk:11.0.11-jre-slim-buster
+FROM openjdk:11.0.12-jre-slim-buster
 ENV DOCKERVERSION=18.06.2-ce
 RUN apt update \
     && apt-get install -y --no-install-recommends wget \
