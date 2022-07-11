@@ -72,7 +72,7 @@
 		<flipkart.zjsonpatch.version>0.4.5</flipkart.zjsonpatch.version>
 		<spullara.mustache.compiler.version>0.9.6</spullara.mustache.compiler.version>
 		<picocli.spring-boot.version>4.4.0</picocli.spring-boot.version>
-		<spring-boot.version>2.2.6.RELEASE</spring-boot.version>
+		<spring-boot.version>2.2.11.RELEASE</spring-boot.version>
 		<spring-boot-maven-plugin.version>2.2.6.RELEASE</spring-boot-maven-plugin.version>
 		<spring.core.version>5.2.6.RELEASE</spring.core.version>
 		<hibernate-validator.version>6.0.17.Final</hibernate-validator.version>
